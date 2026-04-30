@@ -731,7 +731,7 @@ function App() {
                     <label>
                       Accidentals
                       <select value={accidental} onChange={(event) => setAccidental(event.target.value as AccidentalMode)}>
-                        <option value="natural">Mixed circle-of-fifths</option>
+                        <option value="natural">Default spelling</option>
                         <option value="flats">Prefer flats</option>
                         <option value="sharps">Prefer sharps</option>
                       </select>
