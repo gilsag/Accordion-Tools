@@ -43,11 +43,7 @@ type TrebleRowDefinition = {
 
   /*
     Optional explicit octave for the first button of this row.
-
-    This is needed especially for Bayan/B-system, where the pitch-class starts
-    are correct, but some rows must begin in octave 4 rather than octave 3
-    to keep diagonal movement pitch-correct.
-
+    
     Example:
       A#3 -> B3 when moving down/right
       C4  -> C#4 when moving down/right
@@ -147,9 +143,6 @@ function getDiagonalDx(yGap: number, angle: number) {
 /*
   Calculates octave numbers from an explicit starting octave.
 
-  This fixes the Bayan/B-system issue where moving down and right should
-  increase by a semitone, but row-start pitch classes alone were not enough
-  to infer the correct octave.
 */
 function getOctaveNumber(rowDefinition: TrebleRowDefinition, semitoneOffset: number) {
   const startIndex = PITCH_INDEX[rowDefinition.start];
