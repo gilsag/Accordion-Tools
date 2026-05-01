@@ -1,73 +1,157 @@
-# React + TypeScript + Vite
+# Accordion-Tools
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Accordion-Tools is a web project built with [Vite](https://vite.dev/) and npm.
 
-Currently, two official plugins are available:
+This project is intended to provide tools, resources, or interactive features related to accordion learning, practice, or reference.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Live Site
 
-## React Compiler
+Once deployed with GitHub Pages, the site will be available at:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+https://gilsag.github.io/Accordion-Tools/
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Project Structure
+
+A typical structure for this project is:
+
+```text
+Accordion-Tools/
+├── public/
+├── src/
+├── index.html
+├── package.json
+├── package-lock.json
+├── vite.config.js
+├── README.md
+└── LICENSE
+```
+
+## Requirements
+
+To run this project locally, you need:
+
+- Node.js
+- npm
+
+You can check whether they are installed by running:
+
+```bash
+node --version
+npm --version
+```
+
+## Running the Project Locally
+
+First, install the project dependencies:
+
+```bash
+npm install
+```
+
+Then start the development server:
+
+```bash
+npm run dev
+```
+
+Vite will show a local address in the terminal, usually something like:
+
+```text
+http://localhost:5173/
+```
+
+Open that address in your browser to view the project.
+
+## Building the Project
+
+To create the production version of the site, run:
+
+```bash
+npm run build
+```
+
+This creates a `dist` folder, which contains the files that can be published online.
+
+## Deploying to GitHub Pages
+
+This project is intended to be deployed using GitHub Pages.
+
+For GitHub Pages, make sure `vite.config.js` includes the correct base path:
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+import { defineConfig } from 'vite'
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+export default defineConfig({
+  base: '/Accordion-Tools/',
+})
 ```
+
+If the project uses React or another plugin, keep the plugin settings and add the `base` value inside the same configuration object.
+
+Example with React:
+
+```js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/Accordion-Tools/',
+})
+```
+
+The project can be deployed automatically with GitHub Actions using a workflow file located at:
+
+```text
+.github/workflows/deploy.yml
+```
+
+In the GitHub repository settings, go to:
+
+```text
+Settings → Pages → Build and deployment
+```
+
+Then set the source to:
+
+```text
+GitHub Actions
+```
+
+## Files Not to Upload
+
+Do not upload the following folder:
+
+```text
+node_modules/
+```
+
+This folder is large and can be recreated automatically using:
+
+```bash
+npm install
+```
+
+Also avoid uploading private files such as:
+
+```text
+.env
+```
+
+These may contain passwords, tokens, or private settings.
+
+## License
+
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+
+You may copy, fork, modify, and reuse this project for personal, educational, and other non-commercial purposes, as long as appropriate credit is given.
+
+Commercial use is not permitted without prior written permission.
+
+See the `LICENSE` file for more details.
+
+## Author
+
+Created by Esteban Gil (gilsag)
