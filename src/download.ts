@@ -1,6 +1,9 @@
 /**
  * Downloads the current SVG, including readable CSS rules.
  */
+/**
+ * Serializes the current SVG element, embeds readable CSS rules, and downloads it.
+ */
 export function downloadSvg(svgElement: SVGSVGElement, filename: string) {
   const clone = svgElement.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");

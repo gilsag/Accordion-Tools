@@ -1,54 +1,33 @@
 import type { DiagramButton, TrebleSizePreset, TrebleSystem } from "./types";
-import { NATURAL_NAMES, PITCH_INDEX, transpose } from "./music";
+import { PITCH_INDEX, transpose } from "./music";
 
 /*
   Treble-side layout generation.
 
-  Geometry rule:
-  A diagonal going up and right should be 30° from the vertical.
+  Internal naming and interface spelling are intentionally separated here:
 
-  Since SVG coordinates use:
-    x = horizontal
-    y = vertical
+  - `start` and `step` define the internal pitch identity used by the code.
+    These values are normalized pitch classes such as C, C#, D, etc.
 
-  the horizontal displacement needed for a 30° diagonal is:
+  - `displayCycle` defines how those same pitches should be shown when the
+    user selects Accidentals = Default spelling. This lets the interface show
+    F# or Gb without changing the internal pitch identity.
 
-    diagonalDx = yGap * tan(30°)
-
-  or, more generally:
-
-    diagonalDx = yGap * tan(angle)
-
-  Row groups:
-    rows 1
-    rows 2–3 start one full button left
-    rows 4–5 start two full buttons left
-
-  Zero-indexed:
-    row 0: group offset  0
-    row 1: group offset -1
-    row 2: group offset -1
-    row 3: group offset -2
-    row 4: group offset -2
-
-  Then each row also receives the diagonal offset:
-    row * diagonalDx
-
-  This avoids accidental cancellation and keeps the diagonal angle explicit.
+  To customize a layout manually, edit TREBLE_SYSTEM_DEFINITIONS below.
 */
 
 type TrebleRowDefinition = {
+  /* Internal normalized pitch-class start, used for transposition. */
   start: string;
+
+  /* Internal semitone movement from one button to the next in this row. */
   step: number;
 
-  /*
-    Optional explicit octave for the first button of this row.
-    
-    Example:
-      A#3 -> B3 when moving down/right
-      C4  -> C#4 when moving down/right
-  */
-  startOctave?: number;
+  /* Interface labels used for Default spelling. Repeats every four buttons. */
+  displayCycle: string[];
+
+  /* Octave of the first button in the row. */
+  startOctave: number;
 };
 
 type TrebleSystemDefinition = {
@@ -74,21 +53,21 @@ type TrebleSizeDefinition = {
 const TREBLE_SYSTEM_DEFINITIONS: Record<TrebleSystem, TrebleSystemDefinition> = {
   "c-system": {
     rows: [
-      { start: "F#", step: 3, startOctave: 3 },
-      { start: "E", step: 3, startOctave: 3 },
-      { start: "F", step: 3, startOctave: 3 },
-      { start: "D#", step: 3, startOctave: 3 },
-      { start: "E", step: 3, startOctave: 3 },
+      { start: "F#", step: 3, displayCycle: ["F#", "A", "C", "Eb"], startOctave: 3 },
+      { start: "E", step: 3, displayCycle: ["E", "G", "Bb", "C#"], startOctave: 3 },
+      { start: "F", step: 3, displayCycle: ["F", "Ab", "B", "D"], startOctave: 3 },
+      { start: "D#", step: 3, displayCycle: ["Eb", "F#", "A", "C"], startOctave: 3 },
+      { start: "E", step: 3, displayCycle: ["E", "G", "Bb", "C#"], startOctave: 3 },
     ],
   },
 
   "b-system": {
     rows: [
-      { start: "B", step: 3, startOctave: 3 },
-      { start: "A#", step: 3, startOctave: 3 },
-      { start: "C", step: 3, startOctave: 4 },
-      { start: "B", step: 3, startOctave: 3 },
-      { start: "C#", step: 3, startOctave: 4 },
+      { start: "B", step: 3, displayCycle: ["B", "D", "F", "Ab"], startOctave: 3 },
+      { start: "A#", step: 3, displayCycle: ["Bb", "C#", "E", "G"], startOctave: 3 },
+      { start: "C", step: 3, displayCycle: ["C", "Eb", "Gb", "A"], startOctave: 4 },
+      { start: "B", step: 3, displayCycle: ["B", "D", "F", "Ab"], startOctave: 3 },
+      { start: "C#", step: 3, displayCycle: ["C#", "E", "G", "Bb"], startOctave: 4 },
     ],
   },
 };
@@ -127,6 +106,7 @@ const ROW_GROUP_OFFSETS = [0, -1, -1, -2, -2];
     row 1 = second row
     row 3 = fourth row
 */
+/** Returns the extra button count for longer physical rows. */
 function getExtraColumnsForRow(row: number) {
   return row === 1 || row === 3 ? 1 : 0;
 }
@@ -135,23 +115,26 @@ function getExtraColumnsForRow(row: number) {
   Horizontal displacement needed so the diagonal is `angle` degrees
   from the vertical.
 */
+/** Converts the requested diagonal angle into a horizontal row offset. */
 function getDiagonalDx(yGap: number, angle: number) {
   const angleRadians = (angle * Math.PI) / 180;
   return yGap * Math.tan(angleRadians);
 }
 
-/*
-  Calculates octave numbers from an explicit starting octave.
+/** Picks the layout-defined spelling shown when Accidentals = Default spelling. */
+function getDisplayNameForColumn(rowDefinition: TrebleRowDefinition, column: number) {
+  return rowDefinition.displayCycle[column % rowDefinition.displayCycle.length];
+}
 
-*/
+/** Calculates the octave number for a button from the row start octave and semitone offset. */
 function getOctaveNumber(rowDefinition: TrebleRowDefinition, semitoneOffset: number) {
   const startIndex = PITCH_INDEX[rowDefinition.start];
-  const startOctave = rowDefinition.startOctave ?? 3;
-  const absoluteSemitone = startOctave * 12 + startIndex + semitoneOffset;
+  const absoluteSemitone = rowDefinition.startOctave * 12 + startIndex + semitoneOffset;
 
   return Math.floor(absoluteSemitone / 12);
 }
 
+/** Builds the treble-side button geometry and note metadata for the selected preset. */
 export function generateTreble(
   system: TrebleSystem,
   rows: 3 | 4 | 5,
@@ -181,9 +164,9 @@ export function generateTreble(
       const semitoneOffset = column * rowDefinition.step;
       const pitchClass = transpose(rowDefinition.start, semitoneOffset);
       const octave = getOctaveNumber(rowDefinition, semitoneOffset);
+      const displayName = getDisplayNameForColumn(rowDefinition, column);
 
       const visualRow = rows - 1 - row;
-      const octaveSuffix = showOctaves ? String(octave) : "";
 
       return {
         id: `treble-${row}-${column}`,
@@ -193,7 +176,9 @@ export function generateTreble(
         column,
         kind: "treble-note" as const,
         pitchClass,
-        naturalName: `${NATURAL_NAMES[pitchClass]}${octaveSuffix}`,
+        displayName,
+        octave: showOctaves ? octave : undefined,
+        soundOctave: octave,
       };
     });
   });

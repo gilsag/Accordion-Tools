@@ -11,6 +11,7 @@ import { FLAT_NAMES, NATURAL_NAMES, transpose } from "./music";
     so roots and their chords align diagonally
 */
 
+/** Canonical order of all standard six Stradella rows. */
 export const ALL_STRADELLA_ROWS: ButtonKind[] = [
   "bass-counterbass",
   "bass-root",
@@ -20,6 +21,7 @@ export const ALL_STRADELLA_ROWS: ButtonKind[] = [
   "chord-diminished7",
 ];
 
+/** Maps each bass-count preset to its visible columns and available rows. */
 export const STRADELLA_PRESETS: Record<BassCount, StradellaPreset> = {
   "8": {
     start: 8,
@@ -94,6 +96,7 @@ export const STRADELLA_PRESETS: Record<BassCount, StradellaPreset> = {
   Moving right advances by fifths, so the right side naturally uses sharps.
   Moving left advances by fourths, so the left side naturally uses flats.
 */
+/** Fundamental-bass column names for the full 120-bass circle-of-fifths span. */
 export const STRADELLA_FULL_120 = [
   "Bbb",
   "Fb",
@@ -117,6 +120,7 @@ export const STRADELLA_FULL_120 = [
   "A#",
 ];
 
+/** Converts displayed Stradella spellings into normalized internal pitch classes. */
 export const STRADELLA_NORMALIZED: Record<string, string> = {
   Bbb: "A",
   Fb: "E",
@@ -140,6 +144,7 @@ export const STRADELLA_NORMALIZED: Record<string, string> = {
   "A#": "A#",
 };
 
+/** Returns the human-readable row label for a Stradella row kind. */
 export function stradellaRowLabel(kind: ButtonKind): string {
   if (kind === "bass-counterbass") return "Major 3rd note";
   if (kind === "bass-root") return "Root note";
@@ -150,11 +155,13 @@ export function stradellaRowLabel(kind: ButtonKind): string {
   return "";
 }
 
+/** Returns the visible root column labels for the selected Stradella preset. */
 export function stradellaVisibleRoots(basses: BassCount) {
   const preset = STRADELLA_PRESETS[basses];
   return STRADELLA_FULL_120.slice(preset.start, preset.start + preset.count);
 }
 
+/** Returns the visible functional rows for the selected Stradella preset. */
 export function stradellaVisibleRows(basses: BassCount) {
   return STRADELLA_PRESETS[basses].rows;
 }
@@ -172,6 +179,7 @@ export function stradellaDisplayName(rootName: string, accidental: AccidentalMod
   return rootName;
 }
 
+/** Chooses a display spelling for a normalized pitch class. */
 export function naturalNameForPitch(pitch: string, accidental: AccidentalMode) {
   if (accidental === "sharps") return pitch;
   if (accidental === "flats") return FLAT_NAMES[pitch] ?? pitch;

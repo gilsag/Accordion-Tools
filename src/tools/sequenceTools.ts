@@ -1,7 +1,16 @@
+/*
+  Helpers for the sequence tool.
+
+  This module converts recorded sequence steps into button-aware data and creates
+  SVG paths for straight, curved, and self-loop arrows.
+*/
+
 import type { DiagramButton, SequenceArrowStyle, SequenceDisplayMode, SequenceStep } from "../types";
 
+/** A recorded sequence step after its button metadata has been found. */
 export type SequenceStepWithButton = SequenceStep & { button: DiagramButton };
 
+/** Attaches current button geometry to every recorded sequence step. */
 export function getSequenceStepsWithButtons(
   steps: SequenceStep[],
   buttons: DiagramButton[]
@@ -11,6 +20,7 @@ export function getSequenceStepsWithButtons(
     .filter((step): step is SequenceStepWithButton => Boolean(step.button));
 }
 
+/** Returns the comma-separated step numbers that belong to a given button. */
 export function getSequenceLabelsForButton(steps: SequenceStep[], buttonId: string) {
   return steps
     .filter((step) => step.id === buttonId)
@@ -18,10 +28,12 @@ export function getSequenceLabelsForButton(steps: SequenceStep[], buttonId: stri
     .join(",");
 }
 
+/** Returns whether the selected sequence display mode includes step numbers. */
 export function sequenceModeShowsNumbers(mode: SequenceDisplayMode) {
   return mode === "numbers" || mode === "numbers-and-straight-arrows" || mode === "numbers-and-curved-arrows";
 }
 
+/** Returns whether the selected sequence display mode includes arrows. */
 export function sequenceModeShowsArrows(mode: SequenceDisplayMode) {
   return (
     mode === "straight-arrows" ||
@@ -31,11 +43,19 @@ export function sequenceModeShowsArrows(mode: SequenceDisplayMode) {
   );
 }
 
+/** Extracts straight or curved arrow style from the combined display mode. */
 export function sequenceArrowStyleFromMode(mode: SequenceDisplayMode): SequenceArrowStyle {
   if (mode === "straight-arrows" || mode === "numbers-and-straight-arrows") return "straight";
   return "curved";
 }
 
+/**
+ * Places arrow endpoints inside the source and target buttons.
+ *
+ * This keeps the arrow visually connected to the buttons instead of stopping
+ * outside their outlines. The arrowhead is therefore drawn inside the target
+ * button rather than floating beside it.
+ */
 function shortenedEndpoints(from: DiagramButton, to: DiagramButton, buttonSize: number) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
@@ -43,7 +63,7 @@ function shortenedEndpoints(from: DiagramButton, to: DiagramButton, buttonSize: 
 
   if (length < 1) return null;
 
-  const padding = buttonSize + 7;
+  const padding = buttonSize * 0.45;
   const unitX = dx / length;
   const unitY = dy / length;
 
@@ -58,6 +78,7 @@ function shortenedEndpoints(from: DiagramButton, to: DiagramButton, buttonSize: 
   };
 }
 
+/** Builds a loop path used when a sequence goes from a button back to itself. */
 function selfLoopPath(button: DiagramButton, buttonSize: number) {
   const loopRadius = buttonSize * 1.55;
   const x1 = button.x + buttonSize * 0.48;
@@ -70,6 +91,7 @@ function selfLoopPath(button: DiagramButton, buttonSize: number) {
   return `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`;
 }
 
+/** Builds the SVG path string for one sequence arrow. */
 export function makeSequenceArrowPath(
   from: DiagramButton,
   to: DiagramButton,

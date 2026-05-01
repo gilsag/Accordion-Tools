@@ -129,20 +129,28 @@ export function formatPitch(
   pitch: string | undefined,
   notation: NotationMode,
   accidental: AccidentalMode,
-  naturalName?: string
+  defaultDisplayName?: string,
+  octave?: number
 ): string {
   if (!pitch || notation === "blank") return "";
+
+  const octaveSuffix = octave === undefined ? "" : String(octave);
 
   if (notation === "intervals") return INTERVALS_FROM_C[pitch] ?? pitch;
 
   if (notation === "solfege") {
-    if (accidental === "sharps") return SOLFEGE_SHARP[pitch] ?? pitch;
-    return SOLFEGE_FLAT[pitch] ?? pitch;
+    const solfegeName =
+      accidental === "sharps" ? SOLFEGE_SHARP[pitch] ?? pitch : SOLFEGE_FLAT[pitch] ?? pitch;
+    return `${solfegeName}${octaveSuffix}`;
   }
 
-  if (accidental === "natural") return naturalName ?? NATURAL_NAMES[pitch] ?? pitch;
-  if (accidental === "flats") return FLAT_NAMES[pitch] ?? pitch;
-  return pitch;
+  if (accidental === "natural") {
+    const defaultName = defaultDisplayName ?? NATURAL_NAMES[pitch] ?? pitch;
+    return `${defaultName}${octaveSuffix}`;
+  }
+
+  if (accidental === "flats") return `${FLAT_NAMES[pitch] ?? pitch}${octaveSuffix}`;
+  return `${pitch}${octaveSuffix}`;
 }
 
 /**
@@ -171,10 +179,12 @@ export function renderMusicLabel(label: string) {
   });
 }
 
+/** Returns true when a normalized pitch class contains a sharp accidental. */
 export function isAccidentalPitch(pitch: string | undefined): boolean {
   return Boolean(pitch && pitch.includes("#"));
 }
 
+/** Returns the compact suffix used when displaying chord names. */
 export function chordSuffix(kind: ButtonKind): string {
   if (kind === "chord-major") return "";
   if (kind === "chord-minor") return "m";
@@ -183,6 +193,7 @@ export function chordSuffix(kind: ButtonKind): string {
   return "";
 }
 
+/** Returns a short row-function label for Stradella chord rows. */
 export function rowFunction(kind: ButtonKind): string {
   if (kind === "chord-major") return "M";
   if (kind === "chord-minor") return "m";
@@ -191,6 +202,7 @@ export function rowFunction(kind: ButtonKind): string {
   return "";
 }
 
+/** Identifies whether a button kind represents a chord row. */
 export function isChordKind(kind: ButtonKind) {
   return kind.startsWith("chord");
 }
@@ -224,6 +236,7 @@ export function chordTones(
   return intervals.map((i) => formatPitch(transpose(root, i), notation, accidental)).join("-");
 }
 
+/** Converts a named font option into the CSS class used by App.css. */
 export function fontClass(font: FontFamily): string {
   return `font-${font}`;
 }

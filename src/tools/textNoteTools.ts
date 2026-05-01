@@ -1,5 +1,10 @@
+/*
+  Helpers for free-positioned text notes.
+*/
+
 import type { FontFamily, TextNote, TextNoteAnchor } from "../types";
 
+/** Creates a stored text-note object from the current note settings and click position. */
 export function makeTextNote(args: {
   x: number;
   y: number;
@@ -21,6 +26,7 @@ export function makeTextNote(args: {
   };
 }
 
+/** Normalizes line endings and splits text so SVG can render each line as a tspan. */
 export function splitMultilineText(text: string) {
   return text.replace(/\r\n/g, "\n").split("\n");
 }
