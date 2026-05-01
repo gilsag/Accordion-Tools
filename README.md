@@ -2,7 +2,7 @@
 
 Accordion-Tools is a web project built with [Vite](https://vite.dev/) and npm.
 
-This project is intended to provide tools, resources, or interactive features related to accordion learning, practice, or reference.
+The project is designed as a collection of tools, references, and learning aids for accordion players, students, teachers, and enthusiasts.
 
 ## Live Site
 
@@ -11,6 +11,80 @@ Once deployed with GitHub Pages, the site will be available at:
 ```text
 https://gilsag.github.io/Accordion-Tools/
 ```
+
+## About the Project
+
+Accordion-Tools is intended to make accordion practice and reference easier by bringing useful resources together in one simple web app.
+
+Depending on the version of the project, the site may include tools for exploring notes, chords, scales, layouts, practice patterns, or other accordion-related information.
+
+The goal is to create a practical, accessible, and easy-to-use resource for people learning or working with the accordion.
+
+## Features
+
+Below is a detailed description of the different kinds of functionality that may be included in Accordion-Tools.
+
+You can edit this section later to match the exact tools included in your current version of the project.
+
+### Accordion Reference Tools
+
+The project may include reference tools that help users quickly look up accordion-related information.
+
+These tools can be useful for:
+
+- Finding notes, chords, or musical patterns
+- Reviewing musical concepts
+- Supporting daily practice
+- Helping students understand accordion layouts
+- Giving teachers a simple visual reference during lessons
+
+### Chord and Harmony Support
+
+Accordion-Tools may include features related to chords and harmony.
+
+Possible uses include:
+
+- Looking up common chords
+- Comparing different chord types
+- Understanding how chords are built
+- Supporting accompaniment practice
+- Helping users connect theory with practical accordion playing
+
+This section is especially useful for players who want to improve their left-hand accompaniment, chord recognition, or general harmonic understanding.
+
+### Scale and Practice Support
+
+The project may provide tools for working with scales, exercises, or practice patterns.
+
+This can help users:
+
+- Practice scales more consistently
+- Review musical patterns
+- Develop finger familiarity
+- Study note relationships
+- Build confidence through repetition
+
+These tools are meant to support regular practice, not replace a teacher or a complete method book.
+
+### Learning and Teaching Aid
+
+Accordion-Tools can be used as a learning aid by students and as a teaching aid by instructors.
+
+For students, it can provide a quick way to review material outside of lessons.
+
+For teachers, it can be used to demonstrate concepts visually, assign practice ideas, or explain musical structures in a clear way.
+
+### Interactive Web Interface
+
+Because this project is built as a web app, users can access it through a browser without installing special software.
+
+The interface is intended to be simple and direct, so users can focus on the musical information rather than on complicated menus or setup.
+
+### Open for Non-Commercial Reuse
+
+Others may copy, fork, modify, and reuse this project for personal, educational, and other non-commercial purposes, as long as appropriate credit is given.
+
+Commercial use is not permitted without prior written permission. See the `LICENSE` file for details.
 
 ## Project Structure
 
@@ -154,4 +228,4 @@ See the `LICENSE` file for more details.
 
 ## Author
 
-Created by Esteban Gil (gilsag)
+Created by Esteban Gil (gilsag).
