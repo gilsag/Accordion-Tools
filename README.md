@@ -1,115 +1,355 @@
 # Accordion-Tools
 
-Accordion-Tools is a web project built with [Vite](https://vite.dev/) and npm.
+Accordion-Tools is a browser-based accordion diagram generator built with React, TypeScript, Vite, and npm.
 
-The project is designed as a collection of tools, references, and learning aids for accordion players, students, teachers, and enthusiasts.
+It helps accordion players, students, and teachers create clear visual diagrams for Stradella bass layouts and chromatic button accordion treble layouts. The app can be used for reference, teaching, practice planning, fingering notes, scale and chord exploration, and exporting diagrams as SVG files.
 
 ## Live Site
 
-Once deployed with GitHub Pages, the site will be available at:
+The GitHub Pages site is configured for:
 
 ```text
 https://gilsag.github.io/Accordion-Tools/
 ```
 
-## About the Project
+## What the App Does
 
-Accordion-Tools is intended to make accordion practice and reference easier by bringing useful resources together in one simple web app.
+Accordion-Tools lets you build and customize accordion diagrams directly in the browser.
 
-Depending on the version of the project, the site may include tools for exploring notes, chords, scales, layouts, practice patterns, or other accordion-related information.
+The app has two main diagram modes:
 
-The goal is to create a practical, accessible, and easy-to-use resource for people learning or working with the accordion.
+- **Stradella bass side**
+- **Chromatic button accordion treble side**
 
-## Features
+It also includes tools for selecting buttons, adding fingerings, creating note sequences, finding scales and chords, adding free text notes, playing synthetic sounds, and downloading the finished diagram.
 
-Below is a detailed description of the different kinds of functionality that may be included in Accordion-Tools.
+## Main Features
 
-You can edit this section later to match the exact tools included in your current version of the project.
+### Stradella Bass Diagrams
 
-### Accordion Reference Tools
+The app can generate Stradella bass layouts in many common sizes.
 
-The project may include reference tools that help users quickly look up accordion-related information.
+Supported bass presets include:
 
-These tools can be useful for:
+- 8 bass
+- 12 bass
+- 24 bass
+- 32 bass
+- 40 bass
+- 48 bass
+- 60 bass
+- 72 bass
+- 80 bass
+- 96 bass
+- 100 bass
+- 120 bass
 
-- Finding notes, chords, or musical patterns
-- Reviewing musical concepts
-- Supporting daily practice
-- Helping students understand accordion layouts
-- Giving teachers a simple visual reference during lessons
+Depending on the selected layout, the diagram can show bass rows, counterbass rows, major chords, minor chords, dominant seventh chords, and diminished seventh chords.
 
-### Chord and Harmony Support
+### Stradella Chord Label Options
 
-Accordion-Tools may include features related to chords and harmony.
+For Stradella chord buttons, the app can show different kinds of labels:
 
-Possible uses include:
+- No chord labels
+- Chord names, such as `C`, `Cm`, or `C7`
+- Root names only
+- Chord tones
+- Row-function labels, such as major, minor, seventh, or diminished function
 
-- Looking up common chords
-- Comparing different chord types
-- Understanding how chords are built
-- Supporting accompaniment practice
-- Helping users connect theory with practical accordion playing
+This makes the app useful both for practical playing charts and for music-theory explanations.
 
-This section is especially useful for players who want to improve their left-hand accompaniment, chord recognition, or general harmonic understanding.
+### Chromatic Button Accordion Treble Diagrams
 
-### Scale and Practice Support
+The app can generate chromatic button accordion treble diagrams.
 
-The project may provide tools for working with scales, exercises, or practice patterns.
+Supported treble systems include:
 
-This can help users:
+- C-system
+- B-system / Bayan
 
-- Practice scales more consistently
-- Review musical patterns
-- Develop finger familiarity
-- Study note relationships
-- Build confidence through repetition
+Supported row options include:
 
-These tools are meant to support regular practice, not replace a teacher or a complete method book.
+- 3 rows
+- 4 rows
+- 5 rows
 
-### Learning and Teaching Aid
+Supported size presets include:
 
-Accordion-Tools can be used as a learning aid by students and as a teaching aid by instructors.
+- Small CBA, about 3 octaves
+- Full-size CBA, about 3¾–4 octaves
+- Large CBA, about 5+ octaves
 
-For students, it can provide a quick way to review material outside of lessons.
+The treble layout can also show or hide octave numbers.
 
-For teachers, it can be used to demonstrate concepts visually, assign practice ideas, or explain musical structures in a clear way.
+### Notation Options
 
-### Interactive Web Interface
+The app supports several notation styles:
 
-Because this project is built as a web app, users can access it through a browser without installing special software.
+- English note names, such as `C D E F`
+- Solfege, such as `Do Re Mi Fa`
+- Intervals
+- Blank labels
 
-The interface is intended to be simple and direct, so users can focus on the musical information rather than on complicated menus or setup.
+Accidental spelling can also be adjusted:
 
-### Open for Non-Commercial Reuse
+- Default spelling
+- Prefer flats
+- Prefer sharps
 
-Others may copy, fork, modify, and reuse this project for personal, educational, and other non-commercial purposes, as long as appropriate credit is given.
+This is useful for adapting diagrams to different teaching styles, countries, and musical traditions.
 
-Commercial use is not permitted without prior written permission. See the `LICENSE` file for details.
+### Scale Finder
+
+The Scale Finder works on the treble side.
+
+It can highlight a one-octave scale path on the chromatic button layout. It can also restrict the path to the first 3, 4, or 5 rows.
+
+Supported scale types include:
+
+- Major scale
+- Natural minor scale
+- Harmonic minor scale
+- Major pentatonic scale
+- Minor pentatonic scale
+- Major blues scale
+- Minor blues scale
+- Chromatic scale
+
+The Scale Finder can also play the highlighted scale when sound is enabled.
+
+### Chord Finder
+
+The Chord Finder works on the treble side.
+
+It finds compact chord shapes around a selected root and supports inversions.
+
+Supported chord types include:
+
+- Major triad
+- Minor triad
+- Augmented triad
+- Diminished triad
+- Suspended fourth
+- Dominant seventh
+- Major seventh
+- Minor seventh
+- Half-diminished seventh
+- Diminished seventh
+
+The Chord Finder can play the chord as an arpeggio and then as a chord when sound is enabled.
+
+### Selection Tool
+
+Users can click buttons to select them.
+
+The selected buttons can be reviewed in a list, deselected individually, cleared, or played together. This makes it easy to mark a group of notes or buttons for study.
+
+### Fingering Tool
+
+The Fingering tool lets users add finger numbers to selected buttons or click buttons directly to label them.
+
+Finger numbers can be shown:
+
+- Inside the button near the bottom
+- Inside the button near the top
+- Above the button
+
+This is useful for creating lesson diagrams, exercise sheets, and personal practice notes.
+
+### Sequence Tool
+
+The Sequence tool lets users record a button sequence by clicking buttons in order.
+
+Sequences can show:
+
+- Numbers
+- Straight arrows
+- Curved arrows
+- Numbers and arrows together
+
+Sequence colors, arrow thickness, arrowhead size, number size, and number position can be customized.
+
+This is useful for showing melodies, exercises, scale paths, or movement patterns.
+
+### Text Notes
+
+The app lets users place custom text notes directly on the SVG diagram.
+
+Text notes can be used for reminders, explanations, lesson comments, or practice instructions.
+
+Text note options include:
+
+- Multiline text
+- Font size
+- Text color
+- Font family
+- Text alignment
+
+### Sound Playback
+
+Accordion-Tools includes a browser-based synthetic sound engine using the Web Audio API.
+
+Sound can be used for:
+
+- Button clicks
+- Selected-button playback
+- Scale Finder playback
+- Chord Finder playback
+- Recorded sequence playback
+
+Available sound presets include:
+
+- Soft reed
+- Bright reed
+- Musette detuned reeds
+- Organ-like
+- Bass reed
+- Single oscillator
+
+Sound options include volume, attack, release, note duration, sequence tempo, waveform, and musette detuning.
+
+The sound is synthetic and is intended as a lightweight practice/reference aid, not as a realistic sampled accordion.
+
+### Appearance Customization
+
+The visual appearance of the diagram can be customized.
+
+Options include:
+
+- Color theme
+- Label font
+- Label font size
+- Button size
+- Button spacing
+- Button line thickness
+- Reference button line thickness
+- Chord fill strength
+- Treble angle
+- Accidental button style
+- Show or hide button labels
+- Show or hide bellows guide
+- Show or hide Stradella row labels
+
+Available color themes include:
+
+- Default blue
+- Classic ink
+- Pastel
+- Warm cream
+- High contrast
+- Print / grayscale
+
+### Titles
+
+Diagram titles can be:
+
+- Generated automatically
+- Customized manually
+- Hidden
+
+Title font and title size can also be adjusted.
+
+### SVG Download
+
+The current diagram can be downloaded as an SVG file.
+
+This is useful for:
+
+- Printing
+- Sharing with students
+- Including diagrams in documents
+- Saving practice charts
+- Preparing teaching material
 
 ## Project Structure
-
-A typical structure for this project is:
 
 ```text
 Accordion-Tools/
 ├── public/
+│   ├── favicon.svg
+│   └── icons.svg
 ├── src/
+│   ├── tools/
+│   │   ├── chordFinderTools.ts
+│   │   ├── scaleFinderTools.ts
+│   │   ├── sequenceTools.ts
+│   │   └── textNoteTools.ts
+│   ├── App.css
+│   ├── App.tsx
+│   ├── download.ts
+│   ├── index.css
+│   ├── main.tsx
+│   ├── music.tsx
+│   ├── sound.ts
+│   ├── stradella.ts
+│   ├── treble.ts
+│   └── types.ts
 ├── index.html
 ├── package.json
 ├── package-lock.json
-├── vite.config.js
+├── vite.config.ts
 ├── README.md
 └── LICENSE
 ```
 
+## Important Source Files
+
+### `src/App.tsx`
+
+Main application component.
+
+It manages the user interface, settings, selected buttons, fingerings, sequences, text notes, sound controls, and SVG rendering.
+
+### `src/music.tsx`
+
+Shared musical logic.
+
+It contains note-name tables, pitch transposition helpers, notation formatting, chord labels, chord tones, and music-label rendering.
+
+### `src/stradella.ts`
+
+Stradella bass layout generator.
+
+It defines the supported Stradella presets and generates the visible bass and chord buttons.
+
+### `src/treble.ts`
+
+Chromatic button accordion treble layout generator.
+
+It defines the C-system and B-system treble layouts, row behavior, size presets, note metadata, and button geometry.
+
+### `src/tools/scaleFinderTools.ts`
+
+Scale Finder logic for treble-side scale paths.
+
+### `src/tools/chordFinderTools.ts`
+
+Chord Finder logic for treble-side chord shapes and inversions.
+
+### `src/tools/sequenceTools.ts`
+
+Sequence numbering and arrow-path logic.
+
+### `src/tools/textNoteTools.ts`
+
+Helpers for creating and rendering custom text notes.
+
+### `src/sound.ts`
+
+Browser sound engine using the Web Audio API.
+
+### `src/download.ts`
+
+SVG download helper.
+
 ## Requirements
 
-To run this project locally, you need:
+To run the project locally, you need:
 
 - Node.js
 - npm
 
-You can check whether they are installed by running:
+Check whether they are installed:
 
 ```bash
 node --version
@@ -118,55 +358,59 @@ npm --version
 
 ## Running the Project Locally
 
-First, install the project dependencies:
+Install dependencies:
 
 ```bash
 npm install
 ```
 
-Then start the development server:
+Start the development server:
 
 ```bash
 npm run dev
 ```
 
-Vite will show a local address in the terminal, usually something like:
+Vite will show a local address, usually:
 
 ```text
 http://localhost:5173/
 ```
 
-Open that address in your browser to view the project.
+Open that address in your browser.
 
 ## Building the Project
 
-To create the production version of the site, run:
+Create a production build:
 
 ```bash
 npm run build
 ```
 
-This creates a `dist` folder, which contains the files that can be published online.
+The production files are created in:
+
+```text
+dist/
+```
+
+## Previewing the Production Build
+
+After building, preview the production version locally:
+
+```bash
+npm run preview
+```
 
 ## Deploying to GitHub Pages
 
-This project is intended to be deployed using GitHub Pages.
+This project is configured for GitHub Pages under the repository name:
 
-For GitHub Pages, make sure `vite.config.js` includes the correct base path:
-
-```js
-import { defineConfig } from 'vite'
-
-export default defineConfig({
-  base: '/Accordion-Tools/',
-})
+```text
+Accordion-Tools
 ```
 
-If the project uses React or another plugin, keep the plugin settings and add the `base` value inside the same configuration object.
+The Vite configuration should include:
 
-Example with React:
-
-```js
+```ts
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -176,13 +420,7 @@ export default defineConfig({
 })
 ```
 
-The project can be deployed automatically with GitHub Actions using a workflow file located at:
-
-```text
-.github/workflows/deploy.yml
-```
-
-In the GitHub repository settings, go to:
+In GitHub, go to:
 
 ```text
 Settings → Pages → Build and deployment
@@ -194,15 +432,17 @@ Then set the source to:
 GitHub Actions
 ```
 
+If the repository name changes, the `base` value in `vite.config.ts` must also be changed.
+
 ## Files Not to Upload
 
-Do not upload the following folder:
+Do not upload:
 
 ```text
 node_modules/
 ```
 
-This folder is large and can be recreated automatically using:
+This folder is large and can be recreated with:
 
 ```bash
 npm install
@@ -216,6 +456,20 @@ Also avoid uploading private files such as:
 
 These may contain passwords, tokens, or private settings.
 
+## Possible Future Improvements
+
+Possible improvements include:
+
+- Adding a piano keyboard treble view
+- Adding more export formats
+- Adding preset examples
+- Adding saved diagram templates
+- Adding more realistic accordion sounds
+- Adding image export, such as PNG
+- Adding documentation screenshots
+- Improving mobile layout
+- Adding more accordion systems or custom layouts
+
 ## License
 
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
@@ -228,4 +482,4 @@ See the `LICENSE` file for more details.
 
 ## Author
 
-Created by Esteban Gil (gilsag).
+Created by Esteban Gil (`gilsag`).
