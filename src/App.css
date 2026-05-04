@@ -1,0 +1,1093 @@
+/*
+  Application styles for the accordion diagram generator.
+
+  The CSS classes here style the left panel, top toolbar, SVG diagram,
+  button themes, annotation tools, and responsive layout behavior.
+*/
+
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+  background: #f6f7fb;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  overflow: hidden;
+}
+
+.left-panel {
+  width: 100%;
+  background: white;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100vh;
+  max-height: 100dvh;
+  scrollbar-gutter: stable;
+  box-sizing: border-box;
+  border-right: 1px solid #d9deea;
+}
+
+
+.left-panel * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.button-row {
+  flex-wrap: wrap;
+}
+
+.section-content {
+  min-width: 0;
+}
+
+.left-panel h1 {
+  font-size: 19px;
+  line-height: 1.2;
+  margin: 0 0 10px;
+}
+
+.workspace {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  min-height: 48px;
+  border-bottom: 1px solid #d9deea;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+}
+
+.topbar-button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid #c9d1e3;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+}
+
+.topbar-button:hover,
+.topbar-button.active {
+  background: #eef3ff;
+  border-color: #1746d0;
+  color: #1746d0;
+}
+
+.download-button {
+  border-color: #1746d0;
+}
+
+.reset-button {
+  border-color: #d4553f;
+  color: #a72e1d;
+}
+
+.reset-button:hover {
+  background: #fff0ed;
+  border-color: #d4553f;
+  color: #a72e1d;
+}
+
+.topbar-separator {
+  width: 12px;
+}
+
+.topbar-spacer {
+  flex: 1;
+}
+
+.control-section {
+  border: 1px solid #d9deea;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.section-title {
+  width: 100%;
+  border: 0;
+  background: #f5f7fb;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: #172033;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.section-content {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+label > select,
+label > input,
+label > textarea {
+  width: 100%;
+}
+
+select,
+input,
+textarea {
+  font: inherit;
+  font-size: 12px;
+  padding: 7px 8px;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  background: white;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 74px;
+}
+
+input[type="range"] {
+  padding: 0;
+}
+
+.hint {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #526078;
+  margin: 0;
+}
+
+.canvas-wrap {
+  padding: 6px 6px 0 6px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.diagram {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+  display: block;
+  background: white;
+  border: 1px solid #d9deea;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(25, 35, 60, 0.08);
+  --button-stroke-width: 3;
+  --reference-stroke-width: 6;
+  --chord-fill-strength: 1;
+  --sequence-color: #d4553f;
+  --sequence-thickness: 3.2;
+  --sequence-number-color: #d4553f;
+  --sequence-number-size: 10px;
+}
+
+.diagram.placing-note {
+  cursor: crosshair;
+}
+
+.title {
+  font-weight: 850;
+}
+
+.button-group {
+  cursor: pointer;
+}
+
+.button {
+  fill: #ffffff;
+  stroke: #1746d0;
+  stroke-width: var(--button-stroke-width);
+}
+
+.button.chord {
+  fill: #e6eef8;
+  fill-opacity: var(--chord-fill-strength);
+  stroke: #d7e2f0;
+}
+
+.button.selected {
+  fill: #ffd1c7;
+  stroke: #1746d0;
+}
+
+.button.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+  stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.button.chord.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+}
+
+.finder-ring {
+  fill: none;
+  stroke: #2f8f46;
+  stroke-width: 3.2;
+  pointer-events: none;
+}
+
+.button.selected.finder-match {
+  fill: #ffd9a8;
+}
+
+.button.in-sequence {
+  stroke-width: calc(var(--button-stroke-width) + 1);
+}
+
+.button.reference {
+  stroke-width: var(--reference-stroke-width);
+}
+
+.treble-button {
+  fill: #ffffff;
+  stroke: #1746d0;
+}
+
+.treble-accidental {
+  fill: #5f6672;
+  stroke: #5f6672;
+}
+
+.accidental-style-dark .treble-accidental {
+  fill: #1b1f2a;
+  stroke: #1b1f2a;
+}
+
+.accidental-style-grey .treble-accidental {
+  fill: #707784;
+  stroke: #707784;
+}
+
+.accidental-style-outline .treble-accidental {
+  fill: #ffffff;
+  stroke: #1b1f2a;
+}
+
+.accidental-style-theme .treble-accidental {
+  fill: #1746d0;
+  stroke: #1746d0;
+}
+
+.treble-accidental.selected {
+  fill: #7f2d24;
+  stroke: #1746d0;
+}
+
+.accidental-style-outline .treble-accidental.selected {
+  fill: #ffd1c7;
+}
+
+.main-label {
+  font-weight: 800;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.accidental-symbol {
+  font-size: 86%;
+}
+
+.treble-label {
+  fill: #111111;
+}
+
+.treble-accidental-label {
+  fill: #ffffff;
+}
+
+.accidental-style-outline .treble-accidental-label {
+  fill: #111111;
+}
+
+.finger-label {
+  font-weight: 900;
+  pointer-events: none;
+  dominant-baseline: middle;
+}
+
+.sequence-arrow {
+  stroke: var(--sequence-color);
+  stroke-width: var(--sequence-thickness);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.sequence-arrowhead {
+  fill: var(--sequence-color);
+}
+
+.sequence-number {
+  fill: var(--sequence-number-color);
+  font-size: var(--sequence-number-size);
+  font-weight: 900;
+  pointer-events: none;
+}
+
+.finder-number {
+  fill: #1f7a38;
+  font-size: var(--sequence-number-size);
+  font-weight: 900;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.free-text-note {
+  fill: #172033;
+  font-size: 15px;
+  font-weight: 800;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.active-tool {
+  border-color: #d4553f;
+  color: #a72e1d;
+  background: #fff0ed;
+}
+
+.bellows-strip {
+  fill: #f0f2f7;
+  stroke: #d7deec;
+}
+
+.bellows-label,
+.bellows-end-label {
+  fill: #8a94aa;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bellows-end-label {
+  fill: #172033;
+}
+
+.stradella-row-label {
+  fill: #0034c7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.small-button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+}
+
+.small-button:hover:not(:disabled) {
+  background: #f5f7fb;
+}
+
+.small-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selected-item {
+  border: 1px solid #d9deea;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.selected-meta {
+  color: #6b7488;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.font-system {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.font-serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.font-mono {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.font-rounded {
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+}
+
+/* Color themes */
+
+.diagram-theme-default .button {
+  stroke: #1746d0;
+}
+
+.diagram-theme-default .button.chord {
+  fill: #e6eef8;
+  stroke: #d7e2f0;
+}
+
+.diagram-theme-default .button.selected {
+  fill: #ffd1c7;
+  stroke: #1746d0;
+}
+
+.diagram-theme-classic .button {
+  stroke: #222222;
+}
+
+.diagram-theme-classic .button.chord {
+  fill: #eeeeee;
+  stroke: #c9c9c9;
+}
+
+.diagram-theme-classic .button.selected {
+  fill: #f4c7c3;
+  stroke: #222222;
+}
+
+.diagram-theme-classic .accidental-style-theme .treble-accidental,
+.diagram-theme-classic.accidental-style-theme .treble-accidental {
+  fill: #222222;
+  stroke: #222222;
+}
+
+.diagram-theme-classic .stradella-row-label {
+  fill: #222222;
+}
+
+.diagram-theme-pastel .button {
+  stroke: #2f6f73;
+}
+
+.diagram-theme-pastel .button.chord {
+  fill: #e5f2ef;
+  stroke: #c7dfda;
+}
+
+.diagram-theme-pastel .button.selected {
+  fill: #ffd6a5;
+  stroke: #2f6f73;
+}
+
+.diagram-theme-pastel.accidental-style-theme .treble-accidental {
+  fill: #355070;
+  stroke: #355070;
+}
+
+.diagram-theme-pastel .stradella-row-label {
+  fill: #2f6f73;
+}
+
+.diagram-theme-warm {
+  background: #fffaf0;
+}
+
+.diagram-theme-warm .button {
+  stroke: #9b4d1f;
+}
+
+.diagram-theme-warm .button.chord {
+  fill: #f8e8c8;
+  stroke: #eed2a1;
+}
+
+.diagram-theme-warm .button.selected {
+  fill: #ffd7b8;
+  stroke: #9b4d1f;
+}
+
+.diagram-theme-warm.accidental-style-theme .treble-accidental {
+  fill: #9b4d1f;
+  stroke: #9b4d1f;
+}
+
+.diagram-theme-warm .stradella-row-label {
+  fill: #9b4d1f;
+}
+
+.diagram-theme-contrast {
+  background: #ffffff;
+}
+
+.diagram-theme-contrast .button {
+  stroke: #000000;
+}
+
+.diagram-theme-contrast .button.chord {
+  fill: #ffff88;
+  stroke: #000000;
+}
+
+.diagram-theme-contrast .button.selected {
+  fill: #ff6b6b;
+  stroke: #000000;
+}
+
+.diagram-theme-contrast.accidental-style-theme .treble-accidental,
+.diagram-theme-contrast .treble-accidental {
+  fill: #000000;
+  stroke: #000000;
+}
+
+.diagram-theme-contrast .stradella-row-label {
+  fill: #000000;
+}
+
+.diagram-theme-print .button {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+.diagram-theme-print .button.chord {
+  fill: #eeeeee;
+  stroke: #bdbdbd;
+}
+
+.diagram-theme-print .button.selected {
+  fill: #cccccc;
+  stroke: #000000;
+}
+
+.diagram-theme-print .button.reference {
+  stroke-width: var(--reference-stroke-width);
+}
+
+.diagram-theme-print .treble-accidental {
+  fill: #000000;
+  stroke: #000000;
+}
+
+.diagram-theme-print.accidental-style-grey .treble-accidental {
+  fill: #707070;
+  stroke: #707070;
+}
+
+.diagram-theme-print.accidental-style-outline .treble-accidental {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+.diagram-theme-print .stradella-row-label {
+  fill: #000000;
+}
+
+@media (min-width: 861px) and (orientation: landscape) {
+  .left-panel {
+    width: 100%;
+  }
+
+  .topbar {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .canvas-wrap {
+    padding: 4px 4px 0 4px;
+  }
+}
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr !important;
+    overflow: auto;
+  }
+
+  .left-panel {
+    border: 0;
+    border-bottom: 1px solid #d9deea;
+    max-height: none;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 18px;
+  }
+
+  .canvas-wrap {
+    min-height: 0;
+  }
+}
+
+@media (min-width: 861px) {
+  .canvas-wrap {
+    height: calc(100dvh - 49px);
+  }
+}
+
+.selected-remove-button {
+  border: 0;
+  background: transparent;
+  color: #a72e1d;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-left: auto;
+}
+
+.selected-remove-button:hover {
+  color: #d4553f;
+}
+
+/* Finder highlights are appended after themes so they remain visible in every theme. */
+.button.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+  stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.button.chord.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+}
+
+.finder-ring {
+  fill: none;
+  stroke: #2f8f46;
+  stroke-width: 3.2;
+  pointer-events: none;
+}
+
+.button.selected.finder-match {
+  fill: #ffd9a8;
+}
+
+/* Finder arrows connect the single-octave scale/chord path selected by the Finder tool. */
+.finder-arrow {
+  stroke: #2f8f46;
+  stroke-width: 2.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  pointer-events: none;
+}
+
+.finder-arrowhead {
+  fill: #2f8f46;
+}
+
+.tool-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tool-fieldset:disabled {
+  opacity: 0.58;
+}
+
+/* Piano treble keyboard */
+.piano-key {
+  stroke: #1746d0;
+  stroke-width: var(--button-stroke-width);
+}
+
+.piano-white-key {
+  fill: #ffffff;
+}
+
+.piano-black-key {
+  fill: #242936;
+  stroke: #242936;
+}
+
+.piano-key.selected {
+  fill: #ffd1c7;
+  stroke: #1746d0;
+}
+
+.piano-black-key.selected {
+  fill: #7f2d24;
+  stroke: #1746d0;
+}
+
+.piano-key.finder-match {
+  fill: #fff0a8;
+  stroke: #2f8f46;
+  stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.piano-black-key.finder-match {
+  fill: #6e6332;
+}
+
+.piano-key.in-sequence {
+  stroke-width: calc(var(--button-stroke-width) + 1);
+}
+
+.topbar-select {
+  width: auto;
+  min-width: 82px;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-weight: 800;
+}
+
+/* Chord finder buttons need full-opacity highlights; chord rows normally use adjustable fill opacity. */
+.button.chord.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+}
+
+.finder-ring {
+  fill: none;
+  stroke: #2f8f46;
+  stroke-width: 3.2;
+  pointer-events: none;
+}
+
+/* Primary Stradella chord-button in a finder recipe, usually the button that carries the named root/function. */
+.button.finder-primary {
+  fill: #ffd1c7;
+  stroke: #a72e1d;
+}
+
+.finder-primary-ring {
+  stroke: #a72e1d;
+  stroke-width: 4.2;
+}
+
+.tool-details {
+  border: 1px solid #d7deec;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+}
+
+.tool-details summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #1746d0;
+}
+
+/* Root-bass marker used by the Stradella Chord Finder when chord-button recipes also show the named root bass note. */
+.button.finder-root-bass {
+  fill: #d8e8ff;
+  fill-opacity: 1;
+  stroke: #2454bf;
+}
+
+.finder-root-bass-ring {
+  stroke: #2454bf;
+  stroke-width: 4.2;
+}
+
+/* Interface polish added in v0.5.6, tightened in v0.5.11 */
+.density-compact .left-panel {
+  padding: 7px;
+}
+
+.density-compact .control-section {
+  margin-bottom: 7px;
+  border-radius: 11px;
+}
+
+.density-compact .section-title {
+  padding: 6px 7px;
+}
+
+.density-compact .section-content,
+.density-compact .tool-fieldset {
+  gap: 7px;
+}
+
+.density-compact label {
+  gap: 3px;
+}
+
+.density-compact label,
+.density-compact .hint,
+.density-compact select,
+.density-compact input,
+.density-compact textarea,
+.density-compact .small-button {
+  font-size: 11px;
+}
+
+.density-compact select,
+.density-compact input,
+.density-compact textarea {
+  padding: 5px 6px;
+  border-radius: 8px;
+}
+
+.density-comfortable .left-panel {
+  padding: 14px;
+}
+
+.density-comfortable .control-section {
+  margin-bottom: 13px;
+  border-radius: 15px;
+}
+
+.density-comfortable .section-title {
+  padding: 10px 11px;
+}
+
+.density-comfortable .section-content,
+.density-comfortable .tool-fieldset {
+  gap: 13px;
+}
+
+.density-comfortable label {
+  gap: 6px;
+}
+
+.density-comfortable label,
+.density-comfortable .hint,
+.density-comfortable select,
+.density-comfortable input,
+.density-comfortable textarea,
+.density-comfortable .small-button {
+  font-size: 12.5px;
+}
+
+.density-comfortable select,
+.density-comfortable input,
+.density-comfortable textarea {
+  padding: 8px 9px;
+  border-radius: 10px;
+}
+
+.label-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+
+.label-line .help-tip {
+  margin-left: 0;
+  flex: 0 0 auto;
+}
+
+.help-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: #eef3ff;
+  border: 1px solid #c9d1e3;
+  color: #1746d0;
+  font-size: 11px;
+  font-weight: 900;
+  cursor: help;
+  vertical-align: -2px;
+}
+
+.help-tip:focus {
+  outline: 2px solid #1746d0;
+  outline-offset: 2px;
+}
+
+.help-tip:hover::after,
+.help-tip:focus::after {
+  content: attr(aria-label);
+  position: absolute;
+  z-index: 20;
+  width: max-content;
+  max-width: 220px;
+  transform: translate(8px, -2px);
+  padding: 6px 8px;
+  border: 1px solid #c9d1e3;
+  border-radius: 8px;
+  background: #172033;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+  box-shadow: 0 8px 20px rgba(25, 35, 60, 0.18);
+}
+
+.result-card {
+  border: 1px solid #d7deec;
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: #f9fbff;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.result-card-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: #172033;
+}
+
+.result-card p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #526078;
+}
+
+@media (min-width: 861px) and (orientation: landscape) {
+  .density-compact .left-panel,
+  .density-comfortable .left-panel {
+    width: 100%;
+  }
+}
+
+.status-bar {
+  border-bottom: 1px solid #d9deea;
+  background: #f8faff;
+  color: #526078;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+  padding: 6px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.checkbox-label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkbox-label input[type="checkbox"] {
+  grid-column: auto;
+  width: auto;
+  margin: 0;
+}
+
+.file-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.file-button input[type="file"] {
+  display: none;
+}
+
+
+@media (max-width: 640px) {
+  .label-line {
+    white-space: normal;
+    flex-wrap: nowrap;
+  }
+}
+
+.abc-player-panel textarea,
+.abc-textarea {
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  padding: 8px;
+  font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #172033;
+  background: #ffffff;
+}
+
+.button.abc-match {
+  fill: #fff8d7;
+  stroke: #c47f00;
+}
+
+.abc-ring {
+  fill: none;
+  stroke: #f0a000;
+  stroke-width: 5;
+  opacity: 0.95;
+}

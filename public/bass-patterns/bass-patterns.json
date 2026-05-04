@@ -1,0 +1,252 @@
+[
+  {
+    "id": "polka",
+    "name": "Polka / oom-pah",
+    "beatsPerBar": 2,
+    "description": "Bass on beat 1, chord on beat 2.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.45,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.45,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "oom-pah-pah",
+    "name": "Oom-pah-pah waltz",
+    "beatsPerBar": 3,
+    "description": "Bass on beat 1, chord on beats 2 and 3.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.45,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.45,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.45,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "alternate-bass-polka",
+    "name": "Alternate bass polka",
+    "beatsPerBar": 4,
+    "description": "Root bass and chord, then fifth bass and chord.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.45,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.45,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.45,
+        "action": "alternate-bass"
+      },
+      {
+        "beat": 3,
+        "durationBeats": 0.45,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "waltz-alternate-bass",
+    "name": "Alternate-bass waltz",
+    "beatsPerBar": 3,
+    "description": "Root bass, chord, fifth bass.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.45,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.45,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.45,
+        "action": "alternate-bass"
+      }
+    ]
+  },
+  {
+    "id": "march-two-four",
+    "name": "March 2/4",
+    "beatsPerBar": 2,
+    "description": "Strong bass and chord with a short pickup chord.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.5,
+        "action": "root-bass"
+      },
+      {
+        "beat": 0.75,
+        "durationBeats": 0.25,
+        "action": "chord"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.5,
+        "action": "alternate-bass"
+      },
+      {
+        "beat": 1.75,
+        "durationBeats": 0.25,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "foxtrot-four-four",
+    "name": "Foxtrot 4/4",
+    "beatsPerBar": 4,
+    "description": "Bass-chord pulse with a relaxed four-beat feel.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.55,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.4,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.55,
+        "action": "alternate-bass"
+      },
+      {
+        "beat": 3,
+        "durationBeats": 0.4,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "tango-habanera",
+    "name": "Tango / habanera",
+    "beatsPerBar": 4,
+    "description": "Long bass, quick chord, short bass, chord.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.7,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1.5,
+        "durationBeats": 0.35,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.35,
+        "action": "alternate-bass"
+      },
+      {
+        "beat": 3,
+        "durationBeats": 0.5,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "bolero",
+    "name": "Bolero",
+    "beatsPerBar": 4,
+    "description": "Slow bass with repeated off-beat chords.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.8,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.35,
+        "action": "chord"
+      },
+      {
+        "beat": 1.5,
+        "durationBeats": 0.35,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.55,
+        "action": "alternate-bass"
+      },
+      {
+        "beat": 3,
+        "durationBeats": 0.35,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "mazurka",
+    "name": "Mazurka",
+    "beatsPerBar": 3,
+    "description": "Waltz-like pattern with emphasis on beat 2.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.45,
+        "action": "root-bass"
+      },
+      {
+        "beat": 1,
+        "durationBeats": 0.55,
+        "action": "chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.35,
+        "action": "chord"
+      }
+    ]
+  },
+  {
+    "id": "bass-chord-together",
+    "name": "Bass + chord together",
+    "beatsPerBar": 4,
+    "description": "Bass and chord together on strong beats.",
+    "steps": [
+      {
+        "beat": 0,
+        "durationBeats": 0.55,
+        "action": "root-and-chord"
+      },
+      {
+        "beat": 2,
+        "durationBeats": 0.55,
+        "action": "root-and-chord"
+      }
+    ]
+  }
+]

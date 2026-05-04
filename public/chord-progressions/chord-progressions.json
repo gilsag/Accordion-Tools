@@ -1,0 +1,363 @@
+[
+  {
+    "id": "i-v-i",
+    "name": "I–V7–I",
+    "description": "Shortest major-key cadence.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      },
+      {
+        "symbol": "I",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "i-iv-v-i",
+    "name": "I–IV–V7–I",
+    "description": "Basic major-key cadence.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "IV",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      },
+      {
+        "symbol": "I",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "i-v-vi-iv",
+    "name": "I–V–vi–IV",
+    "description": "Very common pop progression.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "V",
+        "bars": 1
+      },
+      {
+        "symbol": "vi",
+        "bars": 1
+      },
+      {
+        "symbol": "IV",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "i-vi-iv-v",
+    "name": "I–vi–IV–V7",
+    "description": "Classic doo-wop style progression.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "vi",
+        "bars": 1
+      },
+      {
+        "symbol": "IV",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "circle-fifths",
+    "name": "I–vi–ii–V7",
+    "description": "Common circle-style progression.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "vi",
+        "bars": 1
+      },
+      {
+        "symbol": "ii",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "ii-v-i",
+    "name": "ii–V7–I",
+    "description": "Basic jazz cadence.",
+    "steps": [
+      {
+        "symbol": "ii",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      },
+      {
+        "symbol": "I",
+        "bars": 2
+      }
+    ]
+  },
+  {
+    "id": "pachelbel",
+    "name": "I–V–vi–iii–IV–I–IV–V",
+    "description": "Descending classical/pop progression.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "V",
+        "bars": 1
+      },
+      {
+        "symbol": "vi",
+        "bars": 1
+      },
+      {
+        "symbol": "iii",
+        "bars": 1
+      },
+      {
+        "symbol": "IV",
+        "bars": 1
+      },
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "IV",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "major-turnaround",
+    "name": "I–VI7–ii–V7",
+    "description": "Major turnaround with a secondary dominant.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 1
+      },
+      {
+        "symbol": "VI7",
+        "bars": 1
+      },
+      {
+        "symbol": "ii",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "minor-cadence",
+    "name": "Minor: i–iv–V7–i",
+    "description": "Simple minor-key cadence using a dominant V7.",
+    "steps": [
+      {
+        "symbol": "i",
+        "bars": 1
+      },
+      {
+        "symbol": "iv",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      },
+      {
+        "symbol": "i",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "natural-minor-loop",
+    "name": "Minor: i–♭VII–♭VI–♭VII",
+    "description": "Natural-minor modal loop.",
+    "steps": [
+      {
+        "symbol": "i",
+        "bars": 1
+      },
+      {
+        "symbol": "bVII",
+        "bars": 1
+      },
+      {
+        "symbol": "bVI",
+        "bars": 1
+      },
+      {
+        "symbol": "bVII",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "andalusian",
+    "name": "Andalusian: i–♭VII–♭VI–V7",
+    "description": "Common flamenco/spanish-flavored descent.",
+    "steps": [
+      {
+        "symbol": "i",
+        "bars": 1
+      },
+      {
+        "symbol": "bVII",
+        "bars": 1
+      },
+      {
+        "symbol": "bVI",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "minor-ii-v-i",
+    "name": "Minor: iiø–V7–i",
+    "description": "Minor-key ii–V–i cadence.",
+    "steps": [
+      {
+        "symbol": "iiø7",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      },
+      {
+        "symbol": "i",
+        "bars": 2
+      }
+    ]
+  },
+  {
+    "id": "twelve-bar-blues",
+    "name": "12-bar blues",
+    "description": "Basic I7–IV7–V7 blues form.",
+    "steps": [
+      {
+        "symbol": "I7",
+        "bars": 4
+      },
+      {
+        "symbol": "IV7",
+        "bars": 2
+      },
+      {
+        "symbol": "I7",
+        "bars": 2
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      },
+      {
+        "symbol": "IV7",
+        "bars": 1
+      },
+      {
+        "symbol": "I7",
+        "bars": 2
+      }
+    ]
+  },
+  {
+    "id": "jazz-blues-turnaround",
+    "name": "Jazz blues ending",
+    "description": "Last four bars of a common blues turnaround.",
+    "steps": [
+      {
+        "symbol": "I7",
+        "bars": 1
+      },
+      {
+        "symbol": "VI7",
+        "bars": 1
+      },
+      {
+        "symbol": "ii",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 1
+      }
+    ]
+  },
+  {
+    "id": "waltz-cadence",
+    "name": "Waltz cadence: I–I7–IV–V7",
+    "description": "Simple traditional dance cadence.",
+    "steps": [
+      {
+        "symbol": "I",
+        "bars": 2
+      },
+      {
+        "symbol": "I7",
+        "bars": 1
+      },
+      {
+        "symbol": "IV",
+        "bars": 1
+      },
+      {
+        "symbol": "V7",
+        "bars": 2
+      },
+      {
+        "symbol": "I",
+        "bars": 2
+      }
+    ]
+  }
+]
