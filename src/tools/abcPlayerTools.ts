@@ -255,15 +255,6 @@ function parseOneNote(
 }
 
 function chordPatternFromSuffix(rawSuffix: string): FinderChordPattern | null {
-  const suffix = rawSuffix
-    .trim()
-    .replace(/♭/g, "b")
-    .replace(/♯/g, "#")
-    .replace(/Δ/g, "maj")
-    .replace(/ø/g, "m7b5")
-    .replace(/°/g, "dim")
-    .replace(/\s+/g, "")
-    .toLowerCase();
 
   const raw = rawSuffix.trim();
   if (!raw || raw === "M" || /^maj(or)?$/i.test(raw)) return "major-triad";

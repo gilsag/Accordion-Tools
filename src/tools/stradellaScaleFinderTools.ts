@@ -7,7 +7,7 @@
 */
 
 import type { DiagramButton, FinderScalePattern } from "../types";
-import { INDEX_TO_PITCH, PITCH_INDEX, transpose } from "../music";
+import { PITCH_INDEX, transpose } from "../music";
 import { intervalsForScaleFinder } from "./scaleFinderTools";
 
 export type StradellaScaleFinderResult = {
