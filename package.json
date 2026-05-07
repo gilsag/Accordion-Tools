@@ -1,7 +1,7 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.6.6",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,6 +13,7 @@
     "test:all": "npm run test:chords && npm run test:notation"
   },
   "dependencies": {
+    "abcjs": "^6.6.3",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

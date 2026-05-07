@@ -32,5 +32,6 @@
   "scaleFinderDisplayMode": "numbers-and-straight-arrows",
   "abcStradellaMode": "bass-notes-only",
   "abcTrebleChordSymbolsMode": "ignore",
-  "bassPatternChordVoicing": "simple"
+  "bassPatternChordVoicing": "simple",
+  "bassPatternBarsPerChord": 1
 }
