@@ -1161,26 +1161,56 @@ function abcChordVoiceTokenForEvent(event: BassPatternPlaybackEvent) {
   return `${annotation}${accent}${noteBody}${abcDuration(event.durationBeats)}${tie}`;
 }
 
+type AbcBarTokenPart = {
+  token: string;
+  beamable: boolean;
+};
+
+function isSilentAbcToken(token: string) {
+  return token.startsWith("x") || token.startsWith("z");
+}
+
 function abcVoiceBarTokens(
   barEvents: BassPatternPlaybackEvent[],
   meterUnitsPerBar: number,
+  meterDenominator: number,
   tokenForEvent: (event: BassPatternPlaybackEvent) => string,
 ) {
-  const tokens: string[] = [];
+  const parts: AbcBarTokenPart[] = [];
   let cursor = 0;
+  const isBeamableDuration = (durationUnits: number) =>
+    durationUnits / meterDenominator <= 1 / 8 + 0.0001;
 
   [...barEvents]
     .sort((a, b) => a.unitInBar - b.unitInBar || a.index - b.index)
     .forEach((event) => {
       const gap = event.unitInBar - cursor;
-      if (gap > 0.0001) tokens.push(`x${abcDuration(gap)}`);
-      tokens.push(tokenForEvent(event));
+      if (gap > 0.0001) {
+        parts.push({ token: `x${abcDuration(gap)}`, beamable: false });
+      }
+
+      const token = tokenForEvent(event);
+      const beamable =
+        !event.play.includes("rest") &&
+        !isSilentAbcToken(token) &&
+        isBeamableDuration(event.durationBeats);
+      parts.push({ token, beamable });
       cursor = Math.max(cursor, event.unitInBar + event.durationBeats);
     });
 
   const trailing = meterUnitsPerBar - cursor;
-  if (trailing > 0.0001) tokens.push(`x${abcDuration(trailing)}`);
-  return tokens.join(" ") || "x";
+  if (trailing > 0.0001) {
+    parts.push({ token: `x${abcDuration(trailing)}`, beamable: false });
+  }
+
+  if (parts.length === 0) return "x";
+
+  return parts.reduce((line, part, index) => {
+    if (index === 0) return part.token;
+    const previous = parts[index - 1];
+    const separator = previous.beamable && part.beamable ? "" : " ";
+    return `${line}${separator}${part.token}`;
+  }, "");
 }
 
 export type StradellaNotationAbcOptions = {
@@ -1232,11 +1262,11 @@ export function bassPatternEventsToStradellaNotationAbc(
     index > 0 && index % barsPerLine === 0 ? "\n" : "";
   const bassBars = barNumbers.map(
     (barNumber, index) =>
-      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, abcBassVoiceTokenForEvent)} ${barSuffix(index)}`,
+      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, abcBassVoiceTokenForEvent)} ${barSuffix(index)}`,
   );
   const chordBars = barNumbers.map(
     (barNumber, index) =>
-      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, abcChordVoiceTokenForEvent)} ${barSuffix(index)}`,
+      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, abcChordVoiceTokenForEvent)} ${barSuffix(index)}`,
   );
   const summaryLine = includeSummary
     ? `W: ${progression.name} · ${pattern.name} · ${barNumbers.length} bar${barNumbers.length === 1 ? "" : "s"} · Root ${keyRootPitchClass} · ${barsPerChord} bar${barsPerChord === 1 ? "" : "s"} per chord · ${pattern.meter}`

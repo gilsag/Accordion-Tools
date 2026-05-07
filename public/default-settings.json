@@ -33,5 +33,19 @@
   "abcStradellaMode": "bass-notes-only",
   "abcTrebleChordSymbolsMode": "ignore",
   "bassPatternChordVoicing": "simple",
-  "bassPatternBarsPerChord": 1
+  "bassPatternBarsPerChord": 2,
+  "bassPatternTempoBpm": 80,
+  "bassPatternLoopMode": "fixed",
+  "bassPatternLoopCount": 2,
+  "abcTempoBpm": 80,
+  "soundSequenceTempoBpm": 80,
+  "musicNotationIncludeTitle": true,
+  "musicNotationIncludeDescription": false,
+  "musicNotationIncludeSummary": false,
+  "musicNotationUseBarsPerLine": true,
+  "musicNotationBarsPerLine": 4,
+  "musicNotationChordFontSize": 11,
+  "musicNotationScale": 54,
+  "musicNotationStaffWidth": 520,
+  "musicNotationStaffSeparator": 14
 }

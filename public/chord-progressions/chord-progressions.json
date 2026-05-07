@@ -1,176 +1,31 @@
 [
-  {
-    "id": "i-iv-v-i",
-    "name": "I–IV–V–I progression",
-    "progression": "I IV V I",
-    "description": "Basic major-key cadence."
-  },
-  {
-    "id": "i-iv-v-v",
-    "name": "I–IV–V–V progression",
-    "progression": "I IV V V",
-    "description": "Simple four-bar starter progression."
-  },
-  {
-    "id": "i-i-iv-v",
-    "name": "I–I–IV–V progression",
-    "progression": "I I IV V",
-    "description": "Simple four-bar starter progression."
-  },
-  {
-    "id": "i-iv-i-v",
-    "name": "I–IV–I–V progression",
-    "progression": "I IV I V",
-    "description": "Simple four-bar starter progression."
-  },
-  {
-    "id": "i-iv-v-iv",
-    "name": "I–IV–V–IV progression",
-    "progression": "I IV V IV",
-    "description": "Simple four-bar starter progression."
-  },
-  {
-    "id": "fifties",
-    "name": "50s progression",
-    "progression": "I vi IV V",
-    "description": "Classic doo-wop loop."
-  },
-  {
-    "id": "iv-v-i-vi",
-    "name": "IV–V–I–vi progression",
-    "progression": "IV V I vi",
-    "description": "Common major-key loop starting on IV."
-  },
-  {
-    "id": "pop-rock",
-    "name": "Pop-rock progression",
-    "progression": "I V vi IV",
-    "description": "Very common pop and rock progression."
-  },
-  {
-    "id": "i-iv-bvii-iv",
-    "name": "I–IV–♭VII–IV progression",
-    "progression": "I IV bVII IV",
-    "description": "Modal major progression with a lowered seventh."
-  },
-  {
-    "id": "ii-v-i",
-    "name": "ii–V–I progression",
-    "progression": "ii V I",
-    "description": "Basic jazz cadence."
-  },
-  {
-    "id": "andalusian-cadence",
-    "name": "Andalusian cadence",
-    "progression": "iv III bII I",
-    "description": "Descending minor/flamenco-colored cadence."
-  },
-  {
-    "id": "backdoor",
-    "name": "Backdoor progression",
-    "progression": "ii bVII I",
-    "description": "Backdoor cadence into I."
-  },
-  {
-    "id": "bird-blues",
-    "name": "Bird Blues progression",
-    "progression": "I viiø III7 vi V7/IV IV iv iii VI7 ii V7 I",
-    "description": "Parker-style blues reharmonization."
-  },
-  {
-    "id": "circle",
-    "name": "Circle progression",
-    "progression": "vi ii V I",
-    "description": "Circle-of-fifths motion back to I."
-  },
-  {
-    "id": "coltrane-changes",
-    "name": "Coltrane changes",
-    "progression": "I V/bVI bVI V/III III V I",
-    "description": "Chromatic-third dominant-cycle progression."
-  },
-  {
-    "id": "eight-bar-blues",
-    "name": "Eight-bar blues",
-    "progression": "I V IV IV I V I V",
-    "description": "Eight-bar blues form."
-  },
-  {
-    "id": "folia",
-    "name": "Folia",
-    "progression": "i V i bVII bIII bVII i V i",
-    "description": "Historical minor-mode progression."
-  },
-  {
-    "id": "montgomery-ward-bridge",
-    "name": "Montgomery-Ward bridge",
-    "progression": "I I7 IV iv I V I",
-    "description": "Common bridge/turnaround family."
-  },
-  {
-    "id": "pachelbel",
-    "name": "Pachelbel's Canon",
-    "progression": "I V vi iii IV I IV V",
-    "description": "Descending classical/pop progression."
-  },
-  {
-    "id": "passamezzo-antico",
-    "name": "Passamezzo antico",
-    "progression": "i VII i V III VII i V i",
-    "description": "Renaissance-era minor progression."
-  },
-  {
-    "id": "passamezzo-moderno",
-    "name": "Passamezzo moderno",
-    "progression": "I IV I V I IV I V I",
-    "description": "Renaissance-era major progression."
-  },
-  {
-    "id": "ragtime",
-    "name": "Ragtime progression",
-    "progression": "III7 VI7 II7 V7",
-    "description": "Secondary-dominant ragtime chain."
-  },
-  {
-    "id": "rhythm-changes",
-    "name": "Rhythm changes",
-    "progression": "I vi ii V III7 VI7 II7 V7",
-    "description": "A-section turnaround followed by dominant bridge chain."
-  },
-  {
-    "id": "romanesca",
-    "name": "Romanesca",
-    "progression": "III VII i V III VII i V i",
-    "description": "Historical progression related to the Passamezzo antico."
-  },
-  {
-    "id": "royal-road",
-    "name": "Royal Road progression",
-    "progression": "IVmaj7 V7 iii7 vi",
-    "description": "Common Japanese pop progression."
-  },
-  {
-    "id": "sears-roebuck-bridge",
-    "name": "Sears Roebuck bridge",
-    "progression": "I I7 IV #IVdim I V I",
-    "description": "Bridge/turnaround with raised-IV diminished passing chord."
-  },
-  {
-    "id": "sixteen-bar-blues",
-    "name": "Sixteen-bar blues",
-    "progression": "I I I I IV IV I I V IV I I V IV I V",
-    "description": "Sixteen-bar blues form."
-  },
-  {
-    "id": "stomp",
-    "name": "Stomp progression",
-    "progression": "I I7 IV iv I VI7 ii V7 I",
-    "description": "Classic jazz/stomp turnaround progression."
-  },
-  {
-    "id": "twelve-bar-blues",
-    "name": "Twelve-bar blues",
-    "progression": "I I I I IV IV I I V IV I V",
-    "description": "Standard twelve-bar blues form."
-  }
+  {"id": "i-iv-v-i", "name": "I–IV–V–I progression", "progression": "I IV V I", "description": "Basic major-key cadence."},
+  {"id": "i-iv-v-v", "name": "I–IV–V–V progression", "progression": "I IV V V", "description": "Simple four-bar starter progression."},
+  {"id": "i-i-iv-v", "name": "I–I–IV–V progression", "progression": "I I IV V", "description": "Simple four-bar starter progression."},
+  {"id": "i-iv-i-v", "name": "I–IV–I–V progression", "progression": "I IV I V", "description": "Simple four-bar starter progression."},
+  {"id": "i-iv-v-iv", "name": "I–IV–V–IV progression", "progression": "I IV V IV", "description": "Simple four-bar starter progression."},
+  {"id": "fifties", "name": "50s progression", "progression": "I vi IV V", "description": "Classic doo-wop loop."},
+  {"id": "iv-v-i-vi", "name": "IV–V–I–vi progression", "progression": "IV V I vi", "description": "Common major-key loop starting on IV."},
+  {"id": "pop-rock", "name": "Pop-rock progression", "progression": "I V vi IV", "description": "Very common pop and rock progression."},
+  {"id": "i-iv-bvii-iv", "name": "I–IV–♭VII–IV progression", "progression": "I IV bVII IV", "description": "Modal major progression with a lowered seventh."},
+  {"id": "ii-v-i", "name": "ii–V–I progression", "progression": "ii V I", "description": "Basic jazz cadence."},
+  {"id": "andalusian-cadence", "name": "Andalusian cadence", "progression": "iv III bII I", "description": "Descending minor/flamenco-colored cadence."},
+  {"id": "backdoor", "name": "Backdoor progression", "progression": "ii bVII I", "description": "Backdoor cadence into I."},
+  {"id": "bird-blues", "name": "Bird Blues progression", "progression": "I viiø III7 vi V7/IV IV iv iii VI7 ii V7 I", "description": "Parker-style blues reharmonization."},
+  {"id": "circle", "name": "Circle progression", "progression": "vi ii V I", "description": "Circle-of-fifths motion back to I."},
+  {"id": "coltrane-changes", "name": "Coltrane changes", "progression": "I V/bVI bVI V/III III V I", "description": "Chromatic-third dominant-cycle progression."},
+  {"id": "eight-bar-blues", "name": "Eight-bar blues", "progression": "I V IV IV I V I V", "description": "Eight-bar blues form."},
+  {"id": "folia", "name": "Folia", "progression": "i V i bVII bIII bVII i V i", "description": "Historical minor-mode progression."},
+  {"id": "montgomery-ward-bridge", "name": "Montgomery-Ward bridge", "progression": "I I7 IV iv I V I", "description": "Common bridge/turnaround family."},
+  {"id": "pachelbel", "name": "Pachelbel's Canon", "progression": "I V vi iii IV I IV V", "description": "Descending classical/pop progression."},
+  {"id": "passamezzo-antico", "name": "Passamezzo antico", "progression": "i VII i V III VII i V i", "description": "Renaissance-era minor progression."},
+  {"id": "passamezzo-moderno", "name": "Passamezzo moderno", "progression": "I IV I V I IV I V I", "description": "Renaissance-era major progression."},
+  {"id": "ragtime", "name": "Ragtime progression", "progression": "III7 VI7 II7 V7", "description": "Secondary-dominant ragtime chain."},
+  {"id": "rhythm-changes", "name": "Rhythm changes", "progression": "I vi ii V III7 VI7 II7 V7", "description": "A-section turnaround followed by dominant bridge chain."},
+  {"id": "romanesca", "name": "Romanesca", "progression": "III VII i V III VII i V i", "description": "Historical progression related to the Passamezzo antico."},
+  {"id": "royal-road", "name": "Royal Road progression", "progression": "IVmaj7 V7 iii7 vi", "description": "Common Japanese pop progression."},
+  {"id": "sears-roebuck-bridge", "name": "Sears Roebuck bridge", "progression": "I I7 IV #IVdim I V I", "description": "Bridge/turnaround with raised-IV diminished passing chord."},
+  {"id": "sixteen-bar-blues", "name": "Sixteen-bar blues", "progression": "I I I I IV IV I I V IV I I V IV I V", "description": "Sixteen-bar blues form."},
+  {"id": "stomp", "name": "Stomp progression", "progression": "I I7 IV iv I VI7 ii V7 I", "description": "Classic jazz/stomp turnaround progression."},
+  {"id": "twelve-bar-blues", "name": "Twelve-bar blues", "progression": "I I I I IV IV I I V IV I V", "description": "Standard twelve-bar blues form."}
 ]
