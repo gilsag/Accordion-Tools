@@ -57,7 +57,7 @@ These settings control the rendered staff-notation panels that appear below the 
 |---|---:|---|
 | `musicNotationIncludeTitle` | `true` | Includes the generated title in app-generated notation. |
 | `musicNotationIncludeDescription` | `false` | Includes the selected pattern description as text below generated notation when available. |
-| `musicNotationIncludeSummary` | `false` | Includes a compact summary note such as progression, pattern, root, bars per chord, and meter. |
+| `musicNotationIncludeSummary` | `false` | Includes a compact summary note such as progression, pattern, root, repeats per chord, pattern bars, and meter. |
 | `musicNotationUseBarsPerLine` | `true` | Enables automatic line wrapping for app-generated notation. |
 | `musicNotationBarsPerLine` | `4` | Number of bars per line when wrapping is enabled. |
 | `musicNotationChordFontSize` | `11` | Chord-symbol/annotation font size in rendered notation. |
@@ -115,7 +115,7 @@ The sound engine uses the browser Web Audio API. It is intended for reference an
 | `abcStradellaMode` | Default ABC mapping mode in Stradella mode. |
 | `abcTrebleChordSymbolsMode` | Default quoted chord-symbol behavior in Treble mode. |
 | `bassPatternChordVoicing` | Bass Pattern Player chord voicing: simple chord button or fuller recipe when available. |
-| `bassPatternBarsPerChord` | Number of bars each progression chord lasts in Bass Pattern Player. |
+| `bassPatternRepeatsPerChord` | Number of complete bass-pattern cycles played for each progression chord. |
 | `bassPatternTempoBpm` | Default Bass Pattern Player tempo. |
 | `bassPatternLoopMode` | Default Bass Pattern Player repeat mode. |
 | `bassPatternLoopCount` | Default fixed repeat count when repeat mode is fixed. |
@@ -126,7 +126,7 @@ The sound engine uses the browser Web Audio API. It is intended for reference an
 
 Playback repeat controls are part of the Bass Pattern Player UI. They can play once, repeat a fixed number of times, or loop until stopped.
 
-The repeat control affects playback only. The pattern definition still describes one bar, while the progression and bars-per-chord setting determine the expanded accompaniment.
+The repeat control affects playback only. The pattern definition still describes one pattern cycle, while the progression and repeats-per-chord setting determine the expanded accompaniment.
 
 ## Recommended workflow
 

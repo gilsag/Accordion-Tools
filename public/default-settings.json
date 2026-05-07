@@ -33,7 +33,6 @@
   "abcStradellaMode": "bass-notes-only",
   "abcTrebleChordSymbolsMode": "ignore",
   "bassPatternChordVoicing": "simple",
-  "bassPatternBarsPerChord": 2,
   "bassPatternTempoBpm": 80,
   "bassPatternLoopMode": "fixed",
   "bassPatternLoopCount": 2,
@@ -47,5 +46,6 @@
   "musicNotationChordFontSize": 11,
   "musicNotationScale": 54,
   "musicNotationStaffWidth": 520,
-  "musicNotationStaffSeparator": 14
+  "musicNotationStaffSeparator": 14,
+  "bassPatternRepeatsPerChord": 2
 }

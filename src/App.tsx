@@ -105,6 +105,7 @@ import {
   bassPatternEventsToStradellaNotationAbc,
   bassPatternMissingItems,
   makeBassPatternEvents,
+  patternBarCount,
   validateBassPatternLibrary,
   totalBassPatternBeats,
   type BassPatternDefinition,
@@ -128,7 +129,6 @@ import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPane
 import { StradellaChordFinderPanel } from "./components/tools/StradellaChordFinderPanel";
 import { HelpTip } from "./components/ui/HelpTip";
 
-
 /** Dropdown options for the supported Stradella bass presets. */
 const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
   { value: "8", label: "8" },
@@ -148,13 +148,32 @@ const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
 
 const ABC_EXAMPLE_OPTIONS = [
   { value: "", label: "Choose example…", file: "" },
-  { value: "c-major-scale", label: "C major scale", file: "abc/c-major-scale.abc" },
-  { value: "happy-birthday", label: "Happy Birthday", file: "abc/happy-birthday.abc" },
-  { value: "twinkle-little-star", label: "Twinkle Little Star", file: "abc/twinkle-little-star.abc" },
-  { value: "dyads-and-chords", label: "Dyads and chords", file: "abc/dyads-and-chords.abc" },
-  { value: "stradella-chord-symbols", label: "Stradella chord symbols", file: "abc/stradella-chord-symbols.abc" },
+  {
+    value: "c-major-scale",
+    label: "C major scale",
+    file: "abc/c-major-scale.abc",
+  },
+  {
+    value: "happy-birthday",
+    label: "Happy Birthday",
+    file: "abc/happy-birthday.abc",
+  },
+  {
+    value: "twinkle-little-star",
+    label: "Twinkle Little Star",
+    file: "abc/twinkle-little-star.abc",
+  },
+  {
+    value: "dyads-and-chords",
+    label: "Dyads and chords",
+    file: "abc/dyads-and-chords.abc",
+  },
+  {
+    value: "stradella-chord-symbols",
+    label: "Stradella chord symbols",
+    file: "abc/stradella-chord-symbols.abc",
+  },
 ];
-
 
 /** Dropdown options for treble instrument range presets. */
 const TREBLE_SIZE_OPTIONS: Array<{ value: TrebleSizePreset; label: string }> = [
@@ -164,10 +183,22 @@ const TREBLE_SIZE_OPTIONS: Array<{ value: TrebleSizePreset; label: string }> = [
 ];
 
 /** Dropdown options for piano treble keyboard ranges. */
-const PIANO_TREBLE_RANGE_OPTIONS: Array<{ value: PianoTrebleRange; label: string }> = [
-  { value: "two-octave", label: PIANO_TREBLE_RANGE_PRESETS["two-octave"].label },
-  { value: "three-octave", label: PIANO_TREBLE_RANGE_PRESETS["three-octave"].label },
-  { value: "four-octave", label: PIANO_TREBLE_RANGE_PRESETS["four-octave"].label },
+const PIANO_TREBLE_RANGE_OPTIONS: Array<{
+  value: PianoTrebleRange;
+  label: string;
+}> = [
+  {
+    value: "two-octave",
+    label: PIANO_TREBLE_RANGE_PRESETS["two-octave"].label,
+  },
+  {
+    value: "three-octave",
+    label: PIANO_TREBLE_RANGE_PRESETS["three-octave"].label,
+  },
+  {
+    value: "four-octave",
+    label: PIANO_TREBLE_RANGE_PRESETS["four-octave"].label,
+  },
 ];
 
 /** SVG viewBox widths chosen so each treble size has enough horizontal space. */
@@ -236,6 +267,7 @@ type DefaultSettingsFile = Partial<{
   abcTrebleChordSymbolsMode: AbcTrebleChordSymbolsMode;
   bassPatternChordVoicing: BassPatternChordVoicing;
   bassPatternBarsPerChord: number;
+  bassPatternRepeatsPerChord: number;
   bassPatternTempoBpm: number;
   bassPatternLoopMode: "once" | "fixed" | "infinite";
   bassPatternLoopCount: number;
@@ -252,11 +284,17 @@ type DefaultSettingsFile = Partial<{
   musicNotationStaffSeparator: number;
 }>;
 
-function isOneOf<T extends string>(value: unknown, allowed: readonly T[]): value is T {
+function isOneOf<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+): value is T {
   return typeof value === "string" && allowed.includes(value as T);
 }
 
-const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{ value: SequenceDisplayMode; label: string }> = [
+const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{
+  value: SequenceDisplayMode;
+  label: string;
+}> = [
   { value: "numbers", label: "Numbers only" },
   { value: "straight-arrows", label: "Straight arrows" },
   { value: "curved-arrows", label: "Curved arrows" },
@@ -264,7 +302,9 @@ const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{ value: SequenceDisplayMode; label: 
   { value: "numbers-and-curved-arrows", label: "Numbers + curved arrows" },
 ];
 
-const SEQUENCE_DISPLAY_MODE_VALUES = SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => option.value);
+const SEQUENCE_DISPLAY_MODE_VALUES = SEQUENCE_DISPLAY_MODE_OPTIONS.map(
+  (option) => option.value,
+);
 
 function finderLabelsForButton(buttons: DiagramButton[], buttonId: string) {
   return buttons
@@ -341,7 +381,8 @@ function App() {
   const [pianoBlackKeyWidthScale, setPianoBlackKeyWidthScale] = useState(1);
   const [pianoBlackKeyHeightScale, setPianoBlackKeyHeightScale] = useState(1);
   const [diagramScale, setDiagramScale] = useState(100);
-  const [interfaceDensity, setInterfaceDensity] = useState<InterfaceDensity>("compact");
+  const [interfaceDensity, setInterfaceDensity] =
+    useState<InterfaceDensity>("compact");
   const [showStatusBar, setShowStatusBar] = useState(true);
   const [trebleAngle, setTrebleAngle] = useState(30);
   const [buttonStrokeWidth, setButtonStrokeWidth] = useState(3);
@@ -389,8 +430,7 @@ function App() {
   const [activeSettingsSection, setActiveSettingsSection] =
     useState<SettingsSection>(null);
 
-  const [activeToolSection, setActiveToolSection] =
-    useState<ToolSection>(null);
+  const [activeToolSection, setActiveToolSection] = useState<ToolSection>(null);
 
   /* Tool state for selections, fingerings, note sequences, and free text notes. */
   const [overlays, setOverlays] = useState<Record<string, Overlay>>({});
@@ -439,22 +479,29 @@ function App() {
   const [abcExampleValue, setAbcExampleValue] = useState("");
   const [abcTempoBpm, setAbcTempoBpm] = useState(80);
   const [abcPositionBeat, setAbcPositionBeat] = useState(0);
-  const [abcPlaybackState, setAbcPlaybackState] = useState<"stopped" | "playing" | "paused">("stopped");
+  const [abcPlaybackState, setAbcPlaybackState] = useState<
+    "stopped" | "playing" | "paused"
+  >("stopped");
   const [abcActiveButtonIds, setAbcActiveButtonIds] = useState<string[]>([]);
-  const [abcStradellaMode, setAbcStradellaMode] = useState<AbcStradellaMode>("bass-notes-only");
+  const [abcStradellaMode, setAbcStradellaMode] =
+    useState<AbcStradellaMode>("bass-notes-only");
   const [abcTrebleChordSymbolsMode, setAbcTrebleChordSymbolsMode] =
     useState<AbcTrebleChordSymbolsMode>("ignore");
-  const [abcRenderedNotationVisible, setAbcRenderedNotationVisible] = useState(false);
+  const [abcRenderedNotationVisible, setAbcRenderedNotationVisible] =
+    useState(false);
   const abcNotationRef = useRef<HTMLDivElement | null>(null);
 
   /* Stradella Bass Pattern Player state. */
-  const [builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions] = useState<BassPatternDefinition[]>([]);
-  const [customBassPatternDefinitions, setCustomBassPatternDefinitions] = useState<BassPatternDefinition[]>([]);
+  const [builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions] =
+    useState<BassPatternDefinition[]>([]);
+  const [customBassPatternDefinitions, setCustomBassPatternDefinitions] =
+    useState<BassPatternDefinition[]>([]);
   const bassPatternDefinitions = useMemo(
     () => [...builtInBassPatternDefinitions, ...customBassPatternDefinitions],
     [builtInBassPatternDefinitions, customBassPatternDefinitions],
   );
-  const [chordProgressionDefinitions, setChordProgressionDefinitions] = useState<ChordProgressionDefinition[]>([]);
+  const [chordProgressionDefinitions, setChordProgressionDefinitions] =
+    useState<ChordProgressionDefinition[]>([]);
   const [bassPatternId, setBassPatternId] = useState("polka");
   const [chordProgressionId, setChordProgressionId] = useState("i-iv-v-i");
   const [bassPatternRoot, setBassPatternRoot] = useState("C");
@@ -462,31 +509,56 @@ function App() {
   const [bassPatternChordVoicing, setBassPatternChordVoicing] =
     useState<BassPatternChordVoicing>("simple");
   const [bassPatternBarsPerChord, setBassPatternBarsPerChord] = useState(2);
-  const [bassPatternLoopMode, setBassPatternLoopMode] = useState<"once" | "fixed" | "infinite">("fixed");
+  const [bassPatternLoopMode, setBassPatternLoopMode] = useState<
+    "once" | "fixed" | "infinite"
+  >("fixed");
   const [bassPatternLoopCount, setBassPatternLoopCount] = useState(2);
-  const [bassPatternExportFormat, setBassPatternExportFormat] = useState<"abc" | "midi" | "lilypond">("abc");
-  const [bassPatternEditorExpanded, setBassPatternEditorExpanded] = useState(false);
-  const [musicNotationIncludeTitle, setMusicNotationIncludeTitle] = useState(true);
-  const [musicNotationIncludeDescription, setMusicNotationIncludeDescription] = useState(false);
-  const [musicNotationIncludeSummary, setMusicNotationIncludeSummary] = useState(false);
-  const [musicNotationUseBarsPerLine, setMusicNotationUseBarsPerLine] = useState(true);
+  const [bassPatternExportFormat, setBassPatternExportFormat] = useState<
+    "abc" | "midi" | "lilypond"
+  >("abc");
+  const [bassPatternEditorExpanded, setBassPatternEditorExpanded] =
+    useState(false);
+  const [musicNotationIncludeTitle, setMusicNotationIncludeTitle] =
+    useState(true);
+  const [musicNotationIncludeDescription, setMusicNotationIncludeDescription] =
+    useState(false);
+  const [musicNotationIncludeSummary, setMusicNotationIncludeSummary] =
+    useState(false);
+  const [musicNotationUseBarsPerLine, setMusicNotationUseBarsPerLine] =
+    useState(true);
   const [musicNotationBarsPerLine, setMusicNotationBarsPerLine] = useState(4);
-  const [musicNotationChordFontSize, setMusicNotationChordFontSize] = useState(11);
+  const [musicNotationChordFontSize, setMusicNotationChordFontSize] =
+    useState(11);
   const [musicNotationScale, setMusicNotationScale] = useState(54);
   const [musicNotationStaffWidth, setMusicNotationStaffWidth] = useState(520);
-  const [musicNotationStaffSeparator, setMusicNotationStaffSeparator] = useState(14);
-  const [bassPatternRenderedNotationVisible, setBassPatternRenderedNotationVisible] = useState(false);
-  const [bassPatternValidationErrors, setBassPatternValidationErrors] = useState<string[]>([]);
-  const [bassPatternEditorText, setBassPatternEditorText] = useState(() => JSON.stringify({
-    id: "custom-oom-pah",
-    name: "Custom Oom-pah",
-    meter: "4/4",
-    tags: ["custom"],
-    pattern: ">B C A C"
-  }, null, 2));
+  const [musicNotationStaffSeparator, setMusicNotationStaffSeparator] =
+    useState(14);
+  const [
+    bassPatternRenderedNotationVisible,
+    setBassPatternRenderedNotationVisible,
+  ] = useState(false);
+  const [bassPatternValidationErrors, setBassPatternValidationErrors] =
+    useState<string[]>([]);
+  const [bassPatternEditorText, setBassPatternEditorText] = useState(() =>
+    JSON.stringify(
+      {
+        id: "custom-oom-pah",
+        name: "Custom Oom-pah",
+        meter: "4/4",
+        tags: ["custom"],
+        pattern: ">B C A C",
+      },
+      null,
+      2,
+    ),
+  );
   const [bassPatternEditorMessage, setBassPatternEditorMessage] = useState("");
-  const [bassPatternPlaybackState, setBassPatternPlaybackState] = useState<"stopped" | "playing">("stopped");
-  const [bassPatternActiveButtonIds, setBassPatternActiveButtonIds] = useState<string[]>([]);
+  const [bassPatternPlaybackState, setBassPatternPlaybackState] = useState<
+    "stopped" | "playing"
+  >("stopped");
+  const [bassPatternActiveButtonIds, setBassPatternActiveButtonIds] = useState<
+    string[]
+  >([]);
   const bassPatternTimeoutsRef = useRef<number[]>([]);
   const bassPatternPlaybackRunRef = useRef(0);
   const bassPatternNotationRef = useRef<HTMLDivElement | null>(null);
@@ -509,8 +581,6 @@ function App() {
     setAbcRenderedNotationVisible(false);
   }
 
-
-
   useEffect(() => {
     if (activeToolSection !== "bassPatternPlayer") {
       setBassPatternRenderedNotationVisible(false);
@@ -524,14 +594,17 @@ function App() {
   }, [activeToolSection]);
 
   /* Stradella Chord Finder state for Stradella-only chord exploration. */
-  const [stradellaChordFinderActive, setStradellaChordFinderActive] = useState(false);
+  const [stradellaChordFinderActive, setStradellaChordFinderActive] =
+    useState(false);
   const [stradellaChordFinderRoot, setStradellaChordFinderRoot] = useState("C");
   const [stradellaChordFinderPattern, setStradellaChordFinderPattern] =
     useState<FinderChordPattern>("major-triad");
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
     useState<StradellaChordFinderMode>("chord-buttons-only");
-  const [stradellaChordFinderMarkRootBass, setStradellaChordFinderMarkRootBass] =
-    useState(true);
+  const [
+    stradellaChordFinderMarkRootBass,
+    setStradellaChordFinderMarkRootBass,
+  ] = useState(true);
 
   const [noteDraft, setNoteDraft] = useState("Remember\nbellows direction");
   const [isPlacingTextNote, setIsPlacingTextNote] = useState(false);
@@ -552,7 +625,8 @@ function App() {
   const [soundReleaseMs, setSoundReleaseMs] = useState(120);
   const [soundNoteDurationMs, setSoundNoteDurationMs] = useState(420);
   const [soundSequenceTempoBpm, setSoundSequenceTempoBpm] = useState(80);
-  const [sequenceRenderedNotationVisible, setSequenceRenderedNotationVisible] = useState(false);
+  const [sequenceRenderedNotationVisible, setSequenceRenderedNotationVisible] =
+    useState(false);
   const sequenceNotationRef = useRef<HTMLDivElement | null>(null);
   const [stradellaBassVoicing, setStradellaBassVoicing] =
     useState<StradellaBassVoicing>("single-low");
@@ -563,9 +637,12 @@ function App() {
 
     async function loadDefaultSettings() {
       try {
-        const response = await fetch(`${import.meta.env.BASE_URL}default-settings.json`, {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          `${import.meta.env.BASE_URL}default-settings.json`,
+          {
+            cache: "no-store",
+          },
+        );
         if (!response.ok) return;
 
         const defaults = (await response.json()) as DefaultSettingsFile;
@@ -574,19 +651,59 @@ function App() {
         if (isOneOf(defaults.side, ["stradella", "treble"] as const)) {
           setSide(defaults.side);
         }
-        if (isOneOf(defaults.notation, ["english", "german", "solfege", "intervals", "blank"] as const)) {
+        if (
+          isOneOf(defaults.notation, [
+            "english",
+            "german",
+            "solfege",
+            "intervals",
+            "blank",
+          ] as const)
+        ) {
           setNotation(defaults.notation);
         }
-        if (isOneOf(defaults.accidental, ["natural", "flats", "sharps"] as const)) {
+        if (
+          isOneOf(defaults.accidental, ["natural", "flats", "sharps"] as const)
+        ) {
           setAccidental(defaults.accidental);
         }
-        if (isOneOf(defaults.chordLabelMode, ["none", "chord-name", "root-only", "chord-tones", "row-function"] as const)) {
+        if (
+          isOneOf(defaults.chordLabelMode, [
+            "none",
+            "chord-name",
+            "root-only",
+            "chord-tones",
+            "row-function",
+          ] as const)
+        ) {
           setChordLabelMode(defaults.chordLabelMode);
         }
-        if (isOneOf(defaults.basses, ["8", "12", "24", "32", "40", "48-8x6", "48-12x4", "60", "72", "80", "96", "100", "120"] as const)) {
+        if (
+          isOneOf(defaults.basses, [
+            "8",
+            "12",
+            "24",
+            "32",
+            "40",
+            "48-8x6",
+            "48-12x4",
+            "60",
+            "72",
+            "80",
+            "96",
+            "100",
+            "120",
+          ] as const)
+        ) {
           setBasses(defaults.basses);
         }
-        if (isOneOf(defaults.trebleLayout, ["c-system", "b-system", "piano"] as const)) {
+        if (
+          isOneOf(defaults.trebleLayout, [
+            "c-system",
+            "b-system",
+            "piano",
+          ] as const)
+        ) {
           setTrebleLayout(defaults.trebleLayout);
         }
         if ([3, 4, 5].includes(Number(defaults.trebleRows))) {
@@ -595,40 +712,72 @@ function App() {
         if (isOneOf(defaults.trebleSize, ["small", "full", "large"] as const)) {
           setTrebleSize(defaults.trebleSize);
         }
-        if (isOneOf(defaults.pianoTrebleRange, ["two-octave", "three-octave", "four-octave"] as const)) {
+        if (
+          isOneOf(defaults.pianoTrebleRange, [
+            "two-octave",
+            "three-octave",
+            "four-octave",
+          ] as const)
+        ) {
           setPianoTrebleRange(defaults.pianoTrebleRange);
         }
         if (typeof defaults.showTrebleOctaves === "boolean") {
           setShowTrebleOctaves(defaults.showTrebleOctaves);
         }
         if (typeof defaults.diagramVerticalSpacing === "number") {
-          setDiagramVerticalSpacing(Math.max(0, Math.min(80, defaults.diagramVerticalSpacing)));
+          setDiagramVerticalSpacing(
+            Math.max(0, Math.min(80, defaults.diagramVerticalSpacing)),
+          );
         }
         if (typeof defaults.pianoKeyWidthScale === "number") {
-          setPianoKeyWidthScale(Math.max(0.75, Math.min(1.45, defaults.pianoKeyWidthScale)));
+          setPianoKeyWidthScale(
+            Math.max(0.75, Math.min(1.45, defaults.pianoKeyWidthScale)),
+          );
         }
         if (typeof defaults.pianoKeyHeightScale === "number") {
-          setPianoKeyHeightScale(Math.max(0.75, Math.min(1.8, defaults.pianoKeyHeightScale)));
+          setPianoKeyHeightScale(
+            Math.max(0.75, Math.min(1.8, defaults.pianoKeyHeightScale)),
+          );
         }
         if (typeof defaults.pianoBlackKeyWidthScale === "number") {
-          setPianoBlackKeyWidthScale(Math.max(0.75, Math.min(1.35, defaults.pianoBlackKeyWidthScale)));
+          setPianoBlackKeyWidthScale(
+            Math.max(0.75, Math.min(1.35, defaults.pianoBlackKeyWidthScale)),
+          );
         }
         if (typeof defaults.pianoBlackKeyHeightScale === "number") {
-          setPianoBlackKeyHeightScale(Math.max(0.75, Math.min(1.5, defaults.pianoBlackKeyHeightScale)));
+          setPianoBlackKeyHeightScale(
+            Math.max(0.75, Math.min(1.5, defaults.pianoBlackKeyHeightScale)),
+          );
         }
         if (typeof defaults.diagramScale === "number") {
           setDiagramScale(Math.max(70, Math.min(140, defaults.diagramScale)));
         }
-        if (isOneOf(defaults.interfaceDensity, ["compact", "comfortable"] as const)) {
+        if (
+          isOneOf(defaults.interfaceDensity, [
+            "compact",
+            "comfortable",
+          ] as const)
+        ) {
           setInterfaceDensity(defaults.interfaceDensity);
         }
         if (typeof defaults.showStatusBar === "boolean") {
           setShowStatusBar(defaults.showStatusBar);
         }
-        if (isOneOf(defaults.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES)) {
+        if (
+          isOneOf(defaults.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES)
+        ) {
           setScaleFinderDisplayMode(defaults.scaleFinderDisplayMode);
         }
-        if (isOneOf(defaults.colorTheme, ["default", "classic", "pastel", "print", "warm", "contrast"] as const)) {
+        if (
+          isOneOf(defaults.colorTheme, [
+            "default",
+            "classic",
+            "pastel",
+            "print",
+            "warm",
+            "contrast",
+          ] as const)
+        ) {
           setColorTheme(defaults.colorTheme);
         }
         if (isOneOf(defaults.titleMode, ["auto", "custom", "none"] as const)) {
@@ -655,51 +804,143 @@ function App() {
         if (typeof defaults.soundEnabled === "boolean") {
           setSoundEnabled(defaults.soundEnabled);
         }
-        if (isOneOf(defaults.stradellaBassVoicing, ["single-low", "low-and-middle", "single-middle"] as const)) {
+        if (
+          isOneOf(defaults.stradellaBassVoicing, [
+            "single-low",
+            "low-and-middle",
+            "single-middle",
+          ] as const)
+        ) {
           setStradellaBassVoicing(defaults.stradellaBassVoicing);
         }
-        if (isOneOf(defaults.stradellaChordFinderMode, ["bass-only", "chord-buttons-only", "bass-and-chords"] as const)) {
+        if (
+          isOneOf(defaults.stradellaChordFinderMode, [
+            "bass-only",
+            "chord-buttons-only",
+            "bass-and-chords",
+          ] as const)
+        ) {
           setStradellaChordFinderMode(defaults.stradellaChordFinderMode);
         }
         if (typeof defaults.stradellaChordFinderMarkRootBass === "boolean") {
-          setStradellaChordFinderMarkRootBass(defaults.stradellaChordFinderMarkRootBass);
+          setStradellaChordFinderMarkRootBass(
+            defaults.stradellaChordFinderMarkRootBass,
+          );
         }
-        if (isOneOf(defaults.abcStradellaMode, ["bass-notes-only", "chord-symbols-only", "bass-notes-and-chord-symbols"] as const)) {
+        if (
+          isOneOf(defaults.abcStradellaMode, [
+            "bass-notes-only",
+            "chord-symbols-only",
+            "bass-notes-and-chord-symbols",
+          ] as const)
+        ) {
           setAbcStradellaMode(defaults.abcStradellaMode);
         }
-        if (isOneOf(defaults.abcTrebleChordSymbolsMode, ["ignore", "play"] as const)) {
+        if (
+          isOneOf(defaults.abcTrebleChordSymbolsMode, [
+            "ignore",
+            "play",
+          ] as const)
+        ) {
           setAbcTrebleChordSymbolsMode(defaults.abcTrebleChordSymbolsMode);
         }
-        if (isOneOf(defaults.bassPatternChordVoicing, ["simple", "full"] as const)) {
+        if (
+          isOneOf(defaults.bassPatternChordVoicing, ["simple", "full"] as const)
+        ) {
           setBassPatternChordVoicing(defaults.bassPatternChordVoicing);
         }
-        if (typeof defaults.bassPatternBarsPerChord === "number") {
-          setBassPatternBarsPerChord(Math.max(1, Math.min(8, Math.round(defaults.bassPatternBarsPerChord))));
+        const defaultRepeatsPerChord =
+          typeof defaults.bassPatternRepeatsPerChord === "number"
+            ? defaults.bassPatternRepeatsPerChord
+            : defaults.bassPatternBarsPerChord;
+        if (typeof defaultRepeatsPerChord === "number") {
+          setBassPatternBarsPerChord(
+            Math.max(1, Math.min(8, Math.round(defaultRepeatsPerChord))),
+          );
         }
         if (typeof defaults.bassPatternTempoBpm === "number") {
-          setBassPatternTempoBpm(Math.max(50, Math.min(220, Math.round(defaults.bassPatternTempoBpm))));
+          setBassPatternTempoBpm(
+            Math.max(
+              50,
+              Math.min(220, Math.round(defaults.bassPatternTempoBpm)),
+            ),
+          );
         }
-        if (isOneOf(defaults.bassPatternLoopMode, ["once", "fixed", "infinite"] as const)) {
+        if (
+          isOneOf(defaults.bassPatternLoopMode, [
+            "once",
+            "fixed",
+            "infinite",
+          ] as const)
+        ) {
           setBassPatternLoopMode(defaults.bassPatternLoopMode);
         }
         if (typeof defaults.bassPatternLoopCount === "number") {
-          setBassPatternLoopCount(Math.max(1, Math.min(64, Math.round(defaults.bassPatternLoopCount))));
+          setBassPatternLoopCount(
+            Math.max(
+              1,
+              Math.min(64, Math.round(defaults.bassPatternLoopCount)),
+            ),
+          );
         }
         if (typeof defaults.abcTempoBpm === "number") {
-          setAbcTempoBpm(Math.max(30, Math.min(220, Math.round(defaults.abcTempoBpm))));
+          setAbcTempoBpm(
+            Math.max(30, Math.min(220, Math.round(defaults.abcTempoBpm))),
+          );
         }
         if (typeof defaults.soundSequenceTempoBpm === "number") {
-          setSoundSequenceTempoBpm(Math.max(30, Math.min(220, Math.round(defaults.soundSequenceTempoBpm))));
+          setSoundSequenceTempoBpm(
+            Math.max(
+              30,
+              Math.min(220, Math.round(defaults.soundSequenceTempoBpm)),
+            ),
+          );
         }
-        if (typeof defaults.musicNotationIncludeTitle === "boolean") setMusicNotationIncludeTitle(defaults.musicNotationIncludeTitle);
-        if (typeof defaults.musicNotationIncludeDescription === "boolean") setMusicNotationIncludeDescription(defaults.musicNotationIncludeDescription);
-        if (typeof defaults.musicNotationIncludeSummary === "boolean") setMusicNotationIncludeSummary(defaults.musicNotationIncludeSummary);
-        if (typeof defaults.musicNotationUseBarsPerLine === "boolean") setMusicNotationUseBarsPerLine(defaults.musicNotationUseBarsPerLine);
-        if (typeof defaults.musicNotationBarsPerLine === "number") setMusicNotationBarsPerLine(Math.max(1, Math.min(8, Math.round(defaults.musicNotationBarsPerLine))));
-        if (typeof defaults.musicNotationChordFontSize === "number") setMusicNotationChordFontSize(Math.max(8, Math.min(24, Math.round(defaults.musicNotationChordFontSize))));
-        if (typeof defaults.musicNotationScale === "number") setMusicNotationScale(Math.max(40, Math.min(100, Math.round(defaults.musicNotationScale))));
-        if (typeof defaults.musicNotationStaffWidth === "number") setMusicNotationStaffWidth(Math.max(320, Math.min(900, Math.round(defaults.musicNotationStaffWidth))));
-        if (typeof defaults.musicNotationStaffSeparator === "number") setMusicNotationStaffSeparator(Math.max(8, Math.min(32, Math.round(defaults.musicNotationStaffSeparator))));
+        if (typeof defaults.musicNotationIncludeTitle === "boolean")
+          setMusicNotationIncludeTitle(defaults.musicNotationIncludeTitle);
+        if (typeof defaults.musicNotationIncludeDescription === "boolean")
+          setMusicNotationIncludeDescription(
+            defaults.musicNotationIncludeDescription,
+          );
+        if (typeof defaults.musicNotationIncludeSummary === "boolean")
+          setMusicNotationIncludeSummary(defaults.musicNotationIncludeSummary);
+        if (typeof defaults.musicNotationUseBarsPerLine === "boolean")
+          setMusicNotationUseBarsPerLine(defaults.musicNotationUseBarsPerLine);
+        if (typeof defaults.musicNotationBarsPerLine === "number")
+          setMusicNotationBarsPerLine(
+            Math.max(
+              1,
+              Math.min(8, Math.round(defaults.musicNotationBarsPerLine)),
+            ),
+          );
+        if (typeof defaults.musicNotationChordFontSize === "number")
+          setMusicNotationChordFontSize(
+            Math.max(
+              8,
+              Math.min(24, Math.round(defaults.musicNotationChordFontSize)),
+            ),
+          );
+        if (typeof defaults.musicNotationScale === "number")
+          setMusicNotationScale(
+            Math.max(
+              40,
+              Math.min(100, Math.round(defaults.musicNotationScale)),
+            ),
+          );
+        if (typeof defaults.musicNotationStaffWidth === "number")
+          setMusicNotationStaffWidth(
+            Math.max(
+              320,
+              Math.min(900, Math.round(defaults.musicNotationStaffWidth)),
+            ),
+          );
+        if (typeof defaults.musicNotationStaffSeparator === "number")
+          setMusicNotationStaffSeparator(
+            Math.max(
+              8,
+              Math.min(32, Math.round(defaults.musicNotationStaffSeparator)),
+            ),
+          );
       } catch {
         /* The app still runs with built-in defaults if the editable file is missing or invalid. */
       }
@@ -718,33 +959,54 @@ function App() {
       try {
         const [patternsResponse, progressionsResponse] = await Promise.all([
           fetch(`${import.meta.env.BASE_URL}bass-patterns/bass-patterns.json`),
-          fetch(`${import.meta.env.BASE_URL}chord-progressions/chord-progressions.json`),
+          fetch(
+            `${import.meta.env.BASE_URL}chord-progressions/chord-progressions.json`,
+          ),
         ]);
 
         if (!patternsResponse.ok || !progressionsResponse.ok) return;
 
-        const patternLibrary = (await patternsResponse.json()) as BassPatternLibrary;
-        const progressions = (await progressionsResponse.json()) as ChordProgressionDefinition[];
+        const patternLibrary =
+          (await patternsResponse.json()) as BassPatternLibrary;
+        const progressions =
+          (await progressionsResponse.json()) as ChordProgressionDefinition[];
         if (cancelled) return;
 
         const validationErrors = validateBassPatternLibrary(patternLibrary);
         setBassPatternValidationErrors(validationErrors);
 
-        if (validationErrors.length === 0 && patternLibrary.version === 2 && Array.isArray(patternLibrary.patterns) && patternLibrary.patterns.length > 0) {
+        if (
+          validationErrors.length === 0 &&
+          patternLibrary.version === 2 &&
+          Array.isArray(patternLibrary.patterns) &&
+          patternLibrary.patterns.length > 0
+        ) {
           const patternsWithLegend = patternLibrary.patterns.map((pattern) => ({
             ...pattern,
             legend: pattern.legend ?? patternLibrary.legend,
           }));
           setBuiltInBassPatternDefinitions(patternsWithLegend);
-          setBassPatternId((current) => patternsWithLegend.some((pattern) => pattern.id === current) ? current : patternsWithLegend[0].id);
+          setBassPatternId((current) =>
+            patternsWithLegend.some((pattern) => pattern.id === current)
+              ? current
+              : patternsWithLegend[0].id,
+          );
         }
 
         if (Array.isArray(progressions) && progressions.length > 0) {
           setChordProgressionDefinitions(progressions);
-          setChordProgressionId((current) => progressions.some((progression) => progression.id === current) ? current : progressions[0].id);
+          setChordProgressionId((current) =>
+            progressions.some((progression) => progression.id === current)
+              ? current
+              : progressions[0].id,
+          );
         }
       } catch (error) {
-        setBassPatternValidationErrors([error instanceof Error ? error.message : "Could not load bass pattern files."]);
+        setBassPatternValidationErrors([
+          error instanceof Error
+            ? error.message
+            : "Could not load bass pattern files.",
+        ]);
         /* Bass pattern files are optional; the rest of the app still works without them. */
       }
     }
@@ -757,7 +1019,9 @@ function App() {
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem("accordionTools.customBassPatterns.v2");
+      const stored = window.localStorage.getItem(
+        "accordionTools.customBassPatterns.v2",
+      );
       if (!stored) return;
       const parsed = JSON.parse(stored) as BassPatternDefinition[];
       if (Array.isArray(parsed)) setCustomBassPatternDefinitions(parsed);
@@ -766,60 +1030,230 @@ function App() {
     }
   }, []);
 
-
   /** Applies a settings JSON object without changing the editable default-settings.json file. */
   function applyImportedSettings(settings: DefaultSettingsFile) {
     if (!settings || typeof settings !== "object") return;
 
-    if (isOneOf(settings.side, ["stradella", "treble"] as const)) setSide(settings.side);
-    if (isOneOf(settings.notation, ["english", "german", "solfege", "intervals", "blank"] as const)) setNotation(settings.notation);
-    if (isOneOf(settings.accidental, ["natural", "flats", "sharps"] as const)) setAccidental(settings.accidental);
-    if (isOneOf(settings.chordLabelMode, ["none", "chord-name", "root-only", "chord-tones", "row-function"] as const)) setChordLabelMode(settings.chordLabelMode);
-    if (isOneOf(settings.basses, ["8", "12", "24", "32", "40", "48-8x6", "48-12x4", "60", "72", "80", "96", "100", "120"] as const)) setBasses(settings.basses);
-    if (isOneOf(settings.trebleLayout, ["c-system", "b-system", "piano"] as const)) setTrebleLayout(settings.trebleLayout);
-    if ([3, 4, 5].includes(Number(settings.trebleRows))) setTrebleRows(Number(settings.trebleRows) as 3 | 4 | 5);
-    if (isOneOf(settings.trebleSize, ["small", "full", "large"] as const)) setTrebleSize(settings.trebleSize);
-    if (isOneOf(settings.pianoTrebleRange, ["two-octave", "three-octave", "four-octave"] as const)) setPianoTrebleRange(settings.pianoTrebleRange);
-    if (typeof settings.showTrebleOctaves === "boolean") setShowTrebleOctaves(settings.showTrebleOctaves);
-    if (typeof settings.diagramVerticalSpacing === "number") setDiagramVerticalSpacing(Math.max(0, Math.min(80, settings.diagramVerticalSpacing)));
-    if (typeof settings.pianoKeyWidthScale === "number") setPianoKeyWidthScale(Math.max(0.75, Math.min(1.45, settings.pianoKeyWidthScale)));
-    if (typeof settings.pianoKeyHeightScale === "number") setPianoKeyHeightScale(Math.max(0.75, Math.min(1.8, settings.pianoKeyHeightScale)));
-    if (typeof settings.pianoBlackKeyWidthScale === "number") setPianoBlackKeyWidthScale(Math.max(0.75, Math.min(1.35, settings.pianoBlackKeyWidthScale)));
-    if (typeof settings.pianoBlackKeyHeightScale === "number") setPianoBlackKeyHeightScale(Math.max(0.75, Math.min(1.5, settings.pianoBlackKeyHeightScale)));
-    if (typeof settings.diagramScale === "number") setDiagramScale(Math.max(70, Math.min(140, settings.diagramScale)));
-    if (isOneOf(settings.interfaceDensity, ["compact", "comfortable"] as const)) setInterfaceDensity(settings.interfaceDensity);
-    if (typeof settings.showStatusBar === "boolean") setShowStatusBar(settings.showStatusBar);
-    if (isOneOf(settings.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES)) setScaleFinderDisplayMode(settings.scaleFinderDisplayMode);
-    if (isOneOf(settings.colorTheme, ["default", "classic", "pastel", "print", "warm", "contrast"] as const)) setColorTheme(settings.colorTheme);
-    if (isOneOf(settings.titleMode, ["auto", "custom", "none"] as const)) setTitleMode(settings.titleMode);
-    if (typeof settings.customTitle === "string") setCustomTitle(settings.customTitle);
-    if (typeof settings.showButtonLabels === "boolean") setShowButtonLabels(settings.showButtonLabels);
-    if (typeof settings.showBellowsGuide === "boolean") setShowBellowsGuide(settings.showBellowsGuide);
-    if (typeof settings.showStradellaRowLabels === "boolean") setShowStradellaRowLabels(settings.showStradellaRowLabels);
-    if (typeof settings.selectionOnClick === "boolean") setSelectionOnClick(settings.selectionOnClick);
-    if (isOneOf(settings.downloadFormat, ["svg", "png"] as const)) setDownloadFormat(settings.downloadFormat);
-    if (typeof settings.soundEnabled === "boolean") setSoundEnabled(settings.soundEnabled);
-    if (isOneOf(settings.stradellaBassVoicing, ["single-low", "low-and-middle", "single-middle"] as const)) setStradellaBassVoicing(settings.stradellaBassVoicing);
-    if (isOneOf(settings.stradellaChordFinderMode, ["bass-only", "chord-buttons-only", "bass-and-chords"] as const)) setStradellaChordFinderMode(settings.stradellaChordFinderMode);
-    if (typeof settings.stradellaChordFinderMarkRootBass === "boolean") setStradellaChordFinderMarkRootBass(settings.stradellaChordFinderMarkRootBass);
-    if (isOneOf(settings.abcStradellaMode, ["bass-notes-only", "chord-symbols-only", "bass-notes-and-chord-symbols"] as const)) setAbcStradellaMode(settings.abcStradellaMode);
-    if (isOneOf(settings.abcTrebleChordSymbolsMode, ["ignore", "play"] as const)) setAbcTrebleChordSymbolsMode(settings.abcTrebleChordSymbolsMode);
-    if (isOneOf(settings.bassPatternChordVoicing, ["simple", "full"] as const)) setBassPatternChordVoicing(settings.bassPatternChordVoicing);
-    if (typeof settings.bassPatternBarsPerChord === "number") setBassPatternBarsPerChord(Math.max(1, Math.min(8, Math.round(settings.bassPatternBarsPerChord))));
-    if (typeof settings.bassPatternTempoBpm === "number") setBassPatternTempoBpm(Math.max(50, Math.min(220, Math.round(settings.bassPatternTempoBpm))));
-    if (isOneOf(settings.bassPatternLoopMode, ["once", "fixed", "infinite"] as const)) setBassPatternLoopMode(settings.bassPatternLoopMode);
-    if (typeof settings.bassPatternLoopCount === "number") setBassPatternLoopCount(Math.max(1, Math.min(64, Math.round(settings.bassPatternLoopCount))));
-    if (typeof settings.abcTempoBpm === "number") setAbcTempoBpm(Math.max(30, Math.min(220, Math.round(settings.abcTempoBpm))));
-    if (typeof settings.soundSequenceTempoBpm === "number") setSoundSequenceTempoBpm(Math.max(30, Math.min(220, Math.round(settings.soundSequenceTempoBpm))));
-    if (typeof settings.musicNotationIncludeTitle === "boolean") setMusicNotationIncludeTitle(settings.musicNotationIncludeTitle);
-    if (typeof settings.musicNotationIncludeDescription === "boolean") setMusicNotationIncludeDescription(settings.musicNotationIncludeDescription);
-    if (typeof settings.musicNotationIncludeSummary === "boolean") setMusicNotationIncludeSummary(settings.musicNotationIncludeSummary);
-    if (typeof settings.musicNotationUseBarsPerLine === "boolean") setMusicNotationUseBarsPerLine(settings.musicNotationUseBarsPerLine);
-    if (typeof settings.musicNotationBarsPerLine === "number") setMusicNotationBarsPerLine(Math.max(1, Math.min(8, Math.round(settings.musicNotationBarsPerLine))));
-    if (typeof settings.musicNotationChordFontSize === "number") setMusicNotationChordFontSize(Math.max(8, Math.min(24, Math.round(settings.musicNotationChordFontSize))));
-    if (typeof settings.musicNotationScale === "number") setMusicNotationScale(Math.max(40, Math.min(100, Math.round(settings.musicNotationScale))));
-    if (typeof settings.musicNotationStaffWidth === "number") setMusicNotationStaffWidth(Math.max(320, Math.min(900, Math.round(settings.musicNotationStaffWidth))));
-    if (typeof settings.musicNotationStaffSeparator === "number") setMusicNotationStaffSeparator(Math.max(8, Math.min(32, Math.round(settings.musicNotationStaffSeparator))));
+    if (isOneOf(settings.side, ["stradella", "treble"] as const))
+      setSide(settings.side);
+    if (
+      isOneOf(settings.notation, [
+        "english",
+        "german",
+        "solfege",
+        "intervals",
+        "blank",
+      ] as const)
+    )
+      setNotation(settings.notation);
+    if (isOneOf(settings.accidental, ["natural", "flats", "sharps"] as const))
+      setAccidental(settings.accidental);
+    if (
+      isOneOf(settings.chordLabelMode, [
+        "none",
+        "chord-name",
+        "root-only",
+        "chord-tones",
+        "row-function",
+      ] as const)
+    )
+      setChordLabelMode(settings.chordLabelMode);
+    if (
+      isOneOf(settings.basses, [
+        "8",
+        "12",
+        "24",
+        "32",
+        "40",
+        "48-8x6",
+        "48-12x4",
+        "60",
+        "72",
+        "80",
+        "96",
+        "100",
+        "120",
+      ] as const)
+    )
+      setBasses(settings.basses);
+    if (
+      isOneOf(settings.trebleLayout, ["c-system", "b-system", "piano"] as const)
+    )
+      setTrebleLayout(settings.trebleLayout);
+    if ([3, 4, 5].includes(Number(settings.trebleRows)))
+      setTrebleRows(Number(settings.trebleRows) as 3 | 4 | 5);
+    if (isOneOf(settings.trebleSize, ["small", "full", "large"] as const))
+      setTrebleSize(settings.trebleSize);
+    if (
+      isOneOf(settings.pianoTrebleRange, [
+        "two-octave",
+        "three-octave",
+        "four-octave",
+      ] as const)
+    )
+      setPianoTrebleRange(settings.pianoTrebleRange);
+    if (typeof settings.showTrebleOctaves === "boolean")
+      setShowTrebleOctaves(settings.showTrebleOctaves);
+    if (typeof settings.diagramVerticalSpacing === "number")
+      setDiagramVerticalSpacing(
+        Math.max(0, Math.min(80, settings.diagramVerticalSpacing)),
+      );
+    if (typeof settings.pianoKeyWidthScale === "number")
+      setPianoKeyWidthScale(
+        Math.max(0.75, Math.min(1.45, settings.pianoKeyWidthScale)),
+      );
+    if (typeof settings.pianoKeyHeightScale === "number")
+      setPianoKeyHeightScale(
+        Math.max(0.75, Math.min(1.8, settings.pianoKeyHeightScale)),
+      );
+    if (typeof settings.pianoBlackKeyWidthScale === "number")
+      setPianoBlackKeyWidthScale(
+        Math.max(0.75, Math.min(1.35, settings.pianoBlackKeyWidthScale)),
+      );
+    if (typeof settings.pianoBlackKeyHeightScale === "number")
+      setPianoBlackKeyHeightScale(
+        Math.max(0.75, Math.min(1.5, settings.pianoBlackKeyHeightScale)),
+      );
+    if (typeof settings.diagramScale === "number")
+      setDiagramScale(Math.max(70, Math.min(140, settings.diagramScale)));
+    if (isOneOf(settings.interfaceDensity, ["compact", "comfortable"] as const))
+      setInterfaceDensity(settings.interfaceDensity);
+    if (typeof settings.showStatusBar === "boolean")
+      setShowStatusBar(settings.showStatusBar);
+    if (isOneOf(settings.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES))
+      setScaleFinderDisplayMode(settings.scaleFinderDisplayMode);
+    if (
+      isOneOf(settings.colorTheme, [
+        "default",
+        "classic",
+        "pastel",
+        "print",
+        "warm",
+        "contrast",
+      ] as const)
+    )
+      setColorTheme(settings.colorTheme);
+    if (isOneOf(settings.titleMode, ["auto", "custom", "none"] as const))
+      setTitleMode(settings.titleMode);
+    if (typeof settings.customTitle === "string")
+      setCustomTitle(settings.customTitle);
+    if (typeof settings.showButtonLabels === "boolean")
+      setShowButtonLabels(settings.showButtonLabels);
+    if (typeof settings.showBellowsGuide === "boolean")
+      setShowBellowsGuide(settings.showBellowsGuide);
+    if (typeof settings.showStradellaRowLabels === "boolean")
+      setShowStradellaRowLabels(settings.showStradellaRowLabels);
+    if (typeof settings.selectionOnClick === "boolean")
+      setSelectionOnClick(settings.selectionOnClick);
+    if (isOneOf(settings.downloadFormat, ["svg", "png"] as const))
+      setDownloadFormat(settings.downloadFormat);
+    if (typeof settings.soundEnabled === "boolean")
+      setSoundEnabled(settings.soundEnabled);
+    if (
+      isOneOf(settings.stradellaBassVoicing, [
+        "single-low",
+        "low-and-middle",
+        "single-middle",
+      ] as const)
+    )
+      setStradellaBassVoicing(settings.stradellaBassVoicing);
+    if (
+      isOneOf(settings.stradellaChordFinderMode, [
+        "bass-only",
+        "chord-buttons-only",
+        "bass-and-chords",
+      ] as const)
+    )
+      setStradellaChordFinderMode(settings.stradellaChordFinderMode);
+    if (typeof settings.stradellaChordFinderMarkRootBass === "boolean")
+      setStradellaChordFinderMarkRootBass(
+        settings.stradellaChordFinderMarkRootBass,
+      );
+    if (
+      isOneOf(settings.abcStradellaMode, [
+        "bass-notes-only",
+        "chord-symbols-only",
+        "bass-notes-and-chord-symbols",
+      ] as const)
+    )
+      setAbcStradellaMode(settings.abcStradellaMode);
+    if (
+      isOneOf(settings.abcTrebleChordSymbolsMode, ["ignore", "play"] as const)
+    )
+      setAbcTrebleChordSymbolsMode(settings.abcTrebleChordSymbolsMode);
+    if (isOneOf(settings.bassPatternChordVoicing, ["simple", "full"] as const))
+      setBassPatternChordVoicing(settings.bassPatternChordVoicing);
+    const savedRepeatsPerChord =
+      typeof settings.bassPatternRepeatsPerChord === "number"
+        ? settings.bassPatternRepeatsPerChord
+        : settings.bassPatternBarsPerChord;
+    if (typeof savedRepeatsPerChord === "number")
+      setBassPatternBarsPerChord(
+        Math.max(1, Math.min(8, Math.round(savedRepeatsPerChord))),
+      );
+    if (typeof settings.bassPatternTempoBpm === "number")
+      setBassPatternTempoBpm(
+        Math.max(50, Math.min(220, Math.round(settings.bassPatternTempoBpm))),
+      );
+    if (
+      isOneOf(settings.bassPatternLoopMode, [
+        "once",
+        "fixed",
+        "infinite",
+      ] as const)
+    )
+      setBassPatternLoopMode(settings.bassPatternLoopMode);
+    if (typeof settings.bassPatternLoopCount === "number")
+      setBassPatternLoopCount(
+        Math.max(1, Math.min(64, Math.round(settings.bassPatternLoopCount))),
+      );
+    if (typeof settings.abcTempoBpm === "number")
+      setAbcTempoBpm(
+        Math.max(30, Math.min(220, Math.round(settings.abcTempoBpm))),
+      );
+    if (typeof settings.soundSequenceTempoBpm === "number")
+      setSoundSequenceTempoBpm(
+        Math.max(30, Math.min(220, Math.round(settings.soundSequenceTempoBpm))),
+      );
+    if (typeof settings.musicNotationIncludeTitle === "boolean")
+      setMusicNotationIncludeTitle(settings.musicNotationIncludeTitle);
+    if (typeof settings.musicNotationIncludeDescription === "boolean")
+      setMusicNotationIncludeDescription(
+        settings.musicNotationIncludeDescription,
+      );
+    if (typeof settings.musicNotationIncludeSummary === "boolean")
+      setMusicNotationIncludeSummary(settings.musicNotationIncludeSummary);
+    if (typeof settings.musicNotationUseBarsPerLine === "boolean")
+      setMusicNotationUseBarsPerLine(settings.musicNotationUseBarsPerLine);
+    if (typeof settings.musicNotationBarsPerLine === "number")
+      setMusicNotationBarsPerLine(
+        Math.max(1, Math.min(8, Math.round(settings.musicNotationBarsPerLine))),
+      );
+    if (typeof settings.musicNotationChordFontSize === "number")
+      setMusicNotationChordFontSize(
+        Math.max(
+          8,
+          Math.min(24, Math.round(settings.musicNotationChordFontSize)),
+        ),
+      );
+    if (typeof settings.musicNotationScale === "number")
+      setMusicNotationScale(
+        Math.max(40, Math.min(100, Math.round(settings.musicNotationScale))),
+      );
+    if (typeof settings.musicNotationStaffWidth === "number")
+      setMusicNotationStaffWidth(
+        Math.max(
+          320,
+          Math.min(900, Math.round(settings.musicNotationStaffWidth)),
+        ),
+      );
+    if (typeof settings.musicNotationStaffSeparator === "number")
+      setMusicNotationStaffSeparator(
+        Math.max(
+          8,
+          Math.min(32, Math.round(settings.musicNotationStaffSeparator)),
+        ),
+      );
   }
 
   /** Collects the current persistent settings in the same shape as public/default-settings.json. */
@@ -859,7 +1293,7 @@ function App() {
       abcStradellaMode,
       abcTrebleChordSymbolsMode,
       bassPatternChordVoicing,
-      bassPatternBarsPerChord,
+      bassPatternRepeatsPerChord: bassPatternBarsPerChord,
       bassPatternTempoBpm,
       bassPatternLoopMode,
       bassPatternLoopCount,
@@ -900,7 +1334,9 @@ function App() {
       const settings = JSON.parse(text) as DefaultSettingsFile;
       applyImportedSettings(settings);
     } catch {
-      window.alert("Could not read this settings file. Please choose a valid Accordion-Tools settings JSON file.");
+      window.alert(
+        "Could not read this settings file. Please choose a valid Accordion-Tools settings JSON file.",
+      );
     }
   }
 
@@ -932,7 +1368,13 @@ function App() {
   /* Generated button list for the current side and layout settings. */
   const buttons = useMemo(() => {
     if (side === "stradella") {
-      return generateStradella(basses, buttonSize, spacing, accidental, diagramVerticalSpacing);
+      return generateStradella(
+        basses,
+        buttonSize,
+        spacing,
+        accidental,
+        diagramVerticalSpacing,
+      );
     }
 
     if (isPianoTreble) {
@@ -1014,8 +1456,8 @@ function App() {
       setTextNotes([]);
       setIsPlacingTextNote(false);
       setScaleFinderActive(false);
-    setChordFinderActive(false);
-    setStradellaChordFinderActive(false);
+      setChordFinderActive(false);
+      setStradellaChordFinderActive(false);
       setStradellaChordFinderActive(false);
       previousLayoutSignatureRef.current = layoutSignature;
     }
@@ -1047,7 +1489,11 @@ function App() {
       };
     }
 
-    return getStradellaScaleFinderResult(buttons, scaleFinderRoot, scaleFinderPattern);
+    return getStradellaScaleFinderResult(
+      buttons,
+      scaleFinderRoot,
+      scaleFinderPattern,
+    );
   }, [buttons, scaleFinderRoot, scaleFinderPattern, side]);
 
   const scaleFinderButtons = useMemo(() => {
@@ -1116,24 +1562,52 @@ function App() {
       );
     }
     if (isTrebleLikeSide) {
-      return mapAbcEventsToTrebleButtons(buttons, abcParseResult.events, abcTrebleChordSymbolsMode === "play");
+      return mapAbcEventsToTrebleButtons(
+        buttons,
+        abcParseResult.events,
+        abcTrebleChordSymbolsMode === "play",
+      );
     }
     return [];
-  }, [abcParseResult.events, abcStradellaMode, abcText, abcTrebleChordSymbolsMode, buttons, isTrebleLikeSide, side]);
+  }, [
+    abcParseResult.events,
+    abcStradellaMode,
+    abcText,
+    abcTrebleChordSymbolsMode,
+    buttons,
+    isTrebleLikeSide,
+    side,
+  ]);
 
-  const abcTotalBeats = useMemo(() => totalAbcBeats(abcParseResult.events), [abcParseResult.events]);
-  const abcMissingPitchText = useMemo(() => abcMissingNotes(abcMappedEvents).join(", "), [abcMappedEvents]);
+  const abcTotalBeats = useMemo(
+    () => totalAbcBeats(abcParseResult.events),
+    [abcParseResult.events],
+  );
+  const abcMissingPitchText = useMemo(
+    () => abcMissingNotes(abcMappedEvents).join(", "),
+    [abcMappedEvents],
+  );
 
   const selectedBassPattern = useMemo(
-    () => bassPatternDefinitions.find((pattern) => pattern.id === bassPatternId) ?? bassPatternDefinitions[0],
+    () =>
+      bassPatternDefinitions.find((pattern) => pattern.id === bassPatternId) ??
+      bassPatternDefinitions[0],
     [bassPatternDefinitions, bassPatternId],
   );
   const selectedChordProgression = useMemo(
-    () => chordProgressionDefinitions.find((progression) => progression.id === chordProgressionId) ?? chordProgressionDefinitions[0],
+    () =>
+      chordProgressionDefinitions.find(
+        (progression) => progression.id === chordProgressionId,
+      ) ?? chordProgressionDefinitions[0],
     [chordProgressionDefinitions, chordProgressionId],
   );
   const bassPatternEvents = useMemo<BassPatternPlaybackEvent[]>(() => {
-    if (side !== "stradella" || !selectedBassPattern || !selectedChordProgression) return [];
+    if (
+      side !== "stradella" ||
+      !selectedBassPattern ||
+      !selectedChordProgression
+    )
+      return [];
     return makeBassPatternEvents(
       buttons,
       selectedBassPattern,
@@ -1142,29 +1616,51 @@ function App() {
       bassPatternChordVoicing,
       bassPatternBarsPerChord,
     );
-  }, [bassPatternBarsPerChord, bassPatternChordVoicing, bassPatternRoot, buttons, selectedBassPattern, selectedChordProgression, side]);
-  const bassPatternTotalBeats = useMemo(() => totalBassPatternBeats(bassPatternEvents), [bassPatternEvents]);
-  const bassPatternMissingText = useMemo(() => bassPatternMissingItems(bassPatternEvents).join(", "), [bassPatternEvents]);
-  const musicNotationAbcOptions: StradellaNotationAbcOptions = useMemo(() => ({
-    includeTitle: musicNotationIncludeTitle,
-    includeDescription: musicNotationIncludeDescription,
-    includeSummary: musicNotationIncludeSummary,
-    barsPerLine: musicNotationUseBarsPerLine ? musicNotationBarsPerLine : 999,
-    chordFontSize: musicNotationChordFontSize,
-    titleFontSize: 14,
-    staffSeparator: musicNotationStaffSeparator,
-  }), [
-    musicNotationBarsPerLine,
-    musicNotationChordFontSize,
-    musicNotationIncludeDescription,
-    musicNotationIncludeSummary,
-    musicNotationIncludeTitle,
-    musicNotationStaffSeparator,
-    musicNotationUseBarsPerLine,
+  }, [
+    bassPatternBarsPerChord,
+    bassPatternChordVoicing,
+    bassPatternRoot,
+    buttons,
+    selectedBassPattern,
+    selectedChordProgression,
+    side,
   ]);
+  const bassPatternTotalBeats = useMemo(
+    () => totalBassPatternBeats(bassPatternEvents),
+    [bassPatternEvents],
+  );
+  const bassPatternMissingText = useMemo(
+    () => bassPatternMissingItems(bassPatternEvents).join(", "),
+    [bassPatternEvents],
+  );
+  const musicNotationAbcOptions: StradellaNotationAbcOptions = useMemo(
+    () => ({
+      includeTitle: musicNotationIncludeTitle,
+      includeDescription: musicNotationIncludeDescription,
+      includeSummary: musicNotationIncludeSummary,
+      barsPerLine: musicNotationUseBarsPerLine ? musicNotationBarsPerLine : 999,
+      chordFontSize: musicNotationChordFontSize,
+      titleFontSize: 14,
+      staffSeparator: musicNotationStaffSeparator,
+    }),
+    [
+      musicNotationBarsPerLine,
+      musicNotationChordFontSize,
+      musicNotationIncludeDescription,
+      musicNotationIncludeSummary,
+      musicNotationIncludeTitle,
+      musicNotationStaffSeparator,
+      musicNotationUseBarsPerLine,
+    ],
+  );
 
   const bassPatternRenderedNotationAbc = useMemo(() => {
-    if (!selectedBassPattern || !selectedChordProgression || bassPatternEvents.length === 0) return "";
+    if (
+      !selectedBassPattern ||
+      !selectedChordProgression ||
+      bassPatternEvents.length === 0
+    )
+      return "";
     return bassPatternEventsToStradellaNotationAbc(
       selectedBassPattern,
       selectedChordProgression,
@@ -1188,7 +1684,10 @@ function App() {
     selectedChordProgression,
   ]);
 
-  function renderNotationInto(target: HTMLDivElement | null, abcSource: string) {
+  function renderNotationInto(
+    target: HTMLDivElement | null,
+    abcSource: string,
+  ) {
     if (!target) return;
     target.innerHTML = "";
     if (!abcSource.trim()) return;
@@ -1207,9 +1706,10 @@ function App() {
       });
     } catch (error) {
       target.classList.add("rendered-abc-error");
-      target.textContent = error instanceof Error
-        ? `Could not render notation: ${error.message}`
-        : "Could not render notation.";
+      target.textContent =
+        error instanceof Error
+          ? `Could not render notation: ${error.message}`
+          : "Could not render notation.";
     }
   }
 
@@ -1236,12 +1736,16 @@ function App() {
     };
     const baseName = accidentalMap[pitchClass] ?? "C";
     const octave = button.soundOctave ?? button.octave ?? 4;
-    if (octave >= 5) return baseName.toLowerCase() + "'".repeat(Math.max(0, octave - 5));
+    if (octave >= 5)
+      return baseName.toLowerCase() + "'".repeat(Math.max(0, octave - 5));
     if (octave <= 3) return baseName + ",".repeat(Math.max(0, 4 - octave));
     return baseName;
   }
 
-  function stradellaNotationPitchForButton(button: DiagramButton, kind: "bass" | "chord") {
+  function stradellaNotationPitchForButton(
+    button: DiagramButton,
+    kind: "bass" | "chord",
+  ) {
     const pitchClass = button.pitchClass ?? button.chordRoot ?? "C";
     const pitchIndexValue = INDEX_TO_PITCH.indexOf(pitchClass);
     const normalizedPitchClass = pitchIndexValue >= 0 ? pitchClass : "C";
@@ -1269,11 +1773,16 @@ function App() {
     const start = kind === "bass" ? middleLineD3 : middleLineD3 + 1;
     const end = kind === "bass" ? 24 : 72;
     const step = kind === "bass" ? -1 : 1;
-    for (let midi = start; kind === "bass" ? midi >= end : midi <= end; midi += step) {
+    for (
+      let midi = start;
+      kind === "bass" ? midi >= end : midi <= end;
+      midi += step
+    ) {
       if (((midi % 12) + 12) % 12 === normalizedIndex) {
         const abcBase = accidentalMap[normalizedPitchClass] ?? "C";
         const octave = Math.floor(midi / 12) - 1;
-        if (octave <= 3) return `${abcBase}${",".repeat(Math.max(0, 4 - octave))}`;
+        if (octave <= 3)
+          return `${abcBase}${",".repeat(Math.max(0, 4 - octave))}`;
         if (octave === 4) return abcBase;
         return `${abcBase.toLowerCase()}${"'".repeat(Math.max(0, octave - 5))}`;
       }
@@ -1303,7 +1812,6 @@ function App() {
     return "x";
   }
 
-
   const sequenceRenderedNotationAbc = useMemo(() => {
     if (sequenceStepsWithButtons.length === 0) return "";
 
@@ -1318,8 +1826,12 @@ function App() {
       const chordBars: string[] = [];
       for (let index = 0; index < sequenceStepsWithButtons.length; index += 4) {
         const lineBreak = index > 0 && index % 16 === 0 ? "\n" : "";
-        bassBars.push(`${lineBreak}| ${bassTokens.slice(index, index + 4).join(" ")} `);
-        chordBars.push(`${lineBreak}| ${chordTokens.slice(index, index + 4).join(" ")} `);
+        bassBars.push(
+          `${lineBreak}| ${bassTokens.slice(index, index + 4).join(" ")} `,
+        );
+        chordBars.push(
+          `${lineBreak}| ${chordTokens.slice(index, index + 4).join(" ")} `,
+        );
       }
       return [
         "X:1",
@@ -1336,42 +1848,61 @@ function App() {
       ].join("\n");
     }
 
-    const tokens = sequenceStepsWithButtons.map((step) => abcNoteNameForButton(step.button));
+    const tokens = sequenceStepsWithButtons.map((step) =>
+      abcNoteNameForButton(step.button),
+    );
     const bars: string[] = [];
     for (let index = 0; index < tokens.length; index += 4) {
       const lineBreak = index > 0 && index % 16 === 0 ? "\n" : "";
       bars.push(`${lineBreak}| ${tokens.slice(index, index + 4).join(" ")} `);
     }
-    return [
-      "X:1",
-      "M:4/4",
-      "L:1/4",
-      "K:C",
-      `${bars.join("")} |`,
-      "",
-    ].join("\n");
+    return ["X:1", "M:4/4", "L:1/4", "K:C", `${bars.join("")} |`, ""].join(
+      "\n",
+    );
   }, [sequenceStepsWithButtons, side]);
 
   useEffect(() => {
     if (!bassPatternRenderedNotationVisible) return;
-    renderNotationInto(bassPatternNotationRef.current, bassPatternRenderedNotationAbc);
-  }, [bassPatternRenderedNotationAbc, bassPatternRenderedNotationVisible, musicNotationScale, musicNotationStaffWidth]);
+    renderNotationInto(
+      bassPatternNotationRef.current,
+      bassPatternRenderedNotationAbc,
+    );
+  }, [
+    bassPatternRenderedNotationAbc,
+    bassPatternRenderedNotationVisible,
+    musicNotationScale,
+    musicNotationStaffWidth,
+  ]);
 
   useEffect(() => {
     if (!abcRenderedNotationVisible) return;
     renderNotationInto(abcNotationRef.current, abcText);
-  }, [abcRenderedNotationVisible, abcText, musicNotationScale, musicNotationStaffWidth]);
+  }, [
+    abcRenderedNotationVisible,
+    abcText,
+    musicNotationScale,
+    musicNotationStaffWidth,
+  ]);
 
   useEffect(() => {
     if (!sequenceRenderedNotationVisible) return;
-    renderNotationInto(sequenceNotationRef.current, sequenceRenderedNotationAbc);
-  }, [sequenceRenderedNotationAbc, sequenceRenderedNotationVisible, musicNotationScale, musicNotationStaffWidth]);
+    renderNotationInto(
+      sequenceNotationRef.current,
+      sequenceRenderedNotationAbc,
+    );
+  }, [
+    sequenceRenderedNotationAbc,
+    sequenceRenderedNotationVisible,
+    musicNotationScale,
+    musicNotationStaffWidth,
+  ]);
 
-  const bassPatternRepeatSelection = bassPatternLoopMode === "infinite"
-    ? "loop"
-    : bassPatternLoopMode === "fixed"
-      ? String(bassPatternLoopCount)
-      : "1";
+  const bassPatternRepeatSelection =
+    bassPatternLoopMode === "infinite"
+      ? "loop"
+      : bassPatternLoopMode === "fixed"
+        ? String(bassPatternLoopCount)
+        : "1";
 
   function setBassPatternRepeatSelection(value: string) {
     stopBassPatternPlayback();
@@ -1425,7 +1956,8 @@ function App() {
   ]);
 
   const stradellaChordFinderButtons = stradellaChordFinderResult.buttons;
-  const stradellaChordFinderPlaybackButtons = stradellaChordFinderResult.playbackButtons;
+  const stradellaChordFinderPlaybackButtons =
+    stradellaChordFinderResult.playbackButtons;
   const stradellaRootBassFinderButtonIds = useMemo(
     () => new Set(stradellaChordFinderResult.rootBassButtonIds),
     [stradellaChordFinderResult.rootBassButtonIds],
@@ -1604,7 +2136,10 @@ function App() {
   /** Plays the currently highlighted Stradella Chord Finder result. */
   function playStradellaChordFinder() {
     if (stradellaChordFinderMode === "bass-only") {
-      playButtonArpeggioThenChord(stradellaChordFinderPlaybackButtons, soundOptions);
+      playButtonArpeggioThenChord(
+        stradellaChordFinderPlaybackButtons,
+        soundOptions,
+      );
       return;
     }
 
@@ -1637,14 +2172,17 @@ function App() {
     );
   }
 
-
   async function loadAbcExample(exampleValue: string) {
-    const example = ABC_EXAMPLE_OPTIONS.find((option) => option.value === exampleValue);
+    const example = ABC_EXAMPLE_OPTIONS.find(
+      (option) => option.value === exampleValue,
+    );
     setAbcExampleValue(exampleValue);
     if (!example || !example.file) return;
 
     try {
-      const response = await fetch(`${import.meta.env.BASE_URL}${example.file}`);
+      const response = await fetch(
+        `${import.meta.env.BASE_URL}${example.file}`,
+      );
       if (!response.ok) throw new Error(`Could not load ${example.file}`);
       const text = await response.text();
       setAbcText(text);
@@ -1663,7 +2201,9 @@ function App() {
   }
 
   function clearAbcTimers() {
-    abcPlaybackTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    abcPlaybackTimeoutsRef.current.forEach((timeoutId) =>
+      window.clearTimeout(timeoutId),
+    );
     abcPlaybackTimeoutsRef.current = [];
   }
 
@@ -1680,7 +2220,10 @@ function App() {
     if (abcPlaybackState !== "playing") return;
     const startedAt = abcPlaybackStartedAtRef.current;
     const startBeat = abcPlaybackStartBeatRef.current;
-    const elapsedBeats = startedAt === null ? 0 : ((performance.now() - startedAt) / 1000) * (abcTempoBpm / 60);
+    const elapsedBeats =
+      startedAt === null
+        ? 0
+        : ((performance.now() - startedAt) / 1000) * (abcTempoBpm / 60);
     setAbcPositionBeat(Math.min(abcTotalBeats, startBeat + elapsedBeats));
     setAbcPlaybackState("paused");
     setAbcActiveButtonIds([]);
@@ -1713,31 +2256,42 @@ function App() {
       const onTimeout = window.setTimeout(() => {
         setAbcPositionBeat(event.startBeat);
         setAbcActiveButtonIds(event.buttons.map((button) => button.id));
-        event.buttons.forEach((button) => playButtonSound(button, soundOptions));
+        event.buttons.forEach((button) =>
+          playButtonSound(button, soundOptions),
+        );
 
-        const clearTimeoutId = window.setTimeout(() => {
-          setAbcActiveButtonIds((current) => {
-            const eventIds = new Set(event.buttons.map((button) => button.id));
-            return current.filter((id) => !eventIds.has(id));
-          });
-        }, Math.max(80, event.durationBeats * beatMs * 0.85));
+        const clearTimeoutId = window.setTimeout(
+          () => {
+            setAbcActiveButtonIds((current) => {
+              const eventIds = new Set(
+                event.buttons.map((button) => button.id),
+              );
+              return current.filter((id) => !eventIds.has(id));
+            });
+          },
+          Math.max(80, event.durationBeats * beatMs * 0.85),
+        );
         abcPlaybackTimeoutsRef.current.push(clearTimeoutId);
       }, delayMs);
       abcPlaybackTimeoutsRef.current.push(onTimeout);
     });
 
-    const stopTimeout = window.setTimeout(() => {
-      setAbcPlaybackState("stopped");
-      setAbcPositionBeat(0);
-      setAbcActiveButtonIds([]);
-      abcPlaybackStartedAtRef.current = null;
-    }, Math.max(0, (abcTotalBeats - startBeat) * beatMs) + 120);
+    const stopTimeout = window.setTimeout(
+      () => {
+        setAbcPlaybackState("stopped");
+        setAbcPositionBeat(0);
+        setAbcActiveButtonIds([]);
+        abcPlaybackStartedAtRef.current = null;
+      },
+      Math.max(0, (abcTotalBeats - startBeat) * beatMs) + 120,
+    );
     abcPlaybackTimeoutsRef.current.push(stopTimeout);
   }
 
-
   function clearBassPatternTimers() {
-    bassPatternTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    bassPatternTimeoutsRef.current.forEach((timeoutId) =>
+      window.clearTimeout(timeoutId),
+    );
     bassPatternTimeoutsRef.current = [];
   }
 
@@ -1751,7 +2305,9 @@ function App() {
 
   const bassPatternEditorErrors = useMemo(() => {
     try {
-      const candidate = JSON.parse(bassPatternEditorText) as BassPatternDefinition;
+      const candidate = JSON.parse(
+        bassPatternEditorText,
+      ) as BassPatternDefinition;
       return validateBassPatternLibrary({ version: 2, patterns: [candidate] });
     } catch (error) {
       return [error instanceof Error ? error.message : "Invalid JSON."];
@@ -1760,28 +2316,55 @@ function App() {
 
   function saveCustomBassPattern() {
     try {
-      const candidate = JSON.parse(bassPatternEditorText) as BassPatternDefinition;
-      const errors = validateBassPatternLibrary({ version: 2, patterns: [candidate] });
+      const candidate = JSON.parse(
+        bassPatternEditorText,
+      ) as BassPatternDefinition;
+      const errors = validateBassPatternLibrary({
+        version: 2,
+        patterns: [candidate],
+      });
       if (errors.length > 0) {
         setBassPatternEditorMessage(`Cannot save: ${errors[0]}`);
         return;
       }
-      const nextPatterns = [candidate, ...customBassPatternDefinitions.filter((pattern) => pattern.id !== candidate.id)];
+      const nextPatterns = [
+        candidate,
+        ...customBassPatternDefinitions.filter(
+          (pattern) => pattern.id !== candidate.id,
+        ),
+      ];
       setCustomBassPatternDefinitions(nextPatterns);
-      window.localStorage.setItem("accordionTools.customBassPatterns.v2", JSON.stringify(nextPatterns));
+      window.localStorage.setItem(
+        "accordionTools.customBassPatterns.v2",
+        JSON.stringify(nextPatterns),
+      );
       setBassPatternId(candidate.id);
       setBassPatternEditorMessage(`Saved custom pattern “${candidate.name}”.`);
     } catch (error) {
-      setBassPatternEditorMessage(error instanceof Error ? error.message : "Invalid JSON.");
+      setBassPatternEditorMessage(
+        error instanceof Error ? error.message : "Invalid JSON.",
+      );
     }
   }
 
   function removeSelectedCustomBassPattern() {
-    if (!customBassPatternDefinitions.some((pattern) => pattern.id === bassPatternId)) return;
-    const nextPatterns = customBassPatternDefinitions.filter((pattern) => pattern.id !== bassPatternId);
+    if (
+      !customBassPatternDefinitions.some(
+        (pattern) => pattern.id === bassPatternId,
+      )
+    )
+      return;
+    const nextPatterns = customBassPatternDefinitions.filter(
+      (pattern) => pattern.id !== bassPatternId,
+    );
     setCustomBassPatternDefinitions(nextPatterns);
-    window.localStorage.setItem("accordionTools.customBassPatterns.v2", JSON.stringify(nextPatterns));
-    setBassPatternId((builtInBassPatternDefinitions[0] ?? nextPatterns[0])?.id ?? "");
+    window.localStorage.setItem(
+      "accordionTools.customBassPatterns.v2",
+      JSON.stringify(nextPatterns),
+    );
+    setBassPatternId(
+      (builtInBassPatternDefinitions[0] ?? nextPatterns[0])?.id ?? "",
+    );
     setBassPatternEditorMessage("Removed selected custom pattern.");
   }
 
@@ -1791,7 +2374,11 @@ function App() {
     setBassPatternEditorMessage("Loaded selected pattern into editor.");
   }
 
-  function downloadTextFile(filename: string, text: string, mimeType = "text/plain") {
+  function downloadTextFile(
+    filename: string,
+    text: string,
+    mimeType = "text/plain",
+  ) {
     const blob = new Blob([text], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1821,7 +2408,10 @@ function App() {
 
   function exportSelectedBassPatternMidi() {
     if (!selectedBassPattern) return;
-    const bytes = bassPatternEventsToMidiBytes(bassPatternEvents, bassPatternTempoBpm);
+    const bytes = bassPatternEventsToMidiBytes(
+      bassPatternEvents,
+      bassPatternTempoBpm,
+    );
     const blob = new Blob([bytes], { type: "audio/midi" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -1859,13 +2449,14 @@ function App() {
     }
   }
 
-
   function safeFilenamePart(value: string) {
-    return value
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "notation";
+    return (
+      value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "notation"
+    );
   }
 
   function downloadRenderedNotationSvg(
@@ -1893,30 +2484,46 @@ function App() {
 
     const beatMs = 60000 / Math.max(30, bassPatternTempoBpm);
     const cycleBeats = Math.max(0, bassPatternTotalBeats);
-    const repeats = bassPatternLoopMode === "fixed"
-      ? Math.max(1, Math.min(64, Math.round(bassPatternLoopCount)))
-      : 1;
+    const repeats =
+      bassPatternLoopMode === "fixed"
+        ? Math.max(1, Math.min(64, Math.round(bassPatternLoopCount)))
+        : 1;
 
     const scheduleCycle = (cycleIndex: number) => {
       if (bassPatternPlaybackRunRef.current !== runId) return;
       const cycleOffsetMs = cycleIndex * cycleBeats * beatMs;
 
       bassPatternEvents.forEach((event) => {
-        const onTimeout = window.setTimeout(() => {
-          if (bassPatternPlaybackRunRef.current !== runId) return;
-          setBassPatternActiveButtonIds(event.buttons.map((button) => button.id));
-          const eventSoundOptions = { ...soundOptions, volume: Math.min(1, soundOptions.volume * event.gain) };
-          event.buttons.forEach((button) => playButtonSound(button, eventSoundOptions));
-
-          const clearTimeoutId = window.setTimeout(() => {
+        const onTimeout = window.setTimeout(
+          () => {
             if (bassPatternPlaybackRunRef.current !== runId) return;
-            setBassPatternActiveButtonIds((current) => {
-              const eventIds = new Set(event.buttons.map((button) => button.id));
-              return current.filter((id) => !eventIds.has(id));
-            });
-          }, Math.max(80, event.durationBeats * beatMs * 0.85));
-          bassPatternTimeoutsRef.current.push(clearTimeoutId);
-        }, Math.max(0, cycleOffsetMs + event.startBeat * beatMs));
+            setBassPatternActiveButtonIds(
+              event.buttons.map((button) => button.id),
+            );
+            const eventSoundOptions = {
+              ...soundOptions,
+              volume: Math.min(1, soundOptions.volume * event.gain),
+            };
+            event.buttons.forEach((button) =>
+              playButtonSound(button, eventSoundOptions),
+            );
+
+            const clearTimeoutId = window.setTimeout(
+              () => {
+                if (bassPatternPlaybackRunRef.current !== runId) return;
+                setBassPatternActiveButtonIds((current) => {
+                  const eventIds = new Set(
+                    event.buttons.map((button) => button.id),
+                  );
+                  return current.filter((id) => !eventIds.has(id));
+                });
+              },
+              Math.max(80, event.durationBeats * beatMs * 0.85),
+            );
+            bassPatternTimeoutsRef.current.push(clearTimeoutId);
+          },
+          Math.max(0, cycleOffsetMs + event.startBeat * beatMs),
+        );
         bassPatternTimeoutsRef.current.push(onTimeout);
       });
     };
@@ -1925,9 +2532,12 @@ function App() {
       const scheduleInfiniteCycle = (cycleIndex: number) => {
         if (bassPatternPlaybackRunRef.current !== runId) return;
         scheduleCycle(cycleIndex);
-        const nextCycleTimeout = window.setTimeout(() => {
-          scheduleInfiniteCycle(cycleIndex + 1);
-        }, Math.max(120, cycleBeats * beatMs));
+        const nextCycleTimeout = window.setTimeout(
+          () => {
+            scheduleInfiniteCycle(cycleIndex + 1);
+          },
+          Math.max(120, cycleBeats * beatMs),
+        );
         bassPatternTimeoutsRef.current.push(nextCycleTimeout);
       };
       scheduleInfiniteCycle(0);
@@ -1938,11 +2548,14 @@ function App() {
       scheduleCycle(cycleIndex);
     }
 
-    const stopTimeout = window.setTimeout(() => {
-      if (bassPatternPlaybackRunRef.current !== runId) return;
-      setBassPatternPlaybackState("stopped");
-      setBassPatternActiveButtonIds([]);
-    }, Math.max(0, cycleBeats * repeats * beatMs) + 140);
+    const stopTimeout = window.setTimeout(
+      () => {
+        if (bassPatternPlaybackRunRef.current !== runId) return;
+        setBassPatternPlaybackState("stopped");
+        setBassPatternActiveButtonIds([]);
+      },
+      Math.max(0, cycleBeats * repeats * beatMs) + 140,
+    );
     bassPatternTimeoutsRef.current.push(stopTimeout);
   }
 
@@ -2010,13 +2623,13 @@ function App() {
     );
   }
 
-
   /** Formats one pitch with the same spelling used by visible Stradella bass-button labels. */
   function formatStradellaFinderPitch(pitch: string) {
     const matchingBassButton = buttons
-      .filter((button) =>
-        (button.kind === "bass-root" || button.kind === "bass-counterbass") &&
-        button.pitchClass === pitch,
+      .filter(
+        (button) =>
+          (button.kind === "bass-root" || button.kind === "bass-counterbass") &&
+          button.pitchClass === pitch,
       )
       .sort((a, b) => {
         if (a.kind !== b.kind) return a.kind === "bass-root" ? -1 : 1;
@@ -2041,8 +2654,14 @@ function App() {
       .sort((a, b) => b.length - a.length)
       .reduce((current, pitch) => {
         const escapedPitch = pitch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const pattern = new RegExp(`(^|[^A-Za-z#])(${escapedPitch})(?![A-Za-z#])`, "g");
-        return current.replace(pattern, (_match, prefix) => `${prefix}${formatStradellaFinderPitch(pitch)}`);
+        const pattern = new RegExp(
+          `(^|[^A-Za-z#])(${escapedPitch})(?![A-Za-z#])`,
+          "g",
+        );
+        return current.replace(
+          pattern,
+          (_match, prefix) => `${prefix}${formatStradellaFinderPitch(pitch)}`,
+        );
       }, text);
   }
 
@@ -2146,27 +2765,50 @@ function App() {
     side === "stradella"
       ? Math.max(1040, 275 + visibleRoots.length * buttonSize * spacing * 1.15)
       : isPianoTreble
-        ? Math.max(880, 185 + pianoTrebleWhiteKeyCount(pianoTrebleRange) * buttonSize * spacing * 0.92 * pianoKeyWidthScale)
+        ? Math.max(
+            880,
+            185 +
+              pianoTrebleWhiteKeyCount(pianoTrebleRange) *
+                buttonSize *
+                spacing *
+                0.92 *
+                pianoKeyWidthScale,
+          )
         : TREBLE_SIZE_VIEW_WIDTH[trebleSize];
 
   const viewHeight =
     side === "stradella"
-      ? Math.max(320, 220 + visibleRows.length * buttonSize * spacing * 0.88 + diagramVerticalSpacing)
+      ? Math.max(
+          320,
+          220 +
+            visibleRows.length * buttonSize * spacing * 0.88 +
+            diagramVerticalSpacing,
+        )
       : isPianoTreble
-        ? Math.max(360, 285 + buttonSize * 5.9 * pianoKeyHeightScale + diagramVerticalSpacing)
+        ? Math.max(
+            360,
+            285 +
+              buttonSize * 5.9 * pianoKeyHeightScale +
+              diagramVerticalSpacing,
+          )
         : 450 + diagramVerticalSpacing;
 
-  const sidebarWidth = interfaceDensity === "compact"
-    ? "clamp(230px, 15vw, 270px)"
-    : "clamp(300px, 20vw, 380px)";
+  const sidebarWidth =
+    interfaceDensity === "compact"
+      ? "clamp(230px, 15vw, 270px)"
+      : "clamp(300px, 20vw, 380px)";
   const appGridColumns = `${leftPanelMode === "hidden" ? "" : `${sidebarWidth} `}minmax(0, 1fr)`;
 
   const showSequenceNumbers = sequenceModeShowsNumbers(sequenceDisplayMode);
   const showSequenceArrows = sequenceModeShowsArrows(sequenceDisplayMode);
   const sequenceArrowStyle = sequenceArrowStyleFromMode(sequenceDisplayMode);
-  const showScaleFinderNumbers = scaleFinderActive && sequenceModeShowsNumbers(scaleFinderDisplayMode);
-  const showScaleFinderArrows = scaleFinderActive && sequenceModeShowsArrows(scaleFinderDisplayMode);
-  const scaleFinderArrowStyle = sequenceArrowStyleFromMode(scaleFinderDisplayMode);
+  const showScaleFinderNumbers =
+    scaleFinderActive && sequenceModeShowsNumbers(scaleFinderDisplayMode);
+  const showScaleFinderArrows =
+    scaleFinderActive && sequenceModeShowsArrows(scaleFinderDisplayMode);
+  const scaleFinderArrowStyle = sequenceArrowStyleFromMode(
+    scaleFinderDisplayMode,
+  );
   const sequenceArrowheadMarkerId = "sequence-arrowhead";
   const finderArrowheadMarkerId = "finder-arrowhead";
   const sequenceColor = COLOR_PRESETS[sequenceColorPreset];
@@ -2187,46 +2829,51 @@ function App() {
   const bellowsLabelY = 70 + diagramVerticalSpacing * 0.35;
   const bellowsStripY = 82 + diagramVerticalSpacing * 0.35;
 
-  const activeToolLabel = side === "stradella"
-    ? bassPatternPlaybackState === "playing"
-      ? "Bass Pattern Player"
+  const activeToolLabel =
+    side === "stradella"
+      ? bassPatternPlaybackState === "playing"
+        ? "Bass Pattern Player"
+        : abcPlaybackState === "playing" || abcPlaybackState === "paused"
+          ? "ABC Player"
+          : scaleFinderActive
+            ? "Scale Finder"
+            : stradellaChordFinderActive
+              ? "Chord Finder"
+              : isRecordingSequence
+                ? "Sequence recording"
+                : isApplyingFingering
+                  ? "Fingering"
+                  : isPlacingTextNote
+                    ? "Text note"
+                    : selectionOnClick
+                      ? "Selection"
+                      : "No active tool"
       : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-      ? "ABC Player"
-      : scaleFinderActive
-      ? "Scale Finder"
-      : stradellaChordFinderActive
-        ? "Chord Finder"
-        : isRecordingSequence
-        ? "Sequence recording"
-        : isApplyingFingering
-          ? "Fingering"
-          : isPlacingTextNote
-            ? "Text note"
-            : selectionOnClick
-              ? "Selection"
-              : "No active tool"
-    : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-      ? "ABC Player"
-      : scaleFinderActive
-      ? "Scale Finder"
-      : chordFinderActive
-        ? "Chord Finder"
-        : isRecordingSequence
-          ? "Sequence recording"
-          : isApplyingFingering
-            ? "Fingering"
-            : isPlacingTextNote
-              ? "Text note"
-              : selectionOnClick
-                ? "Selection"
-                : "No active tool";
+        ? "ABC Player"
+        : scaleFinderActive
+          ? "Scale Finder"
+          : chordFinderActive
+            ? "Chord Finder"
+            : isRecordingSequence
+              ? "Sequence recording"
+              : isApplyingFingering
+                ? "Fingering"
+                : isPlacingTextNote
+                  ? "Text note"
+                  : selectionOnClick
+                    ? "Selection"
+                    : "No active tool";
 
-  const statusBarText = side === "stradella"
-    ? `Stradella · ${basses} bass · ${notationLabel(notation)} · Sound ${soundEnabled ? "on" : "off"} · ${activeToolLabel}`
-    : `Treble · ${trebleLayoutLabel(trebleLayout)} · ${trebleLayout === "piano" ? PIANO_TREBLE_RANGE_PRESETS[pianoTrebleRange].label : `${trebleRows} rows`} · ${notationLabel(notation)} · Sound ${soundEnabled ? "on" : "off"} · ${activeToolLabel}`;
+  const statusBarText =
+    side === "stradella"
+      ? `Stradella · ${basses} bass · ${notationLabel(notation)} · Sound ${soundEnabled ? "on" : "off"} · ${activeToolLabel}`
+      : `Treble · ${trebleLayoutLabel(trebleLayout)} · ${trebleLayout === "piano" ? PIANO_TREBLE_RANGE_PRESETS[pianoTrebleRange].label : `${trebleRows} rows`} · ${notationLabel(notation)} · Sound ${soundEnabled ? "on" : "off"} · ${activeToolLabel}`;
 
   return (
-    <main className={`app density-${interfaceDensity}`} style={{ gridTemplateColumns: appGridColumns }}>
+    <main
+      className={`app density-${interfaceDensity}`}
+      style={{ gridTemplateColumns: appGridColumns }}
+    >
       {leftPanelMode !== "hidden" && (
         <aside className="left-panel">
           <h1>{leftPanelMode === "settings" ? "Settings" : "Tools"}</h1>
@@ -2293,11 +2940,17 @@ function App() {
                           <select
                             value={trebleLayout}
                             onChange={(event) =>
-                              changeTrebleLayout(event.target.value as TrebleLayout)
+                              changeTrebleLayout(
+                                event.target.value as TrebleLayout,
+                              )
                             }
                           >
-                            <option value="c-system">C-system chromatic buttons</option>
-                            <option value="b-system">B-system / Bayan chromatic buttons</option>
+                            <option value="c-system">
+                              C-system chromatic buttons
+                            </option>
+                            <option value="b-system">
+                              B-system / Bayan chromatic buttons
+                            </option>
                             <option value="piano">Piano keyboard</option>
                           </select>
                         </label>
@@ -2331,7 +2984,10 @@ function App() {
                                 }
                               >
                                 {TREBLE_SIZE_OPTIONS.map((option) => (
-                                  <option key={option.value} value={option.value}>
+                                  <option
+                                    key={option.value}
+                                    value={option.value}
+                                  >
                                     {option.label}
                                   </option>
                                 ))}
@@ -2441,7 +3097,9 @@ function App() {
                       <input
                         type="checkbox"
                         checked={musicNotationIncludeTitle}
-                        onChange={(event) => setMusicNotationIncludeTitle(event.target.checked)}
+                        onChange={(event) =>
+                          setMusicNotationIncludeTitle(event.target.checked)
+                        }
                       />
                       <span>Include title</span>
                     </label>
@@ -2450,7 +3108,11 @@ function App() {
                       <input
                         type="checkbox"
                         checked={musicNotationIncludeDescription}
-                        onChange={(event) => setMusicNotationIncludeDescription(event.target.checked)}
+                        onChange={(event) =>
+                          setMusicNotationIncludeDescription(
+                            event.target.checked,
+                          )
+                        }
                       />
                       <span>Include description</span>
                     </label>
@@ -2459,7 +3121,9 @@ function App() {
                       <input
                         type="checkbox"
                         checked={musicNotationIncludeSummary}
-                        onChange={(event) => setMusicNotationIncludeSummary(event.target.checked)}
+                        onChange={(event) =>
+                          setMusicNotationIncludeSummary(event.target.checked)
+                        }
                       />
                       <span>Include summary note</span>
                     </label>
@@ -2468,7 +3132,9 @@ function App() {
                       <input
                         type="checkbox"
                         checked={musicNotationUseBarsPerLine}
-                        onChange={(event) => setMusicNotationUseBarsPerLine(event.target.checked)}
+                        onChange={(event) =>
+                          setMusicNotationUseBarsPerLine(event.target.checked)
+                        }
                       />
                       <span>Limit bars per line</span>
                     </label>
@@ -2482,7 +3148,11 @@ function App() {
                         step={1}
                         value={musicNotationBarsPerLine}
                         disabled={!musicNotationUseBarsPerLine}
-                        onChange={(event) => setMusicNotationBarsPerLine(Number(event.target.value))}
+                        onChange={(event) =>
+                          setMusicNotationBarsPerLine(
+                            Number(event.target.value),
+                          )
+                        }
                       />
                     </label>
 
@@ -2494,7 +3164,11 @@ function App() {
                         max={24}
                         step={1}
                         value={musicNotationChordFontSize}
-                        onChange={(event) => setMusicNotationChordFontSize(Number(event.target.value))}
+                        onChange={(event) =>
+                          setMusicNotationChordFontSize(
+                            Number(event.target.value),
+                          )
+                        }
                       />
                     </label>
 
@@ -2506,7 +3180,9 @@ function App() {
                         max={100}
                         step={2}
                         value={musicNotationScale}
-                        onChange={(event) => setMusicNotationScale(Number(event.target.value))}
+                        onChange={(event) =>
+                          setMusicNotationScale(Number(event.target.value))
+                        }
                       />
                     </label>
 
@@ -2518,7 +3194,9 @@ function App() {
                         max={900}
                         step={20}
                         value={musicNotationStaffWidth}
-                        onChange={(event) => setMusicNotationStaffWidth(Number(event.target.value))}
+                        onChange={(event) =>
+                          setMusicNotationStaffWidth(Number(event.target.value))
+                        }
                       />
                     </label>
 
@@ -2530,11 +3208,19 @@ function App() {
                         max={32}
                         step={1}
                         value={musicNotationStaffSeparator}
-                        onChange={(event) => setMusicNotationStaffSeparator(Number(event.target.value))}
+                        onChange={(event) =>
+                          setMusicNotationStaffSeparator(
+                            Number(event.target.value),
+                          )
+                        }
                       />
                     </label>
 
-                    <p className="hint">These settings affect rendered notation panels. Exported ABC, LilyPond, and MIDI files keep their own format-specific defaults.</p>
+                    <p className="hint">
+                      These settings affect rendered notation panels. Exported
+                      ABC, LilyPond, and MIDI files keep their own
+                      format-specific defaults.
+                    </p>
                   </div>
                 )}
               </section>
@@ -2553,10 +3239,17 @@ function App() {
                 {activeSettingsSection === "appearance" && (
                   <div className="section-content">
                     <label>
-                      <span className="label-line">Interface density <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." /></span>
+                      <span className="label-line">
+                        Interface density{" "}
+                        <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." />
+                      </span>
                       <select
                         value={interfaceDensity}
-                        onChange={(event) => setInterfaceDensity(event.target.value as InterfaceDensity)}
+                        onChange={(event) =>
+                          setInterfaceDensity(
+                            event.target.value as InterfaceDensity,
+                          )
+                        }
                       >
                         <option value="compact">Compact</option>
                         <option value="comfortable">Comfortable</option>
@@ -2567,20 +3260,30 @@ function App() {
                       <input
                         type="checkbox"
                         checked={showStatusBar}
-                        onChange={(event) => setShowStatusBar(event.target.checked)}
+                        onChange={(event) =>
+                          setShowStatusBar(event.target.checked)
+                        }
                       />
-                      <span className="label-line">Show status bar <HelpTip text="Shows a one-line summary above the diagram. Turn it off if you want maximum space." /></span>
+                      <span className="label-line">
+                        Show status bar{" "}
+                        <HelpTip text="Shows a one-line summary above the diagram. Turn it off if you want maximum space." />
+                      </span>
                     </label>
 
                     <label>
-                      <span className="label-line">Diagram scale: {diagramScale}% <HelpTip text="Scales the visible diagram. Values above 100% may add scroll bars." /></span>
+                      <span className="label-line">
+                        Diagram scale: {diagramScale}%{" "}
+                        <HelpTip text="Scales the visible diagram. Values above 100% may add scroll bars." />
+                      </span>
                       <input
                         type="range"
                         min={70}
                         max={140}
                         step={5}
                         value={diagramScale}
-                        onChange={(event) => setDiagramScale(Number(event.target.value))}
+                        onChange={(event) =>
+                          setDiagramScale(Number(event.target.value))
+                        }
                       />
                     </label>
 
@@ -2711,7 +3414,10 @@ function App() {
                     </label>
 
                     <label>
-                      <span className="label-line">Vertical spacing: {diagramVerticalSpacing}px <HelpTip text="Adds or removes vertical space between the title, bellows guide, and buttons." /></span>
+                      <span className="label-line">
+                        Vertical spacing: {diagramVerticalSpacing}px{" "}
+                        <HelpTip text="Adds or removes vertical space between the title, bellows guide, and buttons." />
+                      </span>
                       <input
                         type="range"
                         min={0}
@@ -2755,7 +3461,10 @@ function App() {
                     {isPianoTreble && (
                       <>
                         <label>
-                          <span className="label-line">Piano key width: {pianoKeyWidthScale.toFixed(2)}× <HelpTip text="Makes white piano keys wider or narrower." /></span>
+                          <span className="label-line">
+                            Piano key width: {pianoKeyWidthScale.toFixed(2)}×{" "}
+                            <HelpTip text="Makes white piano keys wider or narrower." />
+                          </span>
                           <input
                             type="range"
                             min={0.75}
@@ -2769,7 +3478,10 @@ function App() {
                         </label>
 
                         <label>
-                          <span className="label-line">Piano key height: {pianoKeyHeightScale.toFixed(2)}× <HelpTip text="Makes piano keys taller or shorter." /></span>
+                          <span className="label-line">
+                            Piano key height: {pianoKeyHeightScale.toFixed(2)}×{" "}
+                            <HelpTip text="Makes piano keys taller or shorter." />
+                          </span>
                           <input
                             type="range"
                             min={0.75}
@@ -2783,7 +3495,11 @@ function App() {
                         </label>
 
                         <label>
-                          <span className="label-line">Black key width: {pianoBlackKeyWidthScale.toFixed(2)}× <HelpTip text="Adjusts the width of accidentals on the piano keyboard." /></span>
+                          <span className="label-line">
+                            Black key width:{" "}
+                            {pianoBlackKeyWidthScale.toFixed(2)}×{" "}
+                            <HelpTip text="Adjusts the width of accidentals on the piano keyboard." />
+                          </span>
                           <input
                             type="range"
                             min={0.75}
@@ -2791,13 +3507,19 @@ function App() {
                             step={0.05}
                             value={pianoBlackKeyWidthScale}
                             onChange={(event) =>
-                              setPianoBlackKeyWidthScale(Number(event.target.value))
+                              setPianoBlackKeyWidthScale(
+                                Number(event.target.value),
+                              )
                             }
                           />
                         </label>
 
                         <label>
-                          <span className="label-line">Black key height: {pianoBlackKeyHeightScale.toFixed(2)}× <HelpTip text="Adjusts how far black keys extend down the keyboard." /></span>
+                          <span className="label-line">
+                            Black key height:{" "}
+                            {pianoBlackKeyHeightScale.toFixed(2)}×{" "}
+                            <HelpTip text="Adjusts how far black keys extend down the keyboard." />
+                          </span>
                           <input
                             type="range"
                             min={0.75}
@@ -2805,7 +3527,9 @@ function App() {
                             step={0.05}
                             value={pianoBlackKeyHeightScale}
                             onChange={(event) =>
-                              setPianoBlackKeyHeightScale(Number(event.target.value))
+                              setPianoBlackKeyHeightScale(
+                                Number(event.target.value),
+                              )
                             }
                           />
                         </label>
@@ -2882,8 +3606,6 @@ function App() {
                       </select>
                     </label>
 
-
-
                     {side === "stradella" && (
                       <>
                         <label>
@@ -2897,15 +3619,20 @@ function App() {
                             }
                           >
                             <option value="single-low">Single low reed</option>
-                            <option value="low-and-middle">Low + middle reeds</option>
-                            <option value="single-middle">Single middle reed</option>
+                            <option value="low-and-middle">
+                              Low + middle reeds
+                            </option>
+                            <option value="single-middle">
+                              Single middle reed
+                            </option>
                           </select>
                         </label>
 
                         <p className="hint">
-                          This affects single Stradella bass buttons only. Different
-                          real accordions and registers use different bass voicings,
-                          so this is configurable instead of being hard-coded.
+                          This affects single Stradella bass buttons only.
+                          Different real accordions and registers use different
+                          bass voicings, so this is configurable instead of
+                          being hard-coded.
                         </p>
                       </>
                     )}
@@ -3096,7 +3823,10 @@ function App() {
                 onToggle={() => toggleSettingsSection("about")}
               >
                 <div className="button-row">
-                  <button className="small-button" onClick={downloadCurrentSettings}>
+                  <button
+                    className="small-button"
+                    onClick={downloadCurrentSettings}
+                  >
                     Save settings JSON
                   </button>
                   <label className="small-button file-button">
@@ -3112,7 +3842,8 @@ function App() {
                   </label>
                 </div>
                 <p className="hint">
-                  These buttons save or load a separate settings file. They do not overwrite <code>public/default-settings.json</code>.
+                  These buttons save or load a separate settings file. They do
+                  not overwrite <code>public/default-settings.json</code>.
                 </p>
               </AboutPanel>
             </>
@@ -3121,137 +3852,156 @@ function App() {
           {leftPanelMode === "tools" && (
             <>
               {(isTrebleLikeSide || side === "stradella") && (
-              <section className="control-section">
-                <button
-                  className="section-title"
-                  onClick={() => toggleToolSection("scaleFinder")}
-                >
-                  Scale Finder{" "}
-                  <span>{activeToolSection === "scaleFinder" ? "−" : "+"}</span>
-                </button>
+                <section className="control-section">
+                  <button
+                    className="section-title"
+                    onClick={() => toggleToolSection("scaleFinder")}
+                  >
+                    Scale Finder{" "}
+                    <span>
+                      {activeToolSection === "scaleFinder" ? "−" : "+"}
+                    </span>
+                  </button>
 
-                {activeToolSection === "scaleFinder" && (
-                  <div className="section-content">
-                    <p className="hint">
-                      {side === "stradella"
-                        ? "Uses only Stradella bass and counterbass note buttons, choosing buttons close to the root when possible."
-                        : "Finds a single-octave scale path. On CBA layouts it can restrict the path to the first 3, 4, or 5 rows."}
-                    </p>
+                  {activeToolSection === "scaleFinder" && (
+                    <div className="section-content">
+                      <p className="hint">
+                        {side === "stradella"
+                          ? "Uses only Stradella bass and counterbass note buttons, choosing buttons close to the root when possible."
+                          : "Finds a single-octave scale path. On CBA layouts it can restrict the path to the first 3, 4, or 5 rows."}
+                      </p>
 
-                    <fieldset className="tool-fieldset">
-                      <label>
-                        Scale root
-                        <select
-                          value={scaleFinderRoot}
-                          onChange={(event) => setScaleFinderRoot(event.target.value)}
-                        >
-                          {FINDER_ROOT_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label>
-                        Scale type
-                        <select
-                          value={scaleFinderPattern}
-                          onChange={(event) =>
-                            setScaleFinderPattern(event.target.value as FinderScalePattern)
-                          }
-                        >
-                          {SCALE_FINDER_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label>
-                        <span className="label-line">Display <HelpTip text="Controls how Scale Finder marks the scale path. Numbers show step order; arrows show movement." /></span>
-                        <select
-                          value={scaleFinderDisplayMode}
-                          onChange={(event) =>
-                            setScaleFinderDisplayMode(event.target.value as SequenceDisplayMode)
-                          }
-                        >
-                          {SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-
-                      {isTrebleLikeSide && (
+                      <fieldset className="tool-fieldset">
                         <label>
-                          Rows used
+                          Scale root
                           <select
-                            value={scaleFinderRowLimit}
+                            value={scaleFinderRoot}
                             onChange={(event) =>
-                              setScaleFinderRowLimit(Number(event.target.value) as 3 | 4 | 5)
+                              setScaleFinderRoot(event.target.value)
                             }
                           >
-                            {SCALE_FINDER_ROW_LIMIT_OPTIONS.map((option) => (
+                            {FINDER_ROOT_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
                                 {option.label}
                               </option>
                             ))}
                           </select>
                         </label>
-                      )}
 
-                      <div className="result-card">
-                        <div className="result-card-title">
-                          {side === "stradella" && scaleFinderActive && !stradellaScaleFinderResult.found
-                            ? "Not found"
-                            : `Scale buttons: ${scaleFinderButtons.length}`}
-                        </div>
-                        {side === "stradella" && (
-                          <p>
-                            Target notes: {formatStradellaFinderPitches(stradellaScaleFinderResult.targetPitches)}
-                            {stradellaScaleFinderResult.missingPitches.length > 0
-                              ? ` · Missing: ${formatStradellaFinderPitches(stradellaScaleFinderResult.missingPitches)}`
-                              : ""}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="button-row">
-                        <button
-                          type="button"
-                          className={`small-button ${scaleFinderActive ? "active-tool" : ""}`}
-                          onClick={() => {
-                            setScaleFinderActive((current) => !current);
-                            setChordFinderActive(false);
-                            setStradellaChordFinderActive(false);
-                          }}
+                        <label>
+                          Scale type
+                          <select
+                            value={scaleFinderPattern}
+                            onChange={(event) =>
+                              setScaleFinderPattern(
+                                event.target.value as FinderScalePattern,
+                              )
+                            }
                           >
-                          {scaleFinderActive ? "Hide scale" : "Show scale"}
-                        </button>
+                            {SCALE_FINDER_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
 
-                        <button
-                          className="small-button"
-                          onClick={playScaleFinder}
-                          disabled={scaleFinderButtons.length === 0}
-                        >
-                          Play scale
-                        </button>
+                        <label>
+                          <span className="label-line">
+                            Display{" "}
+                            <HelpTip text="Controls how Scale Finder marks the scale path. Numbers show step order; arrows show movement." />
+                          </span>
+                          <select
+                            value={scaleFinderDisplayMode}
+                            onChange={(event) =>
+                              setScaleFinderDisplayMode(
+                                event.target.value as SequenceDisplayMode,
+                              )
+                            }
+                          >
+                            {SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
 
-                        <button className="small-button" onClick={clearScaleFinder}>
-                          Clear scale
-                        </button>
-                      </div>
-                    </fieldset>
-                  </div>
-                )}
-              </section>
+                        {isTrebleLikeSide && (
+                          <label>
+                            Rows used
+                            <select
+                              value={scaleFinderRowLimit}
+                              onChange={(event) =>
+                                setScaleFinderRowLimit(
+                                  Number(event.target.value) as 3 | 4 | 5,
+                                )
+                              }
+                            >
+                              {SCALE_FINDER_ROW_LIMIT_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        )}
+
+                        <div className="result-card">
+                          <div className="result-card-title">
+                            {side === "stradella" &&
+                            scaleFinderActive &&
+                            !stradellaScaleFinderResult.found
+                              ? "Not found"
+                              : `Scale buttons: ${scaleFinderButtons.length}`}
+                          </div>
+                          {side === "stradella" && (
+                            <p>
+                              Target notes:{" "}
+                              {formatStradellaFinderPitches(
+                                stradellaScaleFinderResult.targetPitches,
+                              )}
+                              {stradellaScaleFinderResult.missingPitches
+                                .length > 0
+                                ? ` · Missing: ${formatStradellaFinderPitches(stradellaScaleFinderResult.missingPitches)}`
+                                : ""}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="button-row">
+                          <button
+                            type="button"
+                            className={`small-button ${scaleFinderActive ? "active-tool" : ""}`}
+                            onClick={() => {
+                              setScaleFinderActive((current) => !current);
+                              setChordFinderActive(false);
+                              setStradellaChordFinderActive(false);
+                            }}
+                          >
+                            {scaleFinderActive ? "Hide scale" : "Show scale"}
+                          </button>
+
+                          <button
+                            className="small-button"
+                            onClick={playScaleFinder}
+                            disabled={scaleFinderButtons.length === 0}
+                          >
+                            Play scale
+                          </button>
+
+                          <button
+                            className="small-button"
+                            onClick={clearScaleFinder}
+                          >
+                            Clear scale
+                          </button>
+                        </div>
+                      </fieldset>
+                    </div>
+                  )}
+                </section>
               )}
-
-
-
 
               {isTrebleLikeSide && (
                 <TrebleChordFinderPanel
@@ -3292,7 +4042,9 @@ function App() {
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
                   buttonCount={stradellaChordFinderButtons.length}
-                  playbackButtonCount={stradellaChordFinderPlaybackButtons.length}
+                  playbackButtonCount={
+                    stradellaChordFinderPlaybackButtons.length
+                  }
                   isActive={stradellaChordFinderActive}
                   onToggleActive={() => {
                     setStradellaChordFinderActive((current) => !current);
@@ -3372,7 +4124,6 @@ function App() {
                   </div>
                 )}
               </section>
-
 
               <section className="control-section">
                 <button
@@ -3619,7 +4370,10 @@ function App() {
                     <details className="compact-help-details">
                       <summary>Notation help</summary>
                       <p>
-                        Show notation renders the recorded sequence below the diagram. In Stradella mode, bass and chord buttons use the same staff-placement rules as the Bass Pattern Player.
+                        Show notation renders the recorded sequence below the
+                        diagram. In Stradella mode, bass and chord buttons use
+                        the same staff-placement rules as the Bass Pattern
+                        Player.
                       </p>
                     </details>
                   </div>
@@ -3733,7 +4487,9 @@ function App() {
                     onClick={() => toggleToolSection("bassPatternPlayer")}
                   >
                     Bass Pattern Player{" "}
-                    <span>{activeToolSection === "bassPatternPlayer" ? "−" : "+"}</span>
+                    <span>
+                      {activeToolSection === "bassPatternPlayer" ? "−" : "+"}
+                    </span>
                   </button>
 
                   {activeToolSection === "bassPatternPlayer" && (
@@ -3794,22 +4550,29 @@ function App() {
                       </label>
 
                       <label>
-                        <span className="label-line">Chord voicing <HelpTip text="Simple uses one practical Stradella chord button. Full uses the fuller Chord Finder recipe when available." /></span>
+                        <span className="label-line">
+                          Chord voicing{" "}
+                          <HelpTip text="Simple uses one practical Stradella chord button. Full uses the fuller Chord Finder recipe when available." />
+                        </span>
                         <select
                           value={bassPatternChordVoicing}
                           onChange={(event) => {
                             stopBassPatternPlayback();
-                            setBassPatternChordVoicing(event.target.value as BassPatternChordVoicing);
+                            setBassPatternChordVoicing(
+                              event.target.value as BassPatternChordVoicing,
+                            );
                           }}
                         >
                           <option value="simple">Simple chord button</option>
-                          <option value="full">Full recipe when available</option>
+                          <option value="full">
+                            Full recipe when available
+                          </option>
                         </select>
                       </label>
 
                       <div className="compact-control-grid">
                         <label>
-                          Bars per chord: {bassPatternBarsPerChord}
+                          Repeats per chord: {bassPatternBarsPerChord}
                           <input
                             type="range"
                             min={1}
@@ -3818,7 +4581,9 @@ function App() {
                             value={bassPatternBarsPerChord}
                             onChange={(event) => {
                               stopBassPatternPlayback();
-                              setBassPatternBarsPerChord(Number(event.target.value));
+                              setBassPatternBarsPerChord(
+                                Number(event.target.value),
+                              );
                             }}
                           />
                         </label>
@@ -3831,7 +4596,9 @@ function App() {
                             max={220}
                             step={1}
                             value={bassPatternTempoBpm}
-                            onChange={(event) => setBassPatternTempoBpm(Number(event.target.value))}
+                            onChange={(event) =>
+                              setBassPatternTempoBpm(Number(event.target.value))
+                            }
                           />
                         </label>
                       </div>
@@ -3841,7 +4608,9 @@ function App() {
                           Playback repeat
                           <select
                             value={bassPatternRepeatSelection}
-                            onChange={(event) => setBassPatternRepeatSelection(event.target.value)}
+                            onChange={(event) =>
+                              setBassPatternRepeatSelection(event.target.value)
+                            }
                           >
                             <option value="1">1 time</option>
                             <option value="2">2 times</option>
@@ -3856,30 +4625,53 @@ function App() {
                           {selectedBassPattern?.name ?? "No pattern loaded"}
                         </div>
                         <p>
-                          {selectedChordProgression?.name ?? "No progression loaded"} · {bassPatternBarsPerChord} bar{bassPatternBarsPerChord === 1 ? "" : "s"} per chord · Length: {bassPatternTotalBeats.toFixed(1)} meter units
-                          {bassPatternMissingText ? ` · Missing: ${bassPatternMissingText}` : ""}
+                          {selectedChordProgression?.name ??
+                            "No progression loaded"}{" "}
+                          · Pattern bars:{" "}
+                          {selectedBassPattern
+                            ? patternBarCount(selectedBassPattern)
+                            : 1}{" "}
+                          · {bassPatternBarsPerChord} repeat
+                          {bassPatternBarsPerChord === 1 ? "" : "s"} per chord ·
+                          Length: {bassPatternTotalBeats.toFixed(1)} meter units
+                          {bassPatternMissingText
+                            ? ` · Missing: ${bassPatternMissingText}`
+                            : ""}
                         </p>
                         {bassPatternValidationErrors.length > 0 && (
                           <div className="bass-pattern-errors" role="alert">
                             <strong>Pattern format errors:</strong>
                             <ul>
-                              {bassPatternValidationErrors.slice(0, 6).map((message) => (
-                                <li key={message}>{message}</li>
-                              ))}
+                              {bassPatternValidationErrors
+                                .slice(0, 6)
+                                .map((message) => (
+                                  <li key={message}>{message}</li>
+                                ))}
                             </ul>
-                            {bassPatternValidationErrors.length > 6 && <p>…and {bassPatternValidationErrors.length - 6} more.</p>}
+                            {bassPatternValidationErrors.length > 6 && (
+                              <p>
+                                …and {bassPatternValidationErrors.length - 6}{" "}
+                                more.
+                              </p>
+                            )}
                           </div>
                         )}
-                        {selectedBassPattern?.tags && selectedBassPattern.tags.length > 0 && (
-                          <p className="hint">Tags: {selectedBassPattern.tags.join(", ")}</p>
-                        )}
+                        {selectedBassPattern?.tags &&
+                          selectedBassPattern.tags.length > 0 && (
+                            <p className="hint">
+                              Tags: {selectedBassPattern.tags.join(", ")}
+                            </p>
+                          )}
                       </div>
-
 
                       <details className="compact-help-details">
                         <summary>Notation help</summary>
                         <p>
-                          Bass and counterbass notes are written at the first matching note position at or below the bass-clef middle line D. Chord buttons use the first matching position above the middle line; M, m, 7, or d above the note indicates the chord quality.
+                          Bass and counterbass notes are written at the first
+                          matching note position at or below the bass-clef
+                          middle line D. Chord buttons use the first matching
+                          position above the middle line; M, m, 7, or d above
+                          the note indicates the chord quality.
                         </p>
                       </details>
 
@@ -3903,7 +4695,14 @@ function App() {
                           <span>Export</span>
                           <select
                             value={bassPatternExportFormat}
-                            onChange={(event) => setBassPatternExportFormat(event.target.value as "abc" | "midi" | "lilypond")}
+                            onChange={(event) =>
+                              setBassPatternExportFormat(
+                                event.target.value as
+                                  | "abc"
+                                  | "midi"
+                                  | "lilypond",
+                              )
+                            }
                             aria-label="Bass pattern export format"
                           >
                             <option value="abc">ABC</option>
@@ -3921,11 +4720,15 @@ function App() {
                         </div>
                       </div>
 
-                      <div className={`result-card bass-pattern-editor ${bassPatternEditorExpanded ? "expanded" : "collapsed"}`}>
+                      <div
+                        className={`result-card bass-pattern-editor ${bassPatternEditorExpanded ? "expanded" : "collapsed"}`}
+                      >
                         <button
                           type="button"
                           className="inline-section-toggle"
-                          onClick={() => setBassPatternEditorExpanded((current) => !current)}
+                          onClick={() =>
+                            setBassPatternEditorExpanded((current) => !current)
+                          }
                         >
                           <span>Custom pattern editor</span>
                           <span>{bassPatternEditorExpanded ? "−" : "+"}</span>
@@ -3933,11 +4736,15 @@ function App() {
                         {bassPatternEditorExpanded && (
                           <>
                             <p className="hint">
-                              Edit one pattern object, validate it live, and save it to this browser's local custom pattern library.
+                              Edit one pattern object, validate it live, and
+                              save it to this browser's local custom pattern
+                              library.
                             </p>
                             <textarea
                               value={bassPatternEditorText}
-                              onChange={(event) => setBassPatternEditorText(event.target.value)}
+                              onChange={(event) =>
+                                setBassPatternEditorText(event.target.value)
+                              }
                               rows={12}
                               spellCheck={false}
                             />
@@ -3945,17 +4752,47 @@ function App() {
                               <div className="bass-pattern-errors" role="alert">
                                 <strong>Editor validation:</strong>
                                 <ul>
-                                  {bassPatternEditorErrors.slice(0, 4).map((message) => <li key={message}>{message}</li>)}
+                                  {bassPatternEditorErrors
+                                    .slice(0, 4)
+                                    .map((message) => (
+                                      <li key={message}>{message}</li>
+                                    ))}
                                 </ul>
                               </div>
                             ) : (
                               <p className="hint">Editor validation: OK.</p>
                             )}
-                            {bassPatternEditorMessage && <p className="hint">{bassPatternEditorMessage}</p>}
+                            {bassPatternEditorMessage && (
+                              <p className="hint">{bassPatternEditorMessage}</p>
+                            )}
                             <div className="button-row">
-                              <button type="button" className="small-button" onClick={loadSelectedPatternIntoEditor}>Load selected</button>
-                              <button type="button" className="small-button" onClick={saveCustomBassPattern} disabled={bassPatternEditorErrors.length > 0}>Save custom</button>
-                              <button type="button" className="small-button" onClick={removeSelectedCustomBassPattern} disabled={!customBassPatternDefinitions.some((pattern) => pattern.id === bassPatternId)}>Remove custom</button>
+                              <button
+                                type="button"
+                                className="small-button"
+                                onClick={loadSelectedPatternIntoEditor}
+                              >
+                                Load selected
+                              </button>
+                              <button
+                                type="button"
+                                className="small-button"
+                                onClick={saveCustomBassPattern}
+                                disabled={bassPatternEditorErrors.length > 0}
+                              >
+                                Save custom
+                              </button>
+                              <button
+                                type="button"
+                                className="small-button"
+                                onClick={removeSelectedCustomBassPattern}
+                                disabled={
+                                  !customBassPatternDefinitions.some(
+                                    (pattern) => pattern.id === bassPatternId,
+                                  )
+                                }
+                              >
+                                Remove custom
+                              </button>
                             </div>
                           </>
                         )}
@@ -3985,31 +4822,47 @@ function App() {
 
                       {side === "stradella" && (
                         <label>
-                          <span className="label-line">Stradella mapping <HelpTip text="Bass notes use written ABC pitches. Chord symbols use quoted ABC harmony labels such as &quot;C&quot;, &quot;G7&quot;, or &quot;Am&quot;." /></span>
+                          <span className="label-line">
+                            Stradella mapping{" "}
+                            <HelpTip text='Bass notes use written ABC pitches. Chord symbols use quoted ABC harmony labels such as "C", "G7", or "Am".' />
+                          </span>
                           <select
                             value={abcStradellaMode}
                             onChange={(event) => {
                               pauseAbcPlayback();
                               setAbcActiveButtonIds([]);
-                              setAbcStradellaMode(event.target.value as AbcStradellaMode);
+                              setAbcStradellaMode(
+                                event.target.value as AbcStradellaMode,
+                              );
                             }}
                           >
-                            <option value="bass-notes-only">Bass notes only</option>
-                            <option value="chord-symbols-only">Chord symbols only</option>
-                            <option value="bass-notes-and-chord-symbols">Bass notes + chord symbols</option>
+                            <option value="bass-notes-only">
+                              Bass notes only
+                            </option>
+                            <option value="chord-symbols-only">
+                              Chord symbols only
+                            </option>
+                            <option value="bass-notes-and-chord-symbols">
+                              Bass notes + chord symbols
+                            </option>
                           </select>
                         </label>
                       )}
 
                       {isTrebleLikeSide && (
                         <label>
-                          <span className="label-line">Chord symbols <HelpTip text="Quoted ABC chord symbols such as &quot;C&quot; or &quot;G7&quot; can be ignored or played as treble block chords." /></span>
+                          <span className="label-line">
+                            Chord symbols{" "}
+                            <HelpTip text='Quoted ABC chord symbols such as "C" or "G7" can be ignored or played as treble block chords.' />
+                          </span>
                           <select
                             value={abcTrebleChordSymbolsMode}
                             onChange={(event) => {
                               pauseAbcPlayback();
                               setAbcActiveButtonIds([]);
-                              setAbcTrebleChordSymbolsMode(event.target.value as AbcTrebleChordSymbolsMode);
+                              setAbcTrebleChordSymbolsMode(
+                                event.target.value as AbcTrebleChordSymbolsMode,
+                              );
                             }}
                           >
                             <option value="ignore">Ignore</option>
@@ -4022,10 +4875,15 @@ function App() {
                         Example tune
                         <select
                           value={abcExampleValue}
-                          onChange={(event) => void loadAbcExample(event.target.value)}
+                          onChange={(event) =>
+                            void loadAbcExample(event.target.value)
+                          }
                         >
                           {ABC_EXAMPLE_OPTIONS.map((option) => (
-                            <option key={option.value || "empty"} value={option.value}>
+                            <option
+                              key={option.value || "empty"}
+                              value={option.value}
+                            >
                               {option.label}
                             </option>
                           ))}
@@ -4067,7 +4925,9 @@ function App() {
                         </button>
                       </div>
 
-                      {abcFileName && <p className="hint">File: {abcFileName}</p>}
+                      {abcFileName && (
+                        <p className="hint">File: {abcFileName}</p>
+                      )}
 
                       <label>
                         Tempo: {abcTempoBpm} BPM
@@ -4077,7 +4937,9 @@ function App() {
                           max={220}
                           step={1}
                           value={abcTempoBpm}
-                          onChange={(event) => setAbcTempoBpm(Number(event.target.value))}
+                          onChange={(event) =>
+                            setAbcTempoBpm(Number(event.target.value))
+                          }
                         />
                       </label>
 
@@ -4100,14 +4962,20 @@ function App() {
 
                       <div className="result-card">
                         <div className="result-card-title">
-                          {abcText.trim() ? abcParseResult.title : "No ABC loaded"}
+                          {abcText.trim()
+                            ? abcParseResult.title
+                            : "No ABC loaded"}
                         </div>
                         {abcParseResult.errors.length > 0 ? (
                           <p>{abcParseResult.errors.join(" ")}</p>
                         ) : (
                           <p>
-                            Events: {abcParseResult.events.length} · Key: {abcParseResult.key} · Length: {abcTotalBeats.toFixed(1)} beats
-                            {abcMissingPitchText ? ` · ${side === "stradella" ? "Unavailable notes" : "Missing"}: ${abcMissingPitchText}` : ""}
+                            Events: {abcParseResult.events.length} · Key:{" "}
+                            {abcParseResult.key} · Length:{" "}
+                            {abcTotalBeats.toFixed(1)} beats
+                            {abcMissingPitchText
+                              ? ` · ${side === "stradella" ? "Unavailable notes" : "Missing"}: ${abcMissingPitchText}`
+                              : ""}
                           </p>
                         )}
                       </div>
@@ -4133,7 +5001,10 @@ function App() {
                           className="small-button"
                           type="button"
                           onClick={stopAbcPlayback}
-                          disabled={abcPlaybackState === "stopped" && abcPositionBeat === 0}
+                          disabled={
+                            abcPlaybackState === "stopped" &&
+                            abcPositionBeat === 0
+                          }
                         >
                           Stop
                         </button>
@@ -4142,15 +5013,22 @@ function App() {
                       <details className="compact-help-details">
                         <summary>Notation help</summary>
                         <p>
-                          Use Show notation to render the ABC as staff notation below the diagram. If the ABC text is invalid, the notation panel shows an error instead of interrupting the interface.
+                          Use Show notation to render the ABC as staff notation
+                          below the diagram. If the ABC text is invalid, the
+                          notation panel shows an error instead of interrupting
+                          the interface.
                         </p>
                       </details>
 
-                      <div className={`result-card abc-editor ${abcEditorExpanded ? "expanded" : "collapsed"}`}>
+                      <div
+                        className={`result-card abc-editor ${abcEditorExpanded ? "expanded" : "collapsed"}`}
+                      >
                         <button
                           type="button"
                           className="inline-section-toggle"
-                          onClick={() => setAbcEditorExpanded((current) => !current)}
+                          onClick={() =>
+                            setAbcEditorExpanded((current) => !current)
+                          }
                         >
                           <span>ABC editor</span>
                           <span>{abcEditorExpanded ? "−" : "+"}</span>
@@ -4168,12 +5046,13 @@ function App() {
                                 setAbcActiveButtonIds([]);
                                 setAbcPlaybackState("stopped");
                               }}
-                              placeholder={'X:1\nT:Simple tune\nM:4/4\nL:1/4\nQ:120\nK:C\nC D E F | G A B c |'}
+                              placeholder={
+                                "X:1\nT:Simple tune\nM:4/4\nL:1/4\nQ:120\nK:C\nC D E F | G A B c |"
+                              }
                             />
                           </label>
                         )}
                       </div>
-
                     </div>
                   )}
                 </section>
@@ -4205,7 +5084,6 @@ function App() {
             Treble
           </button>
 
-
           <span className="topbar-separator" />
 
           <button
@@ -4224,23 +5102,30 @@ function App() {
 
           <button
             className={`topbar-button ${leftPanelMode === "hidden" ? "active" : ""}`}
-            onClick={() => setLeftPanelMode((current) => (current === "hidden" ? "settings" : "hidden"))}
+            onClick={() =>
+              setLeftPanelMode((current) =>
+                current === "hidden" ? "settings" : "hidden",
+              )
+            }
             title="Hide the sidebar to give the diagram more horizontal room."
           >
             {leftPanelMode === "hidden" ? "Show controls" : "Focus diagram"}
           </button>
 
-
-          {side === "stradella" && activeToolSection === "bassPatternPlayer" && bassPatternEvents.length > 0 && (
-            <>
-              <button
-                className={`topbar-button ${bassPatternRenderedNotationVisible ? "active" : ""}`}
-                onClick={toggleBassPatternNotation}
-              >
-                {bassPatternRenderedNotationVisible ? "Hide notation" : "Show notation"}
-              </button>
-            </>
-          )}
+          {side === "stradella" &&
+            activeToolSection === "bassPatternPlayer" &&
+            bassPatternEvents.length > 0 && (
+              <>
+                <button
+                  className={`topbar-button ${bassPatternRenderedNotationVisible ? "active" : ""}`}
+                  onClick={toggleBassPatternNotation}
+                >
+                  {bassPatternRenderedNotationVisible
+                    ? "Hide notation"
+                    : "Show notation"}
+                </button>
+              </>
+            )}
 
           {activeToolSection === "abcPlayer" && abcText.trim() && (
             <button
@@ -4251,14 +5136,17 @@ function App() {
             </button>
           )}
 
-          {activeToolSection === "sequences" && sequenceStepsWithButtons.length > 0 && (
-            <button
-              className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
-              onClick={toggleSequenceNotation}
-            >
-              {sequenceRenderedNotationVisible ? "Hide notation" : "Show notation"}
-            </button>
-          )}
+          {activeToolSection === "sequences" &&
+            sequenceStepsWithButtons.length > 0 && (
+              <button
+                className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
+                onClick={toggleSequenceNotation}
+              >
+                {sequenceRenderedNotationVisible
+                  ? "Hide notation"
+                  : "Show notation"}
+              </button>
+            )}
 
           <span className="topbar-spacer" />
 
@@ -4423,7 +5311,8 @@ function App() {
               const isTreble = button.kind === "treble-note";
               const isTrebleAccidental =
                 isTreble && isAccidentalPitch(button.pitchClass);
-              const isPianoKey = button.visualShape?.startsWith("piano-") ?? false;
+              const isPianoKey =
+                button.visualShape?.startsWith("piano-") ?? false;
               const isPianoBlackKey = button.visualShape === "piano-black-key";
               const sequenceLabels = getSequenceLabelsForButton(
                 sequenceSteps,
@@ -4433,9 +5322,15 @@ function App() {
                 ? finderLabelsForButton(scaleFinderButtons, button.id)
                 : "";
               const finderMatch = finderButtonIds.has(button.id);
-              const abcMatch = abcActiveButtonIdSet.has(button.id) || bassPatternActiveButtonIdSet.has(button.id);
-              const primaryFinderMatch = stradellaChordFinderActive && stradellaPrimaryFinderButtonIds.has(button.id);
-              const rootBassFinderMatch = stradellaChordFinderActive && stradellaRootBassFinderButtonIds.has(button.id);
+              const abcMatch =
+                abcActiveButtonIdSet.has(button.id) ||
+                bassPatternActiveButtonIdSet.has(button.id);
+              const primaryFinderMatch =
+                stradellaChordFinderActive &&
+                stradellaPrimaryFinderButtonIds.has(button.id);
+              const rootBassFinderMatch =
+                stradellaChordFinderActive &&
+                stradellaRootBassFinderButtonIds.has(button.id);
 
               const fontSize =
                 chordLabelMode === "chord-tones" && isChord
@@ -4462,23 +5357,39 @@ function App() {
                         className={[
                           "button",
                           "piano-key",
-                          isPianoBlackKey ? "piano-black-key" : "piano-white-key",
+                          isPianoBlackKey
+                            ? "piano-black-key"
+                            : "piano-white-key",
                           overlay.selected ? "selected" : "",
                           finderMatch ? "finder-match" : "",
                           abcMatch ? "abc-match" : "",
                           primaryFinderMatch ? "finder-primary" : "",
                           rootBassFinderMatch ? "finder-root-bass" : "",
-                          sequenceLabels || scaleFinderLabels ? "in-sequence" : "",
+                          sequenceLabels || scaleFinderLabels
+                            ? "in-sequence"
+                            : "",
                         ].join(" ")}
                       />
                       {(finderMatch || abcMatch) && (
                         <rect
-                          x={button.x - (button.width ?? buttonSize * 2) / 2 + 3}
-                          y={button.y - (button.height ?? buttonSize * 2) / 2 + 3}
+                          x={
+                            button.x - (button.width ?? buttonSize * 2) / 2 + 3
+                          }
+                          y={
+                            button.y - (button.height ?? buttonSize * 2) / 2 + 3
+                          }
                           width={(button.width ?? buttonSize * 2) - 6}
                           height={(button.height ?? buttonSize * 2) - 6}
                           rx={isPianoBlackKey ? 4 : 6}
-                          className={abcMatch ? "finder-ring abc-ring" : rootBassFinderMatch ? "finder-ring finder-root-bass-ring" : primaryFinderMatch ? "finder-ring finder-primary-ring" : "finder-ring"}
+                          className={
+                            abcMatch
+                              ? "finder-ring abc-ring"
+                              : rootBassFinderMatch
+                                ? "finder-ring finder-root-bass-ring"
+                                : primaryFinderMatch
+                                  ? "finder-ring finder-primary-ring"
+                                  : "finder-ring"
+                          }
                         />
                       )}
                     </>
@@ -4499,7 +5410,9 @@ function App() {
                           abcMatch ? "abc-match" : "",
                           primaryFinderMatch ? "finder-primary" : "",
                           rootBassFinderMatch ? "finder-root-bass" : "",
-                          sequenceLabels || scaleFinderLabels ? "in-sequence" : "",
+                          sequenceLabels || scaleFinderLabels
+                            ? "in-sequence"
+                            : "",
                         ].join(" ")}
                       />
                       {(finderMatch || abcMatch) && (
@@ -4507,7 +5420,15 @@ function App() {
                           cx={button.x}
                           cy={button.y}
                           r={buttonSize + 4}
-                          className={abcMatch ? "finder-ring abc-ring" : rootBassFinderMatch ? "finder-ring finder-root-bass-ring" : primaryFinderMatch ? "finder-ring finder-primary-ring" : "finder-ring"}
+                          className={
+                            abcMatch
+                              ? "finder-ring abc-ring"
+                              : rootBassFinderMatch
+                                ? "finder-ring finder-root-bass-ring"
+                                : primaryFinderMatch
+                                  ? "finder-ring finder-primary-ring"
+                                  : "finder-ring"
+                          }
                         />
                       )}
                     </>
@@ -4518,15 +5439,20 @@ function App() {
                       x={button.x}
                       y={
                         isPianoKey
-                          ? button.y + (button.height ?? buttonSize * 2) / 2 - 18
-                          : button.y - (overlay.finger || sequenceLabels ? 2 : 0)
+                          ? button.y +
+                            (button.height ?? buttonSize * 2) / 2 -
+                            18
+                          : button.y -
+                            (overlay.finger || sequenceLabels ? 2 : 0)
                       }
                       textAnchor="middle"
                       className={[
                         "main-label",
                         fontClass(labelFont),
                         isTreble ? "treble-label" : "",
-                        isTrebleAccidental || isPianoBlackKey ? "treble-accidental-label" : "",
+                        isTrebleAccidental || isPianoBlackKey
+                          ? "treble-accidental-label"
+                          : "",
                       ].join(" ")}
                       style={{ fontSize }}
                     >
@@ -4658,36 +5584,89 @@ function App() {
           </svg>
         </div>
 
-        {side === "stradella" && activeToolSection === "bassPatternPlayer" && bassPatternEvents.length > 0 && bassPatternRenderedNotationVisible && (
-          <div className="rendered-notation-panel" aria-label="Rendered Stradella staff notation">
-            <div className="rendered-notation-header">
-              <div className="rendered-notation-title">{selectedBassPattern?.name ?? "Bass pattern"} over {selectedChordProgression?.name ?? "progression"}</div>
-              <button type="button" className="small-button notation-download-button" onClick={() => downloadRenderedNotationSvg(bassPatternNotationRef.current, `${selectedBassPattern?.id ?? "bass-pattern"}-notation`)}>Download SVG</button>
+        {side === "stradella" &&
+          activeToolSection === "bassPatternPlayer" &&
+          bassPatternEvents.length > 0 &&
+          bassPatternRenderedNotationVisible && (
+            <div
+              className="rendered-notation-panel"
+              aria-label="Rendered Stradella staff notation"
+            >
+              <div className="rendered-notation-header">
+                <div className="rendered-notation-title">
+                  {selectedBassPattern?.name ?? "Bass pattern"} over{" "}
+                  {selectedChordProgression?.name ?? "progression"}
+                </div>
+                <button
+                  type="button"
+                  className="small-button notation-download-button"
+                  onClick={() =>
+                    downloadRenderedNotationSvg(
+                      bassPatternNotationRef.current,
+                      `${selectedBassPattern?.id ?? "bass-pattern"}-notation`,
+                    )
+                  }
+                >
+                  Download SVG
+                </button>
+              </div>
+              <div ref={bassPatternNotationRef} className="rendered-abc" />
             </div>
-            <div ref={bassPatternNotationRef} className="rendered-abc" />
-          </div>
-        )}
+          )}
 
-        {activeToolSection === "abcPlayer" && abcText.trim() && abcRenderedNotationVisible && (
-          <div className="rendered-notation-panel" aria-label="Rendered ABC notation">
-            <div className="rendered-notation-header">
-              <div className="rendered-notation-title">{abcParseResult.title || "ABC notation"}</div>
-              <button type="button" className="small-button notation-download-button" onClick={() => downloadRenderedNotationSvg(abcNotationRef.current, `${abcParseResult.title || "abc"}-notation`)}>Download SVG</button>
+        {activeToolSection === "abcPlayer" &&
+          abcText.trim() &&
+          abcRenderedNotationVisible && (
+            <div
+              className="rendered-notation-panel"
+              aria-label="Rendered ABC notation"
+            >
+              <div className="rendered-notation-header">
+                <div className="rendered-notation-title">
+                  {abcParseResult.title || "ABC notation"}
+                </div>
+                <button
+                  type="button"
+                  className="small-button notation-download-button"
+                  onClick={() =>
+                    downloadRenderedNotationSvg(
+                      abcNotationRef.current,
+                      `${abcParseResult.title || "abc"}-notation`,
+                    )
+                  }
+                >
+                  Download SVG
+                </button>
+              </div>
+              <div ref={abcNotationRef} className="rendered-abc" />
             </div>
-            <div ref={abcNotationRef} className="rendered-abc" />
-          </div>
-        )}
+          )}
 
-        {activeToolSection === "sequences" && sequenceStepsWithButtons.length > 0 && sequenceRenderedNotationVisible && (
-          <div className="rendered-notation-panel" aria-label="Rendered sequence notation">
-            <div className="rendered-notation-header">
-              <div className="rendered-notation-title">Sequence notation</div>
-              <button type="button" className="small-button notation-download-button" onClick={() => downloadRenderedNotationSvg(sequenceNotationRef.current, "sequence-notation")}>Download SVG</button>
+        {activeToolSection === "sequences" &&
+          sequenceStepsWithButtons.length > 0 &&
+          sequenceRenderedNotationVisible && (
+            <div
+              className="rendered-notation-panel"
+              aria-label="Rendered sequence notation"
+            >
+              <div className="rendered-notation-header">
+                <div className="rendered-notation-title">Sequence notation</div>
+                <button
+                  type="button"
+                  className="small-button notation-download-button"
+                  onClick={() =>
+                    downloadRenderedNotationSvg(
+                      sequenceNotationRef.current,
+                      "sequence-notation",
+                    )
+                  }
+                >
+                  Download SVG
+                </button>
+              </div>
+              <div ref={sequenceNotationRef} className="rendered-abc" />
             </div>
-            <div ref={sequenceNotationRef} className="rendered-abc" />
-          </div>
-        )}
-
+          )}
       </section>
     </main>
   );

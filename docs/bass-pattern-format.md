@@ -28,7 +28,7 @@ The built-in file must be a versioned object:
 }
 ```
 
-Each pattern describes one bar. The app repeats that bar for each chord in the selected progression. The in-app **Bars per chord** control decides how many times the bar pattern repeats before moving to the next progression chord.
+Each pattern describes one pattern cycle. The app repeats that whole cycle for each chord in the selected progression. A cycle is one bar by default, or multiple bars when the pattern defines `"bars"`. The in-app **Repeats per chord** control decides how many complete pattern cycles happen before moving to the next progression chord.
 
 ## Pattern object
 
@@ -69,7 +69,7 @@ Rules:
 - `meter` is required.
 - Use either `pattern` or `steps`, not both.
 - `tags` are optional and are used for organization/search/display.
-- A pattern should fit inside one bar.
+- A pattern should fit inside its declared cycle: `meter` × `bars` (default `bars` is `1`).
 
 ## Meter and rhythmic coordinates
 
@@ -99,6 +99,28 @@ There is no separate required `unit` field. The meter already defines the counti
 | `15/8` | 15 eighth-note units | eighth note | compound/asymmetric groupings | `d: 15` |
 
 So in `4/4`, `{ "t": 1, "d": 1 }` starts on beat 2 and lasts one quarter note. In `6/8`, `{ "t": 3, "d": 3 }` starts on the fourth eighth-note unit and lasts three eighth notes, i.e. one dotted-quarter span.
+
+## Multi-bar patterns
+
+Most patterns are one bar long, so `bars` can be omitted. Rhythms such as son clave, rumba clave, or bossa nova often span two bars. For those, keep the real meter and add a pattern bar count:
+
+```json
+{
+  "id": "son-clave-3-2",
+  "meter": "4/4",
+  "bars": 2,
+  "steps": [
+    { "t": 0, "d": "3/2", "play": ["bass:1"] },
+    { "t": "3/2", "d": "1/2", "play": ["bass:1"] },
+    { "t": 4, "d": 1, "play": ["rest"] },
+    { "t": 5, "d": 1, "play": ["bass:1", "chord"] }
+  ]
+}
+```
+
+Here `t` and `d` are still measured in the denominator unit of the meter. In `4/4`, `t: 5` means beat 2 of the second bar of the pattern.
+
+Use this instead of changing the meter to something like `8/4` merely to fit a two-bar phrase into one artificial bar.
 
 ## Rhythmic values and tuplets
 
@@ -479,7 +501,7 @@ Current limitation: ties are notation-level markers. Playback still follows each
 
 ## Rendered in-app notation
 
-The Bass Pattern Player can render staff notation in the application using `abcjs`. The rendered notation is generated from the expanded playback state: root, chord progression, bars per chord, selected pattern, chord voicing, and repeat mode.
+The Bass Pattern Player can render staff notation in the application using `abcjs`. The rendered notation is generated from the expanded playback state: root, chord progression, repeats per chord, selected pattern, pattern bar count, chord voicing, and repeat mode.
 
 The notation follows a simplified Stradella convention:
 
@@ -499,7 +521,7 @@ Counterbass notes are not specially marked in the staff notation.
 The rendered notation can optionally include a summary note at the end, for example:
 
 ```text
-I–IV–V–I progression · Alternate bass polka · 8 bars · Root C · 2 bars per chord · 4/4
+I–IV–V–I progression · Alternate bass polka · 8 bars · Root C · 2 repeats per chord · 4/4
 ```
 
 The old compact bass-pattern sheet preview has been removed from the interface. Staff notation is now the main visual notation view.
@@ -513,10 +535,10 @@ The **Export ABC** button expands the current Bass Pattern Player state into a `
 - the selected bass pattern,
 - the selected chord progression,
 - the selected root/key,
-- the current **Bars per chord** setting,
+- the current **Repeats per chord** setting,
 - the current tempo.
 
-For example, if the app is set to root `C`, progression `I V7 vi IV`, `2` bars per chord, and a one-bar pattern, the exported ABC contains eight generated bars: two bars of C, two bars of G7, two bars of Am, and two bars of F.
+For example, if the app is set to root `C`, progression `I V7 vi IV`, `2` repeats per chord, and a one-pattern cycle, the exported ABC contains eight generated bars: two bars of C, two bars of G7, two bars of Am, and two bars of F. If the selected pattern has `"bars": 2`, then one repeat lasts two notated bars.
 
 The ABC export includes:
 
@@ -537,11 +559,11 @@ The **Export MIDI** button expands the current Bass Pattern Player state into a 
 - the selected bass pattern,
 - the selected chord progression,
 - the selected root/key,
-- the current **Bars per chord** setting,
+- the current **Repeats per chord** setting,
 - the current tempo,
 - the resolved Stradella buttons for each generated event.
 
-Because the MIDI export is built from the same generated events used for playback, it follows the selected root, the expanded progression, and the repeated bars per chord.
+Because the MIDI export is built from the same generated events used for playback, it follows the selected root, the expanded progression, and the repeated repeats per chord.
 
 Remaining limitations:
 
@@ -568,7 +590,7 @@ To make a custom pattern permanent in the project source, copy the saved pattern
 
 ## Current limitations
 
-- A pattern describes one bar.
+- A pattern describes one pattern cycle.
 - Pattern strings are sequential; use explicit `steps` for precise overlapping/advanced timing.
 - Ties are notation-level markers and do not yet merge playback envelopes.
 - There is no independent layered-polyrhythm format yet.
@@ -609,7 +631,7 @@ The preferred compact format is:
 }
 ```
 
-The `progression` field is a space-separated list of Roman-numeral chord symbols. Each symbol is one progression slot. The Bass Pattern Player's **Bars per chord** setting controls how many bars the selected bass pattern repeats for each slot.
+The `progression` field is a space-separated list of Roman-numeral chord symbols. Each symbol is one progression slot. The Bass Pattern Player's **Repeats per chord** setting controls how many complete pattern cycles are played for each slot.
 
 Examples:
 
@@ -649,7 +671,7 @@ The Bass Pattern Player exports the selected app state, not just the raw pattern
 
 - the selected root/key
 - the selected chord progression
-- the selected bars-per-chord setting
+- the selected repeats-per-chord setting
 - the selected bass pattern
 - the current tempo
 

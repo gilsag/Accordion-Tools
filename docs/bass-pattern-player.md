@@ -7,7 +7,7 @@ It combines:
 - a selected bass pattern,
 - a chord progression,
 - a root/key,
-- a bars-per-chord value,
+- a repeats-per-chord value,
 - a tempo,
 - optional repeat/loop playback.
 
@@ -19,7 +19,7 @@ The detailed pattern-file syntax is documented in [`bass-pattern-format.md`](bas
 2. Choose a root.
 3. Choose a bass pattern.
 4. Choose the chord voicing mode.
-5. Set bars per chord and tempo.
+5. Set repeats per chord and tempo.
 6. Choose playback repeat: `1 time`, `2 times`, `4 times`, or `Loop until stopped`.
 7. Press **Play pattern**.
 
@@ -53,18 +53,18 @@ public/bass-patterns/bass-patterns.json
 
 Patterns may use compact pattern strings or explicit timed `steps`. Use compact strings for common repeated rhythms and explicit steps for tuplets, overlapping events, ties, or more exact timing.
 
-## Bars per chord
+## Repeats per chord
 
-**Bars per chord** controls how many full pattern bars are played before moving to the next chord in the progression.
+**Repeats per chord** controls how many complete bass-pattern cycles are played before moving to the next chord in the progression. If a pattern has `"bars": 2`, one repeat lasts two notated bars.
 
 Example:
 
 ```text
 Progression: I IV V I
-Bars per chord: 2
+Repeats per chord: 2
 ```
 
-The playback expands to two bars of `I`, two bars of `IV`, two bars of `V`, and two bars of `I`.
+With a one-bar pattern, playback expands to two bars of `I`, two bars of `IV`, two bars of `V`, and two bars of `I`. With a two-bar pattern, each repeat lasts two bars.
 
 ## Repeat control
 
@@ -85,7 +85,7 @@ The rendered notation title names the selected pattern and progression. The nota
 
 - selected root/key,
 - selected chord progression,
-- bars per chord,
+- repeats per chord,
 - selected pattern,
 - chord voicing mode,
 - repeat mode.
@@ -123,7 +123,7 @@ The tool includes a collapsible **Notation help** section near the playback/expo
 The **Include summary note in rendered notation** checkbox adds a concise text line at the end of the rendered notation. It can include useful context such as:
 
 ```text
-I–IV–V–I progression · Alternate bass polka · 8 bars · Root C · 2 bars per chord · 4/4
+I–IV–V–I progression · Alternate bass polka · 8 bars · Root C · 2 repeats per chord · 4/4
 ```
 
 This replaces the older compact bass-pattern sheet preview, which has been removed from the interface.
@@ -144,7 +144,7 @@ Supported formats:
 - `MIDI`
 - `LilyPond`
 
-Exports are progression-aware. They use the selected root, chord progression, bars per chord, pattern, and tempo.
+Exports are progression-aware. They use the selected root, chord progression, repeats per chord, pattern bar count, pattern, and tempo.
 
 ## Custom pattern editor
 

@@ -19,7 +19,7 @@ https://gilsag.github.io/Accordion-Tools/
 - Multiple notation styles: English, German, solfege, intervals, or blank labels.
 - Scale Finder, Chord Finder, Selection, Fingering, Sequence, and Text Notes tools.
 - ABC Player for simple ABC notation playback and diagram highlighting.
-- Stradella Bass Pattern Player with chord progressions, bars-per-chord, repeat/loop playback, rendered Stradella staff notation, custom pattern editor, and local custom pattern storage.
+- Stradella Bass Pattern Player with chord progressions, repeats-per-chord, repeat/loop playback, rendered Stradella staff notation, custom pattern editor, and local custom pattern storage.
 - Progression-aware ABC, MIDI, and LilyPond `.ly` export from the Bass Pattern Player.
 - SVG and PNG diagram export.
 - Save/load settings JSON and editable startup defaults.
@@ -167,7 +167,7 @@ Recent features include:
 
 - compact progression library format
 - expanded built-in progression list
-- bars-per-chord setting
+- repeats-per-chord setting
 - fixed repeat and infinite loop playback
 - collapsible custom pattern editor with live validation
 - local custom pattern library stored in the browser
@@ -234,7 +234,7 @@ The Bass Pattern Player can also export the expanded accompaniment as:
 - ABC sketch
 - MIDI file
 
-The ABC/MIDI export uses the selected root, selected progression, bars per chord, selected pattern, and tempo.
+The ABC/MIDI export uses the selected root, selected progression, repeats per chord, selected pattern, pattern bar count, and tempo.
 
 ## Settings and Defaults
 

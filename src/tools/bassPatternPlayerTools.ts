@@ -31,7 +31,7 @@ export type BassPatternAccent =
 export type BassPatternRhythmicValue = number | string;
 
 export type BassPatternStep = {
-  /** Position within the bar, measured in the denominator unit of the meter. */
+  /** Position within the pattern, measured in the denominator unit of the meter. */
   t: BassPatternRhythmicValue;
   /** Duration, measured in the denominator unit of the meter. */
   d: BassPatternRhythmicValue;
@@ -53,6 +53,8 @@ export type BassPatternDefinition = {
   id: string;
   name: string;
   meter: string;
+  /** Number of notated bars in one full pattern cycle. Defaults to 1. */
+  bars?: number;
   description?: string;
   tags?: string[];
   legend?: Record<string, BassPatternPlayToken[] | string>;
@@ -612,6 +614,22 @@ function isValidMeter(meter: string) {
   );
 }
 
+export function meterUnitsPerBarForPattern(
+  pattern: Pick<BassPatternDefinition, "meter">,
+) {
+  return Number(pattern.meter.split("/")[0] || 4);
+}
+
+export function patternBarCount(pattern: Pick<BassPatternDefinition, "bars">) {
+  return Math.max(1, Math.round(Number(pattern.bars ?? 1)));
+}
+
+export function patternUnitsForPattern(
+  pattern: Pick<BassPatternDefinition, "meter" | "bars">,
+) {
+  return meterUnitsPerBarForPattern(pattern) * patternBarCount(pattern);
+}
+
 export function validateBassPatternLibrary(
   library: BassPatternLibrary,
 ): string[] {
@@ -644,9 +662,20 @@ export function validateBassPatternLibrary(
     if (typeof pattern?.meter !== "string" || !isValidMeter(pattern.meter))
       errors.push(`${name}: invalid meter "${pattern?.meter ?? ""}".`);
 
+    if (
+      pattern.bars !== undefined &&
+      (!Number.isInteger(Number(pattern.bars)) || Number(pattern.bars) < 1)
+    ) {
+      errors.push(`${name}: bars must be a positive integer when provided.`);
+    }
+
     const unitsPerBar =
       typeof pattern?.meter === "string" && isValidMeter(pattern.meter)
         ? Number(pattern.meter.split("/")[0])
+        : undefined;
+    const totalPatternUnits =
+      unitsPerBar !== undefined
+        ? unitsPerBar * patternBarCount(pattern)
         : undefined;
 
     if (pattern.pattern && pattern.steps && pattern.steps.length > 0) {
@@ -675,11 +704,11 @@ export function validateBassPatternLibrary(
       if (
         parsedT &&
         parsedD &&
-        unitsPerBar !== undefined &&
-        parsedT.value + parsedD.value > unitsPerBar + 0.000001
+        totalPatternUnits !== undefined &&
+        parsedT.value + parsedD.value > totalPatternUnits + 0.000001
       ) {
         errors.push(
-          `${prefix}: step extends past the end of the ${pattern.meter} bar.`,
+          `${prefix}: step extends past the end of the ${pattern.meter}${patternBarCount(pattern) > 1 ? ` × ${patternBarCount(pattern)} bars` : ""} pattern.`,
         );
       }
       if (!Array.isArray(step.play) || step.play.length === 0) {
@@ -869,7 +898,7 @@ export function makeBassPatternEvents(
   progression: ChordProgressionDefinition,
   keyRootPitchClass: string,
   chordVoicing: BassPatternChordVoicing = "simple",
-  barsPerChordOverride?: number,
+  repeatsPerChordOverride?: number,
 ): BassPatternPlaybackEvent[] {
   const events: BassPatternPlaybackEvent[] = [];
   const reference = chooseBassPatternReferenceButton(
@@ -882,12 +911,16 @@ export function makeBassPatternEvents(
 
   chordProgressionSteps(progression).forEach((progressionStep) => {
     const chord = resolveRomanChord(progressionStep.symbol, keyRootPitchClass);
-    const totalBars = Math.max(
+    const repeatsPerChord = Math.max(
       1,
-      Math.round(barsPerChordOverride ?? progressionStep.bars ?? 1),
+      Math.round(repeatsPerChordOverride ?? progressionStep.bars ?? 1),
     );
+    const meterUnitsPerBar = meterUnitsPerBarForPattern(pattern);
+    const patternBars = patternBarCount(pattern);
+    const patternUnits = meterUnitsPerBar * patternBars;
 
-    for (let barIndex = 0; barIndex < totalBars; barIndex += 1) {
+    for (let repeatIndex = 0; repeatIndex < repeatsPerChord; repeatIndex += 1) {
+      const patternStartBeat = currentBeat + repeatIndex * patternUnits;
       patternSteps.forEach((step) => {
         const { selected, missing, nextPreviousBass } =
           selectButtonsForPlayTokens(
@@ -902,16 +935,15 @@ export function makeBassPatternEvents(
           );
         previousBass = nextPreviousBass;
 
-        const meterUnitsPerBar = Number(pattern.meter.split("/")[0]);
-        const barStartBeat = currentBeat + barIndex * meterUnitsPerBar;
+        const absoluteStartBeat = patternStartBeat + step.t;
         const resolvedLabel = resolvedChordName(chord.root, chord.pattern);
 
         events.push({
           index: events.length,
-          startBeat: barStartBeat + step.t,
+          startBeat: absoluteStartBeat,
           durationBeats: step.d,
-          barNumber: Math.floor(barStartBeat / meterUnitsPerBar) + 1,
-          unitInBar: step.t,
+          barNumber: Math.floor(absoluteStartBeat / meterUnitsPerBar) + 1,
+          unitInBar: roundRhythm(absoluteStartBeat % meterUnitsPerBar),
           progressionSymbol: progressionStep.symbol,
           resolvedChordLabel: resolvedLabel,
           buttons: selected,
@@ -925,7 +957,7 @@ export function makeBassPatternEvents(
       });
     }
 
-    currentBeat += totalBars * Number(pattern.meter.split("/")[0]);
+    currentBeat += repeatsPerChord * patternUnits;
   });
 
   return events
@@ -1044,7 +1076,7 @@ export function bassPatternEventsToAbc(
   progression: ChordProgressionDefinition,
   events: BassPatternPlaybackEvent[],
   keyRootPitchClass: string,
-  barsPerChord: number,
+  repeatsPerChord: number,
   tempoBpm: number,
 ) {
   const [meterNumerator, meterDenominatorRaw] = pattern.meter.split("/");
@@ -1089,7 +1121,7 @@ export function bassPatternEventsToAbc(
     `T:${escapeAbcText(pattern.name)} over ${escapeAbcText(progression.name)}`,
     `% Root: ${keyRootPitchClass}`,
     `% Progression: ${progressionSummary}`,
-    `% Bars per chord: ${barsPerChord}`,
+    `% Repeats per chord: ${repeatsPerChord}`,
     `% Pattern: ${pattern.id}`,
     `M:${pattern.meter}`,
     `L:${unitLength}`,
@@ -1228,7 +1260,7 @@ export function bassPatternEventsToStradellaNotationAbc(
   progression: ChordProgressionDefinition,
   events: BassPatternPlaybackEvent[],
   keyRootPitchClass: string,
-  barsPerChord: number,
+  repeatsPerChord: number,
   tempoBpm: number,
   loopMode: "once" | "fixed" | "infinite" = "once",
   loopCount = 1,
@@ -1241,10 +1273,22 @@ export function bassPatternEventsToStradellaNotationAbc(
   const includeTitle = options.includeTitle ?? true;
   const includeDescription = options.includeDescription ?? false;
   const includeSummary = options.includeSummary ?? false;
-  const barsPerLine = Math.max(1, Math.min(8, Math.round(options.barsPerLine ?? 4)));
-  const chordFontSize = Math.max(8, Math.min(24, Math.round(options.chordFontSize ?? 11)));
-  const titleFontSize = Math.max(10, Math.min(24, Math.round(options.titleFontSize ?? 14)));
-  const staffSeparator = Math.max(8, Math.min(32, Math.round(options.staffSeparator ?? 14)));
+  const barsPerLine = Math.max(
+    1,
+    Math.min(8, Math.round(options.barsPerLine ?? 4)),
+  );
+  const chordFontSize = Math.max(
+    8,
+    Math.min(24, Math.round(options.chordFontSize ?? 11)),
+  );
+  const titleFontSize = Math.max(
+    10,
+    Math.min(24, Math.round(options.titleFontSize ?? 14)),
+  );
+  const staffSeparator = Math.max(
+    8,
+    Math.min(32, Math.round(options.staffSeparator ?? 14)),
+  );
   const groupedByBar = new Map<number, BassPatternPlaybackEvent[]>();
   events.forEach((event) => {
     const group = groupedByBar.get(event.barNumber) ?? [];
@@ -1269,9 +1313,12 @@ export function bassPatternEventsToStradellaNotationAbc(
       `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, abcChordVoiceTokenForEvent)} ${barSuffix(index)}`,
   );
   const summaryLine = includeSummary
-    ? `W: ${progression.name} · ${pattern.name} · ${barNumbers.length} bar${barNumbers.length === 1 ? "" : "s"} · Root ${keyRootPitchClass} · ${barsPerChord} bar${barsPerChord === 1 ? "" : "s"} per chord · ${pattern.meter}`
+    ? `W: ${progression.name} · ${pattern.name} · ${barNumbers.length} bar${barNumbers.length === 1 ? "" : "s"} · Root ${keyRootPitchClass} · ${repeatsPerChord} repeat${repeatsPerChord === 1 ? "" : "s"} per chord · ${pattern.meter}`
     : "";
-  const descriptionLine = includeDescription && pattern.description ? `W: ${pattern.description}` : "";
+  const descriptionLine =
+    includeDescription && pattern.description
+      ? `W: ${pattern.description}`
+      : "";
   void tempoBpm;
   void loopCount;
 
@@ -1295,7 +1342,9 @@ export function bassPatternEventsToStradellaNotationAbc(
     descriptionLine,
     summaryLine,
     "",
-  ].filter((line) => line !== "").join("\n");
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
 }
 
 function lilypondEscapeText(text: string) {
@@ -1427,7 +1476,7 @@ export function bassPatternEventsToLilyPond(
   progression: ChordProgressionDefinition,
   events: BassPatternPlaybackEvent[],
   keyRootPitchClass: string,
-  barsPerChord: number,
+  repeatsPerChord: number,
   tempoBpm: number,
 ) {
   const [meterNumeratorRaw, meterDenominatorRaw] = pattern.meter.split("/");
@@ -1478,13 +1527,13 @@ export function bassPatternEventsToLilyPond(
     `% Generated by Accordion Tools Bass Pattern Player`,
     `% Root: ${keyRootPitchClass}`,
     `% Progression: ${progressionSummary}`,
-    `% Bars per chord: ${barsPerChord}`,
+    `% Repeats per chord: ${repeatsPerChord}`,
     `% Pattern: ${pattern.id}`,
     `% This file is an engraving/export view of the selected app state.`,
     ``,
     `\\header {`,
     `  title = \"${lilypondEscapeText(pattern.name)} over ${lilypondEscapeText(progression.name)}\"`,
-    `  subtitle = \"Root ${lilypondEscapeText(keyRootPitchClass)} · ${lilypondEscapeText(progressionSummary)} · ${barsPerChord} bar${barsPerChord === 1 ? "" : "s"} per chord\"`,
+    `  subtitle = \"Root ${lilypondEscapeText(keyRootPitchClass)} · ${lilypondEscapeText(progressionSummary)} · ${repeatsPerChord} repeat${repeatsPerChord === 1 ? "" : "s"} per chord\"`,
     `  tagline = \"Generated by Accordion Tools\"`,
     `}`,
     ``,
