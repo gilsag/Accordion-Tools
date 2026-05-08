@@ -16,7 +16,7 @@
       "id": "oom-pah-pah",
       "name": "Oom-pah-pah waltz",
       "meter": "3/4",
-      "description": "The classic "Oom-pah-pah." The bass marks the strong downbeat while the chords provide the swaying lift.",
+      "description": "The classic Oom-pah-pah. The bass marks the strong downbeat while the chords provide the swaying lift.",
       "steps": [
         {"t": 0, "d": 1, "play": ["bass:1"], "accent": ">"},
         {"t": 1, "d": 1, "play": ["chord"]},
