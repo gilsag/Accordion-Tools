@@ -260,21 +260,49 @@
     {
       "id": "shuffle",
       "name": "Shuffle",
-      "meter": "4/4",
-      "description": "Swing bass-chord feel with long-short subdivision.",
+      "meter": "12/8",
+      "description": "Swing bass-chord feel with long-short subdivision. It is equivalent to a 2:1 swing",
       "steps": [
-        {"t": 0, "d": "1/3", "play": ["bass:1"]},
-        {"t": "1/3", "d": "1/2", "play": ["rest"]},
-        {"t": "5/6", "d": "1/6", "play": ["chord"]},
-        {"t": 1, "d": "1/3", "play": ["bass:1"]},
-        {"t": "4/3", "d": "1/2", "play": ["rest"]},
-        {"t": "11/6", "d": "1/6", "play": ["chord"]},
-        {"t": 2, "d": "1/3", "play": ["bass:1"]},
-        {"t": "7/3", "d": "1/2", "play": ["rest"]},
-        {"t": "17/6", "d": "1/6", "play": ["chord"]},
-        {"t": 3, "d": "1/3", "play": ["bass:1"]},
-        {"t": "10/3", "d": "1/2", "play": ["rest"]},
-        {"t": "23/6", "d": "1/6", "play": ["chord"]}
+        {"t": 0, "d": 1, "play": ["bass:1", "chord"], "accent": ">"},
+        {"t": 1, "d": "1/2", "play": ["bass:1", "chord"]},
+        {"t": 1.5, "d": 1, "play": ["bass:1", "chord"], "accent": ">"},
+        {"t": 2.5, "d": "1/2", "play": ["bass:1", "chord"]},
+        {"t": 3, "d": 1, "play": ["bass:1", "chord"]},
+        {"t": 4, "d": "1/2", "play": ["bass:1", "chord"]},
+        {"t": 4.5, "d": 1, "play": ["bass:1", "chord"]},
+        {"t": 5.5, "d": "1/2", "play": ["bass:1", "chord"]}
+      ]
+    },
+    {
+      "id": "swing-three-to-one",
+      "name": "Swing 3:1",
+      "meter": "4/4",
+      "description": "Long-short swing, used in blues and jazz.",
+      "steps": [
+        {"t": 0, "d": 0.75, "play": ["bass:1", "chord"]},
+        {"t": 0.75, "d": 0.25, "play": ["bass:1", "chord"]},
+        {"t": 1, "d": 0.75, "play": ["bass:1", "chord"]},
+        {"t": 1.75, "d": 0,25, "play": ["bass:1", "chord"]},
+        {"t": 2, "d": 0.75, "play": ["bass:1", "chord"]},
+        {"t": 2.75, "d": 0,25, "play": ["bass:1", "chord"]},
+        {"t": 3, "d": 0.75, "play": ["bass:1", "chord"]},
+        {"t": 3.75, "d": 0.25, "play": ["bass:1", "chord"]}
+      ]
+    },
+    {
+      "id": "scotch-snap",
+      "name": "Scotch snap / Lombard rhythm",
+      "meter": "4/4",
+      "description": "Short-long Lombard rhythm, repeated as bass then chord. It is an inverted swing",
+      "steps": [
+        {"t": 0, "d": "1/4", "play": ["bass:1"]},
+        {"t": "1/4", "d": "3/4", "play": ["chord"]},
+        {"t": 1, "d": "1/4", "play": ["bass:1"]},
+        {"t": "5/4", "d": "3/4", "play": ["chord"]},
+        {"t": 2, "d": "1/4", "play": ["bass:1"]},
+        {"t": "9/4", "d": "3/4", "play": ["chord"]},
+        {"t": 3, "d": "1/4", "play": ["bass:1"]},
+        {"t": "13/4", "d": "3/4", "play": ["chord"]}
       ]
     },
     {
@@ -285,12 +313,12 @@
       "description": "Two-bar bossa-style syncopation.",
       "steps": [
         {"t": 0, "d": "3/2", "play": ["bass:1"]},
-        {"t": "3/2", "d": "1/2", "play": ["chord"]},
-        {"t": 2, "d": 1, "play": ["chord"]},
-        {"t": 3, "d": 1, "play": ["bass:5"]},
-        {"t": 4, "d": 1, "play": ["bass:5"]},
-        {"t": 5, "d": 1, "play": ["chord"]},
-        {"t": 6, "d": "1/2", "play": ["chord"]},
+        {"t": "3/2", "d": "1/2", "play": ["chord"], "tie": "start"},
+        {"t": 2, "d": 1, "play": ["chord"], "tie": "stop"},
+        {"t": 3, "d": 1, "play": ["bass:5"], "tie": "start"},
+        {"t": 4, "d": 1, "play": ["bass:5"], "tie": "stop"},
+        {"t": 5, "d": 1, "play": ["chord"], "tie": "start"},
+        {"t": 6, "d": "1/2", "play": ["chord"], "tie": "stop"},
         {"t": "13/2", "d": "3/2", "play": ["chord"]}
       ]
     },
@@ -358,22 +386,6 @@
         {"t": 3, "d": "1/2", "play": ["bass:1"]},
         {"t": "7/2", "d": "1/4", "play": ["chord"]},
         {"t": "15/4", "d": "1/4", "play": ["chord"]}
-      ]
-    },
-    {
-      "id": "scotch-snap",
-      "name": "Scotch snap / Lombard rhythm",
-      "meter": "4/4",
-      "description": "Short-long Lombard rhythm, repeated as bass then chord.",
-      "steps": [
-        {"t": 0, "d": "1/4", "play": ["bass:1"]},
-        {"t": "1/4", "d": "3/4", "play": ["chord"]},
-        {"t": 1, "d": "1/4", "play": ["bass:1"]},
-        {"t": "5/4", "d": "3/4", "play": ["chord"]},
-        {"t": 2, "d": "1/4", "play": ["bass:1"]},
-        {"t": "9/4", "d": "3/4", "play": ["chord"]},
-        {"t": 3, "d": "1/4", "play": ["bass:1"]},
-        {"t": "13/4", "d": "3/4", "play": ["chord"]}
       ]
     }
   ]
