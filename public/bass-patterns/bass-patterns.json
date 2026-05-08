@@ -11,10 +11,9 @@
     ">": "accent next event"
   },
   "patterns": [
-
     {
       "id": "oom-pah-pah",
-      "name": "Oom-pah-pah waltz",
+      "name": "Waltz",
       "meter": "3/4",
       "description": "The classic Oom-pah-pah. The bass marks the strong downbeat while the chords provide the swaying lift.",
       "steps": [
@@ -47,9 +46,9 @@
     },
     {
       "id": "polka",
-      "name": "Polka / oom-pah",
+      "name": "Polka",
       "meter": "2/4",
-      "description": "Bass on beat 1, chord on beat 2.",
+      "description": "A very bouncy and energetic binary rhythm, fundamental to Central European folk music. Bass on beat 1, chord on beat 2.",
       "steps": [
         {"t": 0, "d": 1, "play": ["bass:1"], "accent": ">"},
         {"t": 1, "d": 1, "play": ["chord"]}
@@ -59,7 +58,7 @@
       "id": "alternate-bass-polka",
       "name": "Alternate bass polka",
       "meter": "4/4",
-      "description": "Root bass and chord, then fifth bass and chord.",
+      "description": "A polka version with alternating bass- Root bass and chord, then fifth bass and chord.",
       "steps": [
         {"t": 0, "d": 1, "play": ["bass:1"], "accent": ">"},
         {"t": 1, "d": 1, "play": ["chord"]},
