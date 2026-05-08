@@ -282,7 +282,7 @@
         {"t": 0, "d": 0.75, "play": ["bass:1", "chord"]},
         {"t": 0.75, "d": 0.25, "play": ["bass:1", "chord"]},
         {"t": 1, "d": 0.75, "play": ["bass:1", "chord"]},
-        {"t": 1.75, "d": 0,25, "play": ["bass:1", "chord"]},
+        {"t": 1.75, "d": 0.25, "play": ["bass:1", "chord"]},
         {"t": 2, "d": 0.75, "play": ["bass:1", "chord"]},
         {"t": 2.75, "d": 0,25, "play": ["bass:1", "chord"]},
         {"t": 3, "d": 0.75, "play": ["bass:1", "chord"]},
