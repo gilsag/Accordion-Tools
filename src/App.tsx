@@ -5061,13 +5061,20 @@ function App() {
               )}
 
               {side === "stradella" && (
-                <CollapsibleSection
-                  title="Functional Reference"
-                  isOpen={activeToolSection === "functionalReference"}
-                  onToggle={() => toggleToolSection("functionalReference")}
-                >
-                  <StradellaReferenceChartPanel basses={basses} />
-                </CollapsibleSection>
+                <section className="control-section">
+                  <button
+                    className="section-title"
+                    onClick={() => toggleToolSection("functionalReference")}
+                  >
+                    Functional Reference{" "}
+                    <span>{activeToolSection === "functionalReference" ? "−" : "+"}</span>
+                  </button>
+                  {activeToolSection === "functionalReference" && (
+                    <div className="section-content">
+                      <StradellaReferenceChartPanel basses={basses} />
+                    </div>
+                  )}
+                </section>
               )}
             </>
           )}
