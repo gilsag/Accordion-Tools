@@ -127,6 +127,7 @@ import {
 import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
 import { StradellaChordFinderPanel } from "./components/tools/StradellaChordFinderPanel";
+import { StradellaReferenceChartPanel } from "./components/tools/StradellaReferenceChartPanel";
 import { HelpTip } from "./components/ui/HelpTip";
 
 /** Dropdown options for the supported Stradella bass presets. */
@@ -425,6 +426,7 @@ function App() {
     | "selection"
     | "sequences"
     | "textNotes"
+    | "functionalReference"
     | null;
 
   const [activeSettingsSection, setActiveSettingsSection] =
@@ -5056,6 +5058,16 @@ function App() {
                     </div>
                   )}
                 </section>
+              )}
+
+              {side === "stradella" && (
+                <CollapsibleSection
+                  title="Functional Reference"
+                  isOpen={activeToolSection === "functionalReference"}
+                  onToggle={() => toggleToolSection("functionalReference")}
+                >
+                  <StradellaReferenceChartPanel basses={basses} />
+                </CollapsibleSection>
               )}
             </>
           )}
