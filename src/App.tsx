@@ -102,6 +102,7 @@ import {
 } from "./tools/abcPlayerTools";
 import {
   bassPatternEventsToAbc,
+  chordProgressionSteps,
   bassPatternEventsToMidiBytes,
   bassPatternEventsToLilyPond,
   bassPatternEventsToStradellaNotationAbc,
@@ -129,7 +130,6 @@ import {
 import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
 import { StradellaChordFinderPanel } from "./components/tools/StradellaChordFinderPanel";
-import { StradellaReferenceChartPanel } from "./components/tools/StradellaReferenceChartPanel";
 import { HelpTip } from "./components/ui/HelpTip";
 
 /** Dropdown options for the supported Stradella bass presets. */
@@ -330,6 +330,30 @@ function trebleLayoutLabel(layout: TrebleLayout) {
   return "Piano";
 }
 
+function normalizeProgressionText(value: string) {
+  return value
+    .replace(/[♭𝄫]/g, "b")
+    .replace(/[♯𝄪]/g, "#")
+    .replace(/[–—-]/g, " ")
+    .replace(/[^A-Za-z0-9#b°+]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function formatProgressionOptionLabel(progression: ChordProgressionDefinition) {
+  const chordList = chordProgressionSteps(progression)
+    .map((step) => step.symbol)
+    .join(" ");
+  if (!chordList) return progression.name;
+
+  const normalizedName = normalizeProgressionText(progression.name);
+  const normalizedChords = normalizeProgressionText(chordList);
+  if (normalizedName.includes(normalizedChords)) return `Progression — ${chordList}`;
+
+  return `${progression.name} — ${chordList}`;
+}
+
 /** Calculates the y-coordinate for a sequence number relative to a button. */
 function numberY(
   buttonY: number,
@@ -428,7 +452,6 @@ function App() {
     | "selection"
     | "sequences"
     | "textNotes"
-    | "functionalReference"
     | null;
 
   const [activeSettingsSection, setActiveSettingsSection] =
@@ -671,18 +694,20 @@ function App() {
         ) {
           setAccidental(defaults.accidental);
         }
-        if (
-          isOneOf(defaults.chordLabelMode, [
+        const defaultChordLabelMode = (defaults as { chordLabelMode?: unknown }).chordLabelMode;
+        if (defaultChordLabelMode === "roman" || defaultChordLabelMode === "tonal-function") {
+          setChordLabelMode("functional-reference");
+        } else if (
+          isOneOf(defaultChordLabelMode, [
             "none",
             "chord-name",
             "root-only",
             "chord-tones",
             "row-function",
-            "roman",
-            "tonal-function",
+            "functional-reference",
           ] as const)
         ) {
-          setChordLabelMode(defaults.chordLabelMode);
+          setChordLabelMode(defaultChordLabelMode);
         }
         if (
           isOneOf(defaults.basses, [
@@ -1054,18 +1079,20 @@ function App() {
       setNotation(settings.notation);
     if (isOneOf(settings.accidental, ["natural", "flats", "sharps"] as const))
       setAccidental(settings.accidental);
-    if (
-      isOneOf(settings.chordLabelMode, [
+    const importedChordLabelMode = (settings as { chordLabelMode?: unknown }).chordLabelMode;
+    if (importedChordLabelMode === "roman" || importedChordLabelMode === "tonal-function") {
+      setChordLabelMode("functional-reference");
+    } else if (
+      isOneOf(importedChordLabelMode, [
         "none",
         "chord-name",
         "root-only",
         "chord-tones",
         "row-function",
-        "roman",
-        "tonal-function",
+        "functional-reference",
       ] as const)
     )
-      setChordLabelMode(settings.chordLabelMode);
+      setChordLabelMode(importedChordLabelMode);
     if (
       isOneOf(settings.basses, [
         "8",
@@ -2596,34 +2623,21 @@ function App() {
     stopAllSound();
   }
 
-  /** Semitones of a pitch class above C (0–11), used for key-independent Roman numeral labels. */
+  /** Semitones of a pitch class above C (0–11), used for key-independent functional-reference labels. */
   function semiAboveCRef(pitch: string): number {
     return (INDEX_TO_PITCH.indexOf(pitch) - INDEX_TO_PITCH.indexOf("C") + 12) % 12;
   }
 
-  const MAJOR_ROMANS_REF = ["I","bII","II","bIII","III","IV","bV","V","bVI","VI","bVII","VII"];
-  const MINOR_ROMANS_REF = ["i","bii","ii","biii","iii","iv","bv","v","bvi","vi","bvii","vii"];
+  const MAJOR_FUNCTION_REF = ["I","♭II","II","♭III","III","IV","♭V","V","♭VI","VI","♭VII","VII"];
+  const MINOR_FUNCTION_REF = ["i","♭ii","ii","♭iii","iii","iv","♭v","v","♭vi","vi","♭vii","vii"];
 
-  function romanLabelForChord(kind: ButtonKind, rootPitch: string): string {
+  function functionalReferenceLabelForChord(kind: ButtonKind, rootPitch: string): string {
     const d = semiAboveCRef(rootPitch);
-    if (kind === "chord-major") return MAJOR_ROMANS_REF[d] ?? "I";
-    if (kind === "chord-minor") return MINOR_ROMANS_REF[d] ?? "i";
-    if (kind === "chord-dominant7") return (MAJOR_ROMANS_REF[d] ?? "I") + "7";
-    if (kind === "chord-diminished7") return (MINOR_ROMANS_REF[d] ?? "i") + "°7";
+    if (kind === "chord-major") return MAJOR_FUNCTION_REF[d] ?? "I";
+    if (kind === "chord-minor") return MINOR_FUNCTION_REF[d] ?? "i";
+    if (kind === "chord-dominant7") return (MAJOR_FUNCTION_REF[d] ?? "I") + "7";
+    if (kind === "chord-diminished7") return (MINOR_FUNCTION_REF[d] ?? "i") + "°7";
     return "";
-  }
-
-  function tonalFunctionLabelForChord(kind: ButtonKind, rootPitch: string): string {
-    const d = semiAboveCRef(rootPitch);
-    const group =
-      d === 0                   ? "T"  :
-      [5, 9].includes(d)        ? "SD" :
-      [7,2,4,11,10].includes(d) ? "D"  : "chr";
-    const suffix =
-      kind === "chord-minor"       ? "m" :
-      kind === "chord-dominant7"   ? "7" :
-      kind === "chord-diminished7" ? "°" : "";
-    return group + suffix;
   }
 
   /** Computes the visible label for one button using notation and chord-label settings. */
@@ -2648,8 +2662,9 @@ function App() {
           accidental,
         );
       }
-      if (chordLabelMode === "roman") return romanLabelForChord(button.kind, button.chordRoot ?? "C");
-      if (chordLabelMode === "tonal-function") return tonalFunctionLabelForChord(button.kind, button.chordRoot ?? "C");
+      if (chordLabelMode === "functional-reference") {
+        return functionalReferenceLabelForChord(button.kind, button.chordRoot ?? "C");
+      }
 
       return `${root}${chordSuffix(button.kind)}`;
     }
@@ -2658,9 +2673,9 @@ function App() {
     if (
       side === "stradella" &&
       (button.kind === "bass-root" || button.kind === "bass-counterbass") &&
-      chordLabelMode === "roman"
+      chordLabelMode === "functional-reference"
     ) {
-      return INTERVALS_FROM_C[button.pitchClass ?? "C"] ?? "";
+      return (INTERVALS_FROM_C[button.pitchClass ?? "C"] ?? "").replace(/b/g, "♭");
     }
 
     return formatPitch(
@@ -2977,11 +2992,8 @@ function App() {
                             <option value="row-function">
                               Row function: M, m, 7
                             </option>
-                            <option value="roman">
-                              Roman numeral: I, iv, V7
-                            </option>
-                            <option value="tonal-function">
-                              Tonal function: T, D, SD
+                            <option value="functional-reference">
+                              Functional reference: I, iv, V7
                             </option>
                           </select>
                         </label>
@@ -4564,7 +4576,7 @@ function App() {
                         >
                           {chordProgressionDefinitions.map((progression) => (
                             <option key={progression.id} value={progression.id}>
-                              {progression.name} — {progression.progression}
+                              {formatProgressionOptionLabel(progression)}
                             </option>
                           ))}
                         </select>
@@ -4588,7 +4600,7 @@ function App() {
                       </label>
 
                       <label>
-                        Pattern
+                        Rhythm
                         <select
                           value={bassPatternId}
                           onChange={(event) => {
@@ -5113,22 +5125,6 @@ function App() {
                 </section>
               )}
 
-              {side === "stradella" && (
-                <section className="control-section">
-                  <button
-                    className="section-title"
-                    onClick={() => toggleToolSection("functionalReference")}
-                  >
-                    Functional Reference{" "}
-                    <span>{activeToolSection === "functionalReference" ? "−" : "+"}</span>
-                  </button>
-                  {activeToolSection === "functionalReference" && (
-                    <div className="section-content">
-                      <StradellaReferenceChartPanel basses={basses} />
-                    </div>
-                  )}
-                </section>
-              )}
             </>
           )}
         </aside>
