@@ -15,7 +15,7 @@ export type NotationMode = "english" | "german" | "solfege" | "intervals" | "bla
 export type AccidentalMode = "natural" | "flats" | "sharps";
 
 /** Controls how Stradella chord buttons are labeled. */
-export type ChordLabelMode = "none" | "chord-name" | "root-only" | "chord-tones" | "row-function" | "roman" | "tonal-function";
+export type ChordLabelMode = "none" | "chord-name" | "root-only" | "chord-tones" | "row-function" | "functional-reference";
 
 /** Controls whether the diagram title is automatic, custom, or hidden. */
 export type TitleMode = "auto" | "custom" | "none";
