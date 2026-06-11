@@ -211,10 +211,21 @@ export function generateStradella(
       const isCounterbass = kind === "bass-counterbass";
       const pitchClass = isCounterbass ? transpose(rootPitch, 4) : rootPitch;
 
-      /* Counterbass is the major third above the fundamental bass. */
-      const counterbassDiagonal = STRADELLA_FULL_120[column + preset.start + 4] ?? rootName;
+      /*
+        Counterbass is the major third above the fundamental bass.
+
+        When the shifted circle-of-fifths name exists inside the 120-bass span,
+        use it to preserve conventional Stradella spelling, e.g. F# -> A#.
+        At the extreme sharp end there is no further column in STRADELLA_FULL_120;
+        in that case, fall back to the computed pitch class instead of reusing
+        the root name. Reusing the root made the Major 3rd row labels wrong
+        from the C# fundamental column onward.
+      */
+      const counterbassDiagonal = STRADELLA_FULL_120[column + preset.start + 4];
       const counterbassName = isCounterbass
-        ? stradellaDisplayName(counterbassDiagonal, accidental)
+        ? counterbassDiagonal === undefined
+          ? naturalNameForPitch(pitchClass, accidental)
+          : stradellaDisplayName(counterbassDiagonal, accidental)
         : undefined;
 
       const x = 130 + column * xGap + originalRowIndex * diagonalStep;
