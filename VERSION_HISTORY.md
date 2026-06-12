@@ -1,5 +1,12 @@
 # Accordion Tools — Version History
 
+
+## 0.7.6 - Stradella scale finder path and double-sharp display refinement
+
+- Enlarged the displayed double-sharp symbol so it better matches the visual weight of the other lowered accidentals.
+- Reworked the Stradella Scale Finder so target notes use conventional scale spelling, including E#, B#, and double sharps when required.
+- Changed Stradella Scale Finder button selection from a greedy nearest-note lookup to a compact path search that favors nearby buttons and keeps the result closer to the center of the bass manual.
+
 ## 0.7.5 - Double-sharp display style
 
 - Kept internal Stradella labels such as F## and C## for parsing and pitch normalization.

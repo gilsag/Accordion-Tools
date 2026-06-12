@@ -336,6 +336,12 @@ input[type="range"] {
   font-size: 86%;
 }
 
+.double-sharp-symbol {
+  font-family: "Times New Roman", "DejaVu Serif", serif;
+  font-size: 122%;
+  font-weight: 700;
+}
+
 .treble-label {
   fill: #111111;
 }
