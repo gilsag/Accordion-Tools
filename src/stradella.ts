@@ -120,6 +120,9 @@ export const STRADELLA_FULL_120 = [
   "A#",
 ];
 
+/** Additional sharp-side diagonal spellings needed by counterbass on 120-bass layouts. */
+const STRADELLA_SHARP_EXTENSION = ["E#", "B#", "F##", "C##"];
+
 /** Converts displayed Stradella spellings into normalized internal pitch classes. */
 export const STRADELLA_NORMALIZED: Record<string, string> = {
   Bbb: "A",
@@ -142,6 +145,10 @@ export const STRADELLA_NORMALIZED: Record<string, string> = {
   "G#": "G#",
   "D#": "D#",
   "A#": "A#",
+  "E#": "F",
+  "B#": "C",
+  "F##": "G",
+  "C##": "D",
 };
 
 /** Returns the human-readable row label for a Stradella row kind. */
@@ -159,6 +166,12 @@ export function stradellaRowLabel(kind: ButtonKind): string {
 export function stradellaVisibleRoots(basses: BassCount) {
   const preset = STRADELLA_PRESETS[basses];
   return STRADELLA_FULL_120.slice(preset.start, preset.start + preset.count);
+}
+
+/** Returns the conventional Stradella diagonal spelling, extending beyond A# when needed. */
+function stradellaDiagonalName(index: number) {
+  if (index < STRADELLA_FULL_120.length) return STRADELLA_FULL_120[index];
+  return STRADELLA_SHARP_EXTENSION[index - STRADELLA_FULL_120.length];
 }
 
 /** Returns the visible functional rows for the selected Stradella preset. */
@@ -214,14 +227,13 @@ export function generateStradella(
       /*
         Counterbass is the major third above the fundamental bass.
 
-        When the shifted circle-of-fifths name exists inside the 120-bass span,
-        use it to preserve conventional Stradella spelling, e.g. F# -> A#.
-        At the extreme sharp end there is no further column in STRADELLA_FULL_120;
-        in that case, fall back to the computed pitch class instead of reusing
-        the root name. Reusing the root made the Major 3rd row labels wrong
-        from the C# fundamental column onward.
+        The label follows the same circle-of-fifths spelling convention as the
+        fundamental-bass row. On the sharp side, the counterbass diagonal can
+        extend beyond the visible 120-bass root span, so C#, G#, D#, and A#
+        use E#, B#, F##, and C## instead of the normalized pitch names F, C,
+        G, and D.
       */
-      const counterbassDiagonal = STRADELLA_FULL_120[column + preset.start + 4];
+      const counterbassDiagonal = stradellaDiagonalName(column + preset.start + 4);
       const counterbassName = isCounterbass
         ? counterbassDiagonal === undefined
           ? naturalNameForPitch(pitchClass, accidental)
