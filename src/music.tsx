@@ -225,7 +225,7 @@ export function renderMusicLabel(label: string) {
 
     if (char === "#" && nextChar === "#") {
       parts.push(
-        <tspan key={index} className="accidental-symbol" baselineShift="-18%">
+        <tspan key={index} className="accidental-symbol double-sharp-symbol" baselineShift="-14%">
           𝄪
         </tspan>
       );

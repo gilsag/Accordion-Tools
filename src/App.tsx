@@ -1519,7 +1519,9 @@ function App() {
       return {
         buttons: [],
         targetPitches: [],
+        targetNames: [],
         missingPitches: [],
+        missingNames: [],
         found: false,
       };
     }
@@ -2710,6 +2712,14 @@ function App() {
   function formatStradellaFinderPitches(pitches: string[]) {
     if (pitches.length === 0) return "none";
     return pitches.map(formatStradellaFinderPitch).join(", ");
+  }
+
+
+  /** Formats Stradella Scale Finder note names, preserving scale spelling such as E#, B#, and F##. */
+  function formatStradellaScaleFinderNames(names: string[], fallbackPitches: string[]) {
+    const source = names.length > 0 ? names : fallbackPitches.map(formatStradellaFinderPitch);
+    if (source.length === 0) return "none";
+    return source.map((name) => name.replaceAll("##", "𝄪")).join(", ");
   }
 
   /** Rewrites technical Stradella explanations so pitch names match the visible button labels. */
@@ -4025,12 +4035,16 @@ function App() {
                           {side === "stradella" && (
                             <p>
                               Target notes:{" "}
-                              {formatStradellaFinderPitches(
+                              {formatStradellaScaleFinderNames(
+                                stradellaScaleFinderResult.targetNames,
                                 stradellaScaleFinderResult.targetPitches,
                               )}
                               {stradellaScaleFinderResult.missingPitches
                                 .length > 0
-                                ? ` · Missing: ${formatStradellaFinderPitches(stradellaScaleFinderResult.missingPitches)}`
+                                ? ` · Missing: ${formatStradellaScaleFinderNames(
+                                    stradellaScaleFinderResult.missingNames,
+                                    stradellaScaleFinderResult.missingPitches,
+                                  )}`
                                 : ""}
                             </p>
                           )}
