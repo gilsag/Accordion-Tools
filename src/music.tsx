@@ -1,3 +1,4 @@
+import type React from "react";
 import type { AccidentalMode, ButtonKind, FontFamily, NotationMode } from "./types";
 
 /*
@@ -212,27 +213,48 @@ export function formatPitch(
 /**
  * Renders b/# characters as proper music symbols.
  * The symbols are slightly lowered to mimic accordion chart notation.
+ * Double sharps are stored internally as ## and displayed with the standard
+ * double-sharp sign.
  */
 export function renderMusicLabel(label: string) {
-  return label.split("").map((char, index) => {
+  const parts: React.ReactNode[] = [];
+
+  for (let index = 0; index < label.length; index += 1) {
+    const char = label[index];
+    const nextChar = label[index + 1];
+
+    if (char === "#" && nextChar === "#") {
+      parts.push(
+        <tspan key={index} className="accidental-symbol" baselineShift="-18%">
+          𝄪
+        </tspan>
+      );
+      index += 1;
+      continue;
+    }
+
     if (char === "#") {
-      return (
+      parts.push(
         <tspan key={index} className="accidental-symbol" baselineShift="-18%">
           ♯
         </tspan>
       );
+      continue;
     }
 
     if (char === "b") {
-      return (
+      parts.push(
         <tspan key={index} className="accidental-symbol" baselineShift="-18%">
           ♭
         </tspan>
       );
+      continue;
     }
 
-    return <tspan key={index}>{char}</tspan>;
-  });
+    parts.push(<tspan key={index}>{char}</tspan>);
+  }
+
+  return parts;
 }
 
 /** Returns true when a normalized pitch class contains a sharp accidental. */
