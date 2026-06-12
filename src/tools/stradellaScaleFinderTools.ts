@@ -75,8 +75,12 @@ function accidentalString(offset: number) {
   return offset > 0 ? "#".repeat(offset) : "b".repeat(Math.abs(offset));
 }
 
+function positiveModulo(value: number, modulo: number) {
+  return ((value % modulo) + modulo) % modulo;
+}
+
 function normalizeIntervalDifference(value: number) {
-  let result = ((value + 6) % 12) - 6;
+  let result = positiveModulo(value + 6, 12) - 6;
   if (result === -6) result = 6;
   return result;
 }

@@ -1,6 +1,12 @@
 # Accordion Tools — Version History
 
 
+## 0.7.7 - Stradella scale spelling normalization fix
+
+- Fixed target-note spelling in the Stradella Scale Finder when the conventional spelling crosses the octave boundary, such as B# in C# major.
+- Replaced JavaScript remainder-based accidental normalization with positive modulo normalization so spellings like B# are not rendered as long strings of flats.
+- Internal target-note spellings remain compatible with the compact Stradella path search introduced in v0.7.6.
+
 ## 0.7.6 - Stradella scale finder path and double-sharp display refinement
 
 - Enlarged the displayed double-sharp symbol so it better matches the visual weight of the other lowered accidentals.
