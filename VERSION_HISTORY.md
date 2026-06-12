@@ -1,6 +1,14 @@
 # Accordion Tools — Version History
 
 
+## 0.7.8 - Bellows guide top/bottom label orientation
+
+- Fixed the bellows guide end labels so they are no longer hard-coded as Bottom on the left and Top on the right for every side.
+- Treble-side diagrams now show Top on the left and Bottom on the right.
+- Stradella diagrams keep Bottom on the left and Top on the right.
+- This is a display-label correction only; button notes, positions, and tool logic are unchanged.
+
+
 ## 0.7.7 - Stradella scale spelling normalization fix
 
 - Fixed target-note spelling in the Stradella Scale Finder when the conventional spelling crosses the octave boundary, such as B# in C# major.

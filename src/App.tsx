@@ -2903,6 +2903,14 @@ function App() {
   const bellowsLabelY = 70 + diagramVerticalSpacing * 0.35;
   const bellowsStripY = 82 + diagramVerticalSpacing * 0.35;
 
+  /*
+    The treble and Stradella sides are viewed from opposite sides of the
+    instrument. Keep the bellows guide aligned with the physical instrument
+    ends rather than using one hard-coded left/right label pair for every side.
+  */
+  const bellowsStartLabel = side === "stradella" ? "Bottom" : "Top";
+  const bellowsEndLabel = side === "stradella" ? "Top" : "Bottom";
+
   const activeToolLabel =
     side === "stradella"
       ? bassPatternPlaybackState === "playing"
@@ -5331,7 +5339,7 @@ function App() {
                   textAnchor="middle"
                   className="bellows-end-label"
                 >
-                  Bottom
+                  {bellowsStartLabel}
                 </text>
 
                 <text
@@ -5349,7 +5357,7 @@ function App() {
                   textAnchor="middle"
                   className="bellows-end-label"
                 >
-                  Top
+                  {bellowsEndLabel}
                 </text>
               </>
             )}
