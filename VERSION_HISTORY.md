@@ -1,5 +1,12 @@
 # Accordion Tools — Version History
 
+## v0.8.4 - Finder highlight readability and optional sequence numbering
+
+- Improved Scale Finder and Chord Finder highlight readability on treble accidental buttons by keeping dark accidental fills and using a high-contrast highlight stroke.
+- Added stronger text outlining for accidental labels so note names remain legible when finder highlights are active.
+- Updated black piano-key finder highlighting to use a contrast ring instead of a yellow fill.
+- Added **No numbers** to the Sequence **Number position** menu. This hides sequence/finder step numbers while leaving arrows and highlights available.
+
 ## v0.8.3 - Local annotation style controls
 
 - Added a local **Distance from center** slider for button-attached annotations.
