@@ -25,6 +25,52 @@ export const FLAT_NAMES: Record<string, string> = {
   B: "B",
 };
 
+
+export const ENHARMONIC_ENGLISH: Record<string, string> = {
+  C: "C",
+  "C#": "C#/Db",
+  D: "D",
+  "D#": "D#/Eb",
+  E: "E",
+  F: "F",
+  "F#": "F#/Gb",
+  G: "G",
+  "G#": "G#/Ab",
+  A: "A",
+  "A#": "A#/Bb",
+  B: "B",
+};
+
+export const ENHARMONIC_SOLFEGE: Record<string, string> = {
+  C: "Do",
+  "C#": "Do#/Reb",
+  D: "Re",
+  "D#": "Re#/Mib",
+  E: "Mi",
+  F: "Fa",
+  "F#": "Fa#/Solb",
+  G: "Sol",
+  "G#": "Sol#/Lab",
+  A: "La",
+  "A#": "La#/Sib",
+  B: "Si",
+};
+
+export const ENHARMONIC_GERMAN: Record<string, string> = {
+  C: "C",
+  "C#": "Cis/Des",
+  D: "D",
+  "D#": "Dis/Es",
+  E: "E",
+  F: "F",
+  "F#": "Fis/Ges",
+  G: "G",
+  "G#": "Gis/As",
+  A: "A",
+  "A#": "Ais/B",
+  B: "H",
+};
+
 export const SOLFEGE_SHARP: Record<string, string> = {
   C: "Do",
   "C#": "Do#",
@@ -187,18 +233,28 @@ export function formatPitch(
 
   if (notation === "solfege") {
     const solfegeName =
-      accidental === "sharps" ? SOLFEGE_SHARP[pitch] ?? pitch : SOLFEGE_FLAT[pitch] ?? pitch;
+      accidental === "enharmonic"
+        ? ENHARMONIC_SOLFEGE[pitch] ?? pitch
+        : accidental === "sharps"
+          ? SOLFEGE_SHARP[pitch] ?? pitch
+          : SOLFEGE_FLAT[pitch] ?? pitch;
     return `${solfegeName}${octaveSuffix}`;
   }
 
   if (notation === "german") {
     const germanName =
-      accidental === "sharps"
-        ? GERMAN_SHARP[pitch] ?? pitch
-        : accidental === "flats"
-        ? GERMAN_FLAT[pitch] ?? pitch
-        : GERMAN_DEFAULT[pitch] ?? pitch;
+      accidental === "enharmonic"
+        ? ENHARMONIC_GERMAN[pitch] ?? pitch
+        : accidental === "sharps"
+          ? GERMAN_SHARP[pitch] ?? pitch
+          : accidental === "flats"
+            ? GERMAN_FLAT[pitch] ?? pitch
+            : GERMAN_DEFAULT[pitch] ?? pitch;
     return `${germanName}${octaveSuffix}`;
+  }
+
+  if (accidental === "enharmonic") {
+    return `${ENHARMONIC_ENGLISH[pitch] ?? pitch}${octaveSuffix}`;
   }
 
   if (accidental === "natural") {
