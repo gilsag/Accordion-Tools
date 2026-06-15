@@ -47,3 +47,8 @@ When a recorded sequence contains at least one button, the top toolbar can show 
 In Stradella mode, sequence notation uses the same bass/chord staff-placement rule as the Bass Pattern Player: bass and counterbass notes are placed at or below the bass-clef middle line D, while chord buttons are placed above it.
 
 The notation panel includes **Download SVG** for saving the rendered staff notation. A collapsible **Notation help** section is available in the Sequence Tool controls.
+
+
+## Number position
+
+The **No numbers** option hides step numbers while preserving any selected arrows or highlighted buttons.

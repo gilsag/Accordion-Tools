@@ -12,7 +12,7 @@ export type Side = "treble" | "stradella";
 export type NotationMode = "english" | "german" | "solfege" | "intervals" | "blank";
 
 /** Controls whether labels use layout spelling, forced flats, or forced sharps. */
-export type AccidentalMode = "natural" | "flats" | "sharps";
+export type AccidentalMode = "natural" | "flats" | "sharps" | "enharmonic";
 
 /** Controls how Stradella chord buttons are labeled. */
 export type ChordLabelMode = "none" | "chord-name" | "root-only" | "chord-tones" | "row-function" | "functional-reference";
@@ -46,6 +46,18 @@ export type SequenceArrowStyle = "straight" | "curved";
 /** SVG text-anchor values used by free text notes. */
 export type TextNoteAnchor = "start" | "middle";
 
+/** Anchor positions for button-attached diagram annotations. */
+export type DiagramAnnotationAnchor =
+  | "center"
+  | "top"
+  | "bottom"
+  | "left"
+  | "right"
+  | "topLeft"
+  | "topRight"
+  | "bottomLeft"
+  | "bottomRight";
+
 /** Supported Stradella layout presets. */
 export type BassCount =
   | "8"
@@ -75,7 +87,7 @@ export type TrebleSizePreset = "small" | "full" | "large";
 export type PianoTrebleRange = "two-octave" | "three-octave" | "four-octave";
 
 /** Placement options for fingering and sequence numbers. */
-export type NumberPosition = "above" | "inside-top" | "inside-bottom";
+export type NumberPosition = "none" | "above" | "inside-top" | "inside-bottom";
 
 /** Named colors for sequence arrows and sequence numbers. */
 export type SequenceColorPreset = "red" | "blue" | "black" | "grey" | "theme";
@@ -248,6 +260,13 @@ export type TextNote = {
   color: string;
   font: FontFamily;
   anchor: TextNoteAnchor;
+  bold?: boolean;
+  italic?: boolean;
+  /** Button-position offset stored as a percentage from center to edge. */
+  annotationOffsetPercent?: number;
+  /** Optional metadata used by the Annotate Diagram tool. */
+  attachedToButtonId?: string;
+  annotationAnchor?: DiagramAnnotationAnchor;
 };
 
 /** Defines which Stradella columns and rows are visible for a bass preset. */

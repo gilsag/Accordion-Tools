@@ -4,7 +4,7 @@ Accordion-Tools is a browser-based accordion and music-layout diagram generator 
 
 It helps accordion players, students, and teachers create visual diagrams for Stradella bass, chromatic button accordion treble, and piano treble layouts. The app can be used for reference, teaching, practice planning, fingering notes, scale and chord exploration, ABC playback, Stradella accompaniment patterns, sound playback, and exporting diagrams as SVG or PNG files.
 
-Current app version: **0.7.0**
+Current app version: **0.8.2**
 
 ## Live Site
 
@@ -17,7 +17,7 @@ https://gilsag.github.io/Accordion-Tools/
 - Stradella bass diagrams from small layouts up to 120 bass.
 - Treble diagrams for C-system, B-system/Bayan, and piano keyboard layouts.
 - Multiple notation styles: English, German, solfege, intervals, or blank labels.
-- Scale Finder, Chord Finder, Selection, Fingering, Sequence, and Text Notes tools.
+- Scale Finder, Chord Finder, Selection, Fingering, Sequence, and Annotate Diagram tools.
 - ABC Player for simple ABC notation playback and diagram highlighting.
 - Stradella Bass Pattern Player with chord progressions, repeats-per-chord, repeat/loop playback, rendered Stradella staff notation, custom pattern editor, and local custom pattern storage.
 - Progression-aware ABC, MIDI, and LilyPond `.ly` export from the Bass Pattern Player.
@@ -34,7 +34,7 @@ Detailed documentation lives in the [`docs/`](docs/) folder.
 | [`docs/selection-tool.md`](docs/selection-tool.md) | Marking selected buttons/keys. |
 | [`docs/fingering-tool.md`](docs/fingering-tool.md) | Adding finger numbers to diagrams. |
 | [`docs/sequence-tool.md`](docs/sequence-tool.md) | Creating ordered paths with numbers/arrows. |
-| [`docs/text-notes-tool.md`](docs/text-notes-tool.md) | Placing custom notes on diagrams. |
+| [`docs/annotate-diagram-tool.md`](docs/annotate-diagram-tool.md) | Adding button-attached and free-position annotations to diagrams. |
 | [`docs/scale-finder.md`](docs/scale-finder.md) | Treble and Stradella scale paths. |
 | [`docs/chord-finder.md`](docs/chord-finder.md) | Treble and Stradella chord search. |
 | [`docs/abc-player.md`](docs/abc-player.md) | ABC playback and diagram mapping. |
@@ -135,11 +135,11 @@ Records ordered paths for melodies, exercises, scales, arpeggios, and bass movem
 
 See [`docs/sequence-tool.md`](docs/sequence-tool.md).
 
-### Text Notes
+### Annotate Diagram
 
-Places custom multiline notes directly on the SVG diagram.
+Adds inline annotations directly on the diagram. Click a button or empty diagram location, type the annotation in place, and manage annotations from the Tools panel list.
 
-See [`docs/text-notes-tool.md`](docs/text-notes-tool.md).
+See [`docs/annotate-diagram-tool.md`](docs/annotate-diagram-tool.md).
 
 ### Scale Finder
 
@@ -265,7 +265,7 @@ Accordion-Tools/
 │   ├── selection-tool.md
 │   ├── sequence-tool.md
 │   ├── settings.md
-│   └── text-notes-tool.md
+│   └── annotate-diagram-tool.md
 ├── public/
 │   ├── abc/
 │   ├── bass-patterns/

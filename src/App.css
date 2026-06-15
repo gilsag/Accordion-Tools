@@ -226,10 +226,6 @@ input[type="range"] {
   --sequence-number-size: 10px;
 }
 
-.diagram.placing-note {
-  cursor: crosshair;
-}
-
 .title {
   font-weight: 850;
 }
@@ -256,10 +252,20 @@ input[type="range"] {
 }
 
 .button.finder-match {
-  fill: #fff0a8;
+  fill: #fff7c2;
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: #1f7a38;
   stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.treble-accidental.finder-match,
+.accidental-style-dark .treble-accidental.finder-match,
+.accidental-style-grey .treble-accidental.finder-match,
+.accidental-style-theme .treble-accidental.finder-match,
+.accidental-style-outline .treble-accidental.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
 }
 
 .button.chord.finder-match {
@@ -277,6 +283,15 @@ input[type="range"] {
 
 .button.selected.finder-match {
   fill: #ffd9a8;
+}
+
+.treble-accidental.selected.finder-match,
+.accidental-style-dark .treble-accidental.selected.finder-match,
+.accidental-style-grey .treble-accidental.selected.finder-match,
+.accidental-style-theme .treble-accidental.selected.finder-match,
+.accidental-style-outline .treble-accidental.selected.finder-match {
+  fill: #ffd9a8;
+  stroke: #1f7a38;
 }
 
 .button.in-sequence {
@@ -352,6 +367,17 @@ input[type="range"] {
 
 .accidental-style-outline .treble-accidental-label {
   fill: #111111;
+}
+
+.highlighted-accidental-label {
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.62);
+  stroke-width: 2.4px;
+  stroke-linejoin: round;
+}
+
+.accidental-style-outline .highlighted-accidental-label {
+  stroke: #ffffff;
 }
 
 .finger-label {
@@ -720,10 +746,22 @@ input[type="range"] {
 
 /* Finder highlights are appended after themes so they remain visible in every theme. */
 .button.finder-match {
-  fill: #fff0a8;
+  fill: #fff7c2;
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: #1f7a38;
   stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+/* Use the same highlight fill on natural and accidental treble buttons.
+   Extra label contrast is applied only to highlighted accidentals. */
+.treble-accidental.finder-match,
+.accidental-style-dark .treble-accidental.finder-match,
+.accidental-style-grey .treble-accidental.finder-match,
+.accidental-style-theme .treble-accidental.finder-match,
+.accidental-style-outline .treble-accidental.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
 }
 
 .button.chord.finder-match {
@@ -741,6 +779,15 @@ input[type="range"] {
 
 .button.selected.finder-match {
   fill: #ffd9a8;
+}
+
+.treble-accidental.selected.finder-match,
+.accidental-style-dark .treble-accidental.selected.finder-match,
+.accidental-style-grey .treble-accidental.selected.finder-match,
+.accidental-style-theme .treble-accidental.selected.finder-match,
+.accidental-style-outline .treble-accidental.selected.finder-match {
+  fill: #ffd9a8;
+  stroke: #1f7a38;
 }
 
 /* Finder arrows connect the single-octave scale/chord path selected by the Finder tool. */
@@ -802,7 +849,8 @@ input[type="range"] {
 }
 
 .piano-black-key.finder-match {
-  fill: #6e6332;
+  fill: #fff0a8;
+  stroke: #2f8f46;
 }
 
 .piano-key.in-sequence {
@@ -1578,4 +1626,149 @@ input[type="range"] {
   color: #8a2f17;
   font-size: 12px;
   padding: 0.35rem;
+}
+
+.diagram.annotating-diagram {
+  cursor: crosshair;
+}
+
+.annotation-anchor-placeholder {
+  fill: rgba(23, 70, 208, 0.12);
+  stroke: #1746d0;
+  stroke-width: 2px;
+  stroke-dasharray: 3 3;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.diagram.annotating-diagram .button-group:hover .annotation-anchor-placeholder {
+  opacity: 1;
+}
+
+.annotation-list-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.annotation-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: #172033;
+}
+
+.annotation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.annotation-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border: 1px solid #d9deea;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.annotation-list-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.annotation-list-text strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  color: #172033;
+}
+
+.annotation-list-text span {
+  font-size: 11px;
+  color: #69758b;
+}
+
+.annotation-delete-button {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #d9a3a3;
+  border-radius: 50%;
+  background: #fff5f5;
+  color: #9f1d1d;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.annotation-delete-button:hover {
+  background: #ffe4e4;
+}
+
+.annotation-editor-object {
+  overflow: visible;
+}
+
+.annotation-editor {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #1746d0;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+
+.annotation-editor textarea {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  resize: none;
+  outline: none;
+  background: transparent;
+  font: 700 13px/1.25 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #172033;
+}
+
+.annotation-style-toggles {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.style-toggle {
+  width: 32px;
+  height: 30px;
+  border: 1px solid #c8d1e2;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.style-toggle:hover {
+  background: #f3f6fb;
+}
+
+.style-toggle.active {
+  border-color: #1746d0;
+  background: #e9efff;
+  color: #1746d0;
 }
