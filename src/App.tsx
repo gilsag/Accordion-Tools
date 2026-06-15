@@ -3005,11 +3005,15 @@ function App() {
       : "clamp(300px, 20vw, 380px)";
   const appGridColumns = `${leftPanelMode === "hidden" ? "" : `${sidebarWidth} `}minmax(0, 1fr)`;
 
-  const showSequenceNumbers = sequenceModeShowsNumbers(sequenceDisplayMode);
+  const showSequenceNumbers =
+    sequenceNumberPosition !== "none" &&
+    sequenceModeShowsNumbers(sequenceDisplayMode);
   const showSequenceArrows = sequenceModeShowsArrows(sequenceDisplayMode);
   const sequenceArrowStyle = sequenceArrowStyleFromMode(sequenceDisplayMode);
   const showScaleFinderNumbers =
-    scaleFinderActive && sequenceModeShowsNumbers(scaleFinderDisplayMode);
+    sequenceNumberPosition !== "none" &&
+    scaleFinderActive &&
+    sequenceModeShowsNumbers(scaleFinderDisplayMode);
   const showScaleFinderArrows =
     scaleFinderActive && sequenceModeShowsArrows(scaleFinderDisplayMode);
   const scaleFinderArrowStyle = sequenceArrowStyleFromMode(
@@ -4539,6 +4543,7 @@ function App() {
                         <option value="above">Above button</option>
                         <option value="inside-top">Inside top</option>
                         <option value="inside-bottom">Inside bottom</option>
+                        <option value="none">No numbers</option>
                       </select>
                     </label>
 
@@ -5731,6 +5736,9 @@ function App() {
                         isTrebleAccidental || isPianoBlackKey
                           ? "treble-accidental-label"
                           : "",
+                        (isTrebleAccidental || isPianoBlackKey) && (finderMatch || abcMatch)
+                          ? "highlighted-accidental-label"
+                          : "",
                       ].join(" ")}
                       style={{ fontSize }}
                     >
@@ -5794,6 +5802,9 @@ function App() {
                         "finger-label",
                         fontClass(labelFont),
                         isTrebleAccidental ? "treble-accidental-label" : "",
+                        isTrebleAccidental && (finderMatch || abcMatch)
+                          ? "highlighted-accidental-label"
+                          : "",
                       ].join(" ")}
                       style={{ fontSize: buttonSize * 0.44 }}
                     >

@@ -87,7 +87,7 @@ export type TrebleSizePreset = "small" | "full" | "large";
 export type PianoTrebleRange = "two-octave" | "three-octave" | "four-octave";
 
 /** Placement options for fingering and sequence numbers. */
-export type NumberPosition = "above" | "inside-top" | "inside-bottom";
+export type NumberPosition = "none" | "above" | "inside-top" | "inside-bottom";
 
 /** Named colors for sequence arrows and sequence numbers. */
 export type SequenceColorPreset = "red" | "blue" | "black" | "grey" | "theme";
