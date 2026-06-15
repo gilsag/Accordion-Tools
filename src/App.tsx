@@ -21,6 +21,7 @@ import type {
   ButtonKind,
   ChordLabelMode,
   ColorTheme,
+  DiagramAnnotationAnchor,
   DiagramButton,
   DownloadFormat,
   FinderChordInversion,
@@ -45,7 +46,6 @@ import type {
   TrebleLayout,
   TrebleSizePreset,
   TextNote,
-  TextNoteAnchor,
   TitleMode,
 } from "./types";
 
@@ -451,7 +451,7 @@ function App() {
     | "fingering"
     | "selection"
     | "sequences"
-    | "textNotes"
+    | "annotateDiagram"
     | null;
 
   const [activeSettingsSection, setActiveSettingsSection] =
@@ -459,7 +459,7 @@ function App() {
 
   const [activeToolSection, setActiveToolSection] = useState<ToolSection>(null);
 
-  /* Tool state for selections, fingerings, note sequences, and free text notes. */
+  /* Tool state for selections, fingerings, note sequences, and diagram annotations. */
   const [overlays, setOverlays] = useState<Record<string, Overlay>>({});
   const [isRecordingSequence, setIsRecordingSequence] = useState(false);
   const [sequenceSteps, setSequenceSteps] = useState<SequenceStep[]>([]);
@@ -633,13 +633,35 @@ function App() {
     setStradellaChordFinderMarkRootBass,
   ] = useState(true);
 
-  const [noteDraft, setNoteDraft] = useState("Remember\nbellows direction");
-  const [isPlacingTextNote, setIsPlacingTextNote] = useState(false);
   const [textNotes, setTextNotes] = useState<TextNote[]>([]);
   const [textNoteFontSize, setTextNoteFontSize] = useState(15);
   const [textNoteColor, setTextNoteColor] = useState("#172033");
   const [textNoteFont, setTextNoteFont] = useState<FontFamily>("system");
-  const [textNoteAnchor, setTextNoteAnchor] = useState<TextNoteAnchor>("start");
+  const [annotationBold, setAnnotationBold] = useState(false);
+  const [annotationItalic, setAnnotationItalic] = useState(false);
+  const [annotationOffsetPercent, setAnnotationOffsetPercent] = useState(58);
+  const [annotationButtonAnchor, setAnnotationButtonAnchor] =
+    useState<DiagramAnnotationAnchor>("center");
+  const annotationEditorRef = useRef<HTMLTextAreaElement | null>(null);
+  const [inlineAnnotationEditor, setInlineAnnotationEditor] = useState<{
+    x: number;
+    y: number;
+    text: string;
+    fontSize: number;
+    color: string;
+    font: FontFamily;
+    bold: boolean;
+    italic: boolean;
+    annotationOffsetPercent: number;
+    attachedToButtonId?: string;
+    annotationAnchor?: DiagramAnnotationAnchor;
+  } | null>(null);
+  useEffect(() => {
+    if (inlineAnnotationEditor) {
+      window.setTimeout(() => annotationEditorRef.current?.focus(), 0);
+    }
+  }, [inlineAnnotationEditor]);
+
 
   /* Sound tool state for synthesized button and sequence playback. */
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -690,7 +712,7 @@ function App() {
           setNotation(defaults.notation);
         }
         if (
-          isOneOf(defaults.accidental, ["natural", "flats", "sharps"] as const)
+          isOneOf(defaults.accidental, ["natural", "flats", "sharps", "enharmonic"] as const)
         ) {
           setAccidental(defaults.accidental);
         }
@@ -1077,7 +1099,7 @@ function App() {
       ] as const)
     )
       setNotation(settings.notation);
-    if (isOneOf(settings.accidental, ["natural", "flats", "sharps"] as const))
+    if (isOneOf(settings.accidental, ["natural", "flats", "sharps", "enharmonic"] as const))
       setAccidental(settings.accidental);
     const importedChordLabelMode = (settings as { chordLabelMode?: unknown }).chordLabelMode;
     if (importedChordLabelMode === "roman" || importedChordLabelMode === "tonal-function") {
@@ -1399,6 +1421,7 @@ function App() {
 
   const isTrebleLikeSide = side === "treble";
   const isPianoTreble = side === "treble" && trebleLayout === "piano";
+  const stradellaAccidental = accidental === "enharmonic" ? "natural" : accidental;
 
   /* Generated button list for the current side and layout settings. */
   const buttons = useMemo(() => {
@@ -1407,7 +1430,7 @@ function App() {
         basses,
         buttonSize,
         spacing,
-        accidental,
+        stradellaAccidental,
         diagramVerticalSpacing,
       );
     }
@@ -1453,7 +1476,7 @@ function App() {
     pianoBlackKeyWidthScale,
     pianoBlackKeyHeightScale,
     trebleAngle,
-    accidental,
+    stradellaAccidental,
     showTrebleOctaves,
   ]);
 
@@ -1489,7 +1512,6 @@ function App() {
       setIsRecordingSequence(false);
       setIsApplyingFingering(false);
       setTextNotes([]);
-      setIsPlacingTextNote(false);
       setScaleFinderActive(false);
       setChordFinderActive(false);
       setStradellaChordFinderActive(false);
@@ -2058,6 +2080,12 @@ function App() {
    * sequence step, and/or trigger sound depending on the active tool settings.
    */
   function toggleButton(button: DiagramButton) {
+    if (activeToolSection === "annotateDiagram") {
+      beginButtonAnnotation(button);
+      return;
+    }
+
+
     const id = button.id;
     const trimmedFinger = fingeringDraft.trim();
 
@@ -2076,6 +2104,10 @@ function App() {
         },
       };
     });
+
+    if (isApplyingFingering && trimmedFinger) {
+      setFingeringDraft("");
+    }
 
     if (isRecordingSequence) {
       setSequenceSteps((current) => [
@@ -2101,6 +2133,8 @@ function App() {
 
       return next;
     });
+
+    setFingeringDraft("");
   }
 
   /** Removes fingering numbers from all currently selected buttons. */
@@ -2603,20 +2637,38 @@ function App() {
     stopAllSound();
   }
 
-  /** Removes all free text notes and exits note-placement mode. */
+  /** Removes all diagram annotations and closes any inline editor. */
   function clearTextNotes() {
     setTextNotes([]);
-    setIsPlacingTextNote(false);
+    setInlineAnnotationEditor(null);
   }
 
-  /** Clears selections, fingerings, sequences, text notes, and active tool modes. */
+  /** Removes one diagram annotation. */
+  function deleteTextNote(noteId: string) {
+    setTextNotes((current) => current.filter((note) => note.id !== noteId));
+  }
+
+  function annotationLocationLabel(note: TextNote) {
+    if (!note.attachedToButtonId) return "Free label";
+    const anchorLabel = (note.annotationAnchor ?? "center")
+      .replace(/([A-Z])/g, " $1")
+      .toLowerCase();
+    return `Button · ${anchorLabel}`;
+  }
+
+  function annotationPreview(note: TextNote) {
+    const compact = note.text.replace(/\s+/g, " ").trim();
+    if (!compact) return "Untitled annotation";
+    return compact.length > 34 ? `${compact.slice(0, 31)}...` : compact;
+  }
+
+  /** Clears selections, fingerings, sequences, annotations, and active tool modes. */
   function resetDiagramWork() {
     setOverlays({});
     setSequenceSteps([]);
     setIsRecordingSequence(false);
     setIsApplyingFingering(false);
     setTextNotes([]);
-    setIsPlacingTextNote(false);
     setScaleFinderActive(false);
     setChordFinderActive(false);
     setStradellaChordFinderActive(false);
@@ -2644,13 +2696,15 @@ function App() {
 
   /** Computes the visible label for one button using notation and chord-label settings. */
   function getMainLabel(button: DiagramButton) {
+    const labelAccidental = side === "stradella" ? stradellaAccidental : accidental;
+
     if (side === "stradella" && isChordKind(button.kind)) {
       if (chordLabelMode === "none") return "";
 
       const root = formatPitch(
         button.chordRoot,
         notation,
-        accidental,
+        labelAccidental,
         button.chordDisplayName ?? button.chordNaturalName,
       );
 
@@ -2661,7 +2715,7 @@ function App() {
           button.chordRoot ?? "C",
           button.kind,
           notation,
-          accidental,
+          labelAccidental,
         );
       }
       if (chordLabelMode === "functional-reference") {
@@ -2683,7 +2737,7 @@ function App() {
     return formatPitch(
       button.pitchClass,
       notation,
-      accidental,
+      labelAccidental,
       button.displayName ?? button.naturalName,
       button.octave,
     );
@@ -2705,7 +2759,7 @@ function App() {
 
     if (matchingBassButton) return getMainLabel(matchingBassButton);
 
-    return formatPitch(pitch, notation, accidental);
+    return formatPitch(pitch, notation, stradellaAccidental);
   }
 
   /** Formats finder pitch lists with the same spelling used by visible Stradella bass-button labels. */
@@ -2795,26 +2849,104 @@ function App() {
     return point.matrixTransform(screenMatrix.inverse());
   }
 
-  /** Places a free text note at the clicked SVG coordinate when note placement is active. */
+  function annotationPointForButton(
+    button: DiagramButton,
+    anchor: DiagramAnnotationAnchor,
+    offsetPercent = annotationOffsetPercent,
+  ) {
+    const halfWidth = (button.width ?? buttonSize * 2) / 2;
+    const halfHeight = (button.height ?? buttonSize * 2) / 2;
+    const offsetRatio = Math.max(0, Math.min(offsetPercent, 100)) / 100;
+    const xOffset = Math.min(halfWidth * offsetRatio, buttonSize * 0.9);
+    const yOffset = Math.min(halfHeight * offsetRatio, buttonSize * 0.9);
+
+    const x =
+      anchor === "left" || anchor === "topLeft" || anchor === "bottomLeft"
+        ? button.x - xOffset
+        : anchor === "right" || anchor === "topRight" || anchor === "bottomRight"
+          ? button.x + xOffset
+          : button.x;
+
+    const y =
+      anchor === "top" || anchor === "topLeft" || anchor === "topRight"
+        ? button.y - yOffset
+        : anchor === "bottom" || anchor === "bottomLeft" || anchor === "bottomRight"
+          ? button.y + yOffset
+          : button.y;
+
+    return { x, y };
+  }
+
+  function beginButtonAnnotation(button: DiagramButton) {
+    const point = annotationPointForButton(
+      button,
+      annotationButtonAnchor,
+      annotationOffsetPercent,
+    );
+    setInlineAnnotationEditor({
+      ...point,
+      text: "",
+      fontSize: textNoteFontSize,
+      color: textNoteColor,
+      font: textNoteFont,
+      bold: annotationBold,
+      italic: annotationItalic,
+      annotationOffsetPercent,
+      attachedToButtonId: button.id,
+      annotationAnchor: annotationButtonAnchor,
+    });
+  }
+
+  function beginFreeAnnotation(x: number, y: number) {
+    setInlineAnnotationEditor({
+      x,
+      y,
+      text: "",
+      fontSize: textNoteFontSize,
+      color: textNoteColor,
+      font: textNoteFont,
+      bold: annotationBold,
+      italic: annotationItalic,
+      annotationOffsetPercent,
+    });
+  }
+
+  function commitInlineAnnotation() {
+    if (!inlineAnnotationEditor) return;
+    const text = inlineAnnotationEditor.text.trim();
+    if (text) {
+      setTextNotes((current) => [
+        ...current,
+        makeTextNote({
+          x: inlineAnnotationEditor.x,
+          y: inlineAnnotationEditor.y,
+          text,
+          fontSize: inlineAnnotationEditor.fontSize,
+          color: inlineAnnotationEditor.color,
+          font: inlineAnnotationEditor.font,
+          anchor: "middle",
+          bold: inlineAnnotationEditor.bold,
+          italic: inlineAnnotationEditor.italic,
+          annotationOffsetPercent: inlineAnnotationEditor.annotationOffsetPercent,
+          attachedToButtonId: inlineAnnotationEditor.attachedToButtonId,
+          annotationAnchor: inlineAnnotationEditor.annotationAnchor,
+        }),
+      ]);
+    }
+    setInlineAnnotationEditor(null);
+  }
+
+  function cancelInlineAnnotation() {
+    setInlineAnnotationEditor(null);
+  }
+
+  /** Starts a free-position inline annotation when Annotate Diagram is active. */
   function handleSvgClick(event: ReactMouseEvent<SVGSVGElement>) {
-    if (!isPlacingTextNote || !noteDraft.trim()) return;
+    if (activeToolSection !== "annotateDiagram") return;
 
     const point = svgPointFromMouse(event);
     if (!point) return;
-
-    setTextNotes((current) => [
-      ...current,
-      makeTextNote({
-        x: point.x,
-        y: point.y,
-        text: noteDraft,
-        fontSize: textNoteFontSize,
-        color: textNoteColor,
-        font: textNoteFont,
-        anchor: textNoteAnchor,
-      }),
-    ]);
-    setIsPlacingTextNote(false);
+    beginFreeAnnotation(point.x, point.y);
   }
 
   useEffect(() => {
@@ -2925,8 +3057,8 @@ function App() {
                 ? "Sequence recording"
                 : isApplyingFingering
                   ? "Fingering"
-                  : isPlacingTextNote
-                    ? "Text note"
+                  : activeToolSection === "annotateDiagram"
+                    ? "Annotate Diagram"
                     : selectionOnClick
                       ? "Selection"
                       : "No active tool"
@@ -2940,8 +3072,8 @@ function App() {
               ? "Sequence recording"
               : isApplyingFingering
                 ? "Fingering"
-                : isPlacingTextNote
-                  ? "Text note"
+                : activeToolSection === "annotateDiagram"
+                  ? "Annotate Diagram"
                   : selectionOnClick
                     ? "Selection"
                     : "No active tool";
@@ -3149,7 +3281,7 @@ function App() {
                     </label>
 
                     <label>
-                      Accidentals
+                      Treble accidentals
                       <select
                         value={accidental}
                         onChange={(event) =>
@@ -3159,6 +3291,7 @@ function App() {
                         <option value="natural">Default spelling</option>
                         <option value="flats">Prefer flats</option>
                         <option value="sharps">Prefer sharps</option>
+                        <option value="enharmonic">Show enharmonic pairs</option>
                       </select>
                     </label>
                   </div>
@@ -4472,27 +4605,40 @@ function App() {
               <section className="control-section">
                 <button
                   className="section-title"
-                  onClick={() => toggleToolSection("textNotes")}
+                  onClick={() => toggleToolSection("annotateDiagram")}
                 >
-                  Text notes{" "}
-                  <span>{activeToolSection === "textNotes" ? "−" : "+"}</span>
+                  Annotate Diagram{" "}
+                  <span>{activeToolSection === "annotateDiagram" ? "−" : "+"}</span>
                 </button>
 
-                {activeToolSection === "textNotes" && (
+                {activeToolSection === "annotateDiagram" && (
                   <div className="section-content">
                     <p className="hint">
-                      Type text, click “Place note”, then click on the diagram.
-                      Multiple lines are supported.
+                      Click a button or any empty diagram location, then type
+                      the annotation directly on the diagram. Press Enter to
+                      save, Shift+Enter for a new line, or Esc to cancel.
                     </p>
 
                     <label>
-                      Note text
-                      <textarea
-                        rows={4}
-                        value={noteDraft}
-                        onChange={(event) => setNoteDraft(event.target.value)}
-                        placeholder="Type a note"
-                      />
+                      Button position
+                      <select
+                        value={annotationButtonAnchor}
+                        onChange={(event) =>
+                          setAnnotationButtonAnchor(
+                            event.target.value as DiagramAnnotationAnchor,
+                          )
+                        }
+                      >
+                        <option value="center">Center</option>
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                        <option value="topLeft">Top left</option>
+                        <option value="topRight">Top right</option>
+                        <option value="bottomLeft">Bottom left</option>
+                        <option value="bottomRight">Bottom right</option>
+                      </select>
                     </label>
 
                     <label>
@@ -4509,18 +4655,50 @@ function App() {
                     </label>
 
                     <label>
-                      Text color
+                      Distance from center: {annotationOffsetPercent}%
                       <input
-                        type="color"
-                        value={textNoteColor}
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={annotationOffsetPercent}
                         onChange={(event) =>
-                          setTextNoteColor(event.target.value)
+                          setAnnotationOffsetPercent(Number(event.target.value))
                         }
                       />
                     </label>
 
+                    <div className="annotation-style-toggles" aria-label="Annotation text style">
+                      <button
+                        type="button"
+                        className={annotationBold ? "style-toggle active" : "style-toggle"}
+                        onClick={() => setAnnotationBold((current) => !current)}
+                        aria-pressed={annotationBold}
+                        title="Bold"
+                      >
+                        B
+                      </button>
+                      <button
+                        type="button"
+                        className={annotationItalic ? "style-toggle active" : "style-toggle"}
+                        onClick={() => setAnnotationItalic((current) => !current)}
+                        aria-pressed={annotationItalic}
+                        title="Italic"
+                      >
+                        <em>I</em>
+                      </button>
+                    </div>
+
                     <label>
-                      Text font
+                      Text color
+                      <input
+                        type="color"
+                        value={textNoteColor}
+                        onChange={(event) => setTextNoteColor(event.target.value)}
+                      />
+                    </label>
+
+                    <label>
+                      Font
                       <select
                         value={textNoteFont}
                         onChange={(event) =>
@@ -4534,40 +4712,50 @@ function App() {
                       </select>
                     </label>
 
-                    <label>
-                      Text anchor
-                      <select
-                        value={textNoteAnchor}
-                        onChange={(event) =>
-                          setTextNoteAnchor(
-                            event.target.value as TextNoteAnchor,
-                          )
-                        }
-                      >
-                        <option value="start">Left</option>
-                        <option value="middle">Center</option>
-                      </select>
-                    </label>
+                    <div className="annotation-list-block">
+                      <div className="annotation-list-header">
+                        <span>Annotations</span>
+                        <strong>{textNotes.length}</strong>
+                      </div>
+
+                      {textNotes.length === 0 ? (
+                        <p className="hint">
+                          No annotations yet. Click the diagram to add one.
+                        </p>
+                      ) : (
+                        <ul className="annotation-list">
+                          {textNotes.map((note, index) => (
+                            <li key={note.id} className="annotation-list-item">
+                              <div className="annotation-list-text">
+                                <strong>{index + 1}. {annotationPreview(note)}</strong>
+                                <span>{annotationLocationLabel(note)}</span>
+                              </div>
+                              <button
+                                type="button"
+                                className="annotation-delete-button"
+                                onClick={() => deleteTextNote(note.id)}
+                                aria-label={`Delete annotation ${index + 1}`}
+                                title="Delete annotation"
+                              >
+                                ×
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
 
                     <button
-                      className={`small-button ${isPlacingTextNote ? "active-tool" : ""}`}
-                      onClick={() =>
-                        setIsPlacingTextNote((current) => !current)
-                      }
+                      className="small-button"
+                      onClick={clearTextNotes}
+                      disabled={textNotes.length === 0}
                     >
-                      {isPlacingTextNote ? "Click diagram..." : "Place note"}
-                    </button>
-
-                    <p className="hint">
-                      Notes: <strong>{textNotes.length}</strong>
-                    </p>
-
-                    <button className="small-button" onClick={clearTextNotes}>
-                      Clear notes
+                      Clear annotations
                     </button>
                   </div>
                 )}
               </section>
+
 
               {side === "stradella" && (
                 <section className="control-section">
@@ -5284,7 +5472,7 @@ function App() {
           <svg
             ref={svgRef}
             preserveAspectRatio="xMinYMin meet"
-            className={`diagram diagram-theme-${colorTheme} accidental-style-${accidentalStyle} ${isPlacingTextNote ? "placing-note" : ""}`}
+            className={`diagram diagram-theme-${colorTheme} accidental-style-${accidentalStyle} ${activeToolSection === "annotateDiagram" ? "annotating-diagram" : ""}`}
             viewBox={`0 0 ${viewWidth} ${viewHeight}`}
             role="img"
             onClick={handleSvgClick}
@@ -5570,6 +5758,33 @@ function App() {
                     </text>
                   )}
 
+                  {activeToolSection === "annotateDiagram" && !isPianoKey && (() => {
+                    const point = annotationPointForButton(button, annotationButtonAnchor);
+                    return (
+                      <circle
+                        cx={point.x}
+                        cy={point.y}
+                        r={Math.max(5, buttonSize * 0.24)}
+                        className="annotation-anchor-placeholder"
+                      />
+                    );
+                  })()}
+
+                  {activeToolSection === "annotateDiagram" && isPianoKey && (() => {
+                    const point = annotationPointForButton(button, annotationButtonAnchor);
+                    const markerSize = Math.max(10, buttonSize * 0.42);
+                    return (
+                      <rect
+                        x={point.x - markerSize / 2}
+                        y={point.y - markerSize / 2}
+                        width={markerSize}
+                        height={markerSize}
+                        rx="4"
+                        className="annotation-anchor-placeholder"
+                      />
+                    );
+                  })()}
+
                   {overlay.finger && (
                     <text
                       x={button.x}
@@ -5658,7 +5873,12 @@ function App() {
                 y={note.y}
                 textAnchor={note.anchor}
                 className={`free-text-note ${fontClass(note.font)}`}
-                style={{ fontSize: note.fontSize, fill: note.color }}
+                style={{
+                  fontSize: note.fontSize,
+                  fill: note.color,
+                  fontWeight: note.bold ? 800 : undefined,
+                  fontStyle: note.italic ? "italic" : undefined,
+                }}
               >
                 {splitMultilineText(note.text).map((line, index) => (
                   <tspan
@@ -5671,6 +5891,54 @@ function App() {
                 ))}
               </text>
             ))}
+
+            {inlineAnnotationEditor && (() => {
+              const editorWidth = 180;
+              const editorHeight = 68;
+              const editorX = Math.max(8, Math.min(inlineAnnotationEditor.x - editorWidth / 2, viewWidth - editorWidth - 8));
+              const editorY = Math.max(8, Math.min(inlineAnnotationEditor.y - editorHeight / 2, viewHeight - editorHeight - 8));
+
+              return (
+                <foreignObject
+                  x={editorX}
+                  y={editorY}
+                  width={editorWidth}
+                  height={editorHeight}
+                  className="annotation-editor-object"
+                  onClick={(event) => event.stopPropagation()}
+                >
+                  <div className="annotation-editor">
+                    <textarea
+                      ref={annotationEditorRef}
+                      value={inlineAnnotationEditor.text}
+                      placeholder="Type annotation"
+                      style={{
+                        fontSize: inlineAnnotationEditor.fontSize,
+                        color: inlineAnnotationEditor.color,
+                        fontWeight: inlineAnnotationEditor.bold ? 800 : undefined,
+                        fontStyle: inlineAnnotationEditor.italic ? "italic" : undefined,
+                      }}
+                      onChange={(event) =>
+                        setInlineAnnotationEditor((current) =>
+                          current ? { ...current, text: event.target.value } : current,
+                        )
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" && !event.shiftKey) {
+                          event.preventDefault();
+                          commitInlineAnnotation();
+                        }
+                        if (event.key === "Escape") {
+                          event.preventDefault();
+                          cancelInlineAnnotation();
+                        }
+                      }}
+                      onBlur={commitInlineAnnotation}
+                    />
+                  </div>
+                </foreignObject>
+              );
+            })()}
           </svg>
         </div>
 
