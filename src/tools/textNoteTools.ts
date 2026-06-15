@@ -2,7 +2,7 @@
   Helpers for free-positioned text notes.
 */
 
-import type { FontFamily, TextNote, TextNoteAnchor } from "../types";
+import type { DiagramAnnotationAnchor, FontFamily, TextNote, TextNoteAnchor } from "../types";
 
 /** Creates a stored text-note object from the current note settings and click position. */
 export function makeTextNote(args: {
@@ -13,6 +13,11 @@ export function makeTextNote(args: {
   color: string;
   font: FontFamily;
   anchor: TextNoteAnchor;
+  bold?: boolean;
+  italic?: boolean;
+  annotationOffsetPercent?: number;
+  attachedToButtonId?: string;
+  annotationAnchor?: DiagramAnnotationAnchor;
 }): TextNote {
   return {
     id: `note-${Date.now()}-${Math.round(args.x)}-${Math.round(args.y)}`,
@@ -23,6 +28,11 @@ export function makeTextNote(args: {
     color: args.color,
     font: args.font,
     anchor: args.anchor,
+    bold: args.bold,
+    italic: args.italic,
+    annotationOffsetPercent: args.annotationOffsetPercent,
+    attachedToButtonId: args.attachedToButtonId,
+    annotationAnchor: args.annotationAnchor,
   };
 }
 

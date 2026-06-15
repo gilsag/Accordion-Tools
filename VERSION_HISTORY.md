@@ -1,5 +1,37 @@
 # Accordion Tools — Version History
 
+## v0.8.3 - Local annotation style controls
+
+- Added a local **Distance from center** slider for button-attached annotations.
+- Added local **Bold** and **Italic** annotation toggles.
+- Stored text size, color, font, offset, bold, and italic settings with each annotation when it is created.
+- Styled inline annotation editing so the preview reflects the selected local text style.
+
+
+## 0.8.2 - Annotation list and Text Notes removal
+
+- Removed the separate Text Notes tool from the Tools panel so Annotate Diagram is now the single workflow for diagram text annotations.
+- Added an annotation list in the Annotate Diagram section, including a preview, location label, count, and per-annotation × delete button.
+- Kept the clear-all annotations action, now disabled when there are no annotations.
+- Removed obsolete Text Notes placement UI behavior so button clicks are no longer split between two annotation workflows.
+
+## 0.8.1 - Annotate Diagram click-first workflow
+
+- Added an Annotate Diagram tool with a click-first workflow: choose the tool, click a button or empty diagram location, then type the annotation inline on the diagram.
+- Button annotations can be placed at center, edge, or corner anchor positions.
+- Empty-space clicks create free-position text labels.
+- Button sound, selection, fingering, and sequence actions are suppressed while Annotate Diagram is active so clicks place annotations instead of playing notes.
+- Existing sidebar Text notes behavior was preserved in this version for users who prefer typing the text first and then placing it.
+
+## 0.7.9 - Fingering input and treble enharmonic labels
+
+- Changed the fingering tool so applying a fingering to a button clears the fingering input afterward, preventing new values from being appended to the previous one.
+- Also clears the fingering input after applying one fingering value to the currently selected buttons.
+- Renamed the notation setting from Accidentals to Treble accidentals, because Stradella spelling follows its own circle-of-fifths and counterbass logic.
+- Added a new optional Treble accidentals value: Show enharmonic pairs.
+- The enharmonic-pair option affects treble labels only; Stradella diagrams keep their existing Stradella-specific spelling logic.
+
+
 
 ## 0.7.8 - Bellows guide top/bottom label orientation
 

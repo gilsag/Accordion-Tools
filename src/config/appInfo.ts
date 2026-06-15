@@ -2,7 +2,7 @@
 
 export const APP_INFO = {
   name: "Accordion-Tools",
-  version: "0.7.8",
+  version: "0.8.3",
   authorName: "gilsag",
   authorGithubUrl: "https://github.com/gilsag",
   readmeUrl: "https://github.com/gilsag/Accordion-Tools/blob/main/README.md",
