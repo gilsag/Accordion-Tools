@@ -252,10 +252,20 @@ input[type="range"] {
 }
 
 .button.finder-match {
-  fill: #fff0a8;
+  fill: #fff7c2;
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: #1f7a38;
   stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.treble-accidental.finder-match,
+.accidental-style-dark .treble-accidental.finder-match,
+.accidental-style-grey .treble-accidental.finder-match,
+.accidental-style-theme .treble-accidental.finder-match,
+.accidental-style-outline .treble-accidental.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
 }
 
 .button.chord.finder-match {
@@ -273,6 +283,15 @@ input[type="range"] {
 
 .button.selected.finder-match {
   fill: #ffd9a8;
+}
+
+.treble-accidental.selected.finder-match,
+.accidental-style-dark .treble-accidental.selected.finder-match,
+.accidental-style-grey .treble-accidental.selected.finder-match,
+.accidental-style-theme .treble-accidental.selected.finder-match,
+.accidental-style-outline .treble-accidental.selected.finder-match {
+  fill: #ffd9a8;
+  stroke: #1f7a38;
 }
 
 .button.in-sequence {
@@ -348,6 +367,17 @@ input[type="range"] {
 
 .accidental-style-outline .treble-accidental-label {
   fill: #111111;
+}
+
+.highlighted-accidental-label {
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.62);
+  stroke-width: 2.4px;
+  stroke-linejoin: round;
+}
+
+.accidental-style-outline .highlighted-accidental-label {
+  stroke: #ffffff;
 }
 
 .finger-label {
@@ -716,10 +746,22 @@ input[type="range"] {
 
 /* Finder highlights are appended after themes so they remain visible in every theme. */
 .button.finder-match {
-  fill: #fff0a8;
+  fill: #fff7c2;
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: #1f7a38;
   stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+/* Use the same highlight fill on natural and accidental treble buttons.
+   Extra label contrast is applied only to highlighted accidentals. */
+.treble-accidental.finder-match,
+.accidental-style-dark .treble-accidental.finder-match,
+.accidental-style-grey .treble-accidental.finder-match,
+.accidental-style-theme .treble-accidental.finder-match,
+.accidental-style-outline .treble-accidental.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
 }
 
 .button.chord.finder-match {
@@ -737,6 +779,15 @@ input[type="range"] {
 
 .button.selected.finder-match {
   fill: #ffd9a8;
+}
+
+.treble-accidental.selected.finder-match,
+.accidental-style-dark .treble-accidental.selected.finder-match,
+.accidental-style-grey .treble-accidental.selected.finder-match,
+.accidental-style-theme .treble-accidental.selected.finder-match,
+.accidental-style-outline .treble-accidental.selected.finder-match {
+  fill: #ffd9a8;
+  stroke: #1f7a38;
 }
 
 /* Finder arrows connect the single-octave scale/chord path selected by the Finder tool. */
@@ -798,7 +849,8 @@ input[type="range"] {
 }
 
 .piano-black-key.finder-match {
-  fill: #6e6332;
+  fill: #fff0a8;
+  stroke: #2f8f46;
 }
 
 .piano-key.in-sequence {
