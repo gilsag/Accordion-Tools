@@ -1,0 +1,45 @@
+X:1
+T:Un Gorro de Lana
+C:Jorge Yáñez
+%%score { 1 | 2 }
+L:1/8
+Q:1/4=150
+M:3/4
+K:Bb
+%%stretchlast true
+V:1 treble nm="Acordeón" snm="Acord."
+%%MIDI program 21
+V:2 bass 
+%%MIDI program 21
+V:1
+ A4 A2 | A2 G2 F2 | B6 | F6 |
+ A2 G2 F2 | E2 D2 E2 | G6 | F6 |
+ A4 A2 | A2 G2 F2 | B6 | F6 |
+ e2 e2 e2 | e2 A3 c | c6 | B6 |:
+ z6 | z6 | z6 | z6 |
+ G4- GF | G4- GF | G6 | D6 |
+ G4- GF | G4- GF | G6 | E6 |
+ G4- GF | G4- GF | G6 | E6 |
+ A4- AB | A4- AG | F6 | z6 |
+ G4- GF | G4- GF | G6 | D6 |
+ B4- BB | B4- B_A | G6 | z6 |
+ B2 B3 B | B4- B z | B2 A3 G | F4- F z |
+ E2 E3 E | E2 D2 E2 | F6- | F4 z2 |
+ B2 B3 B | e4- e z | e2 d3 c | B4- B z |
+ e2 e3 e | e2 A2 c2 | B2 z2 z2 | z6 :|
+V:2
+ z6 | z6 | z6 | z6 |
+ z6 | z6 | z6 | z6 |
+ z6 | z6 | z6 | z6 |
+ z6 | z6 | z6 | z6 |:
+ B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 |
+ F,,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 |
+ F,,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | E,,2 "Eb" [E,G,B,]2 [E,G,B,]2 | E,,2 "Eb" [E,G,B,]2 [E,G,B,]2 |
+ E,,2 "Eb" [E,G,B,]2 [E,G,B,]2 | E,,2 "Eb" [E,G,B,]2 [E,G,B,]2 | E,,2 "Eb" [E,G,B,]2 [E,G,B,]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ F,,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ E,,2 "Eb" [E,G,B,]2 [E,G,B,]2 | B,,2 "Eb" [E,G,B,]2 [E,G,B,]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 | B,,2 "Bb" [B,DF]2 [B,DF]2 |
+ C,2 "F" [F,A,C]2 [F,A,C]2 | F,,2 "F" [F,A,C]2 [F,A,C]2 | "Bb" !^![B,,B,DF]2 "Bb" !^![B,,B,DF]2 "Bb" !^![B,,B,DF]2 | "Bb" !^![B,,B,DF]2 z2 z2 :|

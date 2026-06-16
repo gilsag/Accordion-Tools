@@ -1,0 +1,31 @@
+X:1
+T:Bella Ciao
+C:Italian Traditional
+%%score { 1 | 2 }
+L:1/8
+Q:1/4=110
+M:4/4
+K:C
+%%stretchlast true
+V:1 treble nm="Acordeón" snm="Acord."
+%%MIDI program 21
+V:2 bass 
+%%MIDI program 21
+V:1
+"^A1" z4 z EAB | cA- A2 z EAB | cA- A2 z EAB | c2 BA c2 BA |
+"^B1" e2 e2 eede | ff- f2 z fed | fe- e2 z edc | B2 e2 c2 B2 |
+"^B2" A4 z2 de | ff- f2 z fed | fe- e2 z edc | B2 e2 c2 B2 |
+"^A2" A4 z EAB | cA- A2 z EAB | cA- A2 z EAB | c2 BA c2 BA |
+"^B1" e2 e2 eede | ff- f2 z fed | fe- e2 z edc | B2 e2 c2 B2 |
+"^A2" A4 z EAB | cA- A2 z EAB | cA- A2 z EAB | c2 BA c2 BA |
+"^B1" e2 e2 eede | ff- f2 z fed | fe- e2 z edc | B2 e2 c2 B2 |
+"^C" A4 z ede | ff- f2 z fed | fe- e2 z edc | B2 e2 ^f2 ^g2 |  a8 |]
+V:2
+z4 A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | D,, "Dm"[D,F,A,]A,, "Dm"[D,F,A,] D,,[D,F,A,]A,,[D,F,A,] | A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | E,, "Em"[E,G,B,]B,, "Em"[E,G,B,] E,,[E,G,B,]B,,[E,G,B,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | D,, "Dm"[D,F,A,]A,, "Dm"[D,F,A,] D,,[D,F,A,]A,,[D,F,A,] | A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | E,, "Em"[E,G,B,]B,, "Em"[E,G,B,] E,,[E,G,B,]B,,[E,G,B,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | D,, "Dm"[D,F,A,]A,, "Dm"[D,F,A,] D,,[D,F,A,]A,,[D,F,A,] | A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | E,, "Em"[E,G,B,]B,, "Em"[E,G,B,] E,,[E,G,B,]B,,[E,G,B,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | A,,[C,E,A,]E,,[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | D,, "Dm"[D,F,A,]A,, "Dm"[D,F,A,] D,,[D,F,A,]A,,[D,F,A,] | A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | E,, "Em"[E,G,B,]B,, "Em"[E,G,B,] E,,[E,G,B,]B,,[E,G,B,] |
+A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | D,, "Dm"[D,F,A,]A,, "Dm"[D,F,A,] D,,[D,F,A,]A,,[D,F,A,] | A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] A,,[C,E,A,]E,,[C,E,A,] | E,, "Em"[E,G,B,]B,, "Em"[E,G,B,] E,,[E,G,B,]B,,[E,G,B,] |  A,, "Am"[C,E,A,]E,, "Am"[C,E,A,] "Am" [A,,C,E,A,]4 |]

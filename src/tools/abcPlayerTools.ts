@@ -1,3 +1,4 @@
+import abcjs from "abcjs";
 import type { DiagramButton, FinderChordPattern, StradellaChordFinderMode } from "../types";
 import { INDEX_TO_PITCH } from "../music";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
@@ -19,13 +20,16 @@ export type AbcEvent = {
   index: number;
   startBeat: number;
   durationBeats: number;
+  voiceId?: string;
   notes: AbcNote[];
   chordSymbols: AbcChordSymbol[];
   source: string;
+  tieToNext?: boolean;
 };
 
 export type AbcParseResult = {
   events: AbcEvent[];
+  voiceIds: string[];
   title: string;
   tempoBpm: number;
   key: string;
@@ -222,11 +226,15 @@ function parseOneNote(
   const { multiplier, nextIndex } = durationMultiplier(source, index);
   index = nextIndex;
 
+  const tieToNext = source[index] === "-";
+  if (tieToNext) index += 1;
+
   if (isRest) {
     return {
       note: null,
       durationMultiplier: multiplier,
       nextIndex: index,
+      tieToNext: false,
     };
   }
 
@@ -251,6 +259,7 @@ function parseOneNote(
     },
     durationMultiplier: multiplier,
     nextIndex: index,
+    tieToNext,
   };
 }
 
@@ -311,26 +320,61 @@ function stripInlineNoiseButKeepChordSymbols(line: string) {
     .replace(/[.~HLMOPSTuv]/g, "");
 }
 
+function noteIdentity(note: AbcNote) {
+  return `${note.pitchClass}${note.octave}`;
+}
+
+function sameTiedNotes(a: AbcNote[], b: AbcNote[]) {
+  if (a.length === 0 || a.length !== b.length) return false;
+  const aNotes = a.map(noteIdentity).sort();
+  const bNotes = b.map(noteIdentity).sort();
+  return aNotes.every((note, index) => note === bNotes[index]);
+}
+
 function pushAbcEvent(
   state: {
     beat: number;
     events: AbcEvent[];
+    voiceId?: string;
   },
   durationBeats: number,
   notes: AbcNote[],
   chordSymbols: AbcChordSymbol[],
   source: string,
+  tieToNext = false,
 ) {
-  if (notes.length > 0 || chordSymbols.length > 0) {
+  const previous = state.events[state.events.length - 1];
+
+  if (notes.length === 0 && chordSymbols.length === 0) {
+    if (previous) previous.tieToNext = false;
+    state.beat += durationBeats;
+    return;
+  }
+
+  const shouldMergeTie =
+    Boolean(previous?.tieToNext) &&
+    chordSymbols.length === 0 &&
+    previous.voiceId === state.voiceId &&
+    sameTiedNotes(previous.notes, notes);
+
+  if (shouldMergeTie && previous) {
+    previous.durationBeats += durationBeats;
+    previous.source = `${previous.source}${source}`;
+    previous.tieToNext = tieToNext;
+  } else {
+    if (previous) previous.tieToNext = false;
     state.events.push({
       index: state.events.length,
       startBeat: state.beat,
       durationBeats,
+      voiceId: state.voiceId,
       notes,
       chordSymbols,
       source,
+      tieToNext,
     });
   }
+
   state.beat += durationBeats;
 }
 
@@ -339,6 +383,7 @@ function parseMusicLine(
   state: {
     beat: number;
     events: AbcEvent[];
+    voiceId?: string;
     keyAccidentals: Record<string, number>;
     measureAccidentals: Record<string, number>;
     baseDurationBeats: number;
@@ -397,16 +442,19 @@ function parseMusicLine(
         }
 
         const durationAfterChord = durationMultiplier(source, closeIndex + 1);
+        const tieToNext = source[durationAfterChord.nextIndex] === "-";
+        const nextIndex = tieToNext ? durationAfterChord.nextIndex + 1 : durationAfterChord.nextIndex;
         const duration = state.baseDurationBeats * durationAfterChord.multiplier * longestMultiplier;
         pushAbcEvent(
           state,
           duration,
           notes,
           pendingChordSymbols,
-          source.slice(index, durationAfterChord.nextIndex),
+          source.slice(index, nextIndex),
+          tieToNext,
         );
         pendingChordSymbols = [];
-        index = durationAfterChord.nextIndex;
+        index = nextIndex;
         continue;
       }
     }
@@ -420,6 +468,7 @@ function parseMusicLine(
         parsed.note ? [parsed.note] : [],
         pendingChordSymbols,
         source.slice(index, parsed.nextIndex),
+        parsed.tieToNext,
       );
       pendingChordSymbols = [];
       index = parsed.nextIndex;
@@ -430,15 +479,50 @@ function parseMusicLine(
   }
 }
 
-export function parseAbc(abcText: string): AbcParseResult {
+function parseAbcLegacy(abcText: string): AbcParseResult {
   const lines = abcText.replace(/\r\n/g, "\n").split("\n");
   let title = "Untitled ABC tune";
   let tempoBpm = 120;
   let defaultLength = 1 / 8;
   let key = "C";
-  const musicLines: string[] = [];
   const errors: string[] = [];
   let inBody = false;
+  let currentVoiceId = "1";
+  const voiceOrder: string[] = [];
+  const voiceStates = new Map<
+    string,
+    {
+      beat: number;
+      events: AbcEvent[];
+      voiceId?: string;
+      keyAccidentals: Record<string, number>;
+      measureAccidentals: Record<string, number>;
+      baseDurationBeats: number;
+    }
+  >();
+
+  function rememberVoice(rawVoiceId: string) {
+    const voiceId = rawVoiceId.trim().split(/\s+/)[0] || "1";
+    if (!voiceOrder.includes(voiceId)) voiceOrder.push(voiceId);
+    return voiceId;
+  }
+
+  function getVoiceState(voiceId: string) {
+    const rememberedVoiceId = rememberVoice(voiceId);
+    const existing = voiceStates.get(rememberedVoiceId);
+    if (existing) return existing;
+
+    const state = {
+      beat: 0,
+      events: [] as AbcEvent[],
+      voiceId: rememberedVoiceId,
+      keyAccidentals: keySignatureAccidentals(key),
+      measureAccidentals: {} as Record<string, number>,
+      baseDurationBeats: defaultLength * 4,
+    };
+    voiceStates.set(rememberedVoiceId, state);
+    return state;
+  }
 
   lines.forEach((line) => {
     const trimmed = line.trim();
@@ -450,6 +534,7 @@ export function parseAbc(abcText: string): AbcParseResult {
       if (field === "T") title = value.trim() || title;
       if (field === "Q") tempoBpm = parseTempo(value, tempoBpm);
       if (field === "L") defaultLength = parseFraction(value, defaultLength);
+      if (field === "V") rememberVoice(value);
       if (field === "K") {
         key = value.trim() || "C";
         inBody = true;
@@ -457,40 +542,281 @@ export function parseAbc(abcText: string): AbcParseResult {
       return;
     }
 
-    if (/^[A-Za-z]:/.test(trimmed) && inBody) {
-      // Ignore later ABC metadata and voice declarations in this first single-line player.
+    if (header && inBody) {
+      const [, field, value] = header;
+      if (field === "V") currentVoiceId = rememberVoice(value);
       return;
     }
 
-    musicLines.push(line);
+    parseMusicLine(line, getVoiceState(currentVoiceId));
   });
 
-  if (musicLines.length === 0) {
-    errors.push("No playable ABC body was found. Make sure the tune has a K: key line followed by notes.");
-  }
+  const voiceIndex = new Map(voiceOrder.map((voiceId, index) => [voiceId, index]));
+  const events = [...voiceStates.values()]
+    .flatMap((state) => state.events)
+    .sort((a, b) => {
+      if (Math.abs(a.startBeat - b.startBeat) > 0.0001) return a.startBeat - b.startBeat;
+      return (voiceIndex.get(a.voiceId ?? "1") ?? 0) - (voiceIndex.get(b.voiceId ?? "1") ?? 0);
+    })
+    .map((event, index) => ({ ...event, index }));
 
-  const state = {
-    beat: 0,
-    events: [] as AbcEvent[],
-    keyAccidentals: keySignatureAccidentals(key),
-    measureAccidentals: {} as Record<string, number>,
-    baseDurationBeats: defaultLength * 4,
-  };
-
-  musicLines.forEach((line) => parseMusicLine(line, state));
-
-  if (state.events.length === 0 && errors.length === 0) {
+  if (events.length === 0) {
     errors.push("No playable notes or chord symbols were found in this ABC text.");
   }
 
   return {
-    events: state.events,
+    events,
+    voiceIds: voiceOrder.length > 0 ? voiceOrder : ["1"],
     title,
     tempoBpm,
     key: normalizeKeyName(key),
     keyTonicPitchClass: keyTonicPitchClass(key),
     errors,
   };
+}
+
+type AbcJsPitch = {
+  pitch: number;
+  name?: string;
+  accidental?: string;
+  startTie?: object;
+  endTie?: boolean;
+};
+
+type AbcJsChord = {
+  name?: string;
+  position?: string;
+};
+
+type AbcJsSequenceElement = {
+  el_type?: string;
+  duration?: number;
+  timing?: number;
+  pitches?: AbcJsPitch[];
+  chord?: AbcJsChord[];
+  rest?: { type?: string };
+  accidentals?: { acc?: string; note?: string }[];
+  qpm?: number;
+  elem?: {
+    startChar?: number;
+    endChar?: number;
+    startTriplet?: number;
+    endTriplet?: boolean;
+  };
+};
+
+function accidentalValueFromAbcjs(value: string | undefined) {
+  switch (value) {
+    case "sharp":
+      return 1;
+    case "dblsharp":
+    case "double-sharp":
+    case "double sharp":
+      return 2;
+    case "flat":
+      return -1;
+    case "dblflat":
+    case "double-flat":
+    case "double flat":
+      return -2;
+    case "natural":
+      return 0;
+    default:
+      return null;
+  }
+}
+
+function abcjsKeyAccidentals(accidentals: { acc?: string; note?: string }[] | undefined) {
+  const result: Record<string, number> = {};
+  accidentals?.forEach((accidental) => {
+    const letter = accidental.note?.match(/[A-Ga-g]/)?.[0]?.toUpperCase();
+    const value = accidentalValueFromAbcjs(accidental.acc);
+    if (letter && value !== null) result[letter] = value;
+  });
+  return result;
+}
+
+function letterForAbcjsPitch(pitch: number) {
+  const letters = ["C", "D", "E", "F", "G", "A", "B"];
+  return letters[((pitch % 7) + 7) % 7];
+}
+
+function octaveForAbcjsPitch(pitch: number) {
+  return 4 + Math.floor(pitch / 7);
+}
+
+function abcjsPitchToNote(
+  pitch: AbcJsPitch,
+  keyAccidentals: Record<string, number>,
+  measureAccidentals: Record<string, number>,
+): AbcNote {
+  const letter = letterForAbcjsPitch(pitch.pitch);
+  const explicitAccidental = accidentalValueFromAbcjs(pitch.accidental);
+  const accidental = explicitAccidental ?? measureAccidentals[letter] ?? keyAccidentals[letter] ?? 0;
+
+  if (explicitAccidental !== null) {
+    measureAccidentals[letter] = explicitAccidental;
+  }
+
+  const pitchIndex = LETTER_TO_INDEX[letter] + accidental;
+  const pitchClass = pitchNameFromIndex(pitchIndex);
+  const octave = octaveForAbcjsPitch(pitch.pitch) + Math.floor(pitchIndex / 12);
+  return {
+    pitchClass,
+    octave,
+    label: `${pitchClass}${octave}`,
+  };
+}
+
+function abcjsChordSymbols(chords: AbcJsChord[] | undefined) {
+  return (chords ?? [])
+    .map((chord) => parseAbcChordSymbol(chord.name ?? ""))
+    .filter((symbol): symbol is AbcChordSymbol => Boolean(symbol));
+}
+
+function parseAbcWithAbcjs(abcText: string): AbcParseResult {
+  const tunes = abcjs.parseOnly(abcText);
+  const tune = tunes[0];
+
+  if (!tune) {
+    return {
+      events: [],
+      voiceIds: ["1"],
+      title: "Untitled ABC tune",
+      tempoBpm: 120,
+      key: "C",
+      keyTonicPitchClass: "C",
+      errors: ["abcjs could not parse this ABC text."],
+    };
+  }
+
+  const title = tune.metaText?.title ?? "Untitled ABC tune";
+  const tempoBpm = tune.metaText?.tempo?.bpm ?? tune.getBpm?.(tune.metaText?.tempo) ?? 120;
+  const keySignature = tune.getKeySignature?.();
+  const key = normalizeKeyName(`${keySignature?.root ?? "C"}${keySignature?.acc ?? ""}${keySignature?.mode ? ` ${keySignature.mode}` : ""}`);
+  const keyTonic = keyTonicPitchClass(key);
+  const sequencedVoices = abcjs.synth.sequence(tune, {}) as unknown as AbcJsSequenceElement[][];
+  const voiceIds = sequencedVoices.map((_, index) => String(index + 1));
+  const events: AbcEvent[] = [];
+
+  sequencedVoices.forEach((voice, voiceIndex) => {
+    const voiceId = String(voiceIndex + 1);
+    let keyAccidentals = keySignatureAccidentals(key);
+    let measureAccidentals: Record<string, number> = {};
+
+    voice.forEach((element) => {
+      if (element.el_type === "key") {
+        keyAccidentals = abcjsKeyAccidentals(element.accidentals);
+        measureAccidentals = {};
+        return;
+      }
+
+      if (element.el_type === "bar") {
+        measureAccidentals = {};
+        return;
+      }
+
+      if (element.el_type !== "note" || typeof element.duration !== "number") return;
+
+      const durationBeats = element.duration * 4;
+      const startBeat = typeof element.timing === "number" ? element.timing * 4 : 0;
+      const rawPitches = element.pitches ?? [];
+      const notes = rawPitches.map((pitch) =>
+        abcjsPitchToNote(pitch, keyAccidentals, measureAccidentals),
+      );
+      const chordSymbols = abcjsChordSymbols(element.chord);
+
+      if (notes.length === 0 && chordSymbols.length === 0) return;
+
+      const tieFromPrevious = rawPitches.some((pitch) => pitch.endTie);
+      const tieToNext = rawPitches.some((pitch) => pitch.startTie);
+      const previous = events[events.length - 1];
+      const shouldMergeTie =
+        tieFromPrevious &&
+        Boolean(previous?.tieToNext) &&
+        previous?.voiceId === voiceId &&
+        chordSymbols.length === 0 &&
+        previous.chordSymbols.length === 0 &&
+        sameTiedNotes(previous.notes, notes);
+
+      if (shouldMergeTie && previous) {
+        previous.durationBeats += durationBeats;
+        previous.source = `${previous.source}${abcText.slice(element.elem?.startChar ?? 0, element.elem?.endChar ?? 0)}`;
+        previous.tieToNext = tieToNext;
+        return;
+      }
+
+      if (previous?.voiceId === voiceId) previous.tieToNext = false;
+      events.push({
+        index: events.length,
+        startBeat,
+        durationBeats,
+        voiceId,
+        notes,
+        chordSymbols,
+        source: abcText.slice(element.elem?.startChar ?? 0, element.elem?.endChar ?? 0),
+        tieToNext,
+      });
+    });
+  });
+
+  const sortedEvents = events
+    .sort((a, b) => {
+      if (Math.abs(a.startBeat - b.startBeat) > 0.0001) return a.startBeat - b.startBeat;
+      return Number(a.voiceId ?? 1) - Number(b.voiceId ?? 1);
+    })
+    .map((event, index) => ({ ...event, index }));
+
+  return {
+    events: sortedEvents,
+    voiceIds: voiceIds.length > 0 ? voiceIds : ["1"],
+    title,
+    tempoBpm,
+    key,
+    keyTonicPitchClass: keyTonic,
+    errors: sortedEvents.length === 0
+      ? ["No playable notes or chord symbols were found in this ABC text."]
+      : [],
+  };
+}
+
+export function parseAbc(abcText: string): AbcParseResult {
+  try {
+    return parseAbcWithAbcjs(abcText);
+  } catch (error) {
+    const legacy = parseAbcLegacy(abcText);
+    return {
+      ...legacy,
+      errors: [
+        ...legacy.errors,
+        `abcjs parsing failed; used legacy parser fallback. ${error instanceof Error ? error.message : ""}`.trim(),
+      ],
+    };
+  }
+}
+
+function uniqueEventVoiceIds(events: AbcEvent[]) {
+  return [
+    ...new Set(
+      events
+        .map((event) => event.voiceId)
+        .filter((voiceId): voiceId is string => Boolean(voiceId)),
+    ),
+  ];
+}
+
+export function abcEventsForTrebleSide(events: AbcEvent[]) {
+  const voiceIds = uniqueEventVoiceIds(events);
+  if (voiceIds.length <= 1) return events;
+  const preferredVoice = voiceIds.includes("1") ? "1" : voiceIds[0];
+  return events.filter((event) => event.voiceId === preferredVoice);
+}
+
+export function abcEventsForStradellaSide(events: AbcEvent[]) {
+  const voiceIds = uniqueEventVoiceIds(events);
+  if (voiceIds.length <= 1) return events;
+  const preferredVoice = voiceIds.includes("2") ? "2" : voiceIds[voiceIds.length - 1];
+  return events.filter((event) => event.voiceId === preferredVoice);
 }
 
 function buttonDistance(a: DiagramButton, b: DiagramButton) {
@@ -694,7 +1020,7 @@ export function mapAbcEventsToStradellaButtons(
   buttons: DiagramButton[],
   events: AbcEvent[],
   preferredRootPitchClass = "C",
-  mode: AbcStradellaMappingMode = "bass-notes-only",
+  mode: AbcStradellaMappingMode = "bass-notes-and-chord-symbols",
 ): MappedAbcEvent[] {
   if (mode === "bass-notes-only") {
     return mapAbcEventsToStradellaBassButtons(buttons, events, preferredRootPitchClass);

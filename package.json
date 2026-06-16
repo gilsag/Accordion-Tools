@@ -1,7 +1,7 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.8.4",
+  "version": "0.9.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test:chords": "tsx scripts/chord-logic.test.ts",
     "test:notation": "tsx scripts/notation.test.ts",
-    "test:all": "npm run test:chords && npm run test:notation"
+    "test:all": "npm run test:chords && npm run test:notation && npm run test:abc",
+    "test:abc": "tsx scripts/abc-ties.test.ts"
   },
   "dependencies": {
     "abcjs": "^6.6.3",

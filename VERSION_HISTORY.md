@@ -1,5 +1,42 @@
 # Accordion Tools — Version History
 
+## v0.9.0 - abcjs-based ABC parser refactor
+
+- Refactored ABC Player event extraction to use `abcjs.parseOnly()` and `abcjs.synth.sequence()` instead of relying only on the custom hand-written parser.
+- Improved handling of score-style ABC files, including resolved simple repeats, voice/staff sequencing, key signatures, tuplets/durations, ties, and quoted chord symbols.
+- Kept the existing accordion-specific mapping layer for treble, piano, and Stradella button highlighting.
+- Added `Bella Ciao` and `Un Gorro de Lana` to the ABC examples manifest for parser testing.
+- Expanded ABC parser tests to cover ties, repeat expansion, key-signature accidentals, voice routing, and chord symbols.
+
+## 0.8.8 - Responsive diagram preset sizing fix
+
+- Restored preset-controlled default button sizing by removing the fixed `buttonSize` override from `public/default-settings.json`.
+- This prevents the treble diagram from starting smaller after loading defaults while keeping user-imported settings able to override button size explicitly.
+- Clarified in the README that omitting `buttonSize` lets the selected treble/piano preset choose the starting button size.
+
+
+## v0.8.7 - Defaults and ABC example manifest
+
+- Expanded `public/default-settings.json` to include additional visual, sound, finder, sequence, fingering, bass-pattern, and annotation defaults.
+- Added `public/abc/examples.json` so the ABC Player example menu is loaded from a manifest instead of a hard-coded list in `App.tsx`.
+- Added `Oye Bonita` to the ABC example manifest.
+- Set the default Annotate Diagram distance from center to 50%.
+- Fixed annotation bold styling so the bold toggle visibly changes newly created annotations.
+- Updated README and settings/ABC/annotation documentation.
+
+## v0.8.6 - ABC tie handling
+
+- Added tie-aware ABC event merging so tied notes sustain across the combined duration instead of retriggering as repeated button activations.
+- Supports simple note ties such as `A-A2` and whole chord ties such as `[CE]-[CE]`.
+- Added ABC tie tests and included them in `npm run test:all`.
+
+## v0.8.5 - ABC voice routing
+
+- Updated ABC playback to respect `V:` voice sections for common two-hand accordion ABC files.
+- Treble and piano sides use voice `1` by default when multiple voices are present.
+- Stradella uses voice `2` by default and defaults to bass notes plus chord symbols for left-hand accompaniment.
+
+
 ## v0.8.4 - Finder highlight readability and optional sequence numbering
 
 - Improved Scale Finder and Chord Finder highlight readability on treble accidental buttons by keeping dark accidental fills and using a high-contrast highlight stroke.
@@ -85,6 +122,33 @@ Use semantic-style version numbers:
 - **Patch** version: bug fixes, corrections, documentation updates, or small refinements.
 
 Suggested format: `vMAJOR.MINOR.PATCH`, for example `v0.7.1`.
+
+---
+
+## v0.8.5 — 2026-06-16
+
+### Fixed
+
+- Updated the ABC Player to respect ABC `V:` voice sections instead of reading all voices sequentially.
+- On treble/piano layouts, multi-voice ABC playback now uses voice 1 by default, so it does not continue into the bass voice after the melody.
+- On Stradella layouts, multi-voice ABC playback now uses voice 2 by default, so bass/chord accompaniment voices can be played independently from the treble melody.
+
+### Changed
+
+- The default Stradella ABC mapping is now Bass notes + chord symbols, which better matches accordion-style left-hand ABC files containing written bass notes plus quoted chord labels.
+
+### Verification
+
+- Checked with `Bella Ciao.abc`, where voice 1 contains the treble melody and voice 2 contains bass notes with chord symbols.
+
+### Files changed
+
+- `src/tools/abcPlayerTools.ts`
+- `src/App.tsx`
+- `public/default-settings.json`
+- `package.json`
+- `package-lock.json`
+- `src/config/appInfo.ts`
 
 ---
 

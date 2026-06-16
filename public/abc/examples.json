@@ -1,0 +1,42 @@
+[
+  {
+    "value": "c-major-scale",
+    "label": "C major scale",
+    "file": "abc/c-major-scale.abc"
+  },
+  {
+    "value": "happy-birthday",
+    "label": "Happy Birthday",
+    "file": "abc/happy-birthday.abc"
+  },
+  {
+    "value": "twinkle-little-star",
+    "label": "Twinkle Little Star",
+    "file": "abc/twinkle-little-star.abc"
+  },
+  {
+    "value": "dyads-and-chords",
+    "label": "Dyads and chords",
+    "file": "abc/dyads-and-chords.abc"
+  },
+  {
+    "value": "stradella-chord-symbols",
+    "label": "Stradella chord symbols",
+    "file": "abc/stradella-chord-symbols.abc"
+  },
+  {
+    "value": "oyebonita",
+    "label": "Oye Bonita",
+    "file": "abc/oyebonita.abc"
+  },
+  {
+    "value": "bella-ciao",
+    "label": "Bella Ciao",
+    "file": "abc/bella-ciao.abc"
+  },
+  {
+    "value": "un-gorro-de-lana",
+    "label": "Un Gorro de Lana",
+    "file": "abc/un-gorro-de-lana.abc"
+  }
+]
