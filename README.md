@@ -4,7 +4,7 @@ Accordion-Tools is a browser-based accordion and music-layout diagram generator 
 
 It helps accordion players, students, and teachers create visual diagrams for Stradella bass, chromatic button accordion treble, and piano treble layouts. The app can be used for reference, teaching, practice planning, fingering notes, scale and chord exploration, ABC playback, Stradella accompaniment patterns, sound playback, and exporting diagrams as SVG or PNG files.
 
-Current app version: **0.8.2**
+Current app version: **0.8.8**
 
 ## Live Site
 
@@ -155,7 +155,7 @@ See [`docs/chord-finder.md`](docs/chord-finder.md).
 
 ### ABC Player
 
-Loads or pastes simple ABC notation and animates the current diagram during playback. It supports notes, rests, durations, accidentals, key signatures, bracketed note chords, quoted chord symbols, tempo control, and playback controls.
+Loads or pastes ABC notation and animates the current diagram during playback. The ABC Player now uses abcjs for the main parsing/sequence step, then maps the resulting musical events to accordion buttons. It supports notes, rests, durations, accidentals, key signatures, bracketed note chords, quoted chord symbols, voice-aware playback, simple repeats, ties, tempo control, and playback controls.
 
 See [`docs/abc-player.md`](docs/abc-player.md).
 
@@ -244,7 +244,13 @@ Startup defaults are read from:
 public/default-settings.json
 ```
 
-The About panel can save and load settings JSON files for the current session.
+ABC example tunes are listed in:
+
+```text
+public/abc/examples.json
+```
+
+Add a `.abc` file to `public/abc/` and add one entry to the manifest to show it in the ABC Player example menu. The About panel can save and load settings JSON files for the current session.
 
 See [`docs/settings.md`](docs/settings.md) for details.
 
@@ -268,6 +274,7 @@ Accordion-Tools/
 │   └── annotate-diagram-tool.md
 ├── public/
 │   ├── abc/
+│   │   └── examples.json
 │   ├── bass-patterns/
 │   │   └── bass-patterns.json
 │   ├── chord-progressions/
@@ -276,6 +283,7 @@ Accordion-Tools/
 │   ├── favicon.svg
 │   └── icons.svg
 ├── scripts/
+│   ├── abc-ties.test.ts
 │   ├── chord-logic.test.ts
 │   └── notation.test.ts
 ├── src/
@@ -402,3 +410,7 @@ npm run preview
 This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
 
 See [`LICENSE`](LICENSE) for details.
+
+### Responsive preset sizing
+
+The default settings file intentionally omits `buttonSize` so the selected treble or piano preset can choose its normal starting size and the SVG can continue fitting responsively to the available window. Add `buttonSize` to `public/default-settings.json` only if you want to force a fixed startup button size.

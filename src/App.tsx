@@ -93,6 +93,8 @@ import {
 } from "./tools/scaleFinderTools";
 import { getStradellaScaleFinderResult } from "./tools/stradellaScaleFinderTools";
 import {
+  abcEventsForStradellaSide,
+  abcEventsForTrebleSide,
   abcMissingNotes,
   mapAbcEventsToStradellaButtons,
   mapAbcEventsToTrebleButtons,
@@ -149,8 +151,20 @@ const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
   { value: "120", label: "120" },
 ];
 
-const ABC_EXAMPLE_OPTIONS = [
-  { value: "", label: "Choose example…", file: "" },
+type AbcExampleOption = {
+  value: string;
+  label: string;
+  file: string;
+};
+
+const ABC_EXAMPLE_PLACEHOLDER: AbcExampleOption = {
+  value: "",
+  label: "Choose example…",
+  file: "",
+};
+
+const ABC_EXAMPLE_FALLBACK_OPTIONS: AbcExampleOption[] = [
+  ABC_EXAMPLE_PLACEHOLDER,
   {
     value: "c-major-scale",
     label: "C major scale",
@@ -285,6 +299,47 @@ type DefaultSettingsFile = Partial<{
   musicNotationScale: number;
   musicNotationStaffWidth: number;
   musicNotationStaffSeparator: number;
+  buttonSize: number;
+  buttonSpacing: number;
+  trebleAngle: number;
+  buttonStrokeWidth: number;
+  referenceStrokeWidth: number;
+  chordFillStrength: number;
+  accidentalStyle: AccidentalStyle;
+  labelFontSize: number;
+  titleFont: FontFamily;
+  titleSize: number;
+  labelFont: FontFamily;
+  sequenceDisplayMode: SequenceDisplayMode;
+  sequenceColorPreset: SequenceColorPreset;
+  sequenceThickness: number;
+  sequenceArrowheadSize: number;
+  sequenceNumberFontSize: number;
+  sequenceNumberColorPreset: SequenceColorPreset;
+  sequenceNumberPosition: NumberPosition;
+  fingeringPosition: NumberPosition;
+  scaleFinderRoot: string;
+  scaleFinderPattern: FinderScalePattern;
+  scaleFinderRowLimit: 3 | 4 | 5;
+  chordFinderRoot: string;
+  chordFinderPattern: FinderChordPattern;
+  chordFinderInversion: FinderChordInversion;
+  chordFinderOctave: FinderChordOctave;
+  bassPatternRoot: string;
+  annotationTextSize: number;
+  annotationTextColor: string;
+  annotationFont: FontFamily;
+  annotationBold: boolean;
+  annotationItalic: boolean;
+  annotationOffsetPercent: number;
+  annotationButtonAnchor: DiagramAnnotationAnchor;
+  soundVolume: number;
+  soundVoicePreset: SoundVoicePreset;
+  soundWaveform: SoundWaveform;
+  soundMusetteDetuneCents: number;
+  soundAttackMs: number;
+  soundReleaseMs: number;
+  soundNoteDurationMs: number;
 }>;
 
 function isOneOf<T extends string>(
@@ -504,6 +559,9 @@ function App() {
   const [abcEditorExpanded, setAbcEditorExpanded] = useState(false);
   const [abcFileName, setAbcFileName] = useState("");
   const [abcExampleValue, setAbcExampleValue] = useState("");
+  const [abcExampleOptions, setAbcExampleOptions] = useState<AbcExampleOption[]>(
+    ABC_EXAMPLE_FALLBACK_OPTIONS,
+  );
   const [abcTempoBpm, setAbcTempoBpm] = useState(80);
   const [abcPositionBeat, setAbcPositionBeat] = useState(0);
   const [abcPlaybackState, setAbcPlaybackState] = useState<
@@ -511,7 +569,7 @@ function App() {
   >("stopped");
   const [abcActiveButtonIds, setAbcActiveButtonIds] = useState<string[]>([]);
   const [abcStradellaMode, setAbcStradellaMode] =
-    useState<AbcStradellaMode>("bass-notes-only");
+    useState<AbcStradellaMode>("bass-notes-and-chord-symbols");
   const [abcTrebleChordSymbolsMode, setAbcTrebleChordSymbolsMode] =
     useState<AbcTrebleChordSymbolsMode>("ignore");
   const [abcRenderedNotationVisible, setAbcRenderedNotationVisible] =
@@ -639,7 +697,7 @@ function App() {
   const [textNoteFont, setTextNoteFont] = useState<FontFamily>("system");
   const [annotationBold, setAnnotationBold] = useState(false);
   const [annotationItalic, setAnnotationItalic] = useState(false);
-  const [annotationOffsetPercent, setAnnotationOffsetPercent] = useState(58);
+  const [annotationOffsetPercent, setAnnotationOffsetPercent] = useState(50);
   const [annotationButtonAnchor, setAnnotationButtonAnchor] =
     useState<DiagramAnnotationAnchor>("center");
   const annotationEditorRef = useRef<HTMLTextAreaElement | null>(null);
@@ -680,6 +738,53 @@ function App() {
   const [stradellaBassVoicing, setStradellaBassVoicing] =
     useState<StradellaBassVoicing>("single-low");
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadAbcExampleManifest() {
+      try {
+        const response = await fetch(`${import.meta.env.BASE_URL}abc/examples.json`, {
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+
+        const manifest = (await response.json()) as unknown;
+        if (cancelled || !Array.isArray(manifest)) return;
+
+        const examples = manifest
+          .map((entry): AbcExampleOption | null => {
+            if (!entry || typeof entry !== "object") return null;
+            const value = (entry as { value?: unknown }).value;
+            const label = (entry as { label?: unknown }).label;
+            const file = (entry as { file?: unknown }).file;
+            if (
+              typeof value !== "string" ||
+              typeof label !== "string" ||
+              typeof file !== "string" ||
+              !value ||
+              !label ||
+              !file
+            ) {
+              return null;
+            }
+            return { value, label, file };
+          })
+          .filter((entry): entry is AbcExampleOption => entry !== null);
+
+        if (examples.length > 0) {
+          setAbcExampleOptions([ABC_EXAMPLE_PLACEHOLDER, ...examples]);
+        }
+      } catch {
+        /* The fallback ABC example list is used when the manifest is unavailable. */
+      }
+    }
+
+    loadAbcExampleManifest();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -994,6 +1099,7 @@ function App() {
               Math.min(32, Math.round(defaults.musicNotationStaffSeparator)),
             ),
           );
+        applyExtendedDefaultSettings(defaults);
       } catch {
         /* The app still runs with built-in defaults if the editable file is missing or invalid. */
       }
@@ -1082,6 +1188,86 @@ function App() {
       /* Ignore malformed local custom pattern data. */
     }
   }, []);
+
+  /** Applies extended visual/tool defaults that are also user-editable in default-settings.json. */
+  function applyExtendedDefaultSettings(settings: DefaultSettingsFile) {
+    if (typeof settings.buttonSize === "number")
+      setButtonSize(Math.max(14, Math.min(44, Math.round(settings.buttonSize))));
+    if (typeof settings.buttonSpacing === "number")
+      setSpacing(Math.max(1.4, Math.min(3.6, settings.buttonSpacing)));
+    if (typeof settings.trebleAngle === "number")
+      setTrebleAngle(Math.max(-45, Math.min(45, Math.round(settings.trebleAngle))));
+    if (typeof settings.buttonStrokeWidth === "number")
+      setButtonStrokeWidth(Math.max(0, Math.min(8, settings.buttonStrokeWidth)));
+    if (typeof settings.referenceStrokeWidth === "number")
+      setReferenceStrokeWidth(Math.max(0, Math.min(12, settings.referenceStrokeWidth)));
+    if (typeof settings.chordFillStrength === "number")
+      setChordFillStrength(Math.max(0, Math.min(100, Math.round(settings.chordFillStrength))));
+    if (isOneOf(settings.accidentalStyle, ["dark", "grey", "outline", "theme"] as const))
+      setAccidentalStyle(settings.accidentalStyle);
+    if (typeof settings.labelFontSize === "number")
+      setLabelFontSize(Math.max(8, Math.min(24, Math.round(settings.labelFontSize))));
+    if (isOneOf(settings.titleFont, ["system", "serif", "mono", "rounded"] as const))
+      setTitleFont(settings.titleFont);
+    if (typeof settings.titleSize === "number")
+      setTitleSize(Math.max(12, Math.min(48, Math.round(settings.titleSize))));
+    if (isOneOf(settings.labelFont, ["system", "serif", "mono", "rounded"] as const))
+      setLabelFont(settings.labelFont);
+    if (isOneOf(settings.sequenceDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES))
+      setSequenceDisplayMode(settings.sequenceDisplayMode);
+    if (isOneOf(settings.sequenceColorPreset, ["red", "blue", "black", "grey", "theme"] as const))
+      setSequenceColorPreset(settings.sequenceColorPreset);
+    if (typeof settings.sequenceThickness === "number")
+      setSequenceThickness(Math.max(1, Math.min(10, settings.sequenceThickness)));
+    if (typeof settings.sequenceArrowheadSize === "number")
+      setSequenceArrowheadSize(Math.max(1, Math.min(12, settings.sequenceArrowheadSize)));
+    if (typeof settings.sequenceNumberFontSize === "number")
+      setSequenceNumberFontSize(Math.max(6, Math.min(24, Math.round(settings.sequenceNumberFontSize))));
+    if (isOneOf(settings.sequenceNumberColorPreset, ["red", "blue", "black", "grey", "theme"] as const))
+      setSequenceNumberColorPreset(settings.sequenceNumberColorPreset);
+    if (isOneOf(settings.sequenceNumberPosition, ["above", "inside-top", "inside-bottom", "none"] as const))
+      setSequenceNumberPosition(settings.sequenceNumberPosition);
+    if (isOneOf(settings.fingeringPosition, ["above", "inside-top", "inside-bottom", "none"] as const))
+      setFingeringPosition(settings.fingeringPosition);
+    if (typeof settings.scaleFinderRoot === "string") setScaleFinderRoot(settings.scaleFinderRoot);
+    if (isOneOf(settings.scaleFinderPattern, ["major-scale", "natural-minor-scale", "harmonic-minor-scale", "major-pentatonic-scale", "minor-pentatonic-scale", "major-blues-scale", "minor-blues-scale", "chromatic-scale"] as const))
+      setScaleFinderPattern(settings.scaleFinderPattern);
+    if ([3, 4, 5].includes(Number(settings.scaleFinderRowLimit)))
+      setScaleFinderRowLimit(Number(settings.scaleFinderRowLimit) as 3 | 4 | 5);
+    if (typeof settings.chordFinderRoot === "string") setChordFinderRoot(settings.chordFinderRoot);
+    if (isOneOf(settings.chordFinderPattern, ["major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus4", "dominant7", "major6", "minor6", "dominant7b5", "dominant7b9", "dominant9", "dominant9sus4", "dominant11", "major7", "major9", "major7add9", "minor7", "minorMajor7", "minor7b5", "minor9", "minorMajor9", "diminished7"] as const))
+      setChordFinderPattern(settings.chordFinderPattern);
+    if (isOneOf(settings.chordFinderInversion, ["root", "first", "second", "third"] as const))
+      setChordFinderInversion(settings.chordFinderInversion);
+    if ([3, 4, 5].includes(Number(settings.chordFinderOctave)))
+      setChordFinderOctave(Number(settings.chordFinderOctave) as FinderChordOctave);
+    if (typeof settings.bassPatternRoot === "string") setBassPatternRoot(settings.bassPatternRoot);
+    if (typeof settings.annotationTextSize === "number")
+      setTextNoteFontSize(Math.max(8, Math.min(36, Math.round(settings.annotationTextSize))));
+    if (typeof settings.annotationTextColor === "string") setTextNoteColor(settings.annotationTextColor);
+    if (isOneOf(settings.annotationFont, ["system", "serif", "mono", "rounded"] as const))
+      setTextNoteFont(settings.annotationFont);
+    if (typeof settings.annotationBold === "boolean") setAnnotationBold(settings.annotationBold);
+    if (typeof settings.annotationItalic === "boolean") setAnnotationItalic(settings.annotationItalic);
+    if (typeof settings.annotationOffsetPercent === "number")
+      setAnnotationOffsetPercent(Math.max(0, Math.min(100, Math.round(settings.annotationOffsetPercent))));
+    if (isOneOf(settings.annotationButtonAnchor, ["center", "top", "bottom", "left", "right", "topLeft", "topRight", "bottomLeft", "bottomRight"] as const))
+      setAnnotationButtonAnchor(settings.annotationButtonAnchor);
+    if (typeof settings.soundVolume === "number")
+      setSoundVolume(Math.max(0, Math.min(1, settings.soundVolume)));
+    if (isOneOf(settings.soundVoicePreset, ["single", "soft-reed", "bright-reed", "musette", "organ", "bass-reed"] as const))
+      setSoundVoicePreset(settings.soundVoicePreset);
+    if (isOneOf(settings.soundWaveform, ["sine", "triangle", "square", "sawtooth"] as const))
+      setSoundWaveform(settings.soundWaveform);
+    if (typeof settings.soundMusetteDetuneCents === "number")
+      setSoundMusetteDetuneCents(Math.max(0, Math.min(30, Math.round(settings.soundMusetteDetuneCents))));
+    if (typeof settings.soundAttackMs === "number")
+      setSoundAttackMs(Math.max(0, Math.min(300, Math.round(settings.soundAttackMs))));
+    if (typeof settings.soundReleaseMs === "number")
+      setSoundReleaseMs(Math.max(10, Math.min(1000, Math.round(settings.soundReleaseMs))));
+    if (typeof settings.soundNoteDurationMs === "number")
+      setSoundNoteDurationMs(Math.max(60, Math.min(2000, Math.round(settings.soundNoteDurationMs))));
+  }
 
   /** Applies a settings JSON object without changing the editable default-settings.json file. */
   function applyImportedSettings(settings: DefaultSettingsFile) {
@@ -1311,6 +1497,7 @@ function App() {
           Math.min(32, Math.round(settings.musicNotationStaffSeparator)),
         ),
       );
+    applyExtendedDefaultSettings(settings);
   }
 
   /** Collects the current persistent settings in the same shape as public/default-settings.json. */
@@ -1365,6 +1552,47 @@ function App() {
       musicNotationScale,
       musicNotationStaffWidth,
       musicNotationStaffSeparator,
+      buttonSize,
+      buttonSpacing: spacing,
+      trebleAngle,
+      buttonStrokeWidth,
+      referenceStrokeWidth,
+      chordFillStrength,
+      accidentalStyle,
+      labelFontSize,
+      titleFont,
+      titleSize,
+      labelFont,
+      sequenceDisplayMode,
+      sequenceColorPreset,
+      sequenceThickness,
+      sequenceArrowheadSize,
+      sequenceNumberFontSize,
+      sequenceNumberColorPreset,
+      sequenceNumberPosition,
+      fingeringPosition,
+      scaleFinderRoot,
+      scaleFinderPattern,
+      scaleFinderRowLimit,
+      chordFinderRoot,
+      chordFinderPattern,
+      chordFinderInversion,
+      chordFinderOctave,
+      bassPatternRoot,
+      annotationTextSize: textNoteFontSize,
+      annotationTextColor: textNoteColor,
+      annotationFont: textNoteFont,
+      annotationBold,
+      annotationItalic,
+      annotationOffsetPercent,
+      annotationButtonAnchor,
+      soundVolume,
+      soundVoicePreset,
+      soundWaveform,
+      soundMusetteDetuneCents,
+      soundAttackMs,
+      soundReleaseMs,
+      soundNoteDurationMs,
     };
   }
 
@@ -1610,12 +1838,23 @@ function App() {
     }
   }, [abcParseResult.tempoBpm, abcPlaybackState]);
 
-  const abcMappedEvents = useMemo<MappedAbcEvent[]>(() => {
+  const abcPlayableEvents = useMemo(() => {
     if (!abcText.trim()) return [];
+    if (side === "stradella") {
+      return abcEventsForStradellaSide(abcParseResult.events);
+    }
+    if (isTrebleLikeSide) {
+      return abcEventsForTrebleSide(abcParseResult.events);
+    }
+    return [];
+  }, [abcParseResult.events, abcText, isTrebleLikeSide, side]);
+
+  const abcMappedEvents = useMemo<MappedAbcEvent[]>(() => {
+    if (abcPlayableEvents.length === 0) return [];
     if (side === "stradella") {
       return mapAbcEventsToStradellaButtons(
         buttons,
-        abcParseResult.events,
+        abcPlayableEvents,
         abcParseResult.keyTonicPitchClass,
         abcStradellaMode,
       );
@@ -1623,15 +1862,15 @@ function App() {
     if (isTrebleLikeSide) {
       return mapAbcEventsToTrebleButtons(
         buttons,
-        abcParseResult.events,
+        abcPlayableEvents,
         abcTrebleChordSymbolsMode === "play",
       );
     }
     return [];
   }, [
-    abcParseResult.events,
+    abcPlayableEvents,
+    abcParseResult.keyTonicPitchClass,
     abcStradellaMode,
-    abcText,
     abcTrebleChordSymbolsMode,
     buttons,
     isTrebleLikeSide,
@@ -1639,8 +1878,8 @@ function App() {
   ]);
 
   const abcTotalBeats = useMemo(
-    () => totalAbcBeats(abcParseResult.events),
-    [abcParseResult.events],
+    () => totalAbcBeats(abcPlayableEvents),
+    [abcPlayableEvents],
   );
   const abcMissingPitchText = useMemo(
     () => abcMissingNotes(abcMappedEvents).join(", "),
@@ -2244,7 +2483,7 @@ function App() {
   }
 
   async function loadAbcExample(exampleValue: string) {
-    const example = ABC_EXAMPLE_OPTIONS.find(
+    const example = abcExampleOptions.find(
       (option) => option.value === exampleValue,
     );
     setAbcExampleValue(exampleValue);
@@ -5161,7 +5400,7 @@ function App() {
                             void loadAbcExample(event.target.value)
                           }
                         >
-                          {ABC_EXAMPLE_OPTIONS.map((option) => (
+                          {abcExampleOptions.map((option) => (
                             <option
                               key={option.value || "empty"}
                               value={option.value}
@@ -5252,8 +5491,11 @@ function App() {
                           <p>{abcParseResult.errors.join(" ")}</p>
                         ) : (
                           <p>
-                            Events: {abcParseResult.events.length} · Key:{" "}
-                            {abcParseResult.key} · Length:{" "}
+                            Events: {abcMappedEvents.length} · Key:{" "}
+                            {abcParseResult.key}
+                            {abcParseResult.voiceIds.length > 1
+                              ? ` · Voice: ${side === "stradella" ? "2" : "1"}`
+                              : ""} · Length:{" "}
                             {abcTotalBeats.toFixed(1)} beats
                             {abcMissingPitchText
                               ? ` · ${side === "stradella" ? "Unavailable notes" : "Missing"}: ${abcMissingPitchText}`
@@ -5887,7 +6129,7 @@ function App() {
                 style={{
                   fontSize: note.fontSize,
                   fill: note.color,
-                  fontWeight: note.bold ? 800 : undefined,
+                  fontWeight: note.bold ? 800 : 500,
                   fontStyle: note.italic ? "italic" : undefined,
                 }}
               >
@@ -5926,7 +6168,7 @@ function App() {
                       style={{
                         fontSize: inlineAnnotationEditor.fontSize,
                         color: inlineAnnotationEditor.color,
-                        fontWeight: inlineAnnotationEditor.bold ? 800 : undefined,
+                        fontWeight: inlineAnnotationEditor.bold ? 800 : 500,
                         fontStyle: inlineAnnotationEditor.italic ? "italic" : undefined,
                       }}
                       onChange={(event) =>

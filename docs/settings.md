@@ -45,7 +45,7 @@ This is the safest way to move your personal settings between machines without e
 | Setting | Purpose |
 |---|---|
 | `notation` | Label style: English, German, solfege, intervals, or blank labels. |
-| `accidental` | Accidental spelling preference: default/natural, prefer sharps, or prefer flats. |
+| `accidental` | Treble accidental spelling preference: default/natural, prefer sharps, prefer flats, or show enharmonic pairs. Stradella keeps its own spelling logic. |
 | `chordLabelMode` | Controls how chord labels are displayed. |
 
 
@@ -77,6 +77,17 @@ These settings control the rendered staff-notation panels that appear below the 
 | `showStradellaRowLabels` | Shows or hides Stradella row labels. |
 | `diagramVerticalSpacing` | Vertical spacing between title, bellows guide, and diagram. |
 | `diagramScale` | Overall diagram scale percentage. |
+| `buttonSize` | Default circular button size. |
+| `buttonSpacing` | Default spacing between buttons. |
+| `trebleAngle` | Default treble-grid slant angle. |
+| `buttonStrokeWidth` | Default button border width. |
+| `referenceStrokeWidth` | Default reference-button border width. |
+| `chordFillStrength` | Default chord-button fill intensity. |
+| `accidentalStyle` | Default visual style for treble accidental buttons. |
+| `labelFontSize` | Default button-label font size. |
+| `titleFont` | Default title font. |
+| `titleSize` | Default title size. |
+| `labelFont` | Default button-label font. |
 | `interfaceDensity` | Control-panel density. |
 | `showStatusBar` | Shows or hides the status bar. |
 
@@ -101,6 +112,13 @@ These settings control the rendered staff-notation panels that appear below the 
 | Setting | Purpose |
 |---|---|
 | `soundEnabled` | Enables or disables browser sound playback. |
+| `soundVolume` | Default sound volume. |
+| `soundVoicePreset` | Default synthesized voice preset. |
+| `soundWaveform` | Default oscillator waveform. |
+| `soundMusetteDetuneCents` | Default detune amount for musette-style sound. |
+| `soundAttackMs` | Default sound attack time. |
+| `soundReleaseMs` | Default sound release time. |
+| `soundNoteDurationMs` | Default button-click note duration. |
 | `stradellaBassVoicing` | Chooses the synthetic voicing used for Stradella bass buttons. |
 
 The sound engine uses the browser Web Audio API. It is intended for reference and practice, not as a realistic sampled accordion.
@@ -110,8 +128,15 @@ The sound engine uses the browser Web Audio API. It is intended for reference an
 | Setting | Purpose |
 |---|---|
 | `scaleFinderDisplayMode` | Default path display mode for Scale Finder. |
+| `scaleFinderRoot` | Default Scale Finder root. |
+| `scaleFinderPattern` | Default Scale Finder pattern. |
+| `scaleFinderRowLimit` | Default treble-row limit for Scale Finder. |
 | `stradellaChordFinderMode` | Default search mode for Stradella Chord Finder. |
 | `stradellaChordFinderMarkRootBass` | Marks the root bass as a visual reference in chord-button results. |
+| `chordFinderRoot` | Default Chord Finder root. |
+| `chordFinderPattern` | Default Chord Finder pattern. |
+| `chordFinderInversion` | Default Chord Finder inversion. |
+| `chordFinderOctave` | Default Chord Finder octave. |
 | `abcStradellaMode` | Default ABC mapping mode in Stradella mode. |
 | `abcTrebleChordSymbolsMode` | Default quoted chord-symbol behavior in Treble mode. |
 | `bassPatternChordVoicing` | Bass Pattern Player chord voicing: simple chord button or fuller recipe when available. |
@@ -121,12 +146,38 @@ The sound engine uses the browser Web Audio API. It is intended for reference an
 | `bassPatternLoopCount` | Default fixed repeat count when repeat mode is fixed. |
 | `abcTempoBpm` | Default ABC Player tempo when the tune does not override it. |
 | `soundSequenceTempoBpm` | Default Sequence Tool playback tempo. |
+| `sequenceDisplayMode` | Default Sequence display mode. |
+| `sequenceColorPreset` | Default Sequence arrow color. |
+| `sequenceThickness` | Default Sequence arrow thickness. |
+| `sequenceArrowheadSize` | Default Sequence arrowhead size. |
+| `sequenceNumberFontSize` | Default Sequence number font size. |
+| `sequenceNumberColorPreset` | Default Sequence number color. |
+| `sequenceNumberPosition` | Default Sequence number position. Use `none` for no numbers. |
+| `fingeringPosition` | Default fingering-number position. |
+| `bassPatternRoot` | Default Bass Pattern Player root. |
+| `annotationTextSize` | Default new-annotation text size. |
+| `annotationTextColor` | Default new-annotation text color. |
+| `annotationFont` | Default new-annotation font. |
+| `annotationBold` | Default new-annotation bold toggle. |
+| `annotationItalic` | Default new-annotation italic toggle. |
+| `annotationOffsetPercent` | Default button-annotation distance from center. The project default is `50`. |
+| `annotationButtonAnchor` | Default button-annotation anchor. |
 
 ## Bass Pattern Player repeat behavior
 
 Playback repeat controls are part of the Bass Pattern Player UI. They can play once, repeat a fixed number of times, or loop until stopped.
 
 The repeat control affects playback only. The pattern definition still describes one pattern cycle, while the progression and repeats-per-chord setting determine the expanded accompaniment.
+
+## ABC example manifest
+
+Built-in ABC examples are not discovered by scanning the folder at runtime. The browser loads this manifest instead:
+
+```text
+public/abc/examples.json
+```
+
+To add a new example to the dropdown, place the `.abc` file in `public/abc/` and add a manifest entry with `value`, `label`, and `file`.
 
 ## Recommended workflow
 

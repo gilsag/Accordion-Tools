@@ -17,7 +17,7 @@ Button annotations are attached to a specific button and can be placed at center
 
 ## Local style settings
 
-The current text size, color, font, bold, italic, and distance settings are stored with each annotation when it is created. Changing the controls later affects new annotations, not existing ones.
+The current text size, color, font, bold, italic, and distance settings are stored with each annotation when it is created. Changing the controls later affects new annotations, not existing ones. The default distance from center is 50%.
 
 ## Free-position labels
 
