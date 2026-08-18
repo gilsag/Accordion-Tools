@@ -27,19 +27,39 @@ export const FINDER_ROOT_OPTIONS = [
 ];
 
 /** Scale labels shown in the Scale Finder UI. */
-export const SCALE_FINDER_OPTIONS: Array<{ value: FinderScalePattern; label: string }> = [
+export const SCALE_FINDER_OPTIONS: Array<{
+  value: FinderScalePattern;
+  label: string;
+}> = [
   { value: "major-scale", label: "Major scale" },
   { value: "natural-minor-scale", label: "Natural minor scale" },
   { value: "harmonic-minor-scale", label: "Harmonic minor scale" },
-  { value: "major-pentatonic-scale", label: "Major pentatonic scale" },
-  { value: "minor-pentatonic-scale", label: "Minor pentatonic scale" },
+  {
+    value: "phrygian-dominant-scale",
+    label: "Phrygian dominant (Hijaz)",
+  },
+  {
+    value: "double-harmonic-major-scale",
+    label: "Double harmonic major (Arabic)",
+  },
+  {
+    value: "major-pentatonic-scale",
+    label: "Major pentatonic (Gong)",
+  },
+  {
+    value: "minor-pentatonic-scale",
+    label: "Minor pentatonic (Yu)",
+  },
   { value: "major-blues-scale", label: "Major blues scale" },
   { value: "minor-blues-scale", label: "Minor blues scale" },
   { value: "chromatic-scale", label: "Chromatic scale" },
 ];
 
 /** Row-limit labels shown in the Scale Finder UI. */
-export const SCALE_FINDER_ROW_LIMIT_OPTIONS: Array<{ value: 3 | 4 | 5; label: string }> = [
+export const SCALE_FINDER_ROW_LIMIT_OPTIONS: Array<{
+  value: 3 | 4 | 5;
+  label: string;
+}> = [
   { value: 3, label: "First 3 rows" },
   { value: 4, label: "First 4 rows" },
   { value: 5, label: "First 5 rows" },
@@ -47,31 +67,67 @@ export const SCALE_FINDER_ROW_LIMIT_OPTIONS: Array<{ value: 3 | 4 | 5; label: st
 
 /** Returns the interval pattern, in semitones, for a Finder scale. */
 export function intervalsForScaleFinder(pattern: FinderScalePattern) {
-  if (pattern === "major-scale") return [0, 2, 4, 5, 7, 9, 11, 12];
-  if (pattern === "natural-minor-scale") return [0, 2, 3, 5, 7, 8, 10, 12];
-  if (pattern === "harmonic-minor-scale") return [0, 2, 3, 5, 7, 8, 11, 12];
+  if (pattern === "major-scale") {
+    return [0, 2, 4, 5, 7, 9, 11, 12];
+  }
+
+  if (pattern === "natural-minor-scale") {
+    return [0, 2, 3, 5, 7, 8, 10, 12];
+  }
+
+  if (pattern === "harmonic-minor-scale") {
+    return [0, 2, 3, 5, 7, 8, 11, 12];
+  }
+
+  /*
+    Phrygian dominant (Hijaz): 1-b2-3-4-5-b6-b7
+    Double harmonic major:     1-b2-3-4-5-b6-7
+  */
+  if (pattern === "phrygian-dominant-scale") {
+    return [0, 1, 4, 5, 7, 8, 10, 12];
+  }
+
+  if (pattern === "double-harmonic-major-scale") {
+    return [0, 1, 4, 5, 7, 8, 11, 12];
+  }
 
   /*
     Pentatonic and blues scales are one-octave paths.
 
-    Major pentatonic: 1-2-3-5-6
-    Minor pentatonic: 1-b3-4-5-b7
-    Major blues:      1-2-b3-3-5-6
-    Minor blues:      1-b3-4-b5-5-b7
+    Major pentatonic (Gong): 1-2-3-5-6
+    Minor pentatonic (Yu):   1-b3-4-5-b7
+    Major blues:             1-2-b3-3-5-6
+    Minor blues:             1-b3-4-b5-5-b7
   */
-  if (pattern === "major-pentatonic-scale") return [0, 2, 4, 7, 9, 12];
-  if (pattern === "minor-pentatonic-scale") return [0, 3, 5, 7, 10, 12];
-  if (pattern === "major-blues-scale") return [0, 2, 3, 4, 7, 9, 12];
-  if (pattern === "minor-blues-scale") return [0, 3, 5, 6, 7, 10, 12];
+  if (pattern === "major-pentatonic-scale") {
+    return [0, 2, 4, 7, 9, 12];
+  }
 
-  if (pattern === "chromatic-scale") return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  if (pattern === "minor-pentatonic-scale") {
+    return [0, 3, 5, 7, 10, 12];
+  }
+
+  if (pattern === "major-blues-scale") {
+    return [0, 2, 3, 4, 7, 9, 12];
+  }
+
+  if (pattern === "minor-blues-scale") {
+    return [0, 3, 5, 6, 7, 10, 12];
+  }
+
+  if (pattern === "chromatic-scale") {
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+  }
+
   return [0];
 }
 
 /** Converts an absolute semitone number into normalized pitch class and octave. */
 function absoluteToPitch(absoluteSemitone: number) {
   const octave = Math.floor(absoluteSemitone / 12);
-  const pitchClass = INDEX_TO_PITCH[((absoluteSemitone % 12) + 12) % 12];
+  const pitchClass =
+    INDEX_TO_PITCH[((absoluteSemitone % 12) + 12) % 12];
+
   return { pitchClass, octave };
 }
 
@@ -120,8 +176,13 @@ function chooseNextCandidate(
   if (!previous) return chooseRootCandidate(pool);
 
   return [...pool].sort((a, b) => {
-    const distanceDifference = buttonDistance(a, previous) - buttonDistance(b, previous);
-    if (Math.abs(distanceDifference) > 0.001) return distanceDifference;
+    const distanceDifference =
+      buttonDistance(a, previous) - buttonDistance(b, previous);
+
+    if (Math.abs(distanceDifference) > 0.001) {
+      return distanceDifference;
+    }
+
     if (a.column !== b.column) return a.column - b.column;
     return a.row - b.row;
   })[0];
@@ -142,12 +203,25 @@ export function getScaleFinderTrebleButtons(
   const result: DiagramButton[] = [];
 
   intervals.forEach((interval, index) => {
-    const { pitchClass, octave } = absoluteToPitch(rootAbsolute + interval);
-    const candidates = candidatesForPitch(buttons, pitchClass, octave, rowLimit);
+    const { pitchClass, octave } = absoluteToPitch(
+      rootAbsolute + interval,
+    );
+
+    const candidates = candidatesForPitch(
+      buttons,
+      pitchClass,
+      octave,
+      rowLimit,
+    );
+
     const selected =
       index === 0
         ? chooseRootCandidate(candidates)
-        : chooseNextCandidate(candidates, result[result.length - 1], usedIds);
+        : chooseNextCandidate(
+            candidates,
+            result[result.length - 1],
+            usedIds,
+          );
 
     if (selected) {
       usedIds.add(selected.id);
