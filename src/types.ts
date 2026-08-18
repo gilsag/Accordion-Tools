@@ -107,6 +107,8 @@ export type FinderScalePattern =
   | "major-scale"
   | "natural-minor-scale"
   | "harmonic-minor-scale"
+  | "phrygian-dominant-scale"
+  | "double-harmonic-major-scale"
   | "major-pentatonic-scale"
   | "minor-pentatonic-scale"
   | "major-blues-scale"
