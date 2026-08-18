@@ -47,6 +47,8 @@ const SCALE_LETTER_OFFSETS: Record<FinderScalePattern, number[]> = {
   "major-scale": [0, 1, 2, 3, 4, 5, 6, 7],
   "natural-minor-scale": [0, 1, 2, 3, 4, 5, 6, 7],
   "harmonic-minor-scale": [0, 1, 2, 3, 4, 5, 6, 7],
+  "phrygian-dominant-scale": [0, 1, 2, 3, 4, 5, 6, 7],
+  "double-harmonic-major-scale": [0, 1, 2, 3, 4, 5, 6, 7],
   "major-pentatonic-scale": [0, 1, 2, 4, 5, 7],
   "minor-pentatonic-scale": [0, 2, 3, 4, 6, 7],
   "major-blues-scale": [0, 1, 2, 2, 4, 5, 7],
