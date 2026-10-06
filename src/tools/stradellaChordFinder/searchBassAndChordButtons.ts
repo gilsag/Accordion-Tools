@@ -199,7 +199,6 @@ export function bassAndChordResults(
       if (bass) variants.push([bass, ...chordButtons]);
     }
     for (const selected of variants) {
-      const summary = summarizeResult(selected, targetPitches);
       if (!isAcceptableApproximation(root, pattern, targetPitches, selected)) continue;
       const bassButtons = selected.filter(isBassButton);
       const chords = selected.filter((button) => !isBassButton(button));
