@@ -36,7 +36,9 @@ Uses only chord-row buttons. The optional root bass marker is a visual reference
 
 ### Bass + chord buttons
 
-First tries an exact chord-buttons-only solution. If not available, it adds nearby bass/counterbass buttons needed to complete the chord.
+Generates and ranks several realizations, preferring compact combinations of nearby bass/counterbass notes and chord buttons when an exact mixed realization is available.
+
+Exact realizations contain all requested chord tones and no others. Approximate realizations are intentionally conservative: they never add pitches outside the requested chord, and the only tone that may be omitted is a non-defining natural perfect fifth. Chord-defining tones such as the third, seventh, altered fifth, sixth, ninth, or eleventh must remain present. For example, a C7 realization may omit G, but a voicing without B♭ is not treated as an approximation of C7.
 
 ## Supported chord types
 
