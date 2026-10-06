@@ -214,7 +214,18 @@ export function bassAndChordResults(
     }
   }
 
-  ranked.sort((a, b) => {
+  /* Final musical invariant. Candidate generators and fixed recipes may evolve
+     independently, so enforce the public mixed-mode contract once more here:
+     no returned playable realization may contain a pitch outside the requested
+     chord. Non-exact results must also satisfy the conservative omission rule. */
+  const validRanked = ranked.filter((item) => {
+    const summary = summarizeResult(item.result.playbackButtons, targetPitches);
+    if (summary.extraPitches.length > 0) return false;
+    if (item.exact) return summary.exact;
+    return isAcceptableApproximation(root, pattern, targetPitches, item.result.playbackButtons);
+  });
+
+  validRanked.sort((a, b) => {
     if (a.exact !== b.exact) return a.exact ? -1 : 1;
     if (a.mixed !== b.mixed) return a.mixed ? -1 : 1;
     if (a.approximationPenalty !== b.approximationPenalty) return a.approximationPenalty - b.approximationPenalty;
@@ -224,7 +235,7 @@ export function bassAndChordResults(
 
   const seen = new Set<string>();
   const results: StradellaChordFinderResult[] = [];
-  for (const item of ranked) {
+  for (const item of validRanked) {
     const key = realizationKey(item.result);
     if (seen.has(key)) continue;
     seen.add(key);
