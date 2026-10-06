@@ -63,7 +63,7 @@ export function StradellaChordFinderPanel({
   return (
     <CollapsibleSection title="Chord Finder" isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        Finds Stradella bass-row notes, chord-button recipes, and ranked mixed realizations, including clearly labeled practical approximations.
+        Finds Stradella bass-row notes, chord-button recipes, and ranked mixed realizations, including clearly labeled practical approximations that omit only a non-defining fifth.
       </p>
 
       <fieldset className="tool-fieldset">
@@ -93,7 +93,7 @@ export function StradellaChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons prefers compact mixed realizations and can offer ranked exact or practical approximate alternatives." /></span>
+          <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons prefers compact mixed realizations and can offer ranked exact or conservative approximate alternatives. Approximate results never add foreign tones and only omit a non-defining perfect fifth." /></span>
           <select
             value={mode}
             onChange={(event) => onModeChange(event.target.value as StradellaChordFinderMode)}
@@ -121,7 +121,7 @@ export function StradellaChordFinderPanel({
 
         {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
           <label>
-            <span className="label-line">Realization <HelpTip text="Shows several ranked Stradella realizations. Exact mixed and compact solutions come first; approximate ones are clearly identified." /></span>
+            <span className="label-line">Realization <HelpTip text="Shows several ranked Stradella realizations. Exact mixed and compact solutions come first. Approximate realizations never add tones and only omit a non-defining perfect fifth." /></span>
             <select value={realizationIndex} onChange={(event) => onRealizationChange(Number(event.target.value))}>
               {realizations.map((candidate, index) => (
                 <option key={`${index}-${candidate.playbackButtons.map((button) => button.id).join("-")}`} value={index}>

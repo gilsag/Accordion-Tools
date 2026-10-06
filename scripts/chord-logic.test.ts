@@ -77,7 +77,36 @@ function assertSameSet(actual: string[], expected: string[], message: string) {
   assert.ok(em7[0].playbackButtons.some((button) => button.kind === "chord-major" && button.chordRoot === "G"), "Em7 should prefer G major in its first mixed realization");
   assert.ok(em7[0].playbackButtons.some((button) => button.kind === "bass-counterbass" && button.pitchClass === "E"), "Em7 should prefer nearby E counterbass + G major");
   assert.ok(em7.length > 1, "Mixed mode should offer more than one realization when alternatives exist");
-  assert.ok(em7.some((candidate) => !candidate.exact), "Mixed mode should include clearly marked practical approximations when available");
+  for (const candidate of em7.filter((item) => !item.exact)) {
+    assert.deepEqual(candidate.extraPitches, [], "Approximate Em7 realizations must not add foreign tones");
+    assert.deepEqual(candidate.missingPitches, ["B"], "Approximate Em7 realizations may omit only the fifth, never the seventh");
+  }
+}
+
+{
+  const c7 = getStradellaChordFinderResults(buttons, "C", "dominant7", "bass-and-chords");
+  const approximations = c7.filter((candidate) => !candidate.exact);
+  assert.ok(approximations.length > 0, "C7 should offer a fifth-omitted approximation when available");
+  for (const candidate of approximations) {
+    assert.deepEqual(candidate.extraPitches, [], "Approximate C7 realizations must not add foreign tones");
+    assert.deepEqual(candidate.missingPitches, ["G"], "Approximate C7 may omit only the fifth G; the seventh Bb must remain");
+  }
+}
+
+{
+  const cmaj7Approx = getStradellaChordFinderResults(buttons, "C", "major7", "bass-and-chords").filter((candidate) => !candidate.exact);
+  for (const candidate of cmaj7Approx) {
+    assert.deepEqual(candidate.extraPitches, [], "Approximate Cmaj7 realizations must not add foreign tones");
+    assert.deepEqual(candidate.missingPitches, ["G"], "Approximate Cmaj7 may omit only the fifth G; the major seventh B must remain");
+  }
+}
+
+{
+  const c7b5 = getStradellaChordFinderResults(buttons, "C", "dominant7b5", "bass-and-chords");
+  for (const candidate of c7b5.filter((item) => !item.exact)) {
+    assert.equal(candidate.missingPitches.includes("F#"), false, "The altered fifth is defining in C7b5 and must not be omitted");
+    assert.deepEqual(candidate.extraPitches, [], "Approximate altered chords must not add foreign tones");
+  }
 }
 
 {

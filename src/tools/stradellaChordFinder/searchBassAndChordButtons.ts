@@ -2,6 +2,8 @@
    genuinely mixed, compact solutions ahead of chord-button-only alternatives. */
 
 import type { DiagramButton, FinderChordPattern } from "../../types";
+import { transpose } from "../../music";
+import { intervalsForChordFinder } from "../../music/chordDefinitions";
 import { notPlayableResult, resultFromButtons, summarizeResult, type StradellaChordFinderResult } from "./results";
 import { buttonTones, chordKindLabel, combinationTones, isBassButton } from "./voicings";
 import {
@@ -96,16 +98,33 @@ function resultForCombination(
   return result;
 }
 
+function omissibleApproximationPitches(root: string, pattern: FinderChordPattern) {
+  /* Keep approximation rules deliberately conservative. On Stradella, the
+     natural fifth is the conventional expendable chord tone; chord-defining
+     tones (third, seventh, altered fifth, sixth, ninth, eleventh, etc.) must
+     remain present. */
+  const intervals = intervalsForChordFinder(pattern);
+  return new Set(intervals.some((interval) => interval % 12 === 7) ? [transpose(root, 7)] : []);
+}
+
+function isAcceptableApproximation(
+  root: string,
+  pattern: FinderChordPattern,
+  targetPitches: string[],
+  selected: DiagramButton[],
+) {
+  const summary = summarizeResult(selected, targetPitches);
+  if (summary.exact) return false;
+  if (summary.extraPitches.length > 0) return false;
+  if (summary.missingPitches.length === 0) return false;
+
+  const omissible = omissibleApproximationPitches(root, pattern);
+  return summary.missingPitches.every((pitch) => omissible.has(pitch));
+}
+
 function approximationPenalty(targetPitches: string[], selected: DiagramButton[]) {
   const summary = summarizeResult(selected, targetPitches);
-  /* Target order is root, characteristic chord tones, then extensions.  Root and
-     early chord tones therefore cost more to omit than the fifth/extensions. */
-  const omissionWeights = targetPitches.map((_, index) => index === 0 ? 6 : index === 1 ? 4 : index === 2 ? 1 : index === 3 ? 4 : 2);
-  const missingPenalty = targetPitches.reduce(
-    (sum, pitch, index) => sum + (summary.missingPitches.includes(pitch) ? omissionWeights[index] : 0),
-    0,
-  );
-  return missingPenalty + summary.extraPitches.length * 5;
+  return summary.missingPitches.length;
 }
 
 function realizationKey(result: StradellaChordFinderResult) {
@@ -169,8 +188,8 @@ export function bassAndChordResults(
   }
 
   /* Idiomatic approximations: use one or two chord buttons, optionally add one
-     missing bass tone, and tolerate a small omission/addition. These are shown
-     explicitly as approximations, never silently reported as exact. */
+     missing bass tone, but never add foreign pitches. The only permitted
+     omission is a natural perfect fifth; chord-defining tones must remain. */
   for (const chordButtons of chordCombinations(pool, 2)) {
     const baseTones = combinationTones(chordButtons);
     const missing = targetPitches.filter((pitch) => !baseTones.includes(pitch));
@@ -181,10 +200,7 @@ export function bassAndChordResults(
     }
     for (const selected of variants) {
       const summary = summarizeResult(selected, targetPitches);
-      if (summary.exact) continue;
-      if (summary.missingPitches.length > 2 || summary.extraPitches.length > 1) continue;
-      if (!summary.coveredPitches.includes(root)) continue;
-      if (summary.coveredPitches.length < Math.min(3, targetPitches.length)) continue;
+      if (!isAcceptableApproximation(root, pattern, targetPitches, selected)) continue;
       const bassButtons = selected.filter(isBassButton);
       const chords = selected.filter((button) => !isBassButton(button));
       ranked.push({

@@ -7,6 +7,7 @@
 - Retained the original SFZ/Decent Sampler definitions and added `FILE_MAP.txt` documenting the browser-safe filename mapping.
 - Made La Melodiosa the default sound source, with treble register I and Stradella register III as the default sampled registers.
 - Added gentle high-frequency damping to the lower treble range of register III to reduce occasional harsh/screeching sample playback.
+- Tightened Stradella Chord Finder approximations: approximate realizations no longer add foreign pitches and may omit only a non-defining natural fifth; thirds, sevenths, altered fifths, and extensions must be preserved.
 
 ## v0.10.1 - La Melodiosa sample playback fixes
 
