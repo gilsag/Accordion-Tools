@@ -1,6 +1,7 @@
 # Accordion Tools — Version History
 
 ## v0.10.2
+- Chord Finder: Bass + chord buttons remains the default mode and now keeps a valid fifth-omission approximation visible even when several exact realizations exist.
 
 - Fixed La Melodiosa treble sample delivery by moving playback WAVs to fresh URL-safe asset paths and replacing `#` in playback filenames with `sharp`.
 - La Melodiosa mode no longer falls back silently to the synthesizer when a sample cannot be loaded; it tries the alternate take and nearby sampled regions instead.

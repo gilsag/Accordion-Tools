@@ -65,3 +65,6 @@ See [`settings.md`](settings.md) for:
 - `notation`
 - `accidental`
 - `soundEnabled`
+
+
+In **Bass + chord buttons** mode, exact realizations are ranked first, but the list also keeps a valid fifth-omission approximation visible when one exists. Approximate results never add foreign tones.

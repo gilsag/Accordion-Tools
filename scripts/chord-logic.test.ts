@@ -86,7 +86,8 @@ function assertSameSet(actual: string[], expected: string[], message: string) {
 {
   const c7 = getStradellaChordFinderResults(buttons, "C", "dominant7", "bass-and-chords");
   const approximations = c7.filter((candidate) => !candidate.exact);
-  assert.ok(approximations.length > 0, "C7 should offer a fifth-omitted approximation when available");
+  assert.ok(c7.some((candidate) => candidate.exact), "C7 should retain exact realizations");
+  assert.ok(approximations.length > 0, "C7 should offer a fifth-omitted approximation even when exact alternatives exist");
   for (const candidate of approximations) {
     assert.deepEqual(candidate.extraPitches, [], "Approximate C7 realizations must not add foreign tones");
     assert.deepEqual(candidate.missingPitches, ["G"], "Approximate C7 may omit only the fifth G; the seventh Bb must remain");

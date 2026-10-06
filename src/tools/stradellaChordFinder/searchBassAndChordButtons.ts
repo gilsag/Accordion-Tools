@@ -232,15 +232,45 @@ export function bassAndChordResults(
     return a.compactness - b.compactness;
   });
 
+  /* Deduplicate before applying the result limit. Exact realizations are still
+     presented first, but when a valid fifth-omission approximation exists,
+     reserve one slot for it. Otherwise a rich set of exact recipes can fill
+     maxResults and make the approximation disappear from the UI entirely. */
   const seen = new Set<string>();
-  const results: StradellaChordFinderResult[] = [];
+  const uniqueRanked: RankedRealization[] = [];
   for (const item of validRanked) {
     const key = realizationKey(item.result);
     if (seen.has(key)) continue;
     seen.add(key);
-    results.push(item.result);
-    if (results.length >= maxResults) break;
+    uniqueRanked.push(item);
   }
+
+  const exactItems = uniqueRanked.filter((item) => item.exact);
+  const approximateItems = uniqueRanked.filter((item) => !item.exact);
+  const selectedItems: RankedRealization[] = [];
+
+  if (maxResults > 1 && approximateItems.length > 0 && exactItems.length > 0) {
+    selectedItems.push(...exactItems.slice(0, maxResults - 1));
+    selectedItems.push(approximateItems[0]);
+  } else {
+    selectedItems.push(...uniqueRanked.slice(0, maxResults));
+  }
+
+  /* If there was spare capacity (for example only one exact result), fill it
+     with the remaining ranked alternatives without disturbing the exact-first
+     ordering of the entries already selected. */
+  if (selectedItems.length < maxResults) {
+    const selectedKeys = new Set(selectedItems.map((item) => realizationKey(item.result)));
+    for (const item of uniqueRanked) {
+      const key = realizationKey(item.result);
+      if (selectedKeys.has(key)) continue;
+      selectedItems.push(item);
+      selectedKeys.add(key);
+      if (selectedItems.length >= maxResults) break;
+    }
+  }
+
+  const results = selectedItems.map((item) => item.result);
 
   return results.length > 0
     ? results

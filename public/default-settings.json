@@ -23,7 +23,7 @@
   "laMelodiosaBassRegister": "III",
   "stradellaBassVoicing": "single-low",
   "stradellaChordFinderMarkRootBass": true,
-  "stradellaChordFinderMode": "chord-buttons-only",
+  "stradellaChordFinderMode": "bass-and-chords",
   "diagramVerticalSpacing": 18,
   "pianoKeyWidthScale": 1,
   "pianoKeyHeightScale": 1,
