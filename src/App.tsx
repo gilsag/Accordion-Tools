@@ -691,7 +691,7 @@ function App() {
   const [stradellaChordFinderPattern, setStradellaChordFinderPattern] =
     useState<FinderChordPattern>("major-triad");
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
-    useState<StradellaChordFinderMode>("chord-buttons-only");
+    useState<StradellaChordFinderMode>("bass-and-chords");
   const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
   const [
     stradellaChordFinderMarkRootBass,
