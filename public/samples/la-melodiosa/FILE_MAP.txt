@@ -1,0 +1,10 @@
+Accordion Tools playback filename mapping
+
+For browser-safe playback, WAV files are stored in the audio/ subfolder.
+The only filename normalization applied is: '#' -> 'sharp'.
+
+Examples:
+I-D#4-ba.wav -> audio/I-Dsharp4-ba.wav
+BS-C#5-ba.wav -> audio/BS-Csharp5-ba.wav
+
+The original SFZ and Decent Sampler preset are retained unchanged for provenance.

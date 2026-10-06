@@ -15,7 +15,7 @@ export type { StradellaChordFinderResult } from "./stradellaChordFinder/results"
 import { orderedTargetPitches } from "./stradellaChordFinder/utils";
 import { bassOnlyResult } from "./stradellaChordFinder/searchBassRows";
 import { chordButtonRecipeResult } from "./stradellaChordFinder/searchChordButtonsOnly";
-import { bassAndChordResult } from "./stradellaChordFinder/searchBassAndChordButtons";
+import { bassAndChordResult, bassAndChordResults } from "./stradellaChordFinder/searchBassAndChordButtons";
 
 export const STRADELLA_CHORD_FINDER_MODE_OPTIONS: Array<{
   value: StradellaChordFinderMode;
@@ -42,4 +42,19 @@ export function getStradellaChordFinderResult(
   if (mode === "bass-only") return bassOnlyResult(buttons, root, targetPitches);
   if (mode === "bass-and-chords") return bassAndChordResult(buttons, root, targetPitches, pattern);
   return chordButtonRecipeResult(buttons, root, targetPitches, pattern, markRootBass);
+}
+
+export function getStradellaChordFinderResults(
+  buttons: DiagramButton[],
+  root: string,
+  pattern: FinderChordPattern,
+  mode: StradellaChordFinderMode,
+  markRootBass = true,
+): StradellaChordFinderResult[] {
+  const targetPitches = orderedTargetPitches(root, pattern);
+  if (targetPitches.length === 0) {
+    return [notPlayableResult([], "Choose a valid chord.", "Choose a valid root and chord type.")];
+  }
+  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern);
+  return [getStradellaChordFinderResult(buttons, root, pattern, mode, markRootBass)];
 }

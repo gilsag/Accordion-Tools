@@ -1,5 +1,29 @@
 # Accordion Tools — Version History
 
+## v0.10.2
+
+- Fixed La Melodiosa treble sample delivery by moving playback WAVs to fresh URL-safe asset paths and replacing `#` in playback filenames with `sharp`.
+- La Melodiosa mode no longer falls back silently to the synthesizer when a sample cannot be loaded; it tries the alternate take and nearby sampled regions instead.
+- Retained the original SFZ/Decent Sampler definitions and added `FILE_MAP.txt` documenting the browser-safe filename mapping.
+- Made La Melodiosa the default sound source, with treble register I and Stradella register III as the default sampled registers.
+- Added gentle high-frequency damping to the lower treble range of register III to reduce occasional harsh/screeching sample playback.
+
+## v0.10.1 - La Melodiosa sample playback fixes
+
+- Fixed La Melodiosa sample URLs containing `#` (for example `D#` and `F#` filenames) by URL-encoding sample filenames before loading them. These files were previously interpreted as URL fragments by the browser, causing large portions of the treble mapping to fall back to the synthesizer.
+- Extended the nearest La Melodiosa treble sample region beyond the native C4-C7 SFZ range instead of switching abruptly to the synthesizer at the sampled boundaries.
+- Fixed sampled Stradella chord voicing so all chord tones remain within the complete C3-B3 sampled chord register rather than allowing ascending chord tones to spill into octave 4 and trigger synth fallback.
+
+## v0.10.0 - Multiple Stradella realizations and La Melodiosa sampled sound
+
+- Expanded the Stradella Chord Finder to generate and rank multiple playable realizations instead of stopping at a single solution.
+- In **Bass + chord buttons** mode, exact mixed bass/counterbass + chord-button realizations are preferred when available, with compact physical layouts ranked ahead of more spread-out alternatives.
+- Added clearly identified approximate Stradella realizations for chords that cannot be represented exactly or have idiomatic accordion simplifications; ranking favors retaining harmonically important tones and penalizes omission of the root, third, or seventh more than omission of the fifth.
+- Added La Melodiosa as an optional sampled accordion sound source while retaining the existing synthesizer as a fallback.
+- Reproduced the supplied SFZ mappings, including sample zones, root pitches, tuning adjustments, level adjustments, treble A/B alternation, and separate treble/bass register states.
+- Added La Melodiosa sample caching/preloading and cancellation protection for notes stopped while a sample is still loading.
+- Added concise La Melodiosa attribution in About, fuller documentation attribution, and attribution/provenance files alongside the sample assets.
+
 ## v0.9.0 - abcjs-based ABC parser refactor
 
 - Refactored ABC Player event extraction to use `abcjs.parseOnly()` and `abcjs.synth.sequence()` instead of relying only on the custom hand-written parser.
@@ -213,3 +237,10 @@ Major 3rd row: D#  A#   F    C    G    D
 
 - 
 ```
+## La Melodiosa sampled sound integration
+
+- Added La Melodiosa as an optional sampled accordion sound source while retaining the built-in synthesizer.
+- Added independent treble and bass register selection for the three register states defined by the original instrument (upper, lower, both).
+- Preserved the supplied SFZ sample ranges, root pitches, tuning offsets, relative levels, and treble round-robin alternation.
+- Added lazy/cached Web Audio sample loading, selected-register preloading, synth fallback outside mapped ranges, and stop protection while samples are decoding.
+- Added La Melodiosa attribution in About, README/settings documentation, and the sample directory; retained the author's original README, SFZ, and Decent Sampler preset.

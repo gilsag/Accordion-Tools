@@ -20,6 +20,9 @@ type StradellaChordFinderPanelProps = {
   markRootBass: boolean;
   onMarkRootBassChange: (value: boolean) => void;
   result: StradellaChordFinderResult;
+  realizations: StradellaChordFinderResult[];
+  realizationIndex: number;
+  onRealizationChange: (index: number) => void;
   buttonCount: number;
   playbackButtonCount: number;
   isActive: boolean;
@@ -43,6 +46,9 @@ export function StradellaChordFinderPanel({
   markRootBass,
   onMarkRootBassChange,
   result,
+  realizations,
+  realizationIndex,
+  onRealizationChange,
   buttonCount,
   playbackButtonCount,
   isActive,
@@ -52,12 +58,12 @@ export function StradellaChordFinderPanel({
   formatPitches,
   formatText,
 }: StradellaChordFinderPanelProps) {
-  const statusText = isActive && !result.playable ? "Not found" : "Exact / ready";
+  const statusText = isActive && !result.playable ? "Not found" : result.exact ? "Exact / ready" : "Approximate / ready";
 
   return (
     <CollapsibleSection title="Chord Finder" isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        Finds Stradella bass-row notes, chord-button recipes, or exact mixed combinations.
+        Finds Stradella bass-row notes, chord-button recipes, and ranked mixed realizations, including clearly labeled practical approximations.
       </p>
 
       <fieldset className="tool-fieldset">
@@ -87,7 +93,7 @@ export function StradellaChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons adds bass/counterbass only when needed." /></span>
+          <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons prefers compact mixed realizations and can offer ranked exact or practical approximate alternatives." /></span>
           <select
             value={mode}
             onChange={(event) => onModeChange(event.target.value as StradellaChordFinderMode)}
@@ -109,6 +115,19 @@ export function StradellaChordFinderPanel({
             >
               <option value="on">On</option>
               <option value="off">Off</option>
+            </select>
+          </label>
+        )}
+
+        {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
+          <label>
+            <span className="label-line">Realization <HelpTip text="Shows several ranked Stradella realizations. Exact mixed and compact solutions come first; approximate ones are clearly identified." /></span>
+            <select value={realizationIndex} onChange={(event) => onRealizationChange(Number(event.target.value))}>
+              {realizations.map((candidate, index) => (
+                <option key={`${index}-${candidate.playbackButtons.map((button) => button.id).join("-")}`} value={index}>
+                  {index + 1}. {candidate.exact ? "Exact" : "Approx."} — {candidate.playbackButtons.map((button) => button.kind.startsWith("bass-") ? `${button.pitchClass} bass` : `${button.chordRoot} ${button.kind.replace("chord-", "")}`).join(" + ")}
+                </option>
+              ))}
             </select>
           </label>
         )}

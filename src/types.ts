@@ -169,6 +169,12 @@ export type InterfaceDensity = "compact" | "comfortable";
 
 /** Backward-compatible union of all Finder patterns. */
 export type FinderPattern = FinderScalePattern | FinderChordPattern;
+/** Available browser sound engines. */
+export type SoundSource = "synth" | "la-melodiosa";
+
+/** Sampled register states used by La Melodiosa. */
+export type SampleRegister = "I" | "II" | "III";
+
 /** Oscillator waveforms supported by the built-in Web Audio synth. */
 export type SoundWaveform = "sine" | "triangle" | "sawtooth" | "square";
 

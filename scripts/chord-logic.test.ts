@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../src/stradella.ts";
-import { getStradellaChordFinderResult } from "../src/tools/stradellaChordFinderTools.ts";
+import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools.ts";
 import type { DiagramButton, FinderChordPattern, StradellaChordFinderMode } from "../src/types.ts";
 
 const buttons = generateStradella("96", 38, 1.18, "default");
@@ -69,6 +69,22 @@ function assertSameSet(actual: string[], expected: string[], message: string) {
   assert.equal(minorMajor9.playable, true, "Cm(maj9) should be playable in mixed mode");
   assert.deepEqual(minorMajor9.extraPitches, [], "Mixed mode should not add tones outside the requested chord");
   assertSameSet(minorMajor9.coveredPitches, ["C", "D#", "G", "B", "D"], "Mixed mode should cover the Cm(maj9) target tones");
+}
+
+{
+  const em7 = getStradellaChordFinderResults(buttons, "E", "minor7", "bass-and-chords");
+  assert.equal(em7[0].exact, true, "Em7 first mixed realization should be exact");
+  assert.ok(em7[0].playbackButtons.some((button) => button.kind === "chord-major" && button.chordRoot === "G"), "Em7 should prefer G major in its first mixed realization");
+  assert.ok(em7[0].playbackButtons.some((button) => button.kind === "bass-counterbass" && button.pitchClass === "E"), "Em7 should prefer nearby E counterbass + G major");
+  assert.ok(em7.length > 1, "Mixed mode should offer more than one realization when alternatives exist");
+  assert.ok(em7.some((candidate) => !candidate.exact), "Mixed mode should include clearly marked practical approximations when available");
+}
+
+{
+  const cmaj7 = getStradellaChordFinderResults(buttons, "C", "major7", "bass-and-chords");
+  assert.equal(cmaj7[0].exact, true, "Cmaj7 first mixed realization should be exact");
+  assert.ok(cmaj7[0].playbackButtons.some((button) => button.kind === "chord-major" && button.chordRoot === "C"), "Cmaj7 should include C major in its first mixed realization");
+  assert.ok(cmaj7[0].playbackButtons.some((button) => button.pitchClass === "B" && button.kind.startsWith("bass-")), "Cmaj7 should combine B bass/counterbass with C major");
 }
 
 console.log("✓ Stradella chord logic tests passed");

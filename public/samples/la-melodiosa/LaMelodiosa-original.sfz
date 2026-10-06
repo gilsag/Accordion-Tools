@@ -1,0 +1,448 @@
+//
+//La Melodiosa Accordion
+//Sampling and SFZ program by Petri Pohjanmies 2026
+//CC-BY
+//
+<control>
+//image=Ui/Cover.jpg
+label_cc20=Bass selector
+label_cc21=Treble selector
+default_path=LAMelodiosa/
+
+<global>
+ampeg_release=0.4
+amp_veltrack=60
+
+<group>
+#define DO_DISABLE 1
+#define VELHI 80
+#define VELLO 81
+master_label=Accordion-La-Melodiosa
+
+//Bass Voice 1
+<group>
+	lokey=C3  hikey=D3
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-C#5-ba.wav  pitch_keycenter=C#3  tune=-3
+
+<group>
+	lokey=G3  hikey=G#3
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-G#5-ba.wav  pitch_keycenter=G#3  tune=-7
+
+<group>
+	lokey=D#3  hikey=F#3
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-E5-ba.wav  pitch_keycenter=E3  tune=-3
+
+<group>
+	lokey=A3  hikey=B3
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-A5-ba.wav  pitch_keycenter=A3  tune=-6
+
+//Bass Voice 2
+<group>
+	lokey=C3  hikey=D3
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-D4-ba.wav  pitch_keycenter=D3  tune=-7
+
+<group>
+	lokey=G3  hikey=A3
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-A4-ba.wav  pitch_keycenter=A3  tune=-10
+
+<group>
+	lokey=D#3  hikey=F#3
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-E4-ba.wav  pitch_keycenter=E3  tune=-4
+
+<group>
+	lokey=A#3  hikey=B3
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-B4-ba.wav  pitch_keycenter=B3  tune=-4
+
+
+//Bass Voice 3
+<group>
+	lokey=C3  hikey=D3
+	locc20=84  hicc20=127
+	amplitude=100
+	<region>  sample=BS-III-D4-ba.wav  pitch_keycenter=D3  tune=-4
+
+<group>
+	lokey=G3  hikey=A3
+	locc20=84  hicc20=127
+	amplitude=100
+	<region>  sample=BS-III-A4-ba.wav  pitch_keycenter=A3  tune=0
+
+<group>
+	lokey=D#3  hikey=F#3
+	locc20=84  hicc20=127
+	amplitude=100
+	<region>  sample=BS-III-E4-ba.wav  pitch_keycenter=E3  tune=-4
+
+<group>
+	lokey=A#3  hikey=B3
+	locc20=84  hicc20=127
+	amplitude=100
+	<region>  sample=BS-III-B4-ba.wav  pitch_keycenter=B3  tune=-4
+
+/Bass Voice 1 - Lower Octave
+
+<group>
+	lokey=G2  hikey=G#2
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-G#5-ba.wav  pitch_keycenter=G#2  tune=-4
+
+<group>
+	lokey=D#2  hikey=F#2	
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-E5-ba.wav  pitch_keycenter=E2  tune=-3
+
+<group>
+	lokey=C2  hikey=B2
+	locc20=0  hicc20=41
+	amplitude=100
+	<region>  sample=BS-A5-ba.wav  pitch_keycenter=A2  tune=-6
+
+//Voice II
+<group>
+	lokey=G2  hikey=A2
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-A4-ba.wav  pitch_keycenter=A2  tune=-6
+
+<group>
+	lokey=D#2  hikey=F#2
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-E4-ba.wav  pitch_keycenter=E2  tune=-4
+
+<group>
+	lokey=C2  hikey=B2
+	locc20=42  hicc20=83
+	amplitude=100
+	<region>  sample=BS-II-B4-ba.wav  pitch_keycenter=B2  tune=0
+
+//Voice III
+<group>
+	lokey=G2  hikey=A2
+	locc20=84  hicc20=127
+	amplitude=110
+	<region>  sample=BS-III-A4-ba.wav  pitch_keycenter=A2  tune=-6
+
+<group>
+	lokey=D#2  hikey=F#2
+	locc20=84  hicc20=127
+	amplitude=100
+	<region>  sample=BS-III-E4-ba.wav  pitch_keycenter=E2  tune=-4
+
+<group>
+	lokey=C2  hikey=B2
+	locc20=84  hicc20=127
+	amplitude=100
+	<region>  sample=BS-III-B4-ba.wav  pitch_keycenter=B2  tune=0
+
+
+//______________________________________________________________________________________________________________________
+//Treble Voice I
+<group>
+	lokey=C4  hikey=E4
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=145
+	<region>  seq_position=1  sample=I-D#4-ba.wav  pitch_keycenter=D#4  tune=-6
+	<region>  seq_position=2  sample=I-D#4-va.wav  pitch_keycenter=D#4  tune=-6
+
+<group>
+	lokey=F4  hikey=G4
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=I-F#4-ba.wav  pitch_keycenter=F#4  tune=-6
+	<region>  seq_position=2  sample=I-F#4-va.wav  pitch_keycenter=F#4  tune=-6
+
+<group>
+	lokey=G#4  hikey=A#4
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=I-A4-ba.wav  pitch_keycenter=A4  tune=-7
+	<region>  seq_position=2  sample=I-A4-va.wav  pitch_keycenter=A4  tune=-7
+
+<group>
+	lokey=B4  hikey=D5
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=I-C5-ba.wav  pitch_keycenter=C5  tune=-4
+	<region>  seq_position=2  sample=I-C5-va.wav  pitch_keycenter=C5  tune=-4
+
+<group>
+	lokey=D#5  hikey=E5
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=I-D#5-ba.wav  pitch_keycenter=D#5  tune=-5
+	<region>  seq_position=2  sample=I-D#5-va.wav  pitch_keycenter=D#5  tune=-5
+
+<group>
+	lokey=F5  hikey=G5
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=180
+	<region>  seq_position=1  sample=I-F#5-ba.wav  pitch_keycenter=F#5  tune=-5
+	<region>  seq_position=2  sample=I-F#5-va.wav  pitch_keycenter=F#5  tune=-5
+
+<group>
+	lokey=G#5  hikey=A#5
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=I-A5-ba.wav  pitch_keycenter=A5  tune=-8
+	<region>  seq_position=2  sample=I-A5-va.wav  pitch_keycenter=A5  tune=-8
+
+<group>
+	lokey=B5  hikey=C#6
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=I-C6-ba.wav  pitch_keycenter=C6  tune=-9
+	<region>  seq_position=2  sample=I-C6-va.wav  pitch_keycenter=C6  tune=-9
+
+<group>
+	lokey=D6  hikey=E6
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=I-D#6-ba.wav  pitch_keycenter=D#6  tune=0
+	<region>  seq_position=2  sample=I-D#6-va.wav  pitch_keycenter=D#6  tune=0
+
+<group>
+	lokey=F6  hikey=G6
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=I-F#6-ba.wav  pitch_keycenter=F#6  tune=-4
+	<region>  seq_position=2  sample=I-F#6-va.wav  pitch_keycenter=F#6  tune=-4
+
+<group>
+	lokey=G#6  hikey=A#6
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=180
+	<region>  seq_position=1  sample=I-A6-ba.wav  pitch_keycenter=A6  tune=0
+	<region>  seq_position=2  sample=I-A6-va.wav  pitch_keycenter=A6  tune=0
+
+<group>
+	lokey=B6  hikey=C7
+	locc21=0  hicc21=41
+	seq_length=2
+	amplitude=180
+	<region>  seq_position=1  sample=I-C7-ba.wav  pitch_keycenter=C7  tune=0
+	<region>  seq_position=2  sample=I-C7-va.wav  pitch_keycenter=C7  tune=0
+
+//Treble Voice II
+<group>
+	lokey=C4  hikey=F4
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=II-D#4-ba.wav  pitch_keycenter=D#4  tune=2
+	<region>  seq_position=2  sample=II-D#4-va.wav  pitch_keycenter=D#4  tune=2
+
+<group>
+	lokey=F#4  hikey=G4
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=II-F#4-ba.wav  pitch_keycenter=F#4  tune=0
+	<region>  seq_position=2  sample=II-F#4-va.wav  pitch_keycenter=F#4  tune=0
+
+<group>
+	lokey=G#4  hikey=A#4
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=II-A4-ba.wav  pitch_keycenter=A4  tune=0
+	<region>  seq_position=2  sample=II-A4-va.wav  pitch_keycenter=A4  tune=0
+
+<group>
+	lokey=B4  hikey=D5
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=II-C5-va.wav  pitch_keycenter=C5  tune=3
+	<region>  seq_position=2  sample=II-C5-va.wav  pitch_keycenter=C5  tune=3
+
+<group>
+	lokey=D#5  hikey=E5
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=II-D#5-ba.wav  pitch_keycenter=D#5  tune=-7
+	<region>  seq_position=2  sample=II-D#5-va.wav  pitch_keycenter=D#5  tune=-7
+
+<group>
+	lokey=F5  hikey=G5
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=180
+	<region>  seq_position=1  sample=II-F#5-ba.wav  pitch_keycenter=F#5  tune=-4
+	<region>  seq_position=2  sample=II-F#5-va.wav  pitch_keycenter=F#5  tune=-4
+
+<group>
+	lokey=G#5  hikey=A#5
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=II-A5-ba.wav  pitch_keycenter=A5  tune=-4
+	<region>  seq_position=2  sample=II-A5-va.wav  pitch_keycenter=A5  tune=-4
+
+<group>
+	lokey=B5  hikey=C#6
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=115
+	<region>  seq_position=1  sample=II-C6-ba.wav  pitch_keycenter=C6  tune=-5
+	<region>  seq_position=2  sample=II-C6-va.wav  pitch_keycenter=C6  tune=-5
+
+<group>
+	lokey=D6  hikey=E6
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=II-D#6-ba.wav  pitch_keycenter=D#6  tune=-1
+	<region>  seq_position=2  sample=II-D#6-va.wav  pitch_keycenter=D#6  tune=-1
+
+<group>
+	lokey=F6  hikey=G6
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=180
+	<region>  seq_position=1  sample=II-F#6-ba.wav  pitch_keycenter=F#6  tune=-4
+	<region>  seq_position=2  sample=II-F#6-va.wav  pitch_keycenter=F#6  tune=-4
+
+<group>
+	lokey=G#6  hikey=A#6
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=II-A6-ba.wav  pitch_keycenter=A6  tune=-7
+	<region>  seq_position=2  sample=II-A6-va.wav  pitch_keycenter=A6  tune=-7
+
+<group>
+	lokey=B6  hikey=C7
+	locc21=42  hicc21=83
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=II-C7-ba.wav  pitch_keycenter=C7  tune=-7
+	<region>  seq_position=2  sample=II-C7-va.wav  pitch_keycenter=C7  tune=-7
+
+//Treble Voice III
+<group>
+	lokey=C4  hikey=E4
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=III-D#4-ba.wav  pitch_keycenter=D#4  tune=4
+	<region>  seq_position=2  sample=III-D#4-va.wav  pitch_keycenter=D#4  tune=4
+
+<group>
+	lokey=F4  hikey=G4
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=III-F#4-ba.wav  pitch_keycenter=F#4  tune=0
+	<region>  seq_position=2  sample=III-F#4-va.wav  pitch_keycenter=F#4  tune=0
+
+<group>
+	lokey=G#4  hikey=A#4
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=III-A4-ba.wav  pitch_keycenter=A4  tune=0
+	<region>  seq_position=2  sample=III-A4-va.wav  pitch_keycenter=A4  tune=0
+
+<group>
+	lokey=B4  hikey=D5
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=III-C5-ba.wav  pitch_keycenter=C5  tune=0
+	<region>  seq_position=2  sample=III-C5-va.wav  pitch_keycenter=C5  tune=0
+
+<group>
+	lokey=D#5  hikey=E5
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=140
+	<region>  seq_position=1  sample=III-D#5-ba.wav  pitch_keycenter=D#5  tune=-5
+	<region>  seq_position=2  sample=III-D#5-va.wav  pitch_keycenter=D#5  tune=-5
+
+<group>
+	lokey=F5  hikey=G5
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=190
+	<region>  seq_position=1  sample=III-F#5-ba.wav  pitch_keycenter=F#5  tune=0
+	<region>  seq_position=2  sample=III-F#5-va.wav  pitch_keycenter=F#5  tune=0
+
+<group>
+	lokey=G#5  hikey=A#5
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=150
+	<region>  seq_position=1  sample=III-A5-ba.wav  pitch_keycenter=A5  tune=0
+	<region>  seq_position=2  sample=III-A5-va.wav  pitch_keycenter=A5  tune=0
+
+<group>
+	lokey=B5  hikey=C#6
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=135
+	<region>  seq_position=1  sample=III-C6-ba.wav  pitch_keycenter=C6  tune=-4
+	<region>  seq_position=2  sample=III-C6-va.wav  pitch_keycenter=C6  tune=-4
+
+<group>
+	lokey=D6  hikey=E6
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=160
+	<region>  seq_position=1  sample=III-D#6-ba.wav  pitch_keycenter=D#6  tune=0
+	<region>  seq_position=2  sample=III-D#6-va.wav  pitch_keycenter=D#6  tune=0
+
+<group>
+	lokey=F6  hikey=G6
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=170
+	<region>  seq_position=1  sample=III-F#6-ba.wav  pitch_keycenter=F#6  tune=-4
+	<region>  seq_position=2  sample=III-F#6-va.wav  pitch_keycenter=F#6  tune=-4
+
+<group>
+	lokey=G#6  hikey=A#6
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=200
+	<region>  seq_position=1  sample=III-A6-ba.wav  pitch_keycenter=A6  tune=0
+	<region>  seq_position=2  sample=III-A6-va.wav  pitch_keycenter=A6  tune=0
+
+<group>
+	lokey=B6  hikey=C7
+	locc21=84  hicc21=127
+	seq_length=2
+	amplitude=160
+	<region>  seq_position=1  sample=III-C7-ba.wav  pitch_keycenter=C7  tune=0
+	<region>  seq_position=2  sample=III-C7-va.wav  pitch_keycenter=C7  tune=0
+
