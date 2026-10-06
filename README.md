@@ -34,6 +34,10 @@ The browser sampler follows the mappings supplied with the original SFZ instrume
 
 The original attribution and instrument-definition files are retained with the samples in `public/samples/la-melodiosa/`, including `README-original.txt`, `LaMelodiosa-original.sfz`, and `LaMelodiosa-original.dspreset`. Accordion-Tools' adaptation does not imply endorsement by the original sample author.
 
+## Credits
+
+The development of the Stradella Chord Finder was informed in part by the Stradella Explorer tool at AccordionChords.com, which provided a useful reference for exploring chord realizations on the Stradella bass system.
+
 ## Documentation
 
 Detailed documentation lives in the [`docs/`](docs/) folder.
