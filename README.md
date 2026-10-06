@@ -4,7 +4,7 @@ Accordion-Tools is a browser-based accordion and music-layout diagram generator 
 
 It helps accordion players, students, and teachers create visual diagrams for Stradella bass, chromatic button accordion treble, and piano treble layouts. The app can be used for reference, teaching, practice planning, fingering notes, scale and chord exploration, ABC playback, Stradella accompaniment patterns, sound playback, and exporting diagrams as SVG or PNG files.
 
-Current app version: **0.10.2**
+Current app version: **0.8.8**
 
 ## Live Site
 

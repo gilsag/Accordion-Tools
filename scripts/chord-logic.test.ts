@@ -116,4 +116,27 @@ function assertSameSet(actual: string[], expected: string[], message: string) {
   assert.ok(cmaj7[0].playbackButtons.some((button) => button.pitchClass === "B" && button.kind.startsWith("bass-")), "Cmaj7 should combine B bass/counterbass with C major");
 }
 
+{
+  const roots = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const patterns: FinderChordPattern[] = [
+    "major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus4",
+    "major6", "minor6", "dominant7", "major7", "minor7", "minorMajor7",
+    "diminished7", "minor7b5", "dominant7b5", "dominant7b9", "dominant9",
+    "dominant9sus4", "dominant11", "major9", "minor9", "minorMajor9",
+  ];
+
+  for (const root of roots) {
+    for (const pattern of patterns) {
+      const candidates = getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords");
+      for (const candidate of candidates.filter((item) => item.playable)) {
+        assert.deepEqual(
+          candidate.extraPitches,
+          [],
+          `${root} ${pattern}: Bass + chord buttons must never return a realization with extra tones`,
+        );
+      }
+    }
+  }
+}
+
 console.log("✓ Stradella chord logic tests passed");
