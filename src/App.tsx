@@ -39,8 +39,10 @@ import type {
   SequenceDisplayMode,
   SequenceStep,
   Side,
+  SoundSource,
   SoundVoicePreset,
   SoundWaveform,
+  SampleRegister,
   StradellaBassVoicing,
   StradellaChordFinderMode,
   TrebleLayout,
@@ -121,13 +123,14 @@ import {
 } from "./tools/bassPatternPlayerTools";
 import { getChordFinderTrebleButtons } from "./tools/chordFinderTools";
 import { intervalsForChordFinder } from "./music/chordDefinitions";
-import { getStradellaChordFinderResult } from "./tools/stradellaChordFinderTools";
+import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
 import {
   playButtonArpeggioThenChord,
   playButtonCombination,
   playButtonSequence,
   playButtonSound,
   stopAllSound,
+  preloadLaMelodiosa,
 } from "./sound";
 import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
@@ -334,6 +337,9 @@ type DefaultSettingsFile = Partial<{
   annotationOffsetPercent: number;
   annotationButtonAnchor: DiagramAnnotationAnchor;
   soundVolume: number;
+  soundSource: SoundSource;
+  laMelodiosaTrebleRegister: SampleRegister;
+  laMelodiosaBassRegister: SampleRegister;
   soundVoicePreset: SoundVoicePreset;
   soundWaveform: SoundWaveform;
   soundMusetteDetuneCents: number;
@@ -686,6 +692,7 @@ function App() {
     useState<FinderChordPattern>("major-triad");
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
     useState<StradellaChordFinderMode>("chord-buttons-only");
+  const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
   const [
     stradellaChordFinderMarkRootBass,
     setStradellaChordFinderMarkRootBass,
@@ -724,6 +731,11 @@ function App() {
   /* Sound tool state for synthesized button and sequence playback. */
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [soundVolume, setSoundVolume] = useState(0.2);
+  const [soundSource, setSoundSource] = useState<SoundSource>("la-melodiosa");
+  const [laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister] =
+    useState<SampleRegister>("I");
+  const [laMelodiosaBassRegister, setLaMelodiosaBassRegister] =
+    useState<SampleRegister>("III");
   const [soundVoicePreset, setSoundVoicePreset] =
     useState<SoundVoicePreset>("soft-reed");
   const [soundWaveform, setSoundWaveform] = useState<SoundWaveform>("triangle");
@@ -961,6 +973,15 @@ function App() {
         }
         if (typeof defaults.soundEnabled === "boolean") {
           setSoundEnabled(defaults.soundEnabled);
+        }
+        if (isOneOf(defaults.soundSource, ["synth", "la-melodiosa"] as const)) {
+          setSoundSource(defaults.soundSource);
+        }
+        if (isOneOf(defaults.laMelodiosaTrebleRegister, ["I", "II", "III"] as const)) {
+          setLaMelodiosaTrebleRegister(defaults.laMelodiosaTrebleRegister);
+        }
+        if (isOneOf(defaults.laMelodiosaBassRegister, ["I", "II", "III"] as const)) {
+          setLaMelodiosaBassRegister(defaults.laMelodiosaBassRegister);
         }
         if (
           isOneOf(defaults.stradellaBassVoicing, [
@@ -1255,6 +1276,12 @@ function App() {
       setAnnotationButtonAnchor(settings.annotationButtonAnchor);
     if (typeof settings.soundVolume === "number")
       setSoundVolume(Math.max(0, Math.min(1, settings.soundVolume)));
+    if (isOneOf(settings.soundSource, ["synth", "la-melodiosa"] as const))
+      setSoundSource(settings.soundSource);
+    if (isOneOf(settings.laMelodiosaTrebleRegister, ["I", "II", "III"] as const))
+      setLaMelodiosaTrebleRegister(settings.laMelodiosaTrebleRegister);
+    if (isOneOf(settings.laMelodiosaBassRegister, ["I", "II", "III"] as const))
+      setLaMelodiosaBassRegister(settings.laMelodiosaBassRegister);
     if (isOneOf(settings.soundVoicePreset, ["single", "soft-reed", "bright-reed", "musette", "organ", "bass-reed"] as const))
       setSoundVoicePreset(settings.soundVoicePreset);
     if (isOneOf(settings.soundWaveform, ["sine", "triangle", "square", "sawtooth"] as const))
@@ -1587,6 +1614,9 @@ function App() {
       annotationOffsetPercent,
       annotationButtonAnchor,
       soundVolume,
+      soundSource,
+      laMelodiosaTrebleRegister,
+      laMelodiosaBassRegister,
       soundVoicePreset,
       soundWaveform,
       soundMusetteDetuneCents,
@@ -2218,25 +2248,9 @@ function App() {
     }
   }
 
-  const stradellaChordFinderResult = useMemo(() => {
-    if (!stradellaChordFinderActive || side !== "stradella") {
-      return {
-        buttons: [],
-        playbackButtons: [],
-        primaryButtonIds: [],
-        rootBassButtonIds: [],
-        targetPitches: [],
-        coveredPitches: [],
-        missingPitches: [],
-        extraPitches: [],
-        exact: false,
-        playable: false,
-        shortDescription: "",
-        explanation: "",
-      };
-    }
-
-    return getStradellaChordFinderResult(
+  const stradellaChordFinderRealizations = useMemo(() => {
+    if (!stradellaChordFinderActive || side !== "stradella") return [];
+    return getStradellaChordFinderResults(
       buttons,
       stradellaChordFinderRoot,
       stradellaChordFinderPattern,
@@ -2252,6 +2266,17 @@ function App() {
     stradellaChordFinderMode,
     stradellaChordFinderMarkRootBass,
   ]);
+
+  const stradellaChordFinderResult = useMemo(() => {
+    if (stradellaChordFinderRealizations.length === 0) {
+      return getStradellaChordFinderResult([], stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderMarkRootBass);
+    }
+    return stradellaChordFinderRealizations[Math.min(stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations.length - 1)];
+  }, [stradellaChordFinderRealizations, stradellaChordFinderRealizationIndex, stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderMarkRootBass]);
+
+  useEffect(() => {
+    setStradellaChordFinderRealizationIndex(0);
+  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, side]);
 
   const stradellaChordFinderButtons = stradellaChordFinderResult.buttons;
   const stradellaChordFinderPlaybackButtons =
@@ -2290,6 +2315,9 @@ function App() {
   const soundOptions = {
     enabled: soundEnabled,
     volume: soundVolume,
+    source: soundSource,
+    laMelodiosaTrebleRegister,
+    laMelodiosaBassRegister,
     voicePreset: soundVoicePreset,
     waveform: soundWaveform,
     musetteDetuneCents: soundMusetteDetuneCents,
@@ -2299,6 +2327,12 @@ function App() {
     sequenceTempoBpm: soundSequenceTempoBpm,
     stradellaBassVoicing,
   };
+
+  useEffect(() => {
+    if (soundEnabled && soundSource === "la-melodiosa") {
+      void preloadLaMelodiosa(laMelodiosaTrebleRegister, laMelodiosaBassRegister);
+    }
+  }, [soundEnabled, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister]);
 
   /** Opens one settings group, or closes it if it is already open. */
   function toggleSettingsSection(section: Exclude<SettingsSection, null>) {
@@ -4043,12 +4077,65 @@ function App() {
                 {activeSettingsSection === "sound" && (
                   <div className="section-content">
                     <p className="hint">
-                      Choose the synthesized voice used by button clicks and
-                      sequence playback. Use the top Sound button to turn
+                      Choose either the built-in synthesizer or the sampled
+                      La Melodiosa accordion. Use the top Sound button to turn
                       playback on or off.
                     </p>
 
                     <label>
+                      Sound source
+                      <select
+                        value={soundSource}
+                        onChange={(event) =>
+                          setSoundSource(event.target.value as SoundSource)
+                        }
+                      >
+                        <option value="synth">Built-in synthesizer</option>
+                        <option value="la-melodiosa">La Melodiosa samples</option>
+                      </select>
+                    </label>
+
+                    {soundSource === "la-melodiosa" && (
+                      <>
+                        <label>
+                          Treble register
+                          <select
+                            value={laMelodiosaTrebleRegister}
+                            onChange={(event) =>
+                              setLaMelodiosaTrebleRegister(
+                                event.target.value as SampleRegister,
+                              )
+                            }
+                          >
+                            <option value="I">I · Upper register</option>
+                            <option value="II">II · Lower register</option>
+                            <option value="III">III · Both registers</option>
+                          </select>
+                        </label>
+                        <label>
+                          Bass register
+                          <select
+                            value={laMelodiosaBassRegister}
+                            onChange={(event) =>
+                              setLaMelodiosaBassRegister(
+                                event.target.value as SampleRegister,
+                              )
+                            }
+                          >
+                            <option value="I">I · Upper register</option>
+                            <option value="II">II · Lower register</option>
+                            <option value="III">III · Both registers</option>
+                          </select>
+                        </label>
+                        <p className="hint">
+                          La Melodiosa was sampled and programmed by Petri Pohjanmies (2026), used under CC-BY.
+                        </p>
+                      </>
+                    )}
+
+                    {soundSource === "synth" && (
+                      <>
+                        <label>
                       Voice
                       <select
                         value={soundVoicePreset}
@@ -4133,6 +4220,8 @@ function App() {
                           }
                         />
                       </label>
+                    )}
+                      </>
                     )}
 
                     <label>
@@ -4506,6 +4595,9 @@ function App() {
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
+                  realizations={stradellaChordFinderRealizations}
+                  realizationIndex={Math.min(stradellaChordFinderRealizationIndex, Math.max(0, stradellaChordFinderRealizations.length - 1))}
+                  onRealizationChange={setStradellaChordFinderRealizationIndex}
                   buttonCount={stradellaChordFinderButtons.length}
                   playbackButtonCount={
                     stradellaChordFinderPlaybackButtons.length

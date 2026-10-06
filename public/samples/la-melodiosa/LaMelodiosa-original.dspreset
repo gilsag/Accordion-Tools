@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<DecentSampler>
+  <effects>
+      <effect type="reverb" wetLevel="0.2"/>
+      <effect type="peak"  q="0.5" frequency="22" gain="1.0" />
+      <effect type="peak"  q="0.5" frequency="400" gain="1.0" />
+      <effect type="peak"  q="0.5" frequency="5000" gain="1.0" />
+  </effects>
+  <ui width="812" height="375" bgColor="FF333333" bgImage="LAMelodiosa/UI/bg.png" >
+    <tab name="main">
+        <label x="50" y="3" width="80" height="12" textSize="16" textColor="FFEEEEEE" hAlign="left" text="Reverb"/>
+        <control x="50" y="16" width="120" height="20" textSize="16" textColor="CC000000" style="custom_skin_horizontal_drag" customSkinImage="LAMelodiosa/UI/horiz.png" customSkinNumFrames="50" trackForegroundColor="FF88BB88" trackBackgroundColor="66999999" label="Reverb" type="percent" minValue="0" maxValue="100" value="10.0">
+            <binding type="effect" level="instrument" position="0" parameter="FX_REVERB_WET_LEVEL"  translation="linear" translationOutputMin="0" translationOutputMax="1"/>
+
+        </control>
+        <label x="360" y="3" width="80" height="12" textSize="16" textColor="FFEEEEEE" hAlign="left" text="Bass"/>
+        <control x="360" y="16" width="120" height="20" textSize="16" textColor="CC000000" style="custom_skin_horizontal_drag" customSkinImage="LAMelodiosa/UI/horiz.png" customSkinNumFrames="50" trackForegroundColor="FF88BB88" trackBackgroundColor="66999999" label="Reverb" type="percent" minValue="-1" maxValue="1" value="0.0">
+            <binding type="effect" level="instrument" position="1" parameter="FX_FILTER_GAIN"  translation="linear" translationOutputMin="0.2" translationOutputMax="2"/>
+        </control>
+        <label x="490" y="3" width="80" height="12" textSize="16" textColor="FFEEEEEE" hAlign="left" text="Middle"/>
+        <control x="490" y="16" width="120" height="20" textSize="16" textColor="CC000000" style="custom_skin_horizontal_drag" customSkinImage="LAMelodiosa/UI/horiz.png" customSkinNumFrames="50" trackForegroundColor="FF88BB88" trackBackgroundColor="66999999" label="Reverb" type="percent" minValue="-1" maxValue="1" value="0.0">
+            <binding type="effect" level="instrument" position="2" parameter="FX_FILTER_GAIN"  translation="linear" translationOutputMin="0.2" translationOutputMax="2"/>
+        </control>
+        <label x="620" y="3" width="80" height="12" textSize="16" textColor="FFEEEEEE" hAlign="left" text="Treble"/>
+        <control x="620" y="16" width="120" height="20" textSize="16" textColor="CC000000" style="custom_skin_horizontal_drag" customSkinImage="LAMelodiosa/UI/horiz.png" customSkinNumFrames="50" trackForegroundColor="FF88BB88" trackBackgroundColor="66999999" label="Reverb" type="percent" minValue="-1" maxValue="1" value="0.0">
+            <binding type="effect" level="instrument" position="3" parameter="FX_FILTER_GAIN"  translation="linear" translationOutputMin="0.2" translationOutputMax="2"/>
+        </control>
+        
+        <button x="290" y="70"  width="100" height="30" value="1" style="image" tags="T1" button_state_binding="true">
+            <state mainImage="LAMelodiosa/UI/B1-D.png">
+                <binding type="general" level="group" tags="B0" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="false" />
+            </state>
+            <state mainImage="LAMelodiosa/UI/B1-P.png">
+                <binding type="control" level="ui" tags="T2" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="control" level="ui" tags="T3" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="general" level="group" tags="B0" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="true" />
+            </state>
+        </button>
+        
+        <button x="370" y="70"  width="100" height="30" value="0" style="image" tags="T2" button_state_binding="true">
+            <state mainImage="LAMelodiosa/UI/B0-D.png">
+                <binding type="general" level="group" tags="B1" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="false" />
+            </state>
+            <state mainImage="LAMelodiosa/UI/B0-P.png">
+                <binding type="control" level="ui" tags="T1" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="control" level="ui" tags="T3" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="general" level="group" tags="B1" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="true" />
+            </state>
+        </button>
+        
+        <button x="450" y="70"  width="100" height="30" value="0" style="image" tags="T3" button_state_binding="true">
+            <state mainImage="LAMelodiosa/UI/B2-D.png">
+                <binding type="general" level="group" tags="B2" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="false" />
+            </state>
+            <state mainImage="LAMelodiosa/UI/B2-P.png">
+                <binding type="control" level="ui" tags="T1" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="control" level="ui" tags="T2" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="general" level="group" tags="B2" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="true" />
+            </state>
+        </button>
+        
+        
+            
+        <button x="290" y="160"  width="100" height="30" value="1" style="image" tags="R1" button_state_binding="true">
+            <state mainImage="LAMelodiosa/UI/B1-D.png">
+                <binding type="general" level="group" tags="A0" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="false" />
+            </state>
+            <state mainImage="LAMelodiosa/UI/B1-P.png">
+                <binding type="control" level="ui" tags="R2" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="control" level="ui" tags="R3" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="general" level="group" tags="A0" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="true" />
+            </state>
+        </button>
+        
+        <button x="370" y="160"  width="100" height="30" value="0" style="image" tags="R2" button_state_binding="true">
+            <state mainImage="LAMelodiosa/UI/B0-D.png">
+                <binding type="general" level="group" tags="A1" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="false" />
+            </state>
+            <state mainImage="LAMelodiosa/UI/B0-P.png">
+                <binding type="control" level="ui" tags="R1" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="control" level="ui" tags="R3" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="general" level="group" tags="A1" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="true" />
+            </state>
+        </button>
+        
+        <button x="450" y="160"  width="100" height="30" value="0" style="image" tags="R3" button_state_binding="true">
+            <state mainImage="LAMelodiosa/UI/B2-D.png">
+                <binding type="general" level="group" tags="A2" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="false" />
+            </state>
+            <state mainImage="LAMelodiosa/UI/B2-P.png">
+                <binding type="control" level="ui" tags="R1" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="control" level="ui" tags="R2" parameter="VALUE" translation="fixed_value" translationValue="0" />
+                <binding type="general" level="group" tags="A2" parameter="ENABLED" 
+                         translation="fixed_value" translationValue="true" />
+            </state>
+        </button>
+    </tab>
+    <keyboard>
+            <color loNote="C1" hiNote="B2" color="FF888888" />
+            <color loNote="C3" hiNote="C6" color="FFAAAAAA" />
+    </keyboard>
+  </ui>
+
+<groups release="0.1000000014901161" attack="0.199999988079071" decay="1.0" sustain="0.9999999776482582">
+
+    
+<group loNote="48" hiNote="50" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-C#5-ba.wav" rootNote="49" tuning="-0.03" />
+</group>
+<group loNote="55" hiNote="56" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-G#5-ba.wav" rootNote="56" tuning="-0.07" />
+</group>
+<group loNote="51" hiNote="54" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-E5-ba.wav" rootNote="52" tuning="-0.03" />
+</group>
+<group loNote="57" hiNote="59" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-A5-ba.wav" rootNote="57" tuning="-0.06" />
+</group>
+<group loNote="48" hiNote="50" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-D4-ba.wav" rootNote="50" tuning="-0.07" />
+</group>
+<group loNote="55" hiNote="57" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-A4-ba.wav" rootNote="57" tuning="-0.1" />
+</group>
+<group loNote="51" hiNote="54" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-E4-ba.wav" rootNote="52" tuning="-0.04" />
+</group>
+<group loNote="58" hiNote="59" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-B4-ba.wav" rootNote="59" tuning="-0.04" />
+</group>
+<group loNote="48" hiNote="50" tags="A2" volume="1.0" >
+   <sample path="LAMelodiosa/BS-III-D4-ba.wav" rootNote="50" tuning="-0.04" />
+</group>
+<group loNote="55" hiNote="57" tags="A2" volume="1.0" >
+   <sample path="LAMelodiosa/BS-III-A4-ba.wav" rootNote="57" tuning="0.0" />
+</group>
+<group loNote="51" hiNote="54" tags="A2" volume="1.0" >
+   <sample path="LAMelodiosa/BS-III-E4-ba.wav" rootNote="52" tuning="-0.04" />
+</group>
+<group loNote="58" hiNote="59" tags="A2" volume="1.0" >
+   <sample path="LAMelodiosa/BS-III-B4-ba.wav" rootNote="59" tuning="-0.04" />
+</group>
+<group loNote="43" hiNote="44" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-G#5-ba.wav" rootNote="44" tuning="-0.04" />
+</group>
+<group loNote="39" hiNote="42" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-E5-ba.wav" rootNote="40" tuning="-0.03" />
+</group>
+<group loNote="36" hiNote="47" tags="A0" volume="1.0" >
+   <sample path="LAMelodiosa/BS-A5-ba.wav" rootNote="45" tuning="-0.06" />
+</group>
+<group loNote="43" hiNote="45" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-A4-ba.wav" rootNote="45" tuning="-0.06" />
+</group>
+<group loNote="39" hiNote="42" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-E4-ba.wav" rootNote="40" tuning="-0.04" />
+</group>
+<group loNote="36" hiNote="47" tags="A1" volume="1.0" >
+   <sample path="LAMelodiosa/BS-II-B4-ba.wav" rootNote="47" tuning="0.0" />
+</group>
+<group loNote="43" hiNote="45" tags="A2" volume="1.1" >
+   <sample path="LAMelodiosa/BS-III-A4-ba.wav" rootNote="45" tuning="-0.06" />
+</group>
+<group loNote="39" hiNote="42" tags="A2" volume="1.0" >
+   <sample path="LAMelodiosa/BS-III-E4-ba.wav" rootNote="40" tuning="-0.04" />
+</group>
+<group loNote="36" hiNote="47" tags="A2" volume="1.0" >
+   <sample path="LAMelodiosa/BS-III-B4-ba.wav" rootNote="47" tuning="0.0" />
+</group>
+<group loNote="60" hiNote="64" tags="B0" seqLength="2" volume="1.45" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-D#4-ba.wav" rootNote="63" tuning="-0.06" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-D#4-va.wav" rootNote="63" tuning="-0.06" />
+</group>
+<group loNote="65" hiNote="67" tags="B0" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-F#4-ba.wav" rootNote="66" tuning="-0.06" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-F#4-va.wav" rootNote="66" tuning="-0.06" />
+</group>
+<group loNote="68" hiNote="70" tags="B0" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-A4-ba.wav" rootNote="69" tuning="-0.07" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-A4-va.wav" rootNote="69" tuning="-0.07" />
+</group>
+<group loNote="71" hiNote="74" tags="B0" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-C5-ba.wav" rootNote="72" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-C5-va.wav" rootNote="72" tuning="-0.04" />
+</group>
+<group loNote="75" hiNote="76" tags="B0" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-D#5-ba.wav" rootNote="75" tuning="-0.05" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-D#5-va.wav" rootNote="75" tuning="-0.05" />
+</group>
+<group loNote="77" hiNote="79" tags="B0" seqLength="2" volume="1.8" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-F#5-ba.wav" rootNote="78" tuning="-0.05" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-F#5-va.wav" rootNote="78" tuning="-0.05" />
+</group>
+<group loNote="80" hiNote="82" tags="B0" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-A5-ba.wav" rootNote="81" tuning="-0.08" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-A5-va.wav" rootNote="81" tuning="-0.08" />
+</group>
+<group loNote="83" hiNote="85" tags="B0" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-C6-ba.wav" rootNote="84" tuning="-0.09" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-C6-va.wav" rootNote="84" tuning="-0.09" />
+</group>
+<group loNote="86" hiNote="88" tags="B0" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-D#6-ba.wav" rootNote="87" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-D#6-va.wav" rootNote="87" tuning="0.0" />
+</group>
+<group loNote="89" hiNote="91" tags="B0" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-F#6-ba.wav" rootNote="90" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-F#6-va.wav" rootNote="90" tuning="-0.04" />
+</group>
+<group loNote="92" hiNote="94" tags="B0" seqLength="2" volume="1.8" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-A6-ba.wav" rootNote="93" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-A6-va.wav" rootNote="93" tuning="0.0" />
+</group>
+<group loNote="95" hiNote="96" tags="B0" seqLength="2" volume="1.8" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/I-C7-ba.wav" rootNote="96" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/I-C7-va.wav" rootNote="96" tuning="0.0" />
+</group>
+<group loNote="60" hiNote="65" tags="B1" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-D#4-ba.wav" rootNote="63" tuning="0.02" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-D#4-va.wav" rootNote="63" tuning="0.02" />
+</group>
+<group loNote="66" hiNote="67" tags="B1" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-F#4-ba.wav" rootNote="66" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-F#4-va.wav" rootNote="66" tuning="0.0" />
+</group>
+<group loNote="68" hiNote="70" tags="B1" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-A4-ba.wav" rootNote="69" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-A4-va.wav" rootNote="69" tuning="0.0" />
+</group>
+<group loNote="71" hiNote="74" tags="B1" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-C5-va.wav" rootNote="72" tuning="0.03" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-C5-va.wav" rootNote="72" tuning="0.03" />
+</group>
+<group loNote="75" hiNote="76" tags="B1" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-D#5-ba.wav" rootNote="75" tuning="-0.07" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-D#5-va.wav" rootNote="75" tuning="-0.07" />
+</group>
+<group loNote="77" hiNote="79" tags="B1" seqLength="2" volume="1.8" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-F#5-ba.wav" rootNote="78" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-F#5-va.wav" rootNote="78" tuning="-0.04" />
+</group>
+<group loNote="80" hiNote="82" tags="B1" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-A5-ba.wav" rootNote="81" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-A5-va.wav" rootNote="81" tuning="-0.04" />
+</group>
+<group loNote="83" hiNote="85" tags="B1" seqLength="2" volume="1.15" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-C6-ba.wav" rootNote="84" tuning="-0.05" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-C6-va.wav" rootNote="84" tuning="-0.05" />
+</group>
+<group loNote="86" hiNote="88" tags="B1" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-D#6-ba.wav" rootNote="87" tuning="-0.01" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-D#6-va.wav" rootNote="87" tuning="-0.01" />
+</group>
+<group loNote="89" hiNote="91" tags="B1" seqLength="2" volume="1.8" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-F#6-ba.wav" rootNote="90" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-F#6-va.wav" rootNote="90" tuning="-0.04" />
+</group>
+<group loNote="92" hiNote="94" tags="B1" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-A6-ba.wav" rootNote="93" tuning="-0.07" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-A6-va.wav" rootNote="93" tuning="-0.07" />
+</group>
+<group loNote="95" hiNote="96" tags="B1" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/II-C7-ba.wav" rootNote="96" tuning="-0.07" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/II-C7-va.wav" rootNote="96" tuning="-0.07" />
+</group>
+<group loNote="60" hiNote="64" tags="B2" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-D#4-ba.wav" rootNote="63" tuning="0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-D#4-va.wav" rootNote="63" tuning="0.04" />
+</group>
+<group loNote="65" hiNote="67" tags="B2" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-F#4-ba.wav" rootNote="66" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-F#4-va.wav" rootNote="66" tuning="0.0" />
+</group>
+<group loNote="68" hiNote="70" tags="B2" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-A4-ba.wav" rootNote="69" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-A4-va.wav" rootNote="69" tuning="0.0" />
+</group>
+<group loNote="71" hiNote="74" tags="B2" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-C5-ba.wav" rootNote="72" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-C5-va.wav" rootNote="72" tuning="0.0" />
+</group>
+<group loNote="75" hiNote="76" tags="B2" seqLength="2" volume="1.4" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-D#5-ba.wav" rootNote="75" tuning="-0.05" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-D#5-va.wav" rootNote="75" tuning="-0.05" />
+</group>
+<group loNote="77" hiNote="79" tags="B2" seqLength="2" volume="1.9" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-F#5-ba.wav" rootNote="78" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-F#5-va.wav" rootNote="78" tuning="0.0" />
+</group>
+<group loNote="80" hiNote="82" tags="B2" seqLength="2" volume="1.5" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-A5-ba.wav" rootNote="81" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-A5-va.wav" rootNote="81" tuning="0.0" />
+</group>
+<group loNote="83" hiNote="85" tags="B2" seqLength="2" volume="1.35" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-C6-ba.wav" rootNote="84" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-C6-va.wav" rootNote="84" tuning="-0.04" />
+</group>
+<group loNote="86" hiNote="88" tags="B2" seqLength="2" volume="1.6" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-D#6-ba.wav" rootNote="87" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-D#6-va.wav" rootNote="87" tuning="0.0" />
+</group>
+<group loNote="89" hiNote="91" tags="B2" seqLength="2" volume="1.7" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-F#6-ba.wav" rootNote="90" tuning="-0.04" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-F#6-va.wav" rootNote="90" tuning="-0.04" />
+</group>
+<group loNote="92" hiNote="94" tags="B2" seqLength="2" volume="2.0" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-A6-ba.wav" rootNote="93" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-A6-va.wav" rootNote="93" tuning="0.0" />
+</group>
+<group loNote="95" hiNote="96" tags="B2" seqLength="2" volume="1.6" >
+   <sample seqPosition="1" seqMode="round_robin" path="LAMelodiosa/III-C7-ba.wav" rootNote="96" tuning="0.0" />
+   <sample seqPosition="2" seqMode="round_robin" path="LAMelodiosa/III-C7-va.wav" rootNote="96" tuning="0.0" />
+</group>
+
+    
+</groups>
+
+</DecentSampler>

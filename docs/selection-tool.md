@@ -31,7 +31,7 @@ You can clear the selection when you want to start over.
 
 If sound is enabled, selected items can be played back.
 
-Playback is synthetic and intended for reference. It is useful for checking whether selected notes or buttons match the sound you expect.
+Playback uses the currently selected sound source: the built-in synthesizer or the optional La Melodiosa sampled accordion. It is useful for checking whether selected notes or buttons match the sound you expect.
 
 ## Diagram export
 

@@ -1,0 +1,14 @@
+La Melodiosa — Version 1.0
+
+Sampling, editing and instrument programming:
+Petri Pohjanmies (Finland), 2026.
+
+Original sample pack licensed under Creative Commons Attribution (CC-BY).
+
+These files are distributed with Accordion-Tools and used as the sample source
+for its La Melodiosa accordion sound engine. The browser implementation follows
+the mappings, register selections, tuning offsets, relative levels, and sample
+alternation defined in the supplied SFZ instrument.
+
+The author's original README is retained as README-original.txt. The supplied
+SFZ and Decent Sampler preset are also retained for provenance and reference.

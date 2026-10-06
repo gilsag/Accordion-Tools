@@ -113,6 +113,9 @@ These settings control the rendered staff-notation panels that appear below the 
 |---|---|
 | `soundEnabled` | Enables or disables browser sound playback. |
 | `soundVolume` | Default sound volume. |
+| `soundSource` | Chooses the built-in synthesizer or the La Melodiosa sampled accordion. |
+| `laMelodiosaTrebleRegister` | La Melodiosa treble register: `I` (upper), `II` (lower), or `III` (both). |
+| `laMelodiosaBassRegister` | La Melodiosa bass register: `I` (upper), `II` (lower), or `III` (both). |
 | `soundVoicePreset` | Default synthesized voice preset. |
 | `soundWaveform` | Default oscillator waveform. |
 | `soundMusetteDetuneCents` | Default detune amount for musette-style sound. |
@@ -121,7 +124,11 @@ These settings control the rendered staff-notation panels that appear below the 
 | `soundNoteDurationMs` | Default button-click note duration. |
 | `stradellaBassVoicing` | Chooses the synthetic voicing used for Stradella bass buttons. |
 
-The sound engine uses the browser Web Audio API. It is intended for reference and practice, not as a realistic sampled accordion.
+The sound engine uses the browser Web Audio API. The built-in synthesizer is intended primarily for reference and practice. La Melodiosa provides sampled accordion playback using the original SFZ mappings. Notes outside the mapped sample range fall back to the synthesized renderer.
+
+### La Melodiosa attribution
+
+The **La Melodiosa** sample set was sampled, edited, and programmed by **Petri Pohjanmies (Finland), 2026**, and is distributed under the **Creative Commons Attribution (CC-BY)** license. Accordion-Tools preserves the supplied SFZ mapping details, including separate bass/treble registers, tuning offsets, relative levels, and treble sample alternation. The original README and preset files are retained in `public/samples/la-melodiosa/` together with an `ATTRIBUTION.txt` file.
 
 ## Tool defaults
 

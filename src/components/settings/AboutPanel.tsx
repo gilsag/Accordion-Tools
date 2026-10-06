@@ -24,6 +24,10 @@ export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
       </p>
       <p className="hint">Version: {APP_INFO.version}</p>
       <p className="hint">
+        Accordion samples: <strong>La Melodiosa</strong> by Petri Pohjanmies
+        (2026), used under CC-BY.
+      </p>
+      <p className="hint">
         License:{" "}
         <a href={APP_INFO.licenseUrl} target="_blank" rel="noreferrer">
           CC BY-NC 4.0

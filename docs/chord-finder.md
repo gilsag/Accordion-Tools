@@ -48,7 +48,7 @@ If the chosen chord cannot be produced exactly in the selected mode/layout, the 
 
 If sound is enabled, found chord shapes can be played.
 
-The Stradella sound engine is synthetic and should be treated as a reference aid.
+Playback can use either the built-in synthesizer or the optional La Melodiosa sampled accordion, according to Sound settings.
 
 ## Export
 

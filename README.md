@@ -23,6 +23,16 @@ https://gilsag.github.io/Accordion-Tools/
 - Progression-aware ABC, MIDI, and LilyPond `.ly` export from the Bass Pattern Player.
 - SVG and PNG diagram export.
 - Save/load settings JSON and editable startup defaults.
+- Optional La Melodiosa sampled accordion playback with independent treble and bass register selection.
+
+
+## Sampled accordion sound and attribution
+
+Accordion-Tools includes the **La Melodiosa** accordion sample set as an optional sound source. Sampling, editing, and original instrument programming are by **Petri Pohjanmies (Finland), 2026**. The sample pack is used under the **Creative Commons Attribution (CC-BY)** license.
+
+The browser sampler follows the mappings supplied with the original SFZ instrument, including separate treble and bass register states, per-region tuning adjustments, relative sample levels, and alternating treble samples where provided. The built-in synthesized sound engine remains available as a separate option.
+
+The original attribution and instrument-definition files are retained with the samples in `public/samples/la-melodiosa/`, including `README-original.txt`, `LaMelodiosa-original.sfz`, and `LaMelodiosa-original.dspreset`. Accordion-Tools' adaptation does not imply endorsement by the original sample author.
 
 ## Documentation
 
