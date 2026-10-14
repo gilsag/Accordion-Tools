@@ -29,6 +29,8 @@ type StradellaChordFinderPanelProps = {
   onToggleActive: () => void;
   onPlay: () => void;
   onClear: () => void;
+  canExploreHarmony: boolean;
+  onExploreHarmony: () => void;
   formatPitches: (pitches: string[]) => string;
   formatText: (text: string) => string;
 };
@@ -55,6 +57,8 @@ export function StradellaChordFinderPanel({
   onToggleActive,
   onPlay,
   onClear,
+  canExploreHarmony,
+  onExploreHarmony,
   formatPitches,
   formatText,
 }: StradellaChordFinderPanelProps) {
@@ -163,6 +167,9 @@ export function StradellaChordFinderPanel({
           </button>
           <button className="small-button" onClick={onClear}>
             Clear chord
+          </button>
+          <button className="small-button" onClick={onExploreHarmony} disabled={!canExploreHarmony}>
+            Explore harmony
           </button>
         </div>
       </fieldset>

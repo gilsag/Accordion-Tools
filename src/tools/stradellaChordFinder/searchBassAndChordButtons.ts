@@ -24,13 +24,19 @@ type RankedRealization = {
 };
 
 function compactness(buttons: DiagramButton[]) {
-  let max = 0;
+  const pairDistances: number[] = [];
   for (let i = 0; i < buttons.length; i += 1) {
     for (let j = i + 1; j < buttons.length; j += 1) {
-      max = Math.max(max, distance(buttons[i], buttons[j]));
+      pairDistances.push(distance(buttons[i], buttons[j]));
     }
   }
-  return max;
+  if (pairDistances.length === 0) return 0;
+  const maximum = Math.max(...pairDistances);
+  const mean = pairDistances.reduce((sum, value) => sum + value, 0) / pairDistances.length;
+  // The furthest reach dominates ergonomics, while mean pair spacing breaks
+  // ties in favor of a tighter hand cluster. This is a purely physical score;
+  // equivalent bass/counterbass pitches remain harmonically identical.
+  return maximum + mean * 0.25;
 }
 
 function bassCandidatesForPitch(buttons: DiagramButton[], pitch: string) {

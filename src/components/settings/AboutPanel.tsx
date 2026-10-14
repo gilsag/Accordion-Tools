@@ -13,8 +13,8 @@ export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
   return (
     <CollapsibleSection title="About" isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        <strong>{APP_INFO.name}</strong> is a browser-based diagram generator for
-        Stradella bass, chromatic-button treble, and piano treble layouts.
+        <strong>{APP_INFO.name}</strong> is a browser-based diagram and exploration tool for
+        Stradella bass, chromatic-button treble, piano treble, and harmonic relationships.
       </p>
       <p className="hint">
         Author:{" "}

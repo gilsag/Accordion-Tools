@@ -90,5 +90,26 @@
   "soundMusetteDetuneCents": 9,
   "soundAttackMs": 14,
   "soundReleaseMs": 120,
-  "soundNoteDurationMs": 420
+  "soundNoteDurationMs": 420,
+  "harmonyShowEnharmonics": false,
+  "harmonyShowSeparators": true,
+  "harmonyShowLegend": true,
+  "harmonyShowExplanation": false,
+  "harmonyRingVisibility": {
+    "0": false,
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
+  "harmonyShowToneTooltips": true,
+  "harmonyColorByFamily": false,
+  "harmonyDiameter": 900,
+  "harmonyFontSize": 18,
+  "harmonyPlaybackStyle": "block",
+  "harmonyVoicingStyle": "root",
+  "progressionAllowApproximations": true,
+  "progressionHandMovementWeight": 0.65,
+  "progressionRhythmPattern": "block",
+  "harmonyShowNoteRing": false
 }

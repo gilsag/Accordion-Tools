@@ -4,7 +4,7 @@ Accordion-Tools is a browser-based accordion and music-layout diagram generator 
 
 It helps accordion players, students, and teachers create visual diagrams for Stradella bass, chromatic button accordion treble, and piano treble layouts. The app can be used for reference, teaching, practice planning, fingering notes, scale and chord exploration, ABC playback, Stradella accompaniment patterns, sound playback, and exporting diagrams as SVG or PNG files.
 
-Current app version: **0.10.2**
+Current app version: **0.14.0**
 
 ## Live Site
 
@@ -17,9 +17,10 @@ https://gilsag.github.io/Accordion-Tools/
 - Stradella bass diagrams from small layouts up to 120 bass.
 - Treble diagrams for C-system, B-system/Bayan, and piano keyboard layouts.
 - Multiple notation styles: English, German, solfege, intervals, or blank labels.
-- Scale Finder, Chord Finder, Selection, Fingering, Sequence, and Annotate Diagram tools.
+- Scale Finder, Chord Finder, Harmony Explorer, Stradella Progression Assistant, Selection, Fingering, Sequence, and Annotate Diagram tools.
 - ABC Player for simple ABC notation playback and diagram highlighting.
 - Stradella Bass Pattern Player with chord progressions, repeats-per-chord, repeat/loop playback, rendered Stradella staff notation, custom pattern editor, and local custom pattern storage.
+- Stradella Progression Assistant with whole-progression realization optimization, animated button playback, block/oom-pah/waltz/march patterns, and rendered staff notation.
 - Progression-aware ABC, MIDI, and LilyPond `.ly` export from the Bass Pattern Player.
 - SVG and PNG diagram export.
 - Save/load settings JSON and editable startup defaults.
@@ -47,6 +48,8 @@ Detailed documentation lives in the [`docs/`](docs/) folder.
 | [`docs/annotate-diagram-tool.md`](docs/annotate-diagram-tool.md) | Adding button-attached and free-position annotations to diagrams. |
 | [`docs/scale-finder.md`](docs/scale-finder.md) | Treble and Stradella scale paths. |
 | [`docs/chord-finder.md`](docs/chord-finder.md) | Treble and Stradella chord search. |
+| [`docs/harmony-explorer.md`](docs/harmony-explorer.md) | Harmonic relationship circles and Stradella handoff. |
+| [`docs/progression-assistant.md`](docs/progression-assistant.md) | Stradella progression optimization and step preview. |
 | [`docs/abc-player.md`](docs/abc-player.md) | ABC playback and diagram mapping. |
 | [`docs/bass-pattern-player.md`](docs/bass-pattern-player.md) | Bass Pattern Player workflow, notation, looping, and exports. |
 | [`docs/bass-pattern-format.md`](docs/bass-pattern-format.md) | Bass pattern file format, rhythm syntax, accents, ties, tuplets, and tokens. |
@@ -59,7 +62,7 @@ Accordion-Tools supports three main visual layout families:
 - **Chromatic button accordion treble layouts**
 - **Piano treble layouts**
 
-The top bar switches between Stradella and Treble. In Treble mode, the Layout settings choose between C-system, B-system/Bayan, and Piano keyboard.
+The top bar switches among Stradella, Treble, and the dedicated Harmony workspace. In Treble mode, the Layout settings choose between C-system, B-system/Bayan, and Piano keyboard.
 
 ### Stradella Bass Diagrams
 
@@ -163,6 +166,18 @@ Finds chord shapes on treble layouts and Stradella layouts. Stradella mode suppo
 
 See [`docs/chord-finder.md`](docs/chord-finder.md).
 
+### Harmony Explorer
+
+Adds a dedicated circle-of-fifths workspace for harmonic relationships based on shared pitch classes. Core harmonic choices stay in Tools, while secondary diagram/audio preferences live under **Settings → Harmony**. When the Harmony workspace is active, unrelated accordion tools are hidden so the sidebar stays focused. Selected chords can still be sent directly to the Stradella Chord Finder. Harmony can also record a sequence directly from sequential chord or note clicks, play the captured sequence locally, and show staff notation for the result. Chord events can be sent to the Stradella Progression Assistant for optimization; if note events are present, a brief warning explains that those notes remain in Harmony and are not exported. An optional inner note ring adds the twelve pitch classes inside the reference-chord ring.
+
+See [`docs/harmony-explorer.md`](docs/harmony-explorer.md).
+
+### Stradella Progression Assistant
+
+A separate Stradella-side tool for building chord progressions and choosing a coherent sequence of **Bass + chord buttons** realizations across the whole progression. It balances pitch-class voice motion with physical button movement, distinguishes ergonomically equivalent pitch choices such as fundamental vs counterbass rows, previews each optimized step directly on the Stradella diagram, and allows conservative fifth-omission approximations by default. Harmony Explorer can send a selected reference→related relationship directly into this tool.
+
+See [`docs/progression-assistant.md`](docs/progression-assistant.md).
+
 ### ABC Player
 
 Loads or pastes ABC notation and animates the current diagram during playback. The ABC Player now uses abcjs for the main parsing/sequence step, then maps the resulting musical events to accordion buttons. It supports notes, rests, durations, accidentals, key signatures, bracketed note chords, quoted chord symbols, voice-aware playback, simple repeats, ties, tempo control, and playback controls.
@@ -218,7 +233,7 @@ The bass-pattern file supports explicit steps and compact pattern strings. See [
 
 ## Sound Playback
 
-Accordion-Tools includes a browser-based synthetic sound engine using the Web Audio API.
+Accordion-Tools includes both its browser-based synthesized sound engine and optional La Melodiosa sampled accordion playback.
 
 Sound can be used for:
 
@@ -226,11 +241,12 @@ Sound can be used for:
 - selected-button playback
 - Scale Finder playback
 - Chord Finder playback
+- Harmony Explorer chord and relationship playback
 - Sequence playback
 - ABC playback
 - Bass Pattern Player playback
 
-The sound is synthetic and intended as a lightweight practice/reference aid, not as a realistic sampled accordion.
+The built-in synthesizer is intended as a lightweight practice/reference aid; La Melodiosa provides the more realistic sampled-accordion option.
 
 ## Download and Export
 

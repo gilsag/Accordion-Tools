@@ -6,6 +6,10 @@
 function cloneSvgWithEmbeddedStyles(svgElement: SVGSVGElement) {
   const clone = svgElement.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  clone.querySelectorAll("[data-export-ignore='true']").forEach((element) => element.remove());
+  clone.querySelectorAll(".selected-chord, .selected-reference, .focused-reference").forEach((element) => {
+    element.classList.remove("selected-chord", "selected-reference", "focused-reference");
+  });
 
   let cssText = "";
 

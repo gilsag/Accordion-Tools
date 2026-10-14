@@ -563,6 +563,86 @@ export function playButtonCombination(
   playNotes(buttons.flatMap((button) => notesForButton(button, options)), options);
 }
 
+/** Plays a sequence of Stradella button combinations as block chords. */
+export function playButtonProgression(
+  combinations: DiagramButton[][],
+  options: SoundOptions,
+) {
+  if (!options.enabled || combinations.length === 0) return;
+  stopAllSound();
+  const stepDelayMs = Math.max(240, 60000 / Math.max(20, options.sequenceTempoBpm));
+
+  combinations.forEach((buttons, index) => {
+    const timeoutId = window.setTimeout(() => {
+      if (buttons.length === 0) return;
+      playNotes(buttons.flatMap((button) => notesForButton(button, options)), options);
+    }, index * stepDelayMs);
+    activeTimeouts.push(timeoutId);
+  });
+}
+
+export type ProgressionRhythmPattern = "block" | "oom-pah" | "waltz" | "march";
+
+type ProgressionPlaybackCallbacks = {
+  onActiveButtons?: (buttonIds: string[], progressionIndex: number) => void;
+  onDone?: () => void;
+};
+
+/**
+ * Plays optimized Stradella realizations with a small set of idiomatic rhythm
+ * patterns. A caller may supply the corresponding root-bass button for each
+ * chord; chord-row buttons form the accompaniment pulse. The callbacks are used by the diagram to
+ * animate the buttons actually being sounded.
+ */
+export function playButtonRhythmProgression(
+  combinations: DiagramButton[][],
+  options: SoundOptions,
+  pattern: ProgressionRhythmPattern,
+  callbacks: ProgressionPlaybackCallbacks = {},
+  bassOverrides: DiagramButton[][] = [],
+) {
+  if (!options.enabled || combinations.length === 0) return;
+  stopAllSound();
+
+  const beatMs = Math.max(240, 60000 / Math.max(20, options.sequenceTempoBpm));
+  const beatsPerChord = pattern === "march" ? 4 : pattern === "waltz" ? 3 : pattern === "oom-pah" ? 2 : 1;
+
+  combinations.forEach((buttons, progressionIndex) => {
+    const bassButtons = buttons.filter(
+      (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
+    );
+    const chordButtons = buttons.filter((button) => button.kind.startsWith("chord-"));
+    const bassOverride = bassOverrides[progressionIndex] ?? [];
+    const bassPulse = bassOverride.length > 0 ? bassOverride : bassButtons.length > 0 ? bassButtons : buttons;
+    const chordPulse = chordButtons.length > 0 ? chordButtons : buttons;
+    const pulses =
+      pattern === "march"
+        ? [bassPulse, chordPulse, chordPulse, chordPulse]
+        : pattern === "waltz"
+          ? [bassPulse, chordPulse, chordPulse]
+          : pattern === "oom-pah"
+            ? [bassPulse, chordPulse]
+            : [buttons];
+
+    pulses.forEach((pulse, beatIndex) => {
+      const delay = (progressionIndex * beatsPerChord + beatIndex) * beatMs;
+      const timeoutId = window.setTimeout(() => {
+        if (pulse.length === 0) return;
+        callbacks.onActiveButtons?.(pulse.map((button) => button.id), progressionIndex);
+        playNotes(pulse.flatMap((button) => notesForButton(button, options)), options);
+      }, delay);
+      activeTimeouts.push(timeoutId);
+    });
+  });
+
+  const totalDuration = combinations.length * beatsPerChord * beatMs;
+  const doneTimeout = window.setTimeout(() => {
+    callbacks.onActiveButtons?.([], Math.max(0, combinations.length - 1));
+    callbacks.onDone?.();
+  }, totalDuration);
+  activeTimeouts.push(doneTimeout);
+}
+
 export function playButtonArpeggioThenChord(
   buttons: DiagramButton[],
   options: SoundOptions,
@@ -616,3 +696,67 @@ declare global {
     webkitAudioContext?: typeof AudioContext;
   }
 }
+/**
+ * Plays an abstract chord as pitch classes inside the single Stradella chord
+ * octave (C3-B3). This is used by Harmony Explorer so its audio follows the
+ * same sampled/synth engine and bass register as the physical Stradella view.
+ */
+export function playHarmonyPitchClassChord(
+  pitchClasses: string[],
+  options: SoundOptions,
+  style: "block" | "arpeggio" = "block",
+) {
+  if (!options.enabled || pitchClasses.length === 0) return;
+  stopAllSound();
+  const unique = [...new Set(pitchClasses)].sort(
+    (a, b) => (PITCH_INDEX[a] ?? 0) - (PITCH_INDEX[b] ?? 0),
+  );
+  const notes: SoundNote[] = unique.map((pitchClass) => ({
+    pitchClass,
+    octave: 3,
+    side: "bass",
+  }));
+
+  if (style === "block") {
+    playNotes(notes, options);
+    return;
+  }
+
+  const stepMs = Math.max(90, Math.min(260, 60000 / Math.max(40, options.sequenceTempoBpm) / 2));
+  notes.forEach((note, index) => playNotes([note], options, index * stepMs));
+}
+
+/**
+ * Demonstrates a harmonic relationship using the Stradella-compatible pitch
+ * class octave: reference chord first, then the related chord. This avoids
+ * importing piano-style octave/inversion assumptions into Harmony Explorer.
+ */
+export function playHarmonyRelationship(
+  referencePitchClasses: string[],
+  targetPitchClasses: string[],
+  options: SoundOptions,
+  style: "block" | "arpeggio" = "block",
+) {
+  if (!options.enabled || referencePitchClasses.length === 0 || targetPitchClasses.length === 0) return;
+  stopAllSound();
+
+  const makeNotes = (pitchClasses: string[]) =>
+    [...new Set(pitchClasses)]
+      .sort((a, b) => (PITCH_INDEX[a] ?? 0) - (PITCH_INDEX[b] ?? 0))
+      .map((pitchClass) => ({ pitchClass, octave: 3, side: "bass" as const }));
+
+  const referenceNotes = makeNotes(referencePitchClasses);
+  const targetNotes = makeNotes(targetPitchClasses);
+
+  if (style === "arpeggio") {
+    const stepMs = Math.max(90, Math.min(260, 60000 / Math.max(40, options.sequenceTempoBpm) / 2));
+    referenceNotes.forEach((note, index) => playNotes([note], options, index * stepMs));
+    const targetStart = referenceNotes.length * stepMs + 180;
+    targetNotes.forEach((note, index) => playNotes([note], options, targetStart + index * stepMs));
+    return;
+  }
+
+  playNotes(referenceNotes, options);
+  playNotes(targetNotes, options, Math.max(520, Math.round(options.noteDurationMs * 0.78)));
+}
+
