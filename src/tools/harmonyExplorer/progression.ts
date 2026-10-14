@@ -162,14 +162,19 @@ export function progressionBassPulseButtons(
   const realizationBassButtons = step.result.playbackButtons.filter(
     (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
   );
+
   const matchingRealizationBass = realizationBassButtons.filter(
-    (button) => pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
+    (button) => {
+      if (!button.pitchClass) return false;
+      return pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc;
+    },
   );
   if (matchingRealizationBass.length > 0) return matchingRealizationBass;
 
   const fundamental = allButtons.find(
     (button) =>
       button.kind === "bass-root"
+      && !!button.pitchClass
       && pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
   );
   if (fundamental) return [fundamental];
@@ -177,6 +182,7 @@ export function progressionBassPulseButtons(
   const counterbass = allButtons.find(
     (button) =>
       button.kind === "bass-counterbass"
+      && !!button.pitchClass
       && pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
   );
   return counterbass ? [counterbass] : realizationBassButtons;
@@ -184,6 +190,7 @@ export function progressionBassPulseButtons(
 
 function pitchClassesFromResult(result: StradellaChordFinderResult) {
   return result.coveredPitches
+    .filter((pitch): pitch is string => typeof pitch === "string")
     .map((pitch) => pitchClassNumberFromName(pitch))
     .filter((value): value is number => value !== null);
 }
