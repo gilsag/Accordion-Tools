@@ -127,15 +127,48 @@ import { getStradellaChordFinderResult, getStradellaChordFinderResults } from ".
 import {
   playButtonArpeggioThenChord,
   playButtonCombination,
+  playButtonRhythmProgression,
   playButtonSequence,
   playButtonSound,
   stopAllSound,
   preloadLaMelodiosa,
+  playHarmonyPitchClassChord,
+  playHarmonyRelationship,
+  notesForButton,
+  type ProgressionRhythmPattern,
 } from "./sound";
 import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
 import { StradellaChordFinderPanel } from "./components/tools/StradellaChordFinderPanel";
 import { HelpTip } from "./components/ui/HelpTip";
+import { HarmonyExplorerPanel } from "./components/tools/HarmonyExplorerPanel";
+import { ProgressionAssistantPanel } from "./components/tools/ProgressionAssistantPanel";
+import { HarmonicCircle } from "./tools/harmonyExplorer/components/HarmonicCircle";
+import { buildDiagramExplanation } from "./tools/harmonyExplorer/explanation";
+import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "./tools/harmonyExplorer/music";
+import {
+  CIRCLE_OF_FIFTHS,
+  DEFAULT_RING_VISIBILITY,
+  buildSectorRelationships,
+  chordFamily as harmonyChordFamily,
+  chordLabel as harmonyChordLabel,
+  chordMidiNotes as harmonyChordMidiNotes,
+  filterRelationshipCounts,
+  pitchClassesForChord as harmonyPitchClassesForChord,
+  relatedFamilyName as harmonyRelatedFamilyName,
+  relationshipCounts as harmonyRelationshipCounts,
+  scaleDefinition as harmonyScaleDefinition,
+} from "./tools/harmonyExplorer/music";
+import type { HarmonyPlaybackStyle, HarmonySelection, HarmonyVoicingStyle } from "./tools/harmonyExplorer/types";
+import type { HarmonyProgressionChord, HarmonyRecordedEvent } from "./tools/harmonyExplorer/progression";
+import { isHarmonyProgressionChord } from "./tools/harmonyExplorer/progression";
+import { optimizeStradellaProgression, progressionBassPulseButtons } from "./tools/harmonyExplorer/progression";
+import {
+  finderPatternForHarmonyFamily,
+  harmonyFamilyForFinderPattern,
+  pitchClassNameFromNumber,
+  pitchClassNumberFromName,
+} from "./tools/harmonyExplorer/integration";
 
 /** Dropdown options for the supported Stradella bass presets. */
 const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
@@ -346,6 +379,21 @@ type DefaultSettingsFile = Partial<{
   soundAttackMs: number;
   soundReleaseMs: number;
   soundNoteDurationMs: number;
+  harmonyShowEnharmonics: boolean;
+  harmonyShowSeparators: boolean;
+  harmonyShowLegend: boolean;
+  harmonyShowExplanation: boolean;
+  harmonyRingVisibility: Record<string, boolean>;
+  harmonyShowToneTooltips: boolean;
+  harmonyShowNoteRing: boolean;
+  harmonyColorByFamily: boolean;
+  harmonyDiameter: number;
+  harmonyFontSize: number;
+  harmonyPlaybackStyle: HarmonyPlaybackStyle;
+  harmonyVoicingStyle: HarmonyVoicingStyle;
+  progressionAllowApproximations: boolean;
+  progressionHandMovementWeight: number;
+  progressionRhythmPattern: ProgressionRhythmPattern;
 }>;
 
 function isOneOf<T extends string>(
@@ -441,6 +489,7 @@ function fingeringY(
 function App() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const harmonySvgRef = useRef<SVGSVGElement | null>(null);
   const previousLayoutSignatureRef = useRef<string | null>(null);
   const abcPlaybackTimeoutsRef = useRef<number[]>([]);
   const abcPlaybackStartedAtRef = useRef<number | null>(null);
@@ -493,6 +542,7 @@ function App() {
 
   /* Left panel visibility and accordion-section state. */
   const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("tools");
+  const [workspaceMode, setWorkspaceMode] = useState<"accordion" | "harmony">("accordion");
 
   type SettingsSection =
     | "layout"
@@ -501,6 +551,7 @@ function App() {
     | "notation"
     | "musicNotation"
     | "sound"
+    | "harmony"
     | "about"
     | null;
   type ToolSection =
@@ -509,6 +560,8 @@ function App() {
     | "abcPlayer"
     | "bassPatternPlayer"
     | "stradellaChordFinder"
+    | "harmonyExplorer"
+    | "progressionAssistant"
     | "fingering"
     | "selection"
     | "sequences"
@@ -519,6 +572,10 @@ function App() {
     useState<SettingsSection>(null);
 
   const [activeToolSection, setActiveToolSection] = useState<ToolSection>(null);
+
+  useEffect(() => {
+    setActiveSettingsSection(null);
+  }, [workspaceMode, side]);
 
   /* Tool state for selections, fingerings, note sequences, and diagram annotations. */
   const [overlays, setOverlays] = useState<Record<string, Overlay>>({});
@@ -693,10 +750,72 @@ function App() {
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
     useState<StradellaChordFinderMode>("bass-and-chords");
   const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
+  const [pendingProgressionRealizationKey, setPendingProgressionRealizationKey] = useState<string | null>(null);
   const [
     stradellaChordFinderMarkRootBass,
     setStradellaChordFinderMarkRootBass,
   ] = useState(true);
+
+  /* Harmony Explorer state. Kept independent from accordion layout state so the
+     harmonic relationship engine can remain reusable and later evolve separately. */
+  const [harmonyReferenceFamilyId, setHarmonyReferenceFamilyId] = useState<ChordFamilyId>("major");
+  const [harmonyRelatedFamilyId, setHarmonyRelatedFamilyId] = useState<RelatedFamilyId>("minor7");
+  const [harmonyScaleId, setHarmonyScaleId] = useState<ScaleId>("ionian");
+  const [harmonyDiatonicOnly, setHarmonyDiatonicOnly] = useState(false);
+  const [harmonyHighlightDiatonic, setHarmonyHighlightDiatonic] = useState(true);
+  const [harmonyShowEnharmonics, setHarmonyShowEnharmonics] = useState(false);
+  const [harmonyShowSeparators, setHarmonyShowSeparators] = useState(true);
+  const [harmonyShowLegend, setHarmonyShowLegend] = useState(true);
+  const [harmonyShowExplanation, setHarmonyShowExplanation] = useState(false);
+  const [harmonyRingVisibility, setHarmonyRingVisibility] = useState<Record<number, boolean>>(() => ({ ...DEFAULT_RING_VISIBILITY }));
+  const [harmonyShowToneTooltips, setHarmonyShowToneTooltips] = useState(true);
+  const [harmonyShowNoteRing, setHarmonyShowNoteRing] = useState(false);
+  const [harmonyColorByFamily, setHarmonyColorByFamily] = useState(false);
+  const [harmonyDiameter, setHarmonyDiameter] = useState(900);
+  const [harmonyFontSize, setHarmonyFontSize] = useState(18);
+  const [harmonyPlaybackStyle, setHarmonyPlaybackStyle] = useState<HarmonyPlaybackStyle>("block");
+  const [harmonyVoicingStyle, setHarmonyVoicingStyle] = useState<HarmonyVoicingStyle>("root");
+  const [harmonySelection, setHarmonySelection] = useState<HarmonySelection | null>(null);
+  const [harmonyFocusedReferenceRootPc, setHarmonyFocusedReferenceRootPc] = useState<number | null>(null);
+  const [harmonyProgression, setHarmonyProgression] = useState<HarmonyProgressionChord[]>([]);
+  const [harmonyRecordedProgression, setHarmonyRecordedProgression] = useState<HarmonyRecordedEvent[]>([]);
+  const [harmonyProgressionRecording, setHarmonyProgressionRecording] = useState(false);
+  const [harmonyRecordedNotationVisible, setHarmonyRecordedNotationVisible] = useState(false);
+  const [harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying] = useState(false);
+  const harmonyRecordedPlaybackTimeoutsRef = useRef<number[]>([]);
+  const harmonyRecordedNotationRef = useRef<HTMLDivElement | null>(null);
+  const [harmonyProgressionManualRoot, setHarmonyProgressionManualRoot] = useState("C");
+  const [harmonyProgressionManualFamilyId, setHarmonyProgressionManualFamilyId] = useState<ChordFamilyId>("major");
+  const [harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations] = useState(true);
+  const [harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight] = useState(0.65);
+  const [harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern] = useState<ProgressionRhythmPattern>("block");
+  const [harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex] = useState<number | null>(null);
+  const [harmonyProgressionActiveButtonIds, setHarmonyProgressionActiveButtonIds] = useState<string[]>([]);
+  const [harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible] = useState(false);
+  const harmonyProgressionIdRef = useRef(1);
+  const harmonyProgressionNotationRef = useRef<HTMLDivElement | null>(null);
+
+  function toggleHarmonyProgressionNotation() {
+    setHarmonyProgressionNotationVisible((current) => !current);
+    setBassPatternRenderedNotationVisible(false);
+    setAbcRenderedNotationVisible(false);
+    setSequenceRenderedNotationVisible(false);
+  }
+
+  function toggleHarmonyRecordedNotation() {
+    setHarmonyRecordedNotationVisible((current) => !current);
+    setBassPatternRenderedNotationVisible(false);
+    setAbcRenderedNotationVisible(false);
+    setSequenceRenderedNotationVisible(false);
+    setHarmonyProgressionNotationVisible(false);
+  }
+
+  useEffect(() => {
+    if (activeToolSection !== "progressionAssistant") {
+      setHarmonyProgressionNotationVisible(false);
+      setHarmonyProgressionActiveButtonIds([]);
+    }
+  }, [activeToolSection]);
 
   const [textNotes, setTextNotes] = useState<TextNote[]>([]);
   const [textNoteFontSize, setTextNoteFontSize] = useState(15);
@@ -1294,6 +1413,42 @@ function App() {
       setSoundReleaseMs(Math.max(10, Math.min(1000, Math.round(settings.soundReleaseMs))));
     if (typeof settings.soundNoteDurationMs === "number")
       setSoundNoteDurationMs(Math.max(60, Math.min(2000, Math.round(settings.soundNoteDurationMs))));
+    if (typeof settings.harmonyShowEnharmonics === "boolean")
+      setHarmonyShowEnharmonics(settings.harmonyShowEnharmonics);
+    if (typeof settings.harmonyShowSeparators === "boolean")
+      setHarmonyShowSeparators(settings.harmonyShowSeparators);
+    if (typeof settings.harmonyShowLegend === "boolean")
+      setHarmonyShowLegend(settings.harmonyShowLegend);
+    if (typeof settings.harmonyShowExplanation === "boolean")
+      setHarmonyShowExplanation(settings.harmonyShowExplanation);
+    if (settings.harmonyRingVisibility && typeof settings.harmonyRingVisibility === "object") {
+      const next: Record<number, boolean> = { ...DEFAULT_RING_VISIBILITY };
+      for (const [key, value] of Object.entries(settings.harmonyRingVisibility)) {
+        const count = Number(key);
+        if (Number.isInteger(count) && typeof value === "boolean") next[count] = value;
+      }
+      setHarmonyRingVisibility(next);
+    }
+    if (typeof settings.harmonyShowToneTooltips === "boolean")
+      setHarmonyShowToneTooltips(settings.harmonyShowToneTooltips);
+    if (typeof settings.harmonyShowNoteRing === "boolean")
+      setHarmonyShowNoteRing(settings.harmonyShowNoteRing);
+    if (typeof settings.harmonyColorByFamily === "boolean")
+      setHarmonyColorByFamily(settings.harmonyColorByFamily);
+    if (typeof settings.harmonyDiameter === "number")
+      setHarmonyDiameter(Math.max(600, Math.min(1400, Math.round(settings.harmonyDiameter))));
+    if (typeof settings.harmonyFontSize === "number")
+      setHarmonyFontSize(Math.max(10, Math.min(30, Math.round(settings.harmonyFontSize))));
+    if (isOneOf(settings.harmonyPlaybackStyle, ["block", "arpeggio"] as const))
+      setHarmonyPlaybackStyle(settings.harmonyPlaybackStyle);
+    if (isOneOf(settings.harmonyVoicingStyle, ["root", "smooth"] as const))
+      setHarmonyVoicingStyle(settings.harmonyVoicingStyle);
+    if (typeof settings.progressionAllowApproximations === "boolean")
+      setHarmonyProgressionAllowApproximations(settings.progressionAllowApproximations);
+    if (typeof settings.progressionHandMovementWeight === "number")
+      setHarmonyProgressionHandMovementWeight(Math.max(0, Math.min(1, settings.progressionHandMovementWeight)));
+    if (isOneOf(settings.progressionRhythmPattern, ["block", "oom-pah", "waltz", "march"] as const))
+      setHarmonyProgressionRhythmPattern(settings.progressionRhythmPattern);
   }
 
   /** Applies a settings JSON object without changing the editable default-settings.json file. */
@@ -1623,6 +1778,23 @@ function App() {
       soundAttackMs,
       soundReleaseMs,
       soundNoteDurationMs,
+      harmonyShowEnharmonics,
+      harmonyShowSeparators,
+      harmonyShowLegend,
+      harmonyShowExplanation,
+      harmonyRingVisibility: Object.fromEntries(
+        Object.entries(harmonyRingVisibility).map(([key, value]) => [String(key), value]),
+      ) as Record<string, boolean>,
+      harmonyShowToneTooltips,
+      harmonyShowNoteRing,
+      harmonyColorByFamily,
+      harmonyDiameter,
+      harmonyFontSize,
+      harmonyPlaybackStyle,
+      harmonyVoicingStyle,
+      progressionAllowApproximations: harmonyProgressionAllowApproximations,
+      progressionHandMovementWeight: harmonyProgressionHandMovementWeight,
+      progressionRhythmPattern: harmonyProgressionRhythmPattern,
     };
   }
 
@@ -1737,6 +1909,47 @@ function App() {
     stradellaAccidental,
     showTrebleOctaves,
   ]);
+
+  /* Harmony progression optimization always targets the Stradella manual, even
+     while the Harmony workspace is visible or the treble side was last active. */
+  const harmonyProgressionStradellaButtons = useMemo(
+    () => generateStradella(
+      basses,
+      buttonSize,
+      spacing,
+      stradellaAccidental,
+      diagramVerticalSpacing,
+    ),
+    [basses, buttonSize, spacing, stradellaAccidental, diagramVerticalSpacing],
+  );
+
+  const harmonyProgressionPlan = useMemo(
+    () => optimizeStradellaProgression(
+      harmonyProgressionStradellaButtons,
+      harmonyProgression,
+      {
+        allowApproximations: harmonyProgressionAllowApproximations,
+        handMovementWeight: harmonyProgressionHandMovementWeight,
+        maxRealizationsPerChord: 5,
+      },
+    ),
+    [
+      harmonyProgressionStradellaButtons,
+      harmonyProgression,
+      harmonyProgressionAllowApproximations,
+      harmonyProgressionHandMovementWeight,
+    ],
+  );
+
+  useEffect(() => {
+    if (!harmonyProgressionPlan.playable) {
+      setHarmonyProgressionPreviewIndex(null);
+      return;
+    }
+    setHarmonyProgressionPreviewIndex((current) =>
+      current !== null && current >= harmonyProgressionPlan.steps.length ? null : current,
+    );
+  }, [harmonyProgressionPlan.playable, harmonyProgressionPlan.steps.length]);
 
   /* Signature of layout-changing options used to clear stale tool markings. */
   const layoutSignature = [
@@ -2278,6 +2491,15 @@ function App() {
     setStradellaChordFinderRealizationIndex(0);
   }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, side]);
 
+  useEffect(() => {
+    if (!pendingProgressionRealizationKey || stradellaChordFinderRealizations.length === 0) return;
+    const index = stradellaChordFinderRealizations.findIndex((result) =>
+      result.playbackButtons.map((button) => button.id).sort().join("|") === pendingProgressionRealizationKey,
+    );
+    if (index >= 0) setStradellaChordFinderRealizationIndex(index);
+    setPendingProgressionRealizationKey(null);
+  }, [pendingProgressionRealizationKey, stradellaChordFinderRealizations]);
+
   const stradellaChordFinderButtons = stradellaChordFinderResult.buttons;
   const stradellaChordFinderPlaybackButtons =
     stradellaChordFinderResult.playbackButtons;
@@ -2301,9 +2523,32 @@ function App() {
     [finderButtons],
   );
 
+  const progressionPreviewButtonIds = useMemo(() => {
+    if (
+      activeToolSection !== "progressionAssistant" ||
+      harmonyProgressionPreviewIndex === null ||
+      harmonyProgressionActiveButtonIds.length > 0 ||
+      !harmonyProgressionPlan.playable
+    ) {
+      return new Set<string>();
+    }
+    const step = harmonyProgressionPlan.steps[harmonyProgressionPreviewIndex];
+    return new Set((step?.result.playbackButtons ?? []).map((button) => button.id));
+  }, [
+    activeToolSection,
+    harmonyProgressionPreviewIndex,
+    harmonyProgressionActiveButtonIds.length,
+    harmonyProgressionPlan,
+  ]);
+
   const bassPatternActiveButtonIdSet = useMemo(
     () => new Set(bassPatternActiveButtonIds),
     [bassPatternActiveButtonIds],
+  );
+
+  const harmonyProgressionActiveButtonIdSet = useMemo(
+    () => new Set(harmonyProgressionActiveButtonIds),
+    [harmonyProgressionActiveButtonIds],
   );
 
   const abcActiveButtonIdSet = useMemo(
@@ -2328,6 +2573,515 @@ function App() {
     stradellaBassVoicing,
   };
 
+  function abcNameForConcreteNote(pitchClass: string, octave: number) {
+    const accidentalMap: Record<string, string> = {
+      C: "C", "C#": "^C", Db: "_D", D: "D", "D#": "^D", Eb: "_E",
+      E: "E", F: "F", "F#": "^F", Gb: "_G", G: "G", "G#": "^G",
+      Ab: "_A", A: "A", "A#": "^A", Bb: "_B", B: "B",
+    };
+    const base = accidentalMap[pitchClass] ?? "C";
+    if (octave >= 5) return base.toLowerCase() + "'".repeat(Math.max(0, octave - 5));
+    if (octave <= 3) return base + ",".repeat(Math.max(0, 4 - octave));
+    return base;
+  }
+
+  function progressionRhythmPulses(step: (typeof harmonyProgressionPlan.steps)[number]) {
+    const realizationButtons = step.result.playbackButtons;
+    const realizationBassButtons = realizationButtons.filter(
+      (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
+    );
+    const chordButtons = realizationButtons.filter((button) => button.kind.startsWith("chord-"));
+    const preferredBassPulse = progressionBassPulseButtons(buttons, step);
+    const bassPulse = preferredBassPulse.length > 0
+      ? preferredBassPulse
+      : realizationBassButtons.length > 0
+        ? realizationBassButtons
+        : realizationButtons;
+    const chordPulse = chordButtons.length > 0 ? chordButtons : realizationButtons;
+    if (harmonyProgressionRhythmPattern === "march") return [bassPulse, chordPulse, chordPulse, chordPulse];
+    if (harmonyProgressionRhythmPattern === "waltz") return [bassPulse, chordPulse, chordPulse];
+    if (harmonyProgressionRhythmPattern === "oom-pah") return [bassPulse, chordPulse];
+    return [realizationButtons];
+  }
+
+  const harmonyProgressionRenderedNotationAbc = useMemo(() => {
+    if (!harmonyProgressionPlan.playable || harmonyProgressionPlan.steps.length === 0) return "";
+    const meter = harmonyProgressionRhythmPattern === "waltz"
+      ? "3/4"
+      : harmonyProgressionRhythmPattern === "oom-pah"
+        ? "2/4"
+        : "4/4";
+    const bars = harmonyProgressionPlan.steps.map((step) => {
+      const pulses = progressionRhythmPulses(step);
+      if (harmonyProgressionRhythmPattern === "block") {
+        const notes = pulses[0]
+          .flatMap((button) => notesForButton(button, soundOptions))
+          .map((note) => abcNameForConcreteNote(note.pitchClass, note.octave));
+        const unique = [...new Set(notes)];
+        return `"${step.label}"[${unique.join("")}]4`;
+      }
+      const tokens = pulses.map((pulse, index) => {
+        const notes = pulse
+          .flatMap((button) => notesForButton(button, soundOptions))
+          .map((note) => abcNameForConcreteNote(note.pitchClass, note.octave));
+        const unique = [...new Set(notes)];
+        return `${index === 0 ? `"${step.label}"` : ""}[${unique.join("")}]`;
+      });
+      return tokens.join(" ");
+    });
+    return [
+      "X:1",
+      "T:Optimized Stradella progression",
+      `M:${meter}`,
+      "L:1/4",
+      `Q:1/4=${soundSequenceTempoBpm}`,
+      "K:C clef=bass",
+      `${bars.map((bar) => `| ${bar} `).join("")} |`,
+      "",
+    ].join("\n");
+  }, [
+    harmonyProgressionPlan,
+    harmonyProgressionRhythmPattern,
+    buttons,
+    soundSequenceTempoBpm,
+    soundSource,
+    laMelodiosaBassRegister,
+    stradellaBassVoicing,
+  ]);
+
+
+  useEffect(() => {
+    if (!harmonyProgressionNotationVisible) return;
+    renderNotationInto(
+      harmonyProgressionNotationRef.current,
+      harmonyProgressionRenderedNotationAbc,
+    );
+  }, [
+    harmonyProgressionNotationVisible,
+    harmonyProgressionRenderedNotationAbc,
+    musicNotationScale,
+    musicNotationStaffWidth,
+  ]);
+
+  const harmonyRecordedProgressionNotationAbc = useMemo(() => {
+    if (harmonyRecordedProgression.length === 0) return "";
+    const bars = harmonyRecordedProgression.map((event) => {
+      if (event.kind === "note") {
+        const pitchClass = pitchClassNameFromNumber(event.pitchClass);
+        const note = abcNameForConcreteNote(pitchClass, 4);
+        return `"${pitchClass}"${note}4`;
+      }
+      const notes = harmonyChordMidiNotes(event.rootPc, event.familyId, 4).map((midi) => {
+        const pitchClass = pitchClassNameFromNumber(((midi % 12) + 12) % 12);
+        const octave = Math.floor(midi / 12) - 1;
+        return abcNameForConcreteNote(pitchClass, octave);
+      });
+      const label = harmonyChordLabel(event.rootPc, event.familyId, event.sectorIndex, harmonyShowEnharmonics);
+      return `"${label}"[${notes.join("")}]4`;
+    });
+    return [
+      "X:1",
+      "T:Recorded Harmony progression",
+      "M:4/4",
+      "L:1/4",
+      `Q:1/4=${soundSequenceTempoBpm}`,
+      "K:C",
+      `${bars.map((bar) => `| ${bar} `).join("")} |`,
+      "",
+    ].join("\n");
+  }, [harmonyRecordedProgression, harmonyShowEnharmonics, soundSequenceTempoBpm]);
+
+  useEffect(() => {
+    if (!harmonyRecordedNotationVisible || !harmonyRecordedProgressionNotationAbc) return;
+    renderNotationInto(
+      harmonyRecordedNotationRef.current,
+      harmonyRecordedProgressionNotationAbc,
+    );
+  }, [
+    harmonyRecordedNotationVisible,
+    harmonyRecordedProgressionNotationAbc,
+    musicNotationScale,
+    musicNotationStaffWidth,
+  ]);
+
+  /* Harmony Explorer derives all diagram data from pitch-class relationships. */
+  const harmonyAllFamiliesMode = harmonyRelatedFamilyId === "all";
+  const harmonyEffectiveDiatonicOnly = harmonyDiatonicOnly || harmonyAllFamiliesMode;
+  const harmonyEffectiveHighlightDiatonic = !harmonyEffectiveDiatonicOnly && harmonyHighlightDiatonic;
+  const harmonySectors = useMemo(
+    () => buildSectorRelationships(
+      harmonyReferenceFamilyId,
+      harmonyRelatedFamilyId,
+      harmonyScaleId,
+      harmonyEffectiveDiatonicOnly,
+      true,
+    ),
+    [harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId, harmonyEffectiveDiatonicOnly],
+  );
+  const harmonyAvailableCounts = useMemo(
+    () => harmonyRelationshipCounts(harmonySectors),
+    [harmonySectors],
+  );
+  const harmonyCounts = useMemo(
+    () => filterRelationshipCounts(harmonyAvailableCounts, harmonyRingVisibility),
+    [harmonyAvailableCounts, harmonyRingVisibility],
+  );
+  const harmonyAllSectors = useMemo(
+    () => buildSectorRelationships(
+      harmonyReferenceFamilyId,
+      harmonyRelatedFamilyId,
+      harmonyScaleId,
+      harmonyAllFamiliesMode,
+      true,
+    ),
+    [harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId, harmonyAllFamiliesMode],
+  );
+  const harmonyAllCounts = useMemo(
+    () => harmonyRelationshipCounts(harmonyAllSectors),
+    [harmonyAllSectors],
+  );
+  const harmonyReferenceFamily = harmonyChordFamily(harmonyReferenceFamilyId);
+  const harmonyRelatedName = harmonyRelatedFamilyName(harmonyRelatedFamilyId);
+  const harmonyScale = harmonyScaleDefinition(harmonyScaleId);
+  const harmonyExplanation = useMemo(
+    () => buildDiagramExplanation({
+      referenceFamilyName: harmonyReferenceFamily.name,
+      relatedFamilyName: harmonyRelatedName,
+      scaleName: harmonyScale.name,
+      diatonicOnly: harmonyEffectiveDiatonicOnly,
+      highlightDiatonic: harmonyEffectiveHighlightDiatonic,
+      allFamiliesMode: harmonyAllFamiliesMode,
+      counts: harmonyCounts,
+      availableCounts: harmonyAvailableCounts,
+      allCounts: harmonyAllCounts,
+    }),
+    [
+      harmonyReferenceFamily.name,
+      harmonyRelatedName,
+      harmonyScale.name,
+      harmonyEffectiveDiatonicOnly,
+      harmonyEffectiveHighlightDiatonic,
+      harmonyAllFamiliesMode,
+      harmonyCounts,
+      harmonyAvailableCounts,
+      harmonyAllCounts,
+    ],
+  );
+
+  useEffect(() => {
+    setHarmonySelection(null);
+  }, [harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId, harmonyDiatonicOnly]);
+
+  function harmonyPitchNames(rootPc: number, familyId: ChordFamilyId) {
+    return harmonyPitchClassesForChord(rootPc, familyId).map(pitchClassNameFromNumber);
+  }
+
+  function playHarmonyChord(rootPc: number, familyId: ChordFamilyId, style: HarmonyPlaybackStyle) {
+    playHarmonyPitchClassChord(harmonyPitchNames(rootPc, familyId), soundOptions, style);
+  }
+
+  function playHarmonyChordRelationship(
+    referenceRootPc: number,
+    referenceFamilyId: ChordFamilyId,
+    targetRootPc: number,
+    targetFamilyId: ChordFamilyId,
+    style: HarmonyPlaybackStyle,
+  ) {
+    playHarmonyRelationship(
+      harmonyPitchNames(referenceRootPc, referenceFamilyId),
+      harmonyPitchNames(targetRootPc, targetFamilyId),
+      soundOptions,
+      style,
+    );
+  }
+
+  function harmonyProgressionSectorIndex(rootPc: number) {
+    const index = CIRCLE_OF_FIFTHS.indexOf(rootPc as (typeof CIRCLE_OF_FIFTHS)[number]);
+    return index >= 0 ? index : 0;
+  }
+
+  function makeHarmonyProgressionChord(
+    rootPc: number,
+    familyId: ChordFamilyId,
+    sectorIndex = harmonyProgressionSectorIndex(rootPc),
+  ): HarmonyProgressionChord {
+    const id = `harmony-progression-${harmonyProgressionIdRef.current++}`;
+    return { id, rootPc, familyId, sectorIndex };
+  }
+
+  function playHarmonyNote(pitchClass: number) {
+    playHarmonyPitchClassChord([pitchClassNameFromNumber(pitchClass)], soundOptions, "block");
+    if (!harmonyProgressionRecording) return;
+    setHarmonyRecordedProgression((current) => [
+      ...current,
+      {
+        id: `harmony-note-${harmonyProgressionIdRef.current++}`,
+        kind: "note",
+        pitchClass,
+        sectorIndex: harmonyProgressionSectorIndex(pitchClass),
+      },
+    ]);
+  }
+
+  function handleHarmonyChordActivated(rootPc: number, familyId: ChordFamilyId, sectorIndex: number) {
+    if (!harmonyProgressionRecording) return;
+    setHarmonyRecordedProgression((current) => [
+      ...current,
+      makeHarmonyProgressionChord(rootPc, familyId, sectorIndex),
+    ]);
+  }
+
+  function toggleHarmonyProgressionRecording() {
+    setHarmonyProgressionRecording((current) => !current);
+  }
+
+  function stopHarmonyRecordedProgressionPlayback() {
+    harmonyRecordedPlaybackTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    harmonyRecordedPlaybackTimeoutsRef.current = [];
+    setHarmonyRecordedProgressionPlaying(false);
+    stopAllSound();
+  }
+
+  function playHarmonyRecordedProgression() {
+    if (harmonyRecordedProgression.length === 0) return;
+    stopHarmonyRecordedProgressionPlayback();
+    setHarmonyRecordedProgressionPlaying(true);
+    const beatMs = 60000 / Math.max(40, soundSequenceTempoBpm);
+
+    harmonyRecordedProgression.forEach((event, index) => {
+      const timeoutId = window.setTimeout(() => {
+        if (event.kind === "note") {
+          playHarmonyPitchClassChord(
+            [pitchClassNameFromNumber(event.pitchClass)],
+            soundOptions,
+            "block",
+          );
+        } else {
+          playHarmonyPitchClassChord(
+            harmonyPitchNames(event.rootPc, event.familyId),
+            soundOptions,
+            harmonyPlaybackStyle,
+          );
+        }
+      }, index * beatMs);
+      harmonyRecordedPlaybackTimeoutsRef.current.push(timeoutId);
+    });
+
+    const stopTimeout = window.setTimeout(
+      () => stopHarmonyRecordedProgressionPlayback(),
+      harmonyRecordedProgression.length * beatMs + Math.min(600, beatMs),
+    );
+    harmonyRecordedPlaybackTimeoutsRef.current.push(stopTimeout);
+  }
+
+  function clearHarmonyRecordedProgression() {
+    stopHarmonyRecordedProgressionPlayback();
+    setHarmonyRecordedProgression([]);
+    setHarmonyRecordedNotationVisible(false);
+  }
+
+  function sendHarmonyRecordedProgressionToAssistant() {
+    const recordedChords = harmonyRecordedProgression.filter(isHarmonyProgressionChord);
+    if (recordedChords.length === 0) return;
+    if (recordedChords.length < harmonyRecordedProgression.length) {
+      window.alert("Single notes are not exported to Progression Assistant; only chords will be transferred.");
+    }
+    stopHarmonyRecordedProgressionPlayback();
+    setHarmonyProgression(recordedChords.map((chord) => ({ ...chord, id: `harmony-progression-${harmonyProgressionIdRef.current++}` })));
+    setHarmonyProgressionRecording(false);
+    setHarmonyRecordedNotationVisible(false);
+    setWorkspaceMode("accordion");
+    setSide("stradella");
+    setLeftPanelMode("tools");
+    setActiveToolSection("progressionAssistant");
+    setHarmonyProgressionPreviewIndex(null);
+    setStradellaChordFinderActive(false);
+    setScaleFinderActive(false);
+    setChordFinderActive(false);
+    stopAbcPlayback();
+    stopBassPatternPlayback();
+  }
+
+  function sameHarmonyProgressionChord(a: HarmonyProgressionChord | undefined, b: HarmonyProgressionChord) {
+    return !!a && a.rootPc === b.rootPc && a.familyId === b.familyId;
+  }
+
+  function addManualHarmonyProgressionChord() {
+    const rootPc = pitchClassNumberFromName(harmonyProgressionManualRoot);
+    if (rootPc === null) return;
+    setHarmonyProgression((current) => [
+      ...current,
+      makeHarmonyProgressionChord(rootPc, harmonyProgressionManualFamilyId),
+    ]);
+  }
+
+  function addSelectedHarmonyRelationshipToProgression() {
+    if (!harmonySelection) return;
+    const reference = makeHarmonyProgressionChord(
+      harmonySelection.referenceRootPc,
+      harmonySelection.referenceFamilyId,
+      harmonySelection.sectorIndex,
+    );
+    const target = makeHarmonyProgressionChord(
+      harmonySelection.candidate.rootPc,
+      harmonySelection.candidate.familyId,
+      harmonySelection.sectorIndex,
+    );
+    setHarmonyProgression((current) => {
+      const next = [...current];
+      if (!sameHarmonyProgressionChord(next[next.length - 1], reference)) next.push(reference);
+      if (!sameHarmonyProgressionChord(next[next.length - 1], target)) next.push(target);
+      return next;
+    });
+    setWorkspaceMode("accordion");
+    setSide("stradella");
+    setLeftPanelMode("tools");
+    setActiveToolSection("progressionAssistant");
+    setHarmonyProgressionPreviewIndex(null);
+    setStradellaChordFinderActive(false);
+    setScaleFinderActive(false);
+    setChordFinderActive(false);
+    stopAbcPlayback();
+    stopBassPatternPlayback();
+  }
+
+  function removeHarmonyProgressionChord(index: number) {
+    setHarmonyProgression((current) => current.filter((_item, itemIndex) => itemIndex !== index));
+  }
+
+  function moveHarmonyProgressionChord(index: number, direction: -1 | 1) {
+    setHarmonyProgression((current) => {
+      const target = index + direction;
+      if (target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  }
+
+  function previewHarmonyProgressionStepOnStradella(index: number) {
+    const step = harmonyProgressionPlan.steps[index];
+    if (!step) return;
+    setHarmonyProgressionPreviewIndex(index);
+    setWorkspaceMode("accordion");
+    setSide("stradella");
+    setLeftPanelMode("tools");
+    setActiveToolSection("progressionAssistant");
+    setStradellaChordFinderActive(false);
+    setScaleFinderActive(false);
+    setChordFinderActive(false);
+    stopAbcPlayback();
+  }
+
+  function openHarmonyProgressionStepInChordFinder(index: number) {
+    const step = harmonyProgressionPlan.steps[index];
+    if (!step) return;
+    const pattern = finderPatternForHarmonyFamily(step.chord.familyId);
+    if (!pattern) return;
+    const resultKey = step.result.playbackButtons.map((button) => button.id).sort().join("|");
+    setPendingProgressionRealizationKey(resultKey);
+    setWorkspaceMode("accordion");
+    setSide("stradella");
+    setLeftPanelMode("tools");
+    setActiveToolSection("stradellaChordFinder");
+    setStradellaChordFinderRoot(pitchClassNameFromNumber(step.chord.rootPc));
+    setStradellaChordFinderPattern(pattern);
+    setStradellaChordFinderMode("bass-and-chords");
+    setStradellaChordFinderActive(true);
+    setScaleFinderActive(false);
+    setChordFinderActive(false);
+    stopAbcPlayback();
+  }
+
+  function playOptimizedHarmonyProgression() {
+    if (!harmonyProgressionPlan.playable) return;
+    setHarmonyProgressionActiveButtonIds([]);
+    playButtonRhythmProgression(
+      harmonyProgressionPlan.steps.map((step) => step.result.playbackButtons),
+      soundOptions,
+      harmonyProgressionRhythmPattern,
+      {
+        onActiveButtons: (buttonIds, progressionIndex) => {
+          setHarmonyProgressionActiveButtonIds(buttonIds);
+          setHarmonyProgressionPreviewIndex(progressionIndex);
+        },
+        onDone: () => setHarmonyProgressionActiveButtonIds([]),
+      },
+      harmonyProgressionPlan.steps.map((step) =>
+        progressionBassPulseButtons(buttons, step),
+      ),
+    );
+  }
+
+  function resetHarmonyExplorer() {
+    setHarmonyReferenceFamilyId("major");
+    setHarmonyRelatedFamilyId("minor7");
+    setHarmonyScaleId("ionian");
+    setHarmonyDiatonicOnly(false);
+    setHarmonyHighlightDiatonic(true);
+    setHarmonyShowEnharmonics(false);
+    setHarmonyShowSeparators(true);
+    setHarmonyShowLegend(true);
+    setHarmonyShowExplanation(false);
+    setHarmonyRingVisibility({ ...DEFAULT_RING_VISIBILITY });
+    setHarmonyShowToneTooltips(true);
+    setHarmonyShowNoteRing(false);
+    setHarmonyColorByFamily(false);
+    setHarmonyDiameter(900);
+    setHarmonyFontSize(18);
+    setHarmonyPlaybackStyle("block");
+    setHarmonyVoicingStyle("root");
+    setHarmonySelection(null);
+    setHarmonyFocusedReferenceRootPc(null);
+    setHarmonyProgressionRecording(false);
+    setHarmonyRecordedProgression([]);
+    setHarmonyRecordedNotationVisible(false);
+  }
+
+  function showHarmonySelectionOnStradella() {
+    if (!harmonySelection) return;
+    const pattern = finderPatternForHarmonyFamily(harmonySelection.candidate.familyId);
+    if (!pattern) return;
+    setWorkspaceMode("accordion");
+    setSide("stradella");
+    setLeftPanelMode("tools");
+    setActiveToolSection("stradellaChordFinder");
+    setStradellaChordFinderRoot(pitchClassNameFromNumber(harmonySelection.candidate.rootPc));
+    setStradellaChordFinderPattern(pattern);
+    setStradellaChordFinderMode("bass-and-chords");
+    setStradellaChordFinderRealizationIndex(0);
+    setStradellaChordFinderActive(true);
+    setScaleFinderActive(false);
+    setChordFinderActive(false);
+    stopAbcPlayback();
+  }
+
+  function exploreCurrentStradellaChordInHarmony() {
+    const familyId = harmonyFamilyForFinderPattern(stradellaChordFinderPattern);
+    const rootPc = pitchClassNumberFromName(stradellaChordFinderRoot);
+    if (!familyId || rootPc === null) return;
+
+    const previousSelectionMatches =
+      harmonySelection?.candidate.familyId === familyId &&
+      harmonySelection.candidate.rootPc === rootPc;
+
+    if (!previousSelectionMatches) {
+      // A chord coming from the Stradella finder belongs in the outer-ring
+      // family. Preserve the user's current reference family instead of
+      // replacing it with the target chord family.
+      setHarmonyRelatedFamilyId(familyId);
+      setHarmonySelection(null);
+      setHarmonyFocusedReferenceRootPc(null);
+    }
+
+    setWorkspaceMode("harmony");
+    setLeftPanelMode("tools");
+    setActiveToolSection("harmonyExplorer");
+    stopAllSound();
+    stopAbcPlayback();
+    stopBassPatternPlayback();
+  }
+
   useEffect(() => {
     if (soundEnabled && soundSource === "la-melodiosa") {
       void preloadLaMelodiosa(laMelodiosaTrebleRegister, laMelodiosaBassRegister);
@@ -2343,6 +3097,19 @@ function App() {
 
   /** Opens one tool group, or closes it if it is already open. */
   function toggleToolSection(section: Exclude<ToolSection, null>) {
+    if (section === "harmonyExplorer") {
+      setWorkspaceMode("harmony");
+    } else {
+      setWorkspaceMode("accordion");
+    }
+    if (section === "progressionAssistant") {
+      setSide("stradella");
+      setStradellaChordFinderActive(false);
+      setScaleFinderActive(false);
+      setChordFinderActive(false);
+      stopAbcPlayback();
+      stopBassPatternPlayback();
+    }
     setActiveToolSection((current) => (current === section ? null : section));
   }
 
@@ -2574,6 +3341,7 @@ function App() {
     clearAbcTimers();
     stopBassPatternPlayback();
     stopAllSound();
+    setHarmonyProgressionActiveButtonIds([]);
   }
 
   function scheduleAbcPlayback(startBeat = abcPositionBeat) {
@@ -2582,6 +3350,7 @@ function App() {
     clearAbcTimers();
     stopBassPatternPlayback();
     stopAllSound();
+    setHarmonyProgressionActiveButtonIds([]);
     setScaleFinderActive(false);
     setChordFinderActive(false);
     setStradellaChordFinderActive(false);
@@ -2908,6 +3677,7 @@ function App() {
     stopAbcPlayback();
     stopBassPatternPlayback();
     stopAllSound();
+    setHarmonyProgressionActiveButtonIds([]);
   }
 
   /** Removes all diagram annotations and closes any inline editor. */
@@ -2945,9 +3715,11 @@ function App() {
     setScaleFinderActive(false);
     setChordFinderActive(false);
     setStradellaChordFinderActive(false);
+    setHarmonyProgressionPreviewIndex(null);
     stopAbcPlayback();
     stopBassPatternPlayback();
     stopAllSound();
+    setHarmonyProgressionActiveButtonIds([]);
   }
 
   /** Semitones of a pitch class above C (0–11), used for key-independent functional-reference labels. */
@@ -3092,10 +3864,25 @@ function App() {
     setLeftPanelMode((current) => (current === mode ? "hidden" : mode));
   }
 
-  /** Downloads the currently rendered diagram in the selected file format. */
+  /** Downloads the currently rendered accordion or Harmony Explorer diagram. */
   function downloadCurrentDiagram() {
-    if (!svgRef.current) return;
+    if (workspaceMode === "harmony") {
+      if (!harmonySvgRef.current) return;
+      const safePart = (value: string) => value
+        .toLowerCase()
+        .replace(/[()]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      const name = `harmonic-circle-${safePart(harmonyReferenceFamily.shortName)}-${safePart(harmonyRelatedName)}-${safePart(harmonyScale.name)}`;
+      if (downloadFormat === "png") {
+        downloadPng(harmonySvgRef.current, `${name}.png`);
+      } else {
+        downloadSvg(harmonySvgRef.current, `${name}.svg`);
+      }
+      return;
+    }
 
+    if (!svgRef.current) return;
     const layoutName =
       side === "stradella"
         ? "stradella"
@@ -3326,11 +4113,13 @@ function App() {
         ? "Bass Pattern Player"
         : abcPlaybackState === "playing" || abcPlaybackState === "paused"
           ? "ABC Player"
-          : scaleFinderActive
-            ? "Scale Finder"
-            : stradellaChordFinderActive
-              ? "Chord Finder"
-              : isRecordingSequence
+          : activeToolSection === "progressionAssistant"
+            ? "Progression Assistant"
+            : scaleFinderActive
+              ? "Scale Finder"
+              : stradellaChordFinderActive
+                ? "Chord Finder"
+                : isRecordingSequence
                 ? "Sequence recording"
                 : isApplyingFingering
                   ? "Fingering"
@@ -3371,425 +4160,733 @@ function App() {
 
           {leftPanelMode === "settings" && (
             <>
+
+              {workspaceMode === "accordion" && (
               <section className="control-section">
-                <button
-                  className="section-title"
-                  onClick={() => toggleSettingsSection("layout")}
-                >
-                  Layout{" "}
-                  <span>{activeSettingsSection === "layout" ? "−" : "+"}</span>
-                </button>
-
-                {activeSettingsSection === "layout" && (
-                  <div className="section-content">
-                    {side === "stradella" && (
-                      <>
-                        <label>
-                          Basses
-                          <select
-                            value={basses}
-                            onChange={(event) =>
-                              setBasses(event.target.value as BassCount)
-                            }
-                          >
-                            {BASS_OPTIONS.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-
-                        <label>
-                          Chord labels
-                          <select
-                            value={chordLabelMode}
-                            onChange={(event) =>
-                              setChordLabelMode(
-                                event.target.value as ChordLabelMode,
-                              )
-                            }
-                          >
-                            <option value="none">None</option>
-                            <option value="chord-name">
-                              Chord name: C, Cm, C7
-                            </option>
-                            <option value="root-only">Root only</option>
-                            <option value="chord-tones">Chord tones</option>
-                            <option value="row-function">
-                              Row function: M, m, 7
-                            </option>
-                            <option value="functional-reference">
-                              Functional reference: I, iv, V7
-                            </option>
-                          </select>
-                        </label>
-                      </>
-                    )}
-
-                    {side === "treble" && (
-                      <>
-                        <label>
-                          Treble layout
-                          <select
-                            value={trebleLayout}
-                            onChange={(event) =>
-                              changeTrebleLayout(
-                                event.target.value as TrebleLayout,
-                              )
-                            }
-                          >
-                            <option value="c-system">
-                              C-system chromatic buttons
-                            </option>
-                            <option value="b-system">
-                              B-system / Bayan chromatic buttons
-                            </option>
-                            <option value="piano">Piano keyboard</option>
-                          </select>
-                        </label>
-
-                        {trebleLayout !== "piano" && (
-                          <>
-                            <label>
-                              Rows
-                              <select
-                                value={trebleRows}
-                                onChange={(event) =>
-                                  setTrebleRows(
-                                    Number(event.target.value) as 3 | 4 | 5,
-                                  )
-                                }
+                              <button
+                                className="section-title"
+                                onClick={() => toggleSettingsSection("layout")}
                               >
-                                <option value={3}>3 rows</option>
-                                <option value={4}>4 rows</option>
-                                <option value={5}>5 rows</option>
-                              </select>
-                            </label>
+                                Layout{" "}
+                                <span>{activeSettingsSection === "layout" ? "−" : "+"}</span>
+                              </button>
+              
+                              {activeSettingsSection === "layout" && (
+                                <div className="section-content">
+                                  {side === "stradella" && (
+                                    <>
+                                      <label>
+                                        Basses
+                                        <select
+                                          value={basses}
+                                          onChange={(event) =>
+                                            setBasses(event.target.value as BassCount)
+                                          }
+                                        >
+                                          {BASS_OPTIONS.map((option) => (
+                                            <option key={option.value} value={option.value}>
+                                              {option.label}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </label>
+              
+                                      <label>
+                                        Chord labels
+                                        <select
+                                          value={chordLabelMode}
+                                          onChange={(event) =>
+                                            setChordLabelMode(
+                                              event.target.value as ChordLabelMode,
+                                            )
+                                          }
+                                        >
+                                          <option value="none">None</option>
+                                          <option value="chord-name">
+                                            Chord name: C, Cm, C7
+                                          </option>
+                                          <option value="root-only">Root only</option>
+                                          <option value="chord-tones">Chord tones</option>
+                                          <option value="row-function">
+                                            Row function: M, m, 7
+                                          </option>
+                                          <option value="functional-reference">
+                                            Functional reference: I, iv, V7
+                                          </option>
+                                        </select>
+                                      </label>
+                                    </>
+                                  )}
+              
+                                  {side === "treble" && (
+                                    <>
+                                      <label>
+                                        Treble layout
+                                        <select
+                                          value={trebleLayout}
+                                          onChange={(event) =>
+                                            changeTrebleLayout(
+                                              event.target.value as TrebleLayout,
+                                            )
+                                          }
+                                        >
+                                          <option value="c-system">
+                                            C-system chromatic buttons
+                                          </option>
+                                          <option value="b-system">
+                                            B-system / Bayan chromatic buttons
+                                          </option>
+                                          <option value="piano">Piano keyboard</option>
+                                        </select>
+                                      </label>
+              
+                                      {trebleLayout !== "piano" && (
+                                        <>
+                                          <label>
+                                            Rows
+                                            <select
+                                              value={trebleRows}
+                                              onChange={(event) =>
+                                                setTrebleRows(
+                                                  Number(event.target.value) as 3 | 4 | 5,
+                                                )
+                                              }
+                                            >
+                                              <option value={3}>3 rows</option>
+                                              <option value={4}>4 rows</option>
+                                              <option value={5}>5 rows</option>
+                                            </select>
+                                          </label>
+              
+                                          <label>
+                                            Treble size
+                                            <select
+                                              value={trebleSize}
+                                              onChange={(event) =>
+                                                changeTrebleSize(
+                                                  event.target.value as TrebleSizePreset,
+                                                )
+                                              }
+                                            >
+                                              {TREBLE_SIZE_OPTIONS.map((option) => (
+                                                <option
+                                                  key={option.value}
+                                                  value={option.value}
+                                                >
+                                                  {option.label}
+                                                </option>
+                                              ))}
+                                            </select>
+                                          </label>
+                                        </>
+                                      )}
+              
+                                      {trebleLayout === "piano" && (
+                                        <label>
+                                          Piano range
+                                          <select
+                                            value={pianoTrebleRange}
+                                            onChange={(event) =>
+                                              changePianoTrebleRange(
+                                                event.target.value as PianoTrebleRange,
+                                              )
+                                            }
+                                          >
+                                            {PIANO_TREBLE_RANGE_OPTIONS.map((option) => (
+                                              <option key={option.value} value={option.value}>
+                                                {option.label}
+                                              </option>
+                                            ))}
+                                          </select>
+                                        </label>
+                                      )}
+              
+                                      <label>
+                                        Octave numbers
+                                        <select
+                                          value={showTrebleOctaves ? "on" : "off"}
+                                          onChange={(event) =>
+                                            setShowTrebleOctaves(event.target.value === "on")
+                                          }
+                                        >
+                                          <option value="off">Off</option>
+                                          <option value="on">On</option>
+                                        </select>
+                                      </label>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </section>
+            )}
 
-                            <label>
-                              Treble size
-                              <select
-                                value={trebleSize}
-                                onChange={(event) =>
-                                  changeTrebleSize(
-                                    event.target.value as TrebleSizePreset,
-                                  )
-                                }
+              {workspaceMode === "accordion" && (
+              <section className="control-section">
+                              <button
+                                className="section-title"
+                                onClick={() => toggleSettingsSection("notation")}
                               >
-                                {TREBLE_SIZE_OPTIONS.map((option) => (
-                                  <option
-                                    key={option.value}
-                                    value={option.value}
+                                Notation{" "}
+                                <span>
+                                  {activeSettingsSection === "notation" ? "−" : "+"}
+                                </span>
+                              </button>
+              
+                              {activeSettingsSection === "notation" && (
+                                <div className="section-content">
+                                  <label>
+                                    Notation
+                                    <select
+                                      value={notation}
+                                      onChange={(event) =>
+                                        setNotation(event.target.value as NotationMode)
+                                      }
+                                    >
+                                      <option value="english">C D E F</option>
+                                      <option value="german">C D E F G A H</option>
+                                      <option value="solfege">Do Re Mi Fa</option>
+                                      <option value="intervals">Intervals</option>
+                                      <option value="blank">Blank</option>
+                                    </select>
+                                  </label>
+              
+                                  <label>
+                                    Treble accidentals
+                                    <select
+                                      value={accidental}
+                                      onChange={(event) =>
+                                        setAccidental(event.target.value as AccidentalMode)
+                                      }
+                                    >
+                                      <option value="natural">Default spelling</option>
+                                      <option value="flats">Prefer flats</option>
+                                      <option value="sharps">Prefer sharps</option>
+                                      <option value="enharmonic">Show enharmonic pairs</option>
+                                    </select>
+                                  </label>
+                                </div>
+                              )}
+                            </section>
+            )}
+
+              {workspaceMode === "accordion" && (
+              <section className="control-section">
+                              <button
+                                className="section-title"
+                                onClick={() => toggleSettingsSection("musicNotation")}
+                              >
+                                Music notation{" "}
+                                <span>
+                                  {activeSettingsSection === "musicNotation" ? "−" : "+"}
+                                </span>
+                              </button>
+              
+                              {activeSettingsSection === "musicNotation" && (
+                                <div className="section-content">
+                                  <label className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      checked={musicNotationIncludeTitle}
+                                      onChange={(event) =>
+                                        setMusicNotationIncludeTitle(event.target.checked)
+                                      }
+                                    />
+                                    <span>Include title</span>
+                                  </label>
+              
+                                  <label className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      checked={musicNotationIncludeDescription}
+                                      onChange={(event) =>
+                                        setMusicNotationIncludeDescription(
+                                          event.target.checked,
+                                        )
+                                      }
+                                    />
+                                    <span>Include description</span>
+                                  </label>
+              
+                                  <label className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      checked={musicNotationIncludeSummary}
+                                      onChange={(event) =>
+                                        setMusicNotationIncludeSummary(event.target.checked)
+                                      }
+                                    />
+                                    <span>Include summary note</span>
+                                  </label>
+              
+                                  <label className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      checked={musicNotationUseBarsPerLine}
+                                      onChange={(event) =>
+                                        setMusicNotationUseBarsPerLine(event.target.checked)
+                                      }
+                                    />
+                                    <span>Limit bars per line</span>
+                                  </label>
+              
+                                  <label>
+                                    Bars per line: {musicNotationBarsPerLine}
+                                    <input
+                                      type="range"
+                                      min={1}
+                                      max={8}
+                                      step={1}
+                                      value={musicNotationBarsPerLine}
+                                      disabled={!musicNotationUseBarsPerLine}
+                                      onChange={(event) =>
+                                        setMusicNotationBarsPerLine(
+                                          Number(event.target.value),
+                                        )
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Chord text size: {musicNotationChordFontSize}px
+                                    <input
+                                      type="range"
+                                      min={8}
+                                      max={24}
+                                      step={1}
+                                      value={musicNotationChordFontSize}
+                                      onChange={(event) =>
+                                        setMusicNotationChordFontSize(
+                                          Number(event.target.value),
+                                        )
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Notation scale: {musicNotationScale}%
+                                    <input
+                                      type="range"
+                                      min={40}
+                                      max={100}
+                                      step={2}
+                                      value={musicNotationScale}
+                                      onChange={(event) =>
+                                        setMusicNotationScale(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Staff width: {musicNotationStaffWidth}px
+                                    <input
+                                      type="range"
+                                      min={320}
+                                      max={900}
+                                      step={20}
+                                      value={musicNotationStaffWidth}
+                                      onChange={(event) =>
+                                        setMusicNotationStaffWidth(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Staff spacing: {musicNotationStaffSeparator}
+                                    <input
+                                      type="range"
+                                      min={8}
+                                      max={32}
+                                      step={1}
+                                      value={musicNotationStaffSeparator}
+                                      onChange={(event) =>
+                                        setMusicNotationStaffSeparator(
+                                          Number(event.target.value),
+                                        )
+                                      }
+                                    />
+                                  </label>
+              
+                                  <p className="hint">
+                                    These settings affect rendered notation panels. Exported
+                                    ABC, LilyPond, and MIDI files keep their own
+                                    format-specific defaults.
+                                  </p>
+                                </div>
+                              )}
+                            </section>
+            )}
+
+              {workspaceMode === "accordion" && (
+              <section className="control-section">
+                              <button
+                                className="section-title"
+                                onClick={() => toggleSettingsSection("appearance")}
+                              >
+                                Appearance{" "}
+                                <span>
+                                  {activeSettingsSection === "appearance" ? "−" : "+"}
+                                </span>
+                              </button>
+              
+                              {activeSettingsSection === "appearance" && (
+                                <div className="section-content">
+                                  <label>
+                                    <span className="label-line">
+                                      Interface density{" "}
+                                      <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." />
+                                    </span>
+                                    <select
+                                      value={interfaceDensity}
+                                      onChange={(event) =>
+                                        setInterfaceDensity(
+                                          event.target.value as InterfaceDensity,
+                                        )
+                                      }
+                                    >
+                                      <option value="compact">Compact</option>
+                                      <option value="comfortable">Comfortable</option>
+                                    </select>
+                                  </label>
+              
+                                  <label className="checkbox-label">
+                                    <input
+                                      type="checkbox"
+                                      checked={showStatusBar}
+                                      onChange={(event) =>
+                                        setShowStatusBar(event.target.checked)
+                                      }
+                                    />
+                                    <span className="label-line">
+                                      Show status bar{" "}
+                                      <HelpTip text="Shows a one-line summary above the diagram. Turn it off if you want maximum space." />
+                                    </span>
+                                  </label>
+              
+                                  <label>
+                                    <span className="label-line">
+                                      Diagram scale: {diagramScale}%{" "}
+                                      <HelpTip text="Scales the visible diagram. Values above 100% may add scroll bars." />
+                                    </span>
+                                    <input
+                                      type="range"
+                                      min={70}
+                                      max={140}
+                                      step={5}
+                                      value={diagramScale}
+                                      onChange={(event) =>
+                                        setDiagramScale(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Color theme
+                                    <select
+                                      value={colorTheme}
+                                      onChange={(event) =>
+                                        setColorTheme(event.target.value as ColorTheme)
+                                      }
+                                    >
+                                      <option value="default">Default blue</option>
+                                      <option value="classic">Classic ink</option>
+                                      <option value="pastel">Pastel</option>
+                                      <option value="warm">Warm cream</option>
+                                      <option value="contrast">High contrast</option>
+                                      <option value="print">Print / grayscale</option>
+                                    </select>
+                                  </label>
+              
+                                  <label>
+                                    Accidental buttons
+                                    <select
+                                      value={accidentalStyle}
+                                      onChange={(event) =>
+                                        setAccidentalStyle(
+                                          event.target.value as AccidentalStyle,
+                                        )
+                                      }
+                                    >
+                                      <option value="grey">Grey</option>
+                                      <option value="dark">Dark</option>
+                                      <option value="outline">Outline only</option>
+                                      <option value="theme">Theme color</option>
+                                    </select>
+                                  </label>
+              
+                                  <label>
+                                    Label font
+                                    <select
+                                      value={labelFont}
+                                      onChange={(event) =>
+                                        setLabelFont(event.target.value as FontFamily)
+                                      }
+                                    >
+                                      <option value="system">System</option>
+                                      <option value="serif">Serif</option>
+                                      <option value="mono">Mono</option>
+                                      <option value="rounded">Rounded</option>
+                                    </select>
+                                  </label>
+              
+                                  <label>
+                                    Label font size: {labelFontSize}px
+                                    <input
+                                      type="range"
+                                      min={8}
+                                      max={24}
+                                      value={labelFontSize}
+                                      onChange={(event) =>
+                                        setLabelFontSize(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <button
+                                    type="button"
+                                    className={`small-button ${showButtonLabels ? "active-tool" : ""}`}
+                                    onClick={() => setShowButtonLabels((current) => !current)}
                                   >
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                          </>
-                        )}
+                                    {showButtonLabels
+                                      ? "Hide button labels"
+                                      : "Show button labels"}
+                                  </button>
+              
+                                  <button
+                                    type="button"
+                                    className={`small-button ${showBellowsGuide ? "active-tool" : ""}`}
+                                    onClick={() => setShowBellowsGuide((current) => !current)}
+                                  >
+                                    {showBellowsGuide
+                                      ? "Hide bellows guide"
+                                      : "Show bellows guide"}
+                                  </button>
+              
+                                  {side === "stradella" && (
+                                    <label>
+                                      Show Stradella row labels
+                                      <select
+                                        value={showStradellaRowLabels ? "on" : "off"}
+                                        onChange={(event) =>
+                                          setShowStradellaRowLabels(
+                                            event.target.value === "on",
+                                          )
+                                        }
+                                      >
+                                        <option value="on">On</option>
+                                        <option value="off">Off</option>
+                                      </select>
+                                    </label>
+                                  )}
+              
+                                  <label>
+                                    Button size: {buttonSize}
+                                    <input
+                                      type="range"
+                                      min={12}
+                                      max={28}
+                                      value={buttonSize}
+                                      onChange={(event) =>
+                                        setButtonSize(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Spacing: {spacing.toFixed(2)}
+                                    <input
+                                      type="range"
+                                      min={1.7}
+                                      max={3.2}
+                                      step={0.05}
+                                      value={spacing}
+                                      onChange={(event) =>
+                                        setSpacing(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    <span className="label-line">
+                                      Vertical spacing: {diagramVerticalSpacing}px{" "}
+                                      <HelpTip text="Adds or removes vertical space between the title, bellows guide, and buttons." />
+                                    </span>
+                                    <input
+                                      type="range"
+                                      min={0}
+                                      max={80}
+                                      step={2}
+                                      value={diagramVerticalSpacing}
+                                      onChange={(event) =>
+                                        setDiagramVerticalSpacing(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Button line: {buttonStrokeWidth.toFixed(1)}
+                                    <input
+                                      type="range"
+                                      min={1}
+                                      max={6}
+                                      step={0.25}
+                                      value={buttonStrokeWidth}
+                                      onChange={(event) =>
+                                        setButtonStrokeWidth(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  <label>
+                                    Reference line: {referenceStrokeWidth.toFixed(1)}
+                                    <input
+                                      type="range"
+                                      min={2}
+                                      max={10}
+                                      step={0.25}
+                                      value={referenceStrokeWidth}
+                                      onChange={(event) =>
+                                        setReferenceStrokeWidth(Number(event.target.value))
+                                      }
+                                    />
+                                  </label>
+              
+                                  {isPianoTreble && (
+                                    <>
+                                      <label>
+                                        <span className="label-line">
+                                          Piano key width: {pianoKeyWidthScale.toFixed(2)}×{" "}
+                                          <HelpTip text="Makes white piano keys wider or narrower." />
+                                        </span>
+                                        <input
+                                          type="range"
+                                          min={0.75}
+                                          max={1.45}
+                                          step={0.05}
+                                          value={pianoKeyWidthScale}
+                                          onChange={(event) =>
+                                            setPianoKeyWidthScale(Number(event.target.value))
+                                          }
+                                        />
+                                      </label>
+              
+                                      <label>
+                                        <span className="label-line">
+                                          Piano key height: {pianoKeyHeightScale.toFixed(2)}×{" "}
+                                          <HelpTip text="Makes piano keys taller or shorter." />
+                                        </span>
+                                        <input
+                                          type="range"
+                                          min={0.75}
+                                          max={1.8}
+                                          step={0.05}
+                                          value={pianoKeyHeightScale}
+                                          onChange={(event) =>
+                                            setPianoKeyHeightScale(Number(event.target.value))
+                                          }
+                                        />
+                                      </label>
+              
+                                      <label>
+                                        <span className="label-line">
+                                          Black key width:{" "}
+                                          {pianoBlackKeyWidthScale.toFixed(2)}×{" "}
+                                          <HelpTip text="Adjusts the width of accidentals on the piano keyboard." />
+                                        </span>
+                                        <input
+                                          type="range"
+                                          min={0.75}
+                                          max={1.35}
+                                          step={0.05}
+                                          value={pianoBlackKeyWidthScale}
+                                          onChange={(event) =>
+                                            setPianoBlackKeyWidthScale(
+                                              Number(event.target.value),
+                                            )
+                                          }
+                                        />
+                                      </label>
+              
+                                      <label>
+                                        <span className="label-line">
+                                          Black key height:{" "}
+                                          {pianoBlackKeyHeightScale.toFixed(2)}×{" "}
+                                          <HelpTip text="Adjusts how far black keys extend down the keyboard." />
+                                        </span>
+                                        <input
+                                          type="range"
+                                          min={0.75}
+                                          max={1.5}
+                                          step={0.05}
+                                          value={pianoBlackKeyHeightScale}
+                                          onChange={(event) =>
+                                            setPianoBlackKeyHeightScale(
+                                              Number(event.target.value),
+                                            )
+                                          }
+                                        />
+                                      </label>
+                                    </>
+                                  )}
+              
+                                  {side === "stradella" && (
+                                    <label>
+                                      Chord fill: {chordFillStrength}%
+                                      <input
+                                        type="range"
+                                        min={20}
+                                        max={100}
+                                        step={5}
+                                        value={chordFillStrength}
+                                        onChange={(event) =>
+                                          setChordFillStrength(Number(event.target.value))
+                                        }
+                                      />
+                                    </label>
+                                  )}
+              
+                                  {side === "treble" && trebleLayout !== "piano" && (
+                                    <label>
+                                      Treble angle: {trebleAngle}°
+                                      <input
+                                        type="range"
+                                        min={-35}
+                                        max={35}
+                                        value={trebleAngle}
+                                        onChange={(event) =>
+                                          setTrebleAngle(Number(event.target.value))
+                                        }
+                                      />
+                                    </label>
+                                  )}
+                                </div>
+                              )}
+                            </section>
+            )}
 
-                        {trebleLayout === "piano" && (
-                          <label>
-                            Piano range
-                            <select
-                              value={pianoTrebleRange}
-                              onChange={(event) =>
-                                changePianoTrebleRange(
-                                  event.target.value as PianoTrebleRange,
-                                )
-                              }
-                            >
-                              {PIANO_TREBLE_RANGE_OPTIONS.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        )}
-
-                        <label>
-                          Octave numbers
-                          <select
-                            value={showTrebleOctaves ? "on" : "off"}
-                            onChange={(event) =>
-                              setShowTrebleOctaves(event.target.value === "on")
-                            }
-                          >
-                            <option value="off">Off</option>
-                            <option value="on">On</option>
-                          </select>
-                        </label>
-                      </>
-                    )}
-                  </div>
-                )}
-              </section>
-
-              <section className="control-section">
-                <button
-                  className="section-title"
-                  onClick={() => toggleSettingsSection("notation")}
-                >
-                  Notation{" "}
-                  <span>
-                    {activeSettingsSection === "notation" ? "−" : "+"}
-                  </span>
-                </button>
-
-                {activeSettingsSection === "notation" && (
-                  <div className="section-content">
-                    <label>
-                      Notation
-                      <select
-                        value={notation}
-                        onChange={(event) =>
-                          setNotation(event.target.value as NotationMode)
-                        }
-                      >
-                        <option value="english">C D E F</option>
-                        <option value="german">C D E F G A H</option>
-                        <option value="solfege">Do Re Mi Fa</option>
-                        <option value="intervals">Intervals</option>
-                        <option value="blank">Blank</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      Treble accidentals
-                      <select
-                        value={accidental}
-                        onChange={(event) =>
-                          setAccidental(event.target.value as AccidentalMode)
-                        }
-                      >
-                        <option value="natural">Default spelling</option>
-                        <option value="flats">Prefer flats</option>
-                        <option value="sharps">Prefer sharps</option>
-                        <option value="enharmonic">Show enharmonic pairs</option>
-                      </select>
-                    </label>
-                  </div>
-                )}
-              </section>
-
-              <section className="control-section">
-                <button
-                  className="section-title"
-                  onClick={() => toggleSettingsSection("musicNotation")}
-                >
-                  Music notation{" "}
-                  <span>
-                    {activeSettingsSection === "musicNotation" ? "−" : "+"}
-                  </span>
-                </button>
-
-                {activeSettingsSection === "musicNotation" && (
-                  <div className="section-content">
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={musicNotationIncludeTitle}
-                        onChange={(event) =>
-                          setMusicNotationIncludeTitle(event.target.checked)
-                        }
-                      />
-                      <span>Include title</span>
-                    </label>
-
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={musicNotationIncludeDescription}
-                        onChange={(event) =>
-                          setMusicNotationIncludeDescription(
-                            event.target.checked,
-                          )
-                        }
-                      />
-                      <span>Include description</span>
-                    </label>
-
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={musicNotationIncludeSummary}
-                        onChange={(event) =>
-                          setMusicNotationIncludeSummary(event.target.checked)
-                        }
-                      />
-                      <span>Include summary note</span>
-                    </label>
-
-                    <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={musicNotationUseBarsPerLine}
-                        onChange={(event) =>
-                          setMusicNotationUseBarsPerLine(event.target.checked)
-                        }
-                      />
-                      <span>Limit bars per line</span>
-                    </label>
-
-                    <label>
-                      Bars per line: {musicNotationBarsPerLine}
-                      <input
-                        type="range"
-                        min={1}
-                        max={8}
-                        step={1}
-                        value={musicNotationBarsPerLine}
-                        disabled={!musicNotationUseBarsPerLine}
-                        onChange={(event) =>
-                          setMusicNotationBarsPerLine(
-                            Number(event.target.value),
-                          )
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Chord text size: {musicNotationChordFontSize}px
-                      <input
-                        type="range"
-                        min={8}
-                        max={24}
-                        step={1}
-                        value={musicNotationChordFontSize}
-                        onChange={(event) =>
-                          setMusicNotationChordFontSize(
-                            Number(event.target.value),
-                          )
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Notation scale: {musicNotationScale}%
-                      <input
-                        type="range"
-                        min={40}
-                        max={100}
-                        step={2}
-                        value={musicNotationScale}
-                        onChange={(event) =>
-                          setMusicNotationScale(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Staff width: {musicNotationStaffWidth}px
-                      <input
-                        type="range"
-                        min={320}
-                        max={900}
-                        step={20}
-                        value={musicNotationStaffWidth}
-                        onChange={(event) =>
-                          setMusicNotationStaffWidth(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Staff spacing: {musicNotationStaffSeparator}
-                      <input
-                        type="range"
-                        min={8}
-                        max={32}
-                        step={1}
-                        value={musicNotationStaffSeparator}
-                        onChange={(event) =>
-                          setMusicNotationStaffSeparator(
-                            Number(event.target.value),
-                          )
-                        }
-                      />
-                    </label>
-
-                    <p className="hint">
-                      These settings affect rendered notation panels. Exported
-                      ABC, LilyPond, and MIDI files keep their own
-                      format-specific defaults.
-                    </p>
-                  </div>
-                )}
-              </section>
-
+              {workspaceMode === "harmony" && (
               <section className="control-section">
                 <button
                   className="section-title"
                   onClick={() => toggleSettingsSection("appearance")}
                 >
-                  Appearance{" "}
-                  <span>
-                    {activeSettingsSection === "appearance" ? "−" : "+"}
-                  </span>
+                  Appearance <span>{activeSettingsSection === "appearance" ? "−" : "+"}</span>
                 </button>
-
                 {activeSettingsSection === "appearance" && (
                   <div className="section-content">
                     <label>
-                      <span className="label-line">
-                        Interface density{" "}
-                        <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." />
-                      </span>
-                      <select
-                        value={interfaceDensity}
-                        onChange={(event) =>
-                          setInterfaceDensity(
-                            event.target.value as InterfaceDensity,
-                          )
-                        }
-                      >
+                      Interface density
+                      <select value={interfaceDensity} onChange={(event) => setInterfaceDensity(event.target.value as InterfaceDensity)}>
                         <option value="compact">Compact</option>
                         <option value="comfortable">Comfortable</option>
                       </select>
                     </label>
-
                     <label className="checkbox-label">
-                      <input
-                        type="checkbox"
-                        checked={showStatusBar}
-                        onChange={(event) =>
-                          setShowStatusBar(event.target.checked)
-                        }
-                      />
-                      <span className="label-line">
-                        Show status bar{" "}
-                        <HelpTip text="Shows a one-line summary above the diagram. Turn it off if you want maximum space." />
-                      </span>
+                      <input type="checkbox" checked={showStatusBar} onChange={(event) => setShowStatusBar(event.target.checked)} />
+                      <span>Show status bar</span>
                     </label>
-
-                    <label>
-                      <span className="label-line">
-                        Diagram scale: {diagramScale}%{" "}
-                        <HelpTip text="Scales the visible diagram. Values above 100% may add scroll bars." />
-                      </span>
-                      <input
-                        type="range"
-                        min={70}
-                        max={140}
-                        step={5}
-                        value={diagramScale}
-                        onChange={(event) =>
-                          setDiagramScale(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
                     <label>
                       Color theme
-                      <select
-                        value={colorTheme}
-                        onChange={(event) =>
-                          setColorTheme(event.target.value as ColorTheme)
-                        }
-                      >
+                      <select value={colorTheme} onChange={(event) => setColorTheme(event.target.value as ColorTheme)}>
                         <option value="default">Default blue</option>
                         <option value="classic">Classic ink</option>
                         <option value="pastel">Pastel</option>
@@ -3798,272 +4895,10 @@ function App() {
                         <option value="print">Print / grayscale</option>
                       </select>
                     </label>
-
-                    <label>
-                      Accidental buttons
-                      <select
-                        value={accidentalStyle}
-                        onChange={(event) =>
-                          setAccidentalStyle(
-                            event.target.value as AccidentalStyle,
-                          )
-                        }
-                      >
-                        <option value="grey">Grey</option>
-                        <option value="dark">Dark</option>
-                        <option value="outline">Outline only</option>
-                        <option value="theme">Theme color</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      Label font
-                      <select
-                        value={labelFont}
-                        onChange={(event) =>
-                          setLabelFont(event.target.value as FontFamily)
-                        }
-                      >
-                        <option value="system">System</option>
-                        <option value="serif">Serif</option>
-                        <option value="mono">Mono</option>
-                        <option value="rounded">Rounded</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      Label font size: {labelFontSize}px
-                      <input
-                        type="range"
-                        min={8}
-                        max={24}
-                        value={labelFontSize}
-                        onChange={(event) =>
-                          setLabelFontSize(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <button
-                      type="button"
-                      className={`small-button ${showButtonLabels ? "active-tool" : ""}`}
-                      onClick={() => setShowButtonLabels((current) => !current)}
-                    >
-                      {showButtonLabels
-                        ? "Hide button labels"
-                        : "Show button labels"}
-                    </button>
-
-                    <button
-                      type="button"
-                      className={`small-button ${showBellowsGuide ? "active-tool" : ""}`}
-                      onClick={() => setShowBellowsGuide((current) => !current)}
-                    >
-                      {showBellowsGuide
-                        ? "Hide bellows guide"
-                        : "Show bellows guide"}
-                    </button>
-
-                    {side === "stradella" && (
-                      <label>
-                        Show Stradella row labels
-                        <select
-                          value={showStradellaRowLabels ? "on" : "off"}
-                          onChange={(event) =>
-                            setShowStradellaRowLabels(
-                              event.target.value === "on",
-                            )
-                          }
-                        >
-                          <option value="on">On</option>
-                          <option value="off">Off</option>
-                        </select>
-                      </label>
-                    )}
-
-                    <label>
-                      Button size: {buttonSize}
-                      <input
-                        type="range"
-                        min={12}
-                        max={28}
-                        value={buttonSize}
-                        onChange={(event) =>
-                          setButtonSize(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Spacing: {spacing.toFixed(2)}
-                      <input
-                        type="range"
-                        min={1.7}
-                        max={3.2}
-                        step={0.05}
-                        value={spacing}
-                        onChange={(event) =>
-                          setSpacing(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      <span className="label-line">
-                        Vertical spacing: {diagramVerticalSpacing}px{" "}
-                        <HelpTip text="Adds or removes vertical space between the title, bellows guide, and buttons." />
-                      </span>
-                      <input
-                        type="range"
-                        min={0}
-                        max={80}
-                        step={2}
-                        value={diagramVerticalSpacing}
-                        onChange={(event) =>
-                          setDiagramVerticalSpacing(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Button line: {buttonStrokeWidth.toFixed(1)}
-                      <input
-                        type="range"
-                        min={1}
-                        max={6}
-                        step={0.25}
-                        value={buttonStrokeWidth}
-                        onChange={(event) =>
-                          setButtonStrokeWidth(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      Reference line: {referenceStrokeWidth.toFixed(1)}
-                      <input
-                        type="range"
-                        min={2}
-                        max={10}
-                        step={0.25}
-                        value={referenceStrokeWidth}
-                        onChange={(event) =>
-                          setReferenceStrokeWidth(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    {isPianoTreble && (
-                      <>
-                        <label>
-                          <span className="label-line">
-                            Piano key width: {pianoKeyWidthScale.toFixed(2)}×{" "}
-                            <HelpTip text="Makes white piano keys wider or narrower." />
-                          </span>
-                          <input
-                            type="range"
-                            min={0.75}
-                            max={1.45}
-                            step={0.05}
-                            value={pianoKeyWidthScale}
-                            onChange={(event) =>
-                              setPianoKeyWidthScale(Number(event.target.value))
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span className="label-line">
-                            Piano key height: {pianoKeyHeightScale.toFixed(2)}×{" "}
-                            <HelpTip text="Makes piano keys taller or shorter." />
-                          </span>
-                          <input
-                            type="range"
-                            min={0.75}
-                            max={1.8}
-                            step={0.05}
-                            value={pianoKeyHeightScale}
-                            onChange={(event) =>
-                              setPianoKeyHeightScale(Number(event.target.value))
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span className="label-line">
-                            Black key width:{" "}
-                            {pianoBlackKeyWidthScale.toFixed(2)}×{" "}
-                            <HelpTip text="Adjusts the width of accidentals on the piano keyboard." />
-                          </span>
-                          <input
-                            type="range"
-                            min={0.75}
-                            max={1.35}
-                            step={0.05}
-                            value={pianoBlackKeyWidthScale}
-                            onChange={(event) =>
-                              setPianoBlackKeyWidthScale(
-                                Number(event.target.value),
-                              )
-                            }
-                          />
-                        </label>
-
-                        <label>
-                          <span className="label-line">
-                            Black key height:{" "}
-                            {pianoBlackKeyHeightScale.toFixed(2)}×{" "}
-                            <HelpTip text="Adjusts how far black keys extend down the keyboard." />
-                          </span>
-                          <input
-                            type="range"
-                            min={0.75}
-                            max={1.5}
-                            step={0.05}
-                            value={pianoBlackKeyHeightScale}
-                            onChange={(event) =>
-                              setPianoBlackKeyHeightScale(
-                                Number(event.target.value),
-                              )
-                            }
-                          />
-                        </label>
-                      </>
-                    )}
-
-                    {side === "stradella" && (
-                      <label>
-                        Chord fill: {chordFillStrength}%
-                        <input
-                          type="range"
-                          min={20}
-                          max={100}
-                          step={5}
-                          value={chordFillStrength}
-                          onChange={(event) =>
-                            setChordFillStrength(Number(event.target.value))
-                          }
-                        />
-                      </label>
-                    )}
-
-                    {side === "treble" && trebleLayout !== "piano" && (
-                      <label>
-                        Treble angle: {trebleAngle}°
-                        <input
-                          type="range"
-                          min={-35}
-                          max={35}
-                          value={trebleAngle}
-                          onChange={(event) =>
-                            setTrebleAngle(Number(event.target.value))
-                          }
-                        />
-                      </label>
-                    )}
                   </div>
                 )}
               </section>
+            )}
 
               <section className="control-section">
                 <button
@@ -4097,36 +4932,40 @@ function App() {
 
                     {soundSource === "la-melodiosa" && (
                       <>
-                        <label>
-                          Treble register
-                          <select
-                            value={laMelodiosaTrebleRegister}
-                            onChange={(event) =>
-                              setLaMelodiosaTrebleRegister(
-                                event.target.value as SampleRegister,
-                              )
-                            }
-                          >
-                            <option value="I">I · Upper register</option>
-                            <option value="II">II · Lower register</option>
-                            <option value="III">III · Both registers</option>
-                          </select>
-                        </label>
-                        <label>
-                          Bass register
-                          <select
-                            value={laMelodiosaBassRegister}
-                            onChange={(event) =>
-                              setLaMelodiosaBassRegister(
-                                event.target.value as SampleRegister,
-                              )
-                            }
-                          >
-                            <option value="I">I · Upper register</option>
-                            <option value="II">II · Lower register</option>
-                            <option value="III">III · Both registers</option>
-                          </select>
-                        </label>
+                        {workspaceMode === "accordion" && side === "treble" && (
+                          <label>
+                            Treble register
+                            <select
+                              value={laMelodiosaTrebleRegister}
+                              onChange={(event) =>
+                                setLaMelodiosaTrebleRegister(
+                                  event.target.value as SampleRegister,
+                                )
+                              }
+                            >
+                              <option value="I">I · Upper register</option>
+                              <option value="II">II · Lower register</option>
+                              <option value="III">III · Both registers</option>
+                            </select>
+                          </label>
+                        )}
+                        {(workspaceMode === "harmony" || side === "stradella") && (
+                          <label>
+                            Bass register
+                            <select
+                              value={laMelodiosaBassRegister}
+                              onChange={(event) =>
+                                setLaMelodiosaBassRegister(
+                                  event.target.value as SampleRegister,
+                                )
+                              }
+                            >
+                              <option value="I">I · Upper register</option>
+                              <option value="II">II · Lower register</option>
+                              <option value="III">III · Both registers</option>
+                            </select>
+                          </label>
+                        )}
                         <p className="hint">
                           La Melodiosa was sampled and programmed by Petri Pohjanmies (2026), used under CC-BY.
                         </p>
@@ -4154,7 +4993,7 @@ function App() {
                       </select>
                     </label>
 
-                    {side === "stradella" && (
+                    {(workspaceMode === "harmony" || side === "stradella") && (
                       <>
                         <label>
                           Stradella bass voicing
@@ -4297,77 +5136,155 @@ function App() {
                 )}
               </section>
 
+              {workspaceMode === "accordion" && (
               <section className="control-section">
-                <button
-                  className="section-title"
-                  onClick={() => toggleSettingsSection("title")}
-                >
-                  Title{" "}
-                  <span>{activeSettingsSection === "title" ? "−" : "+"}</span>
-                </button>
+                              <button
+                                className="section-title"
+                                onClick={() => toggleSettingsSection("title")}
+                              >
+                                Title{" "}
+                                <span>{activeSettingsSection === "title" ? "−" : "+"}</span>
+                              </button>
+              
+                              {activeSettingsSection === "title" && (
+                                <div className="section-content">
+                                  <label>
+                                    Title
+                                    <select
+                                      value={titleMode}
+                                      onChange={(event) =>
+                                        setTitleMode(event.target.value as TitleMode)
+                                      }
+                                    >
+                                      <option value="auto">Auto</option>
+                                      <option value="custom">Custom</option>
+                                      <option value="none">None</option>
+                                    </select>
+                                  </label>
+              
+                                  {titleMode === "custom" && (
+                                    <label>
+                                      Custom title
+                                      <input
+                                        value={customTitle}
+                                        onChange={(event) =>
+                                          setCustomTitle(event.target.value)
+                                        }
+                                      />
+                                    </label>
+                                  )}
+              
+                                  {titleMode !== "none" && (
+                                    <>
+                                      <label>
+                                        Title font
+                                        <select
+                                          value={titleFont}
+                                          onChange={(event) =>
+                                            setTitleFont(event.target.value as FontFamily)
+                                          }
+                                        >
+                                          <option value="system">System</option>
+                                          <option value="serif">Serif</option>
+                                          <option value="mono">Mono</option>
+                                          <option value="rounded">Rounded</option>
+                                        </select>
+                                      </label>
+              
+                                      <label>
+                                        Title size: {titleSize}px
+                                        <input
+                                          type="range"
+                                          min={14}
+                                          max={42}
+                                          value={titleSize}
+                                          onChange={(event) =>
+                                            setTitleSize(Number(event.target.value))
+                                          }
+                                        />
+                                      </label>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </section>
+            )}
 
-                {activeSettingsSection === "title" && (
-                  <div className="section-content">
-                    <label>
-                      Title
-                      <select
-                        value={titleMode}
-                        onChange={(event) =>
-                          setTitleMode(event.target.value as TitleMode)
-                        }
-                      >
-                        <option value="auto">Auto</option>
-                        <option value="custom">Custom</option>
-                        <option value="none">None</option>
-                      </select>
-                    </label>
+              {workspaceMode === "harmony" && (
+                <>
+                  <p className="hint" style={{ marginBottom: 10 }}>
+                    Core harmonic choices are under Tools. Secondary diagram and playback preferences are kept here to leave Harmony Explorer uncluttered.
+                  </p>
+                  <section className="control-section">
+                    <button
+                      className="section-title"
+                      onClick={() => toggleSettingsSection("harmony")}
+                    >
+                      Harmony <span>{activeSettingsSection === "harmony" ? "−" : "+"}</span>
+                    </button>
+                    {activeSettingsSection === "harmony" && (
+                      <div className="section-content">
+                        <fieldset className="tool-fieldset">
+                          <legend>Diagram</legend>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowSeparators} onChange={(event) => setHarmonyShowSeparators(event.target.checked)} /> Segment separator lines</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowLegend} onChange={(event) => setHarmonyShowLegend(event.target.checked)} /> Show legend</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowExplanation} onChange={(event) => setHarmonyShowExplanation(event.target.checked)} /> Show explanation box</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowEnharmonics} onChange={(event) => setHarmonyShowEnharmonics(event.target.checked)} /> Show enharmonic equivalents</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowToneTooltips} onChange={(event) => setHarmonyShowToneTooltips(event.target.checked)} /> Show chord-tone tooltips</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowNoteRing} onChange={(event) => setHarmonyShowNoteRing(event.target.checked)} /> Show inner note ring</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyColorByFamily} onChange={(event) => setHarmonyColorByFamily(event.target.checked)} /> Color labels by chord family</label>
 
-                    {titleMode === "custom" && (
-                      <label>
-                        Custom title
-                        <input
-                          value={customTitle}
-                          onChange={(event) =>
-                            setCustomTitle(event.target.value)
-                          }
-                        />
-                      </label>
+                          <div className="ring-control-block">
+                            <strong>Outer rings</strong>
+                            {harmonyAvailableCounts.length === 0 ? (
+                              <p className="hint">No relationship rings are available.</p>
+                            ) : (
+                              harmonyAvailableCounts.map((count) => (
+                                <label className="check-row" key={`harmony-settings-ring-${count}`}>
+                                  <input
+                                    type="checkbox"
+                                    checked={harmonyRingVisibility[count] ?? count !== 0}
+                                    onChange={(event) => setHarmonyRingVisibility((current) => ({ ...current, [count]: event.target.checked }))}
+                                  />
+                                  {`Show ${count}-shared-${count === 1 ? "note" : "notes"} ring`}
+                                </label>
+                              ))
+                            )}
+                          </div>
+
+                          <label>
+                            Circle diameter: {harmonyDiameter}px
+                            <input type="range" min="600" max="1400" step="20" value={harmonyDiameter} onChange={(event) => setHarmonyDiameter(Number(event.target.value))} />
+                          </label>
+                          <label>
+                            Maximum font size: {harmonyFontSize}px
+                            <input type="range" min="10" max="30" step="1" value={harmonyFontSize} onChange={(event) => setHarmonyFontSize(Number(event.target.value))} />
+                          </label>
+                        </fieldset>
+
+                        <fieldset className="tool-fieldset">
+                          <legend>Playback</legend>
+                          <label>
+                            Chord playback
+                            <select value={harmonyPlaybackStyle} onChange={(event) => setHarmonyPlaybackStyle(event.target.value as HarmonyPlaybackStyle)}>
+                              <option value="block">Block chord</option>
+                              <option value="arpeggio">Arpeggio</option>
+                            </select>
+                          </label>
+                          <label>
+                            Relationship playback
+                            <select value={harmonyVoicingStyle} onChange={(event) => setHarmonyVoicingStyle(event.target.value as HarmonyVoicingStyle)}>
+                              <option value="root">Selected chord only</option>
+                              <option value="smooth">Reference → related chord</option>
+                            </select>
+                          </label>
+                          <p className="hint">Harmony uses the current sound source and Stradella bass register from Sound settings.</p>
+                        </fieldset>
+                      </div>
                     )}
-
-                    {titleMode !== "none" && (
-                      <>
-                        <label>
-                          Title font
-                          <select
-                            value={titleFont}
-                            onChange={(event) =>
-                              setTitleFont(event.target.value as FontFamily)
-                            }
-                          >
-                            <option value="system">System</option>
-                            <option value="serif">Serif</option>
-                            <option value="mono">Mono</option>
-                            <option value="rounded">Rounded</option>
-                          </select>
-                        </label>
-
-                        <label>
-                          Title size: {titleSize}px
-                          <input
-                            type="range"
-                            min={14}
-                            max={42}
-                            value={titleSize}
-                            onChange={(event) =>
-                              setTitleSize(Number(event.target.value))
-                            }
-                          />
-                        </label>
-                      </>
-                    )}
-                  </div>
-                )}
-              </section>
+                  </section>
+                </>
+              )}
               <AboutPanel
                 isOpen={activeSettingsSection === "about"}
                 onToggle={() => toggleSettingsSection("about")}
@@ -4401,6 +5318,36 @@ function App() {
 
           {leftPanelMode === "tools" && (
             <>
+              {workspaceMode === "harmony" ? (
+                <HarmonyExplorerPanel
+                  isOpen={activeToolSection === "harmonyExplorer"}
+                  onToggle={() => toggleToolSection("harmonyExplorer")}
+                  referenceFamilyId={harmonyReferenceFamilyId}
+                  onReferenceFamilyChange={setHarmonyReferenceFamilyId}
+                  relatedFamilyId={harmonyRelatedFamilyId}
+                  onRelatedFamilyChange={setHarmonyRelatedFamilyId}
+                  scaleId={harmonyScaleId}
+                  onScaleChange={setHarmonyScaleId}
+                  diatonicOnly={harmonyDiatonicOnly}
+                  onDiatonicOnlyChange={setHarmonyDiatonicOnly}
+                  highlightDiatonic={harmonyHighlightDiatonic}
+                  onHighlightDiatonicChange={setHarmonyHighlightDiatonic}
+                  showEnharmonics={harmonyShowEnharmonics}
+                  selected={harmonySelection}
+                  onShowOnStradella={showHarmonySelectionOnStradella}
+                  onAddSelectedRelationshipToProgression={addSelectedHarmonyRelationshipToProgression}
+                  isRecordingProgression={harmonyProgressionRecording}
+                  recordedProgression={harmonyRecordedProgression}
+                  onToggleProgressionRecording={toggleHarmonyProgressionRecording}
+                  onClearRecordedProgression={clearHarmonyRecordedProgression}
+                  onSendRecordedProgressionToAssistant={sendHarmonyRecordedProgressionToAssistant}
+                  isRecordedProgressionPlaying={harmonyRecordedProgressionPlaying}
+                  onPlayRecordedProgression={playHarmonyRecordedProgression}
+                  onStopRecordedProgression={stopHarmonyRecordedProgressionPlayback}
+                  onReset={resetHarmonyExplorer}
+                />
+              ) : (
+                <>
               {(isTrebleLikeSide || side === "stradella") && (
                 <section className="control-section">
                   <button
@@ -4610,8 +5557,43 @@ function App() {
                   }}
                   onPlay={playStradellaChordFinder}
                   onClear={clearStradellaChordFinder}
+                  canExploreHarmony={harmonyFamilyForFinderPattern(stradellaChordFinderPattern) !== null}
+                  onExploreHarmony={exploreCurrentStradellaChordInHarmony}
                   formatPitches={formatStradellaFinderPitches}
                   formatText={formatStradellaFinderText}
+                />
+              )}
+
+              {side === "stradella" && (
+                <ProgressionAssistantPanel
+                  isOpen={activeToolSection === "progressionAssistant"}
+                  onToggle={() => toggleToolSection("progressionAssistant")}
+                  progression={harmonyProgression}
+                  plan={harmonyProgressionPlan}
+                  manualRoot={harmonyProgressionManualRoot}
+                  onManualRootChange={setHarmonyProgressionManualRoot}
+                  manualFamilyId={harmonyProgressionManualFamilyId}
+                  onManualFamilyChange={setHarmonyProgressionManualFamilyId}
+                  allowApproximations={harmonyProgressionAllowApproximations}
+                  onAllowApproximationsChange={setHarmonyProgressionAllowApproximations}
+                  handMovementWeight={harmonyProgressionHandMovementWeight}
+                  onHandMovementWeightChange={setHarmonyProgressionHandMovementWeight}
+                  rhythmPattern={harmonyProgressionRhythmPattern}
+                  onRhythmPatternChange={setHarmonyProgressionRhythmPattern}
+                  tempoBpm={soundSequenceTempoBpm}
+                  onTempoBpmChange={setSoundSequenceTempoBpm}
+                  previewIndex={harmonyProgressionPreviewIndex}
+                  onAddManualChord={addManualHarmonyProgressionChord}
+                  onRemoveChord={removeHarmonyProgressionChord}
+                  onMoveChord={moveHarmonyProgressionChord}
+                  onClear={() => {
+                    setHarmonyProgression([]);
+                    setHarmonyProgressionPreviewIndex(null);
+                  }}
+                  onPreviewStep={previewHarmonyProgressionStepOnStradella}
+                  onOpenStepInChordFinder={openHarmonyProgressionStepInChordFinder}
+                  onPlay={playOptimizedHarmonyProgression}
+                  onStop={stopSoundPlayback}
                 />
               )}
 
@@ -5674,6 +6656,8 @@ function App() {
                 </section>
               )}
 
+                </>
+              )}
             </>
           )}
         </aside>
@@ -5682,8 +6666,9 @@ function App() {
       <section className="workspace">
         <div className="topbar">
           <button
-            className={`topbar-button ${side === "stradella" ? "active" : ""}`}
+            className={`topbar-button ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
             onClick={() => {
+              setWorkspaceMode("accordion");
               setSide("stradella");
               stopAbcPlayback();
             }}
@@ -5692,13 +6677,28 @@ function App() {
           </button>
 
           <button
-            className={`topbar-button ${side === "treble" ? "active" : ""}`}
+            className={`topbar-button ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
             onClick={() => {
+              setWorkspaceMode("accordion");
               setSide("treble");
               stopAbcPlayback();
             }}
           >
             Treble
+          </button>
+
+          <button
+            className={`topbar-button ${workspaceMode === "harmony" ? "active" : ""}`}
+            onClick={() => {
+              setWorkspaceMode("harmony");
+              setLeftPanelMode("tools");
+              setActiveToolSection("harmonyExplorer");
+              stopAbcPlayback();
+              stopBassPatternPlayback();
+              stopAllSound();
+            }}
+          >
+            Harmony
           </button>
 
           <span className="topbar-separator" />
@@ -5721,7 +6721,7 @@ function App() {
             className={`topbar-button ${leftPanelMode === "hidden" ? "active" : ""}`}
             onClick={() =>
               setLeftPanelMode((current) =>
-                current === "hidden" ? "settings" : "hidden",
+                current === "hidden" ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden",
               )
             }
             title="Hide the sidebar to give the diagram more horizontal room."
@@ -5729,7 +6729,8 @@ function App() {
             {leftPanelMode === "hidden" ? "Show controls" : "Focus diagram"}
           </button>
 
-          {side === "stradella" &&
+          {workspaceMode === "accordion" &&
+            side === "stradella" &&
             activeToolSection === "bassPatternPlayer" &&
             bassPatternEvents.length > 0 && (
               <>
@@ -5744,7 +6745,28 @@ function App() {
               </>
             )}
 
-          {activeToolSection === "abcPlayer" && abcText.trim() && (
+          {workspaceMode === "harmony" && harmonyRecordedProgression.length > 0 && (
+            <button
+              className={`topbar-button ${harmonyRecordedNotationVisible ? "active" : ""}`}
+              onClick={toggleHarmonyRecordedNotation}
+            >
+              {harmonyRecordedNotationVisible ? "Hide notation" : "Show notation"}
+            </button>
+          )}
+
+          {workspaceMode === "accordion" &&
+            side === "stradella" &&
+            activeToolSection === "progressionAssistant" &&
+            harmonyProgressionPlan.playable && (
+              <button
+                className={`topbar-button ${harmonyProgressionNotationVisible ? "active" : ""}`}
+                onClick={toggleHarmonyProgressionNotation}
+              >
+                {harmonyProgressionNotationVisible ? "Hide notation" : "Show notation"}
+              </button>
+            )}
+
+          {workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim() && (
             <button
               className={`topbar-button ${abcRenderedNotationVisible ? "active" : ""}`}
               onClick={toggleAbcNotation}
@@ -5753,7 +6775,7 @@ function App() {
             </button>
           )}
 
-          {activeToolSection === "sequences" &&
+          {workspaceMode === "accordion" && activeToolSection === "sequences" &&
             sequenceStepsWithButtons.length > 0 && (
               <button
                 className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
@@ -5776,7 +6798,7 @@ function App() {
 
           <button
             className="topbar-button reset-button"
-            onClick={resetDiagramWork}
+            onClick={workspaceMode === "harmony" ? resetHarmonyExplorer : resetDiagramWork}
           >
             Reset
           </button>
@@ -5801,12 +6823,69 @@ function App() {
           </button>
         </div>
 
-        {showStatusBar && (
+        {showStatusBar && workspaceMode === "accordion" && (
           <div className="status-bar" title={statusBarText}>
             {statusBarText}
           </div>
         )}
+        {showStatusBar && workspaceMode === "harmony" && (
+          <div className="status-bar">
+            {`Harmony · ${harmonyReferenceFamily.name} → ${harmonyAllFamiliesMode ? "All diatonic families" : harmonyRelatedName} · ${harmonyScale.name} · Sound ${soundEnabled ? "on" : "off"}`}
+          </div>
+        )}
 
+        {workspaceMode === "harmony" ? (
+          <>
+            {harmonyAvailableCounts.length === 0 && (
+              <div className="harmony-empty-result">
+                No chord relationships satisfy the current harmonic filter.
+              </div>
+            )}
+            {harmonyAvailableCounts.length > 0 && harmonyCounts.length === 0 && (
+              <div className="harmony-empty-result">
+                All available outer rings are hidden. Re-enable at least one ring in Harmony Explorer.
+              </div>
+            )}
+            <div className="canvas-wrap harmony-canvas-wrap">
+              <div
+                className="harmony-svg-host"
+                style={{
+                  width: `${harmonyDiameter + (harmonyShowLegend || harmonyShowExplanation ? Math.max(460, harmonyDiameter * 0.65) : 0)}px`,
+                }}
+              >
+                <HarmonicCircle
+                  sectors={harmonySectors}
+                  counts={harmonyCounts}
+                  referenceFamilyId={harmonyReferenceFamilyId}
+                  relatedFamilyName={harmonyRelatedName}
+                  allFamiliesMode={harmonyAllFamiliesMode}
+                  scaleId={harmonyScaleId}
+                  diatonicOnly={harmonyEffectiveDiatonicOnly}
+                  highlightDiatonic={harmonyEffectiveHighlightDiatonic}
+                  showEnharmonics={harmonyShowEnharmonics}
+                  showSeparators={harmonyShowSeparators}
+                  showLegend={harmonyShowLegend}
+                  showExplanation={harmonyShowExplanation}
+                  explanation={harmonyExplanation}
+                  showToneTooltips={harmonyShowToneTooltips}
+                  showNoteRing={harmonyShowNoteRing}
+                  colorByFamily={harmonyColorByFamily}
+                  diameter={harmonyDiameter}
+                  fontSize={harmonyFontSize}
+                  playbackStyle={harmonyPlaybackStyle}
+                  voicingStyle={harmonyVoicingStyle}
+                  svgRef={harmonySvgRef}
+                  focusedReferenceRootPc={harmonyFocusedReferenceRootPc}
+                  onPlayChord={playHarmonyChord}
+                  onPlayNote={playHarmonyNote}
+                  onChordActivated={handleHarmonyChordActivated}
+                  onPlayRelationship={playHarmonyChordRelationship}
+                  onSelectionChange={setHarmonySelection}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
         <div className="canvas-wrap">
           <svg
             ref={svgRef}
@@ -5938,10 +7017,11 @@ function App() {
               const scaleFinderLabels = showScaleFinderNumbers
                 ? finderLabelsForButton(scaleFinderButtons, button.id)
                 : "";
-              const finderMatch = finderButtonIds.has(button.id);
+              const finderMatch = finderButtonIds.has(button.id) || progressionPreviewButtonIds.has(button.id);
               const abcMatch =
                 abcActiveButtonIdSet.has(button.id) ||
-                bassPatternActiveButtonIdSet.has(button.id);
+                bassPatternActiveButtonIdSet.has(button.id) ||
+                harmonyProgressionActiveButtonIdSet.has(button.id);
               const primaryFinderMatch =
                 stradellaChordFinderActive &&
                 stradellaPrimaryFinderButtonIds.has(button.id);
@@ -6286,8 +7366,35 @@ function App() {
             })()}
           </svg>
         </div>
+        )}
 
-        {side === "stradella" &&
+        {workspaceMode === "harmony" &&
+          harmonyRecordedProgression.length > 0 &&
+          harmonyRecordedNotationVisible && (
+            <div
+              className="rendered-notation-panel"
+              aria-label="Recorded Harmony progression notation"
+            >
+              <div className="rendered-notation-header">
+                <div className="rendered-notation-title">Recorded Harmony progression</div>
+                <button
+                  type="button"
+                  className="small-button notation-download-button"
+                  onClick={() =>
+                    downloadRenderedNotationSvg(
+                      harmonyRecordedNotationRef.current,
+                      "recorded-harmony-progression-notation",
+                    )
+                  }
+                >
+                  Download SVG
+                </button>
+              </div>
+              <div ref={harmonyRecordedNotationRef} className="rendered-abc" />
+            </div>
+          )}
+
+        {workspaceMode === "accordion" && side === "stradella" &&
           activeToolSection === "bassPatternPlayer" &&
           bassPatternEvents.length > 0 &&
           bassPatternRenderedNotationVisible && (
@@ -6317,7 +7424,36 @@ function App() {
             </div>
           )}
 
-        {activeToolSection === "abcPlayer" &&
+        {workspaceMode === "accordion" && side === "stradella" &&
+          activeToolSection === "progressionAssistant" &&
+          harmonyProgressionPlan.playable &&
+          harmonyProgressionNotationVisible && (
+            <div
+              className="rendered-notation-panel"
+              aria-label="Rendered progression assistant notation"
+            >
+              <div className="rendered-notation-header">
+                <div className="rendered-notation-title">
+                  Optimized Stradella progression
+                </div>
+                <button
+                  type="button"
+                  className="small-button notation-download-button"
+                  onClick={() =>
+                    downloadRenderedNotationSvg(
+                      harmonyProgressionNotationRef.current,
+                      "optimized-stradella-progression-notation",
+                    )
+                  }
+                >
+                  Download SVG
+                </button>
+              </div>
+              <div ref={harmonyProgressionNotationRef} className="rendered-abc" />
+            </div>
+          )}
+
+        {workspaceMode === "accordion" && activeToolSection === "abcPlayer" &&
           abcText.trim() &&
           abcRenderedNotationVisible && (
             <div
@@ -6345,7 +7481,7 @@ function App() {
             </div>
           )}
 
-        {activeToolSection === "sequences" &&
+        {workspaceMode === "accordion" && activeToolSection === "sequences" &&
           sequenceStepsWithButtons.length > 0 &&
           sequenceRenderedNotationVisible && (
             <div

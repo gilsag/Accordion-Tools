@@ -68,3 +68,13 @@ See [`settings.md`](settings.md) for:
 
 
 In **Bass + chord buttons** mode, exact realizations are ranked first, but the list also keeps a valid fifth-omission approximation visible when one exists. Approximate results never add foreign tones.
+
+## Harmony Explorer and Progression Assistant integration
+
+Supported Stradella chord formulas include an **Explore harmony** action. The chord is treated as a related/outer-ring family while Harmony Explorer preserves the user's current inner reference family. If the chord was originally sent from Harmony Explorer with **Show on Stradella**, the previous Harmony selection is retained.
+
+Conversely, selecting a supported outer-ring chord in Harmony Explorer enables **Show on Stradella**, which transfers the root/chord type into this finder and opens **Bass + chord buttons** mode.
+
+The separate Stradella **Progression Assistant** optimizes realizations across several chords. Its selected step is previewed directly on the Stradella diagram; **Open preview in Chord Finder** opens that exact optimized realization here so the remaining ranked alternatives can be compared.
+
+See [`harmony-explorer.md`](harmony-explorer.md) and [`progression-assistant.md`](progression-assistant.md).

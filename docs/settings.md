@@ -7,6 +7,16 @@ Accordion-Tools has two kinds of settings:
 
 The app also lets you save and load a separate settings JSON file from the About panel. Loading a settings file changes the current session; it does not rewrite `public/default-settings.json`.
 
+
+## Workspace-specific settings
+
+The Settings sidebar is filtered by the active workspace so controls that cannot affect the current diagram are not shown.
+
+- **Accordion workspace:** Layout, Notation, Music notation, Appearance, Sound, Title, and About.
+- **Harmony workspace:** Appearance, Sound, Harmony, and About.
+
+Harmony uses its own pitch-class spelling and diagram controls, so the accordion **Notation** section is intentionally hidden there. The Harmony section is placed immediately before About.
+
 ## Startup defaults file
 
 Built-in startup defaults live here:
@@ -51,7 +61,7 @@ This is the safest way to move your personal settings between machines without e
 
 ## Music notation settings
 
-These settings control the rendered staff-notation panels that appear below the diagram for Bass Pattern Player, ABC Player, and Sequence Tool.
+These settings control rendered staff-notation panels in the accordion workspace, including Bass Pattern Player, ABC Player, Sequence Tool, and Progression Assistant. They are hidden in the Harmony workspace because Harmony diagrams do not render staff notation.
 
 | Setting | Default | Purpose |
 |---|---:|---|
@@ -130,6 +140,32 @@ The sound engine uses the browser Web Audio API. The built-in synthesizer is int
 
 The **La Melodiosa** sample set was sampled, edited, and programmed by **Petri Pohjanmies (Finland), 2026**, and is distributed under the **Creative Commons Attribution (CC-BY)** license. Accordion-Tools preserves the supplied SFZ mapping details, including separate bass/treble registers, tuning offsets, relative levels, and treble sample alternation. The original README and preset files are retained in `public/samples/la-melodiosa/` together with an `ATTRIBUTION.txt` file.
 
+## Harmony Explorer settings
+
+Secondary Harmony Explorer preferences are stored in Settings so the main Harmony Tools panel can stay focused on reference family, related family, parent scale/mode, and diatonic filtering.
+
+| Setting | Purpose |
+|---|---|
+| `harmonyShowEnharmonics` | Shows enharmonic equivalents in chord labels. |
+| `harmonyShowSeparators` | Shows radial segment separator lines. |
+| `harmonyShowLegend` | Shows the diagram legend. |
+| `harmonyShowExplanation` | Shows the optional explanation box. |
+| `harmonyRingVisibility` | Controls visibility of each shared-note ring. The `0` ring is off by default. |
+| `harmonyShowToneTooltips` | Shows rich chord-tone tooltips. |
+| `harmonyColorByFamily` | Colors chord labels by family. |
+| `harmonyDiameter` | Circle diameter in pixels. |
+| `harmonyFontSize` | Maximum chord-label font size. |
+| `harmonyPlaybackStyle` | `block` or `arpeggio`. |
+| `harmonyVoicingStyle` | `root` for selected chord only or `smooth` for reference→related playback. |
+
+## Progression Assistant settings
+
+| Setting | Purpose |
+|---|---|
+| `progressionAllowApproximations` | Allows conservative fifth-omission Stradella approximations. Default: `true`. |
+| `progressionRhythmPattern` | Progression Assistant playback pattern: `block`, `oom-pah`, or `waltz`. |
+| `progressionHandMovementWeight` | Weight from `0` to `1` assigned to physical Stradella movement versus pitch-class voice motion. Default: `0.65`. |
+
 ## Tool defaults
 
 | Setting | Purpose |
@@ -192,3 +228,6 @@ To add a new example to the dropdown, place the `.abc` file in `public/abc/` and
 2. Save the settings JSON from the About panel.
 3. Keep that saved file as a backup.
 4. If you are publishing your own build, copy the relevant values into `public/default-settings.json`.
+
+
+Harmony settings include an optional **Show inner note ring** control (off by default).

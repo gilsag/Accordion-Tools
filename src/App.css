@@ -1772,3 +1772,275 @@ input[type="range"] {
   background: #e9efff;
   color: #1746d0;
 }
+
+/* Harmony Explorer integration */
+.harmony-canvas-wrap {
+  padding: 10px;
+}
+
+.harmony-svg-host {
+  min-width: 600px;
+  max-width: none;
+}
+
+.harmonic-diagram {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #ffffff;
+  border: 1px solid #d9deea;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(25, 35, 60, 0.08);
+}
+
+.harmonic-diagram .chord-label {
+  fill: #151820;
+  cursor: pointer;
+  user-select: none;
+}
+
+.harmonic-diagram .chord-label:hover {
+  fill: #d4553f;
+  text-decoration: underline;
+}
+
+.harmonic-diagram .reference-label { font-weight: 850; }
+.harmonic-diagram .related-label { font-weight: 570; }
+.harmonic-diagram .diatonic-highlight { fill: #1746d0; font-weight: 820; }
+.harmonic-diagram .legend-heading,
+.harmonic-diagram .legend-row,
+.harmonic-diagram .explanation-heading,
+.harmonic-diagram .explanation-text { fill: #181b22; }
+.harmonic-diagram .legend-note { fill: #4d5668; font-style: italic; }
+.harmonic-diagram .explanation-text { fill: #3f485a; }
+
+.harmonic-diagram .diatonic-family-highlight {
+  font-weight: 850;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+.harmonic-diagram .selected-chord,
+.harmonic-diagram .selected-reference,
+.harmonic-diagram .focused-reference {
+  font-weight: 900 !important;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  paint-order: stroke fill;
+  stroke: #ffffff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.harmonic-diagram .selected-reference { text-decoration-style: double; }
+.harmonic-diagram .focused-reference { fill: #1746d0; }
+.harmonic-diagram .comparison-roman { fill: #596477; }
+.harmonic-diagram .comparison-shared { fill: #1746d0; }
+.harmonic-diagram .comparison-motion { fill: #596477; }
+
+.harmonic-diagram .rich-tooltip-host { overflow: visible; }
+.harmonic-diagram .rich-tooltip {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  padding: 11px 13px;
+  border: 1px solid #20242d;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 7px 20px rgba(22, 28, 43, 0.18);
+  color: #171b24;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.harmonic-diagram .tooltip-title { font-size: 14px; font-weight: 850; }
+.harmonic-diagram .tooltip-family { margin-bottom: 6px; color: #667187; font-size: 11px; font-weight: 700; }
+.harmonic-diagram .tooltip-row { margin-top: 3px; }
+.harmonic-diagram .tooltip-label { font-weight: 800; }
+.harmonic-diagram .shared-tone { color: #1746d0; font-weight: 850; }
+
+.harmony-empty-result {
+  margin: 10px 12px 0;
+  padding: 9px 12px;
+  border: 1px solid #e7c983;
+  border-radius: 10px;
+  background: #fff8df;
+  color: #6c5315;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.check-row {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.35;
+}
+
+.check-row input[type="checkbox"] {
+  width: auto;
+  margin: 2px 0 0;
+  flex: 0 0 auto;
+}
+
+.disabled-row { opacity: 0.5; }
+
+.ring-control-block {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 8px 9px;
+  border: 1px solid #e1e5ee;
+  border-radius: 10px;
+  background: #fafbfe;
+}
+
+.harmony-preset-row .small-button {
+  min-width: 48px;
+}
+
+/* Harmony progression / Stradella voice-leading assistant. */
+.progression-add-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.progression-add-button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.harmony-progression-list {
+  margin: 8px 0 10px;
+  padding-left: 24px;
+}
+
+.harmony-progression-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 5px 0;
+}
+
+.harmony-progression-list li > span:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.harmony-progression-list small {
+  color: #697386;
+}
+
+.progression-list-actions {
+  display: inline-flex;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.tiny-button {
+  min-width: 25px;
+  height: 25px;
+  padding: 0 6px;
+  border: 1px solid #c9d1e3;
+  border-radius: 6px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.tiny-button:hover:not(:disabled) {
+  border-color: #1746d0;
+  color: #1746d0;
+  background: #eef3ff;
+}
+
+.tiny-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.progression-result-card {
+  margin-top: 10px;
+}
+
+.progression-plan-steps {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+
+.progression-plan-step {
+  width: 100%;
+  border: 1px solid #d9deea;
+  border-radius: 8px;
+  background: #fff;
+  color: #172033;
+  padding: 7px 8px;
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.progression-plan-step:hover {
+  border-color: #1746d0;
+  background: #f7f9ff;
+}
+
+.progression-plan-step-title {
+  font-weight: 800;
+}
+
+.progression-plan-metrics {
+  color: #697386;
+  font-size: 11px;
+}
+
+/* Harmony progression recording / optional pitch-class inner ring */
+.note-ring-label {
+  cursor: pointer;
+  font-weight: 650;
+  fill: #4b5563;
+}
+.note-ring-label:hover {
+  font-weight: 850;
+  fill: #111827;
+}
+.harmony-recording-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+}
+.harmony-recording-dot {
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 50%;
+  background: currentColor;
+  display: inline-block;
+}
+.harmony-recorded-progression {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+}
+.harmony-recorded-chord {
+  border: 1px solid rgba(23, 32, 51, 0.22);
+  border-radius: 999px;
+  padding: 0.2rem 0.48rem;
+  background: rgba(255,255,255,0.8);
+  font-size: 0.88rem;
+}

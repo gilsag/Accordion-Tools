@@ -1,5 +1,61 @@
 # Accordion Tools — Version History
 
+## v0.14.0 - Harmony progression recording and note ring
+
+- Added progression recording directly in Harmony Explorer: start/stop recording, sequential chord capture, repeated chord events, clear, and direct transfer to the Stradella Progression Assistant.
+- Added a compact recorded-progression readout inside Harmony Explorer.
+- Added Harmony-workspace staff notation for recorded progressions; the **Show notation** top-bar action appears once a progression contains at least one chord, and the rendered notation can be downloaded as SVG.
+- Added an optional inner **note ring** (off by default) inside the reference-family ring. The twelve pitch classes follow the circle-of-fifths sectors and can be auditioned by clicking.
+- Note-ring clicks are now recorded while Harmony progression recording is active, displayed in the recorded sequence, and included in Harmony staff notation. Note events remain in Harmony; only chord events are transferred to the Stradella Progression Assistant.
+- Added local **Play recording / Stop** controls in Harmony Explorer so mixed note/chord recordings can be auditioned in sequence using the current Harmony sound settings.
+- Sending a mixed recording to Progression Assistant now shows a concise warning that single-note events are not exported; chord events are then transferred normally.
+- Added persistent `harmonyShowNoteRing` settings support and updated Harmony documentation, README, settings documentation, and version metadata.
+
+## v0.13.1 - Mode-specific settings and Progression Assistant playback
+
+- Reorganized Settings by workspace. Harmony now exposes only settings that affect the Harmony workspace (Appearance, Sound, Harmony, and About); accordion-only Layout, Notation, Music notation, and Title sections are hidden while Harmony is active.
+- Moved the Harmony settings section near the end of the Harmony settings list, immediately before About.
+- Refined Harmony Sound settings so only the bass/sample controls relevant to Harmony playback are shown.
+- Progression Assistant playback now highlights the Stradella buttons actually sounding on every rhythmic pulse.
+- Added four Progression Assistant playback patterns: all buttons together, basic oom-pah (2/4), waltz (3/4), and march (4/4), with an in-tool tempo control. Oom-pah, waltz, and march use a root-pitch bass/counterbass pulse on beat 1 followed by chord-row accompaniment pulses. When the optimized realization already contains the root pitch on a specific bass row, that exact physical button is preserved (for example E counterbass + G major for Em7); chord-only realizations fall back to the ordinary fundamental root bass.
+- Added **Show notation** for the Progression Assistant, using the shared abcjs rendered-notation panel and SVG download workflow.
+- Conservative fifth-omission approximations remain enabled by default.
+- Refined ergonomic ranking so pitch-class voice-leading and physical button choice remain separate criteria; equivalent pitches on fundamental and counterbass rows are distinguished only by Stradella ergonomics, and progression rhythm playback preserves the optimized bass-row choice.
+
+## v0.13.0 - Harmony/Progression workflow cleanup
+
+- Moved the **Progression Assistant** out of Harmony Explorer and made it a separate Stradella-side tool.
+- Added direct Stradella preview of each optimized progression step, with an optional handoff to Chord Finder for comparing alternative realizations.
+- Enabled conservative fifth-omission approximations by default in the Progression Assistant while retaining a strong preference for exact realizations.
+- Added **Add relationship to Progression** in Harmony Explorer to transfer the selected reference→related pair into the Stradella Progression Assistant.
+- Simplified the Harmony workspace: while Harmony is selected in the top bar, unrelated accordion tools are hidden from the Tools panel.
+- Moved secondary Harmony display/audio controls to **Settings → Harmony**, including ring visibility, legend, explanation, enharmonics, tooltips, family colors, diameter/font size, and playback options.
+- Fixed **Explore harmony** from Stradella Chord Finder so it preserves the current Harmony reference family. A finder chord is treated as the related/outer-ring family instead of replacing the inner reference family.
+- Preserved an existing Harmony selection when a chord was sent to Stradella with **Show on Stradella** and then returned with **Explore harmony**.
+- Added persistent Harmony and Progression defaults to `public/default-settings.json` and settings JSON save/load.
+- Added dedicated Progression Assistant documentation and updated Harmony Explorer, Chord Finder, Settings, README, and version metadata.
+
+## v0.12.0 - Stradella progression and voice-leading assistant
+
+- Added a **Progression assistant** to Harmony Explorer for building chord sequences manually or from selected harmonic relationships.
+- Added whole-progression Stradella optimization using dynamic programming across ranked **Bass + chord buttons** realizations.
+- Combined harmonic pitch-class motion with normalized physical button movement, while retaining a small compactness preference and a strong exact-realization preference.
+- Added an adjustable **Hand-movement emphasis** control and an explicit option to allow conservative fifth-omission approximations; approximations remain off by default.
+- Added per-transition reporting of harmonic motion, physical movement in approximate button spacings, shared tones, and the selected physical realization.
+- Added **Play optimized progression** using the current Accordion Tools sound engine and sequence tempo.
+- Added one-click handoff from any optimized progression step to its selected realization in the Stradella Chord Finder.
+- Added progression-optimizer regression coverage and integrated it into `npm run test:harmony`.
+
+## v0.11.0 - Harmony Explorer integration
+
+- Integrated Harmonic Circle Explorer as a new **Harmony** workspace while keeping its pitch-class relationship engine modular.
+- Added common-tone rings, selectable reference/related chord families, parent scales and modes, diatonic filtering/highlighting, independent ring visibility, rich chord tooltips, Roman numerals, family colors, voice-leading information, and SVG/PNG export inside Accordion Tools.
+- Added two-way navigation between Harmony Explorer and the Stradella Chord Finder: selected harmonic relationships can be sent to **Show on Stradella**, and supported Stradella finder chords can be opened with **Explore harmony**.
+- Harmony Explorer playback now uses Accordion Tools' existing sound engine and current sound settings. In integrated playback, chord pitch classes are kept in the single C3-B3 Stradella chord octave, including La Melodiosa bass-register playback.
+- Added block/arpeggio playback and an optional reference-to-related transition mode for hearing harmonic relationships without introducing piano-style octave assumptions.
+- Added Harmony Explorer tests and adapter tests for chord-family and pitch-class handoff to the Stradella finder.
+- Updated SVG/PNG export cleanup so transient Harmony Explorer tooltips, selections, and navigation highlights are not exported.
+
 ## v0.10.2
 - Chord Finder: Bass + chord buttons remains the default mode and now keeps a valid fifth-omission approximation visible even when several exact realizations exist.
 
