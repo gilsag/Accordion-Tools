@@ -1,442 +1,154 @@
 # Accordion-Tools
 
-Accordion-Tools is a browser-based accordion and music-layout diagram generator built with React, TypeScript, Vite, and npm.
+**Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-It helps accordion players, students, and teachers create visual diagrams for Stradella bass, chromatic button accordion treble, and piano treble layouts. The app can be used for reference, teaching, practice planning, fingering notes, scale and chord exploration, ABC playback, Stradella accompaniment patterns, sound playback, and exporting diagrams as SVG or PNG files.
+Current version: **0.14.0**
 
-Current app version: **0.14.0**
-
-## Live Site
-
-```text
-https://gilsag.github.io/Accordion-Tools/
-```
+**Live site:** https://gilsag.github.io/Accordion-Tools/
 
 ## Highlights
 
-- Stradella bass diagrams from small layouts up to 120 bass.
-- Treble diagrams for C-system, B-system/Bayan, and piano keyboard layouts.
-- Multiple notation styles: English, German, solfege, intervals, or blank labels.
-- Scale Finder, Chord Finder, Harmony Explorer, Stradella Progression Assistant, Selection, Fingering, Sequence, and Annotate Diagram tools.
-- ABC Player for simple ABC notation playback and diagram highlighting.
-- Stradella Bass Pattern Player with chord progressions, repeats-per-chord, repeat/loop playback, rendered Stradella staff notation, custom pattern editor, and local custom pattern storage.
-- Stradella Progression Assistant with whole-progression realization optimization, animated button playback, block/oom-pah/waltz/march patterns, and rendered staff notation.
-- Progression-aware ABC, MIDI, and LilyPond `.ly` export from the Bass Pattern Player.
-- SVG and PNG diagram export.
-- Save/load settings JSON and editable startup defaults.
-- Optional La Melodiosa sampled accordion playback with independent treble and bass register selection.
+- Stradella bass diagrams from compact layouts up to 120 bass.
+- C-system, B-system/Bayan, and piano treble layouts.
+- Scale Finder and Chord Finder for treble and Stradella.
+- Stradella chord realizations using chord buttons, bass/counterbass buttons, or mixed combinations.
+- Harmony Explorer for common-tone relationships, diatonic harmony, chord families, voice leading, and progression recording.
+- Stradella Progression Assistant for optimizing chord realizations across a complete progression.
+- Sequence, Fingering, Selection, and diagram-annotation tools.
+- Stradella Bass Pattern Player with notation and accompaniment patterns.
+- ABC playback and diagram highlighting.
+- Synthesized sound plus optional **La Melodiosa** sampled accordion playback.
+- Music notation and SVG/PNG export.
 
+## Screenshots
 
-## Sampled accordion sound and attribution
+### Treble Scale Finder
 
-Accordion-Tools includes the **La Melodiosa** accordion sample set as an optional sound source. Sampling, editing, and original instrument programming are by **Petri Pohjanmies (Finland), 2026**. The sample pack is used under the **Creative Commons Attribution (CC-BY)** license.
+![Treble Scale Finder](docs/images/treble-scale-finder.png)
 
-The browser sampler follows the mappings supplied with the original SFZ instrument, including separate treble and bass register states, per-region tuning adjustments, relative sample levels, and alternating treble samples where provided. The built-in synthesized sound engine remains available as a separate option.
+Scale visualization and fingering paths on a chromatic button accordion treble layout.
 
-The original attribution and instrument-definition files are retained with the samples in `public/samples/la-melodiosa/`, including `README-original.txt`, `LaMelodiosa-original.sfz`, and `LaMelodiosa-original.dspreset`. Accordion-Tools' adaptation does not imply endorsement by the original sample author.
+### Stradella Chord Finder
 
-## Documentation
+![Stradella Chord Finder](docs/images/stradella-chord-finder.png)
 
-Detailed documentation lives in the [`docs/`](docs/) folder.
-
-| Document | Purpose |
-|---|---|
-| [`docs/settings.md`](docs/settings.md) | App settings, startup defaults, and save/load behavior. |
-| [`docs/selection-tool.md`](docs/selection-tool.md) | Marking selected buttons/keys. |
-| [`docs/fingering-tool.md`](docs/fingering-tool.md) | Adding finger numbers to diagrams. |
-| [`docs/sequence-tool.md`](docs/sequence-tool.md) | Creating ordered paths with numbers/arrows. |
-| [`docs/annotate-diagram-tool.md`](docs/annotate-diagram-tool.md) | Adding button-attached and free-position annotations to diagrams. |
-| [`docs/scale-finder.md`](docs/scale-finder.md) | Treble and Stradella scale paths. |
-| [`docs/chord-finder.md`](docs/chord-finder.md) | Treble and Stradella chord search. |
-| [`docs/harmony-explorer.md`](docs/harmony-explorer.md) | Harmonic relationship circles and Stradella handoff. |
-| [`docs/progression-assistant.md`](docs/progression-assistant.md) | Stradella progression optimization and step preview. |
-| [`docs/abc-player.md`](docs/abc-player.md) | ABC playback and diagram mapping. |
-| [`docs/bass-pattern-player.md`](docs/bass-pattern-player.md) | Bass Pattern Player workflow, notation, looping, and exports. |
-| [`docs/bass-pattern-format.md`](docs/bass-pattern-format.md) | Bass pattern file format, rhythm syntax, accents, ties, tuplets, and tokens. |
-
-## Diagram Layouts
-
-Accordion-Tools supports three main visual layout families:
-
-- **Stradella bass layouts**
-- **Chromatic button accordion treble layouts**
-- **Piano treble layouts**
-
-The top bar switches among Stradella, Treble, and the dedicated Harmony workspace. In Treble mode, the Layout settings choose between C-system, B-system/Bayan, and Piano keyboard.
-
-### Stradella Bass Diagrams
-
-The app can generate Stradella bass layouts in many common sizes:
-
-- 8 bass
-- 12 bass
-- 24 bass
-- 32 bass
-- 40 bass
-- 48 bass
-- 60 bass
-- 72 bass
-- 80 bass
-- 96 bass
-- 100 bass
-- 120 bass
-
-Depending on the selected layout, the diagram can show bass rows, counterbass rows, major chords, minor chords, dominant seventh chords, and diminished seventh chords.
-
-### Chromatic Button Accordion Treble Diagrams
-
-The app can generate chromatic button accordion treble diagrams for:
-
-- C-system
-- B-system / Bayan
-- 3, 4, or 5 rows
-- small, full-size, and large range presets
-
-The treble layout can show or hide octave numbers.
-
-### Piano Treble Diagrams
-
-Piano Treble draws a horizontal piano keyboard while reusing the same musical logic used by the accordion treble tools.
-
-Supported piano treble ranges include:
-
-- C4–C6
-- C3–C6
-- C2–C6
-
-Piano appearance can be adjusted with key-width and key-height controls.
-
-## Notation and Appearance
-
-The app supports several notation styles:
-
-- English note names, such as `C D E F`
-- German note names, such as `C D E F G A H`
-- Solfege, such as `Do Re Mi Fa`
-- Intervals
-- Blank labels
-
-Accidental spelling can also be adjusted:
-
-- Default spelling
-- Prefer flats
-- Prefer sharps
-
-Appearance controls include color theme, label visibility, button size, spacing, line thickness, diagram scale, piano key size, interface density, vertical spacing, and status bar visibility.
-
-The **Focus diagram** button hides the side controls and gives more room to the diagram.
-
-## Tools Overview
-
-The Tools panel changes depending on whether the app is in Treble or Stradella mode. Tools and settings start collapsed by default.
-
-### Selection Tool
-
-Marks individual buttons or keys. Selected items can be reviewed, cleared, played back, and included in SVG/PNG exports.
-
-See [`docs/selection-tool.md`](docs/selection-tool.md).
-
-### Fingering Tool
-
-Adds finger numbers to selected buttons or keys. Numbers can appear inside the button or above it.
-
-See [`docs/fingering-tool.md`](docs/fingering-tool.md).
-
-### Sequence Tool
-
-Records ordered paths for melodies, exercises, scales, arpeggios, and bass movement. Sequences can display numbers, arrows, or both.
-
-See [`docs/sequence-tool.md`](docs/sequence-tool.md).
-
-### Annotate Diagram
-
-Adds inline annotations directly on the diagram. Click a button or empty diagram location, type the annotation in place, and manage annotations from the Tools panel list.
-
-See [`docs/annotate-diagram-tool.md`](docs/annotate-diagram-tool.md).
-
-### Scale Finder
-
-Highlights scale paths in Treble or Stradella mode. Treble mode supports C-system, B-system/Bayan, and piano layouts. Stradella mode uses bass and counterbass note buttons.
-
-See [`docs/scale-finder.md`](docs/scale-finder.md).
-
-### Chord Finder
-
-Finds chord shapes on treble layouts and Stradella layouts. Stradella mode supports bass-rows-only, chord-buttons-only, and bass-plus-chord search modes.
-
-See [`docs/chord-finder.md`](docs/chord-finder.md).
+The Chord Finder can search for practical Stradella realizations using bass/counterbass and chord buttons. The example above shows **Em7** realized as **E counterbass + G major**.
 
 ### Harmony Explorer
 
-Adds a dedicated circle-of-fifths workspace for harmonic relationships based on shared pitch classes. Core harmonic choices stay in Tools, while secondary diagram/audio preferences live under **Settings → Harmony**. When the Harmony workspace is active, unrelated accordion tools are hidden so the sidebar stays focused. Selected chords can still be sent directly to the Stradella Chord Finder. Harmony can also record a sequence directly from sequential chord or note clicks, play the captured sequence locally, and show staff notation for the result. Chord events can be sent to the Stradella Progression Assistant for optimization; if note events are present, a brief warning explains that those notes remain in Harmony and are not exported. An optional inner note ring adds the twelve pitch classes inside the reference-chord ring.
+![Harmony Explorer](docs/images/harmony-explorer.png)
 
-See [`docs/harmony-explorer.md`](docs/harmony-explorer.md).
+Explore relationships between chord families around the circle of fifths. Relationships can be filtered or highlighted according to a selected parent scale or mode, and chord/note clicks can be recorded as a progression.
 
-### Stradella Progression Assistant
+### Stradella Sequence Tool
 
-A separate Stradella-side tool for building chord progressions and choosing a coherent sequence of **Bass + chord buttons** realizations across the whole progression. It balances pitch-class voice motion with physical button movement, distinguishes ergonomically equivalent pitch choices such as fundamental vs counterbass rows, previews each optimized step directly on the Stradella diagram, and allows conservative fifth-omission approximations by default. Harmony Explorer can send a selected reference→related relationship directly into this tool.
+![Stradella Sequence Tool](docs/images/stradella-sequence.png)
 
-See [`docs/progression-assistant.md`](docs/progression-assistant.md).
+Create ordered button paths using numbers and arrows for exercises, bass movement, fingering ideas, and teaching diagrams.
 
-### ABC Player
+### Progression Assistant
 
-Loads or pastes ABC notation and animates the current diagram during playback. The ABC Player now uses abcjs for the main parsing/sequence step, then maps the resulting musical events to accordion buttons. It supports notes, rests, durations, accidentals, key signatures, bracketed note chords, quoted chord symbols, voice-aware playback, simple repeats, ties, tempo control, and playback controls.
+![Stradella Progression Assistant](docs/images/progression-assistant.png)
 
-See [`docs/abc-player.md`](docs/abc-player.md).
+Optimize Stradella realizations across an entire chord progression, balancing harmonic voice movement and physical button movement. The assistant supports playback, accompaniment patterns, button highlighting, and staff notation.
 
-### Stradella Bass Pattern Player
+## Main workspaces
 
-Combines a reusable bass pattern with a Roman-numeral chord progression and selected root/key.
+### Stradella
 
-Recent features include:
+Generate and interact with common Stradella bass layouts. Depending on the selected layout, diagrams include fundamental bass, counterbass, major, minor, dominant-seventh, and diminished-seventh rows.
 
-- compact progression library format
-- expanded built-in progression list
-- repeats-per-chord setting
-- fixed repeat and infinite loop playback
-- collapsible custom pattern editor with live validation
-- local custom pattern library stored in the browser
-- rendered staff notation preview using abcjs and simplified Stradella bass conventions, with SVG download
-- notation-level ties
-- rational rhythm values for tuplets and syncopation
-- compact pattern notation with accents, rests, barlines, simultaneous groups, and durations
-- progression-aware ABC, MIDI, and LilyPond `.ly` export
+Important Stradella tools include:
 
-See [`docs/bass-pattern-player.md`](docs/bass-pattern-player.md) and [`docs/bass-pattern-format.md`](docs/bass-pattern-format.md).
+- **Chord Finder** — exact and conservative approximate chord realizations.
+- **Progression Assistant** — whole-progression optimization and accompaniment playback.
+- **Bass Pattern Player** — reusable Stradella accompaniment patterns and progressions.
+- **Scale Finder** — scale paths using bass and counterbass notes.
+- **Sequence** — ordered button paths with numbers and arrows.
 
-## Bass Pattern and Progression Files
+### Treble
 
-Built-in bass patterns are stored in:
+Treble diagrams support:
 
-```text
-public/bass-patterns/bass-patterns.json
-```
+- C-system chromatic button accordion.
+- B-system / Bayan.
+- 3-, 4-, and 5-row layouts.
+- Piano keyboard layouts.
 
-Built-in chord progressions are stored in:
+Scale and chord tools share the same configurable notation and diagram system.
 
-```text
-public/chord-progressions/chord-progressions.json
-```
+### Harmony
 
-The chord-progression file uses a compact format such as:
+The Harmony Explorer provides circular diagrams of relationships between a selectable reference chord family and related chord families.
 
-```json
-{
-  "id": "i-iv-v-i",
-  "name": "I–IV–V–I progression",
-  "progression": "I IV V I",
-  "description": "A simple tonic–subdominant–dominant–tonic progression."
-}
-```
+Features include:
 
-The bass-pattern file supports explicit steps and compact pattern strings. See [`docs/bass-pattern-format.md`](docs/bass-pattern-format.md) before editing it manually.
+- common-tone grouping by ring;
+- diatonic-only and highlighted-diatonic views;
+- selectable parent scales and modes;
+- optional inner note ring;
+- chord-tone tooltips and Roman numerals;
+- voice-leading information;
+- chord-family highlighting;
+- progression recording from chord and note clicks;
+- playback and notation of recorded sequences;
+- direct handoff of chord progressions to the Stradella Progression Assistant.
 
-## Sound Playback
+## Sound
 
-Accordion-Tools includes both its browser-based synthesized sound engine and optional La Melodiosa sampled accordion playback.
+Accordion-Tools includes a lightweight synthesized sound engine and optional playback using the **La Melodiosa** accordion sample set.
 
-Sound can be used for:
+**La Melodiosa** was sampled, edited, and originally programmed by **Petri Pohjanmies (Finland), 2026** and is used under the Creative Commons Attribution (CC-BY) license. The original attribution and instrument-definition files are retained with the samples in `public/samples/la-melodiosa/`.
 
-- button/key clicks
-- selected-button playback
-- Scale Finder playback
-- Chord Finder playback
-- Harmony Explorer chord and relationship playback
-- Sequence playback
-- ABC playback
-- Bass Pattern Player playback
+## Documentation
 
-The built-in synthesizer is intended as a lightweight practice/reference aid; La Melodiosa provides the more realistic sampled-accordion option.
+Detailed documentation is available in the [`docs/`](docs/) folder, including guides for:
 
-## Download and Export
+- [Settings](docs/settings.md)
+- [Scale Finder](docs/scale-finder.md)
+- [Chord Finder](docs/chord-finder.md)
+- [Harmony Explorer](docs/harmony-explorer.md)
+- [Progression Assistant](docs/progression-assistant.md)
+- [Selection Tool](docs/selection-tool.md)
+- [Fingering Tool](docs/fingering-tool.md)
+- [Sequence Tool](docs/sequence-tool.md)
+- [Annotate Diagram](docs/annotate-diagram-tool.md)
+- [ABC Player](docs/abc-player.md)
+- [Bass Pattern Player](docs/bass-pattern-player.md)
+- [Bass Pattern format](docs/bass-pattern-format.md)
 
-The current diagram can be downloaded as:
+## Running locally
 
-- SVG
-- PNG
-
-The Bass Pattern Player can also export the expanded accompaniment as:
-
-- ABC sketch
-- MIDI file
-
-The ABC/MIDI export uses the selected root, selected progression, repeats per chord, selected pattern, pattern bar count, and tempo.
-
-## Settings and Defaults
-
-Startup defaults are read from:
-
-```text
-public/default-settings.json
-```
-
-ABC example tunes are listed in:
-
-```text
-public/abc/examples.json
-```
-
-Add a `.abc` file to `public/abc/` and add one entry to the manifest to show it in the ABC Player example menu. The About panel can save and load settings JSON files for the current session.
-
-See [`docs/settings.md`](docs/settings.md) for details.
-
-## Project Structure
-
-```text
-Accordion-Tools/
-├── .github/
-│   └── workflows/
-│       └── deploy.yml
-├── docs/
-│   ├── abc-player.md
-│   ├── bass-pattern-format.md
-│   ├── bass-pattern-player.md
-│   ├── chord-finder.md
-│   ├── fingering-tool.md
-│   ├── scale-finder.md
-│   ├── selection-tool.md
-│   ├── sequence-tool.md
-│   ├── settings.md
-│   └── annotate-diagram-tool.md
-├── public/
-│   ├── abc/
-│   │   └── examples.json
-│   ├── bass-patterns/
-│   │   └── bass-patterns.json
-│   ├── chord-progressions/
-│   │   └── chord-progressions.json
-│   ├── default-settings.json
-│   ├── favicon.svg
-│   └── icons.svg
-├── scripts/
-│   ├── abc-ties.test.ts
-│   ├── chord-logic.test.ts
-│   └── notation.test.ts
-├── src/
-│   ├── components/
-│   ├── config/
-│   ├── music/
-│   ├── tools/
-│   ├── App.css
-│   ├── App.tsx
-│   ├── download.ts
-│   ├── index.css
-│   ├── main.tsx
-│   ├── music.tsx
-│   ├── pianoTreble.ts
-│   ├── sound.ts
-│   ├── stradella.ts
-│   ├── treble.ts
-│   └── types.ts
-├── eslint.config.js
-├── index.html
-├── package.json
-├── package-lock.json
-├── README.md
-└── LICENSE
-```
-
-## Important Source Files
-
-| File | Purpose |
-|---|---|
-| `src/App.tsx` | Main application component and UI coordination. |
-| `src/types.ts` | Shared TypeScript types for settings, tools, diagram buttons, ABC, and bass patterns. |
-| `src/music.tsx` | Musical helpers for notes, labels, transposition, and chord tones. |
-| `src/music/chordDefinitions.ts` | Central chord-definition list. |
-| `src/stradella.ts` | Stradella bass layout generator. |
-| `src/treble.ts` | Chromatic-button treble layout generator. |
-| `src/pianoTreble.ts` | Piano keyboard layout generator. |
-| `src/sound.ts` | Web Audio sound engine. |
-| `src/download.ts` | SVG and PNG export helpers. |
-| `src/tools/abcPlayerTools.ts` | ABC parsing, timing, chord-symbol mapping, and playback helpers. |
-| `src/tools/bassPatternPlayerTools.ts` | Bass Pattern Player loading, validation, progression expansion, rhythm parsing, export, and playback-event logic. |
-| `src/tools/stradellaChordFinder/` | Stradella-specific chord-finder implementation. |
-
-## Automated Tests
-
-Run the Stradella chord tests:
-
-```bash
-npm run test:chords
-```
-
-Run the notation/spelling tests:
-
-```bash
-npm run test:notation
-```
-
-Run all tests:
-
-```bash
-npm run test:all
-```
-
-## Requirements
-
-To run the project locally, install:
-
-- Node.js
-- npm
-
-Check installation:
-
-```bash
-node --version
-npm --version
-```
-
-## Running Locally
-
-Install dependencies:
+Accordion-Tools uses React, TypeScript, Vite, and npm.
 
 ```bash
 npm install
-```
-
-Start the development server:
-
-```bash
 npm run dev
 ```
 
-Vite will show a local address, usually:
+Vite will display the local address, normally something similar to:
 
 ```text
 http://localhost:5173/
 ```
 
-Open that address in your browser.
-
-## Building
-
-Create a production build:
+To test the production build:
 
 ```bash
 npm run build
-```
-
-The production files are created in:
-
-```text
-dist/
-```
-
-## Previewing a Production Build
-
-After building, preview the production bundle locally:
-
-```bash
 npm run preview
 ```
 
+## Export
+
+Diagrams can be exported as **SVG** or **PNG**. Several tools also provide dedicated notation or music-data exports.
+
+## Acknowledgements
+
+The development of the Stradella Chord Finder was informed in part by the [Stradella Explorer](https://accordionchords.com/stradella-bass-chord-calculator-interactive-stacking-engine/) at AccordionChords.com, which provided a useful reference for exploring practical chord realizations on the Stradella bass system.
+
+Thanks also to **Petri Pohjanmies** for making the La Melodiosa sample set available under CC-BY.
+
 ## License
 
-This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
-
-See [`LICENSE`](LICENSE) for details.
-
-### Responsive preset sizing
-
-The default settings file intentionally omits `buttonSize` so the selected treble or piano preset can choose its normal starting size and the SVG can continue fitting responsively to the available window. Add `buttonSize` to `public/default-settings.json` only if you want to force a fixed startup button size.
+See [`LICENSE`](LICENSE) for the license applying to Accordion-Tools. Third-party assets, including La Melodiosa, retain their own licensing and attribution terms.
