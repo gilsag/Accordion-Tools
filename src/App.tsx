@@ -124,6 +124,7 @@ import {
 import { getChordFinderTrebleButtons } from "./tools/chordFinderTools";
 import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
+import { realizationAnnotation } from "./tools/stradellaChordFinder/diagramAnnotations";
 import {
   playButtonArpeggioThenChord,
   playButtonCombination,
@@ -750,6 +751,8 @@ function App() {
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
     useState<StradellaChordFinderMode>("bass-and-chords");
   const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
+  const [showFinderChordTitle, setShowFinderChordTitle] = useState(true);
+  const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
   const [pendingProgressionRealizationKey, setPendingProgressionRealizationKey] = useState<string | null>(null);
   const [
     stradellaChordFinderMarkRootBass,
@@ -3890,12 +3893,32 @@ function App() {
           ? "piano-treble"
           : `${trebleLayout}-treble`;
 
+    // Match the title currently displayed on the diagram, including the
+    // Chord Finder's automatically generated chord/realization title.
+    const displayedTitle = finderTitleEnabled
+      ? finderAnnotation?.title ?? ""
+      : titleMode !== "none"
+        ? finalTitle
+        : "";
+    const safeTitle = displayedTitle
+      .trim()
+      .replace(/[\\/:*?"<>|\x00-\x1f\x7f]/g, "-")
+      .replace(/[. ]+$/g, "")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 120)
+      .replace(/[. ]+$/g, "");
+    // Windows reserves these basenames even with an image extension.
+    const reservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i;
+    const filenameBase = safeTitle && !reservedName.test(safeTitle)
+      ? safeTitle
+      : `${layoutName}-accordion-diagram`;
+
     if (downloadFormat === "png") {
-      downloadPng(svgRef.current, `${layoutName}-accordion-diagram.png`);
+      downloadPng(svgRef.current, `${filenameBase}.png`);
       return;
     }
 
-    downloadSvg(svgRef.current, `${layoutName}-accordion-diagram.svg`);
+    downloadSvg(svgRef.current, `${filenameBase}.svg`);
   }
   /** Converts a browser mouse click into SVG viewBox coordinates. */
   function svgPointFromMouse(event: ReactMouseEvent<SVGSVGElement>) {
@@ -4016,6 +4039,12 @@ function App() {
   }, []);
 
   /* Derived values used by rendering. */
+  const finderAnnotation = stradellaChordFinderResult.playable
+    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult)
+    : null;
+  const finderAnnotationActive = side === "stradella" && stradellaChordFinderActive && finderAnnotation !== null;
+  const finderTitleEnabled = finderAnnotationActive && showFinderChordTitle;
+  const finderFooterEnabled = finderAnnotationActive && showFinderRealizationNote;
   const finalTitle =
     titleMode === "auto"
       ? autoTitle()
@@ -4042,7 +4071,7 @@ function App() {
           )
         : TREBLE_SIZE_VIEW_WIDTH[trebleSize];
 
-  const viewHeight =
+  const baseViewHeight =
     side === "stradella"
       ? Math.max(
           320,
@@ -4058,6 +4087,8 @@ function App() {
               diagramVerticalSpacing,
           )
         : 450 + diagramVerticalSpacing;
+
+  const viewHeight = baseViewHeight + (finderFooterEnabled ? 56 : 0);
 
   const sidebarWidth =
     interfaceDensity === "compact"
@@ -5542,6 +5573,10 @@ function App() {
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
+                  showChordTitle={showFinderChordTitle}
+                  onShowChordTitleChange={setShowFinderChordTitle}
+                  showRealizationNote={showFinderRealizationNote}
+                  onShowRealizationNoteChange={setShowFinderRealizationNote}
                   realizations={stradellaChordFinderRealizations}
                   realizationIndex={Math.min(stradellaChordFinderRealizationIndex, Math.max(0, stradellaChordFinderRealizations.length - 1))}
                   onRealizationChange={setStradellaChordFinderRealizationIndex}
@@ -6925,16 +6960,28 @@ function App() {
               </marker>
             </defs>
 
-            {titleMode !== "none" && (
+            {(finderTitleEnabled || titleMode !== "none") && (
               <text
                 x={viewWidth / 2}
                 y="34"
                 textAnchor="middle"
                 className={`title ${fontClass(titleFont)}`}
-                style={{ fontSize: titleSize }}
+                style={{ fontSize: finderTitleEnabled ? Math.max(36, titleSize) : titleSize }}
               >
-                {finalTitle}
+                {finderTitleEnabled ? finderAnnotation?.title : finalTitle}
               </text>
+            )}
+
+            {finderFooterEnabled && finderAnnotation && (
+              <foreignObject x={32} y={baseViewHeight - 21} width={viewWidth - 64} height={74}>
+                <div xmlns="http://www.w3.org/1999/xhtml" style={{
+                  fontFamily: "Arial, sans-serif", fontSize: "26px", fontWeight: 600,
+                  textAlign: "center", lineHeight: 1.15, overflowWrap: "anywhere",
+                  color: "#20252a",
+                }}>
+                  {finderAnnotation.detail}
+                </div>
+              </foreignObject>
             )}
 
             {showBellowsGuide && (
