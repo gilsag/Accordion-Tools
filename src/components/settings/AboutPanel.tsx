@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { ReactNode } from "react";
+import { DocumentationViewer } from "./DocumentationViewer";
 import { APP_INFO } from "../../config/appInfo";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 
@@ -10,6 +12,7 @@ type AboutPanelProps = {
 
 /** Compact app metadata shown in Settings → About. */
 export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
+  const [docsOpen, setDocsOpen] = useState(false);
   return (
     <CollapsibleSection title="About" isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
@@ -34,11 +37,15 @@ export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
         </a>
       </p>
       <p className="hint">
+        <button type="button" className="small-button" onClick={() => setDocsOpen(true)}>Open documentation</button>
+      </p>
+      <p className="hint">
         <a href={APP_INFO.readmeUrl} target="_blank" rel="noreferrer">
           Open README.md
         </a>
       </p>
       {children}
+      {docsOpen && <DocumentationViewer onClose={() => setDocsOpen(false)} />}
     </CollapsibleSection>
   );
 }

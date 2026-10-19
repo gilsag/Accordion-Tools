@@ -176,6 +176,8 @@ Secondary Harmony Explorer preferences are stored in Settings so the main Harmon
 | `scaleFinderRowLimit` | Default treble-row limit for Scale Finder. |
 | `stradellaChordFinderMode` | Default search mode for Stradella Chord Finder. |
 | `stradellaChordFinderMarkRootBass` | Marks the root bass as a visual reference in chord-button results. |
+
+The Stradella Chord Finder also has two in-panel diagram-label checkboxes for the automatic chord/realization title and the realization explanation beneath the diagram. They are located at the bottom of the tool panel. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
 | `chordFinderRoot` | Default Chord Finder root. |
 | `chordFinderPattern` | Default Chord Finder pattern. |
 | `chordFinderInversion` | Default Chord Finder inversion. |
@@ -231,3 +233,7 @@ To add a new example to the dropdown, place the `.abc` file in `public/abc/` and
 
 
 Harmony settings include an optional **Show inner note ring** control (off by default).
+
+## In-app documentation
+
+Open **Settings → About → Open documentation** to read the user guides without leaving Accordion Tools. The viewer includes topic navigation and a text search across the bundled Markdown guides. Links between Markdown guides open the corresponding topic in the viewer. The **Open README.md** link remains available for viewing the GitHub version.

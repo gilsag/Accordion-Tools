@@ -1,5 +1,16 @@
 # Accordion Tools — Version History
 
+## Unreleased — Stradella Chord Finder refinements (October 2026)
+
+- Expanded **Bass + chord buttons** results to include bass/counterbass-only exact realizations alongside mixed and chord-only combinations.
+- Removed the previous five-result cap; candidate enumeration remains subject to the generator, ergonomic reach checks, and consolidation of equivalent button arrangements.
+- Refined ranking to prefer exact results, fewer omissions, fewer buttons, and compact physical layouts. Added redundancy and reach filtering.
+- Restricted approximate triads to complete three-tone realizations; permitted selected fifth omissions for larger chords, ninth omission for dominant eleventh chords, and the conventional single diminished-seventh-button exception.
+- Added independent diagram options for an automatic chord/realization title and a full-width realization explanation, including omitted-pitch roles.
+- SVG/PNG diagram downloads now use the visible title as the filename when available, sanitizing invalid filename characters and using a layout-based fallback otherwise.
+
+These notes document the supplied Chord Finder patches; a new numbered release has not been assigned.
+
 ## v0.14.0 - Harmony progression recording and note ring
 
 - Added progression recording directly in Harmony Explorer: start/stop recording, sequential chord capture, repeated chord events, clear, and direct transfer to the Stradella Progression Assistant.
@@ -302,3 +313,9 @@ Major 3rd row: D#  A#   F    C    G    D
 - Preserved the supplied SFZ sample ranges, root pitches, tuning offsets, relative levels, and treble round-robin alternation.
 - Added lazy/cached Web Audio sample loading, selected-register preloading, synth fallback outside mapped ranges, and stop protection while samples are decoding.
 - Added La Melodiosa attribution in About, README/settings documentation, and the sample directory; retained the author's original README, SFZ, and Decent Sampler preset.
+
+### In-app documentation viewer (unreleased)
+
+- Added **Open documentation** in Settings → About.
+- Bundles the project Markdown guides into a searchable, navigable reader without external dependencies or network access.
+- Preserves the existing external README link.

@@ -11,7 +11,7 @@ Current version: **0.14.0**
 - Stradella bass diagrams from compact layouts up to 120 bass.
 - C-system, B-system/Bayan, and piano treble layouts.
 - Scale Finder and Chord Finder for treble and Stradella.
-- Stradella chord realizations using chord buttons, bass/counterbass buttons, or mixed combinations.
+- Stradella chord realizations using chord buttons, bass/counterbass buttons, or mixed combinations, with ergonomic ranking and conservative approximations.
 - Harmony Explorer for common-tone relationships, diatonic harmony, chord families, voice leading, and progression recording.
 - Stradella Progression Assistant for optimizing chord realizations across a complete progression.
 - Sequence, Fingering, Selection, and diagram-annotation tools.
@@ -32,7 +32,7 @@ Scale visualization and fingering paths on a chromatic button accordion treble l
 
 ![Stradella Chord Finder](docs/images/stradella-chord-finder.png)
 
-The Chord Finder can search for practical Stradella realizations using bass/counterbass and chord buttons. The example above shows **Em7** realized as **E counterbass + G major**.
+The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. It prioritizes fewer buttons and compact fingering, and can label exported diagrams with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**.
 
 ### Harmony Explorer
 
@@ -60,7 +60,7 @@ Generate and interact with common Stradella bass layouts. Depending on the selec
 
 Important Stradella tools include:
 
-- **Chord Finder** — exact and conservative approximate chord realizations.
+- **Chord Finder** — ranked exact and conservative approximate realizations, with optional diagram labels and title-based SVG/PNG filenames.
 - **Progression Assistant** — whole-progression optimization and accompaniment playback.
 - **Bass Pattern Player** — reusable Stradella accompaniment patterns and progressions.
 - **Scale Finder** — scale paths using bass and counterbass notes.
@@ -152,3 +152,8 @@ Thanks also to **Petri Pohjanmies** for making the La Melodiosa sample set avail
 ## License
 
 See [`LICENSE`](LICENSE) for the license applying to Accordion-Tools. Third-party assets, including La Melodiosa, retain their own licensing and attribution terms.
+
+
+### Reading the documentation in the app
+
+Choose **Settings → About → Open documentation** to browse the bundled guides with topic navigation and search, without leaving the application. The GitHub README remains available through the existing link.
