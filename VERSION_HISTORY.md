@@ -1,6 +1,30 @@
 # Accordion Tools — Version History
 
-## Unreleased — Stradella Chord Finder refinements (October 2026)
+## Unreleased - Treble Chord Finder completeness and notes
+
+- Added Auto, Full chord, and Practical voicing choices to the Treble Chord Finder. Auto now retains all available chord tones for chords with five or fewer tones; Full chord exposes complete six- and seven-tone extended chords as theoretical diagrams.
+- Made chord-result classification and the optional SVG/PNG explanation apply to every chord family, not just extended chords. Missing tones and their harmonic roles are identified, with a warning for six- or seven-button theoretical shapes and for tones outside the selected keyboard range.
+- Added targeted treble chord regression tests covering major/minor/augmented chords, sevenths, ninths, elevenths, and thirteenths on C-system, B-system, and piano layouts.
+
+## Unreleased - Stradella recommendation and explanation refinements
+
+- Replaced the two-recommendation, pitch-class-deduplicated shortlist with up to **three recommended examples** reflecting compact complete voicings, minimal omissions, and functional extended-chord shells. Distinct exact button recipes can each qualify; all valid alternatives remain available.
+- Reduced the previous strong fixed preference for thirteenth shells. Recommendation scoring now balances button count, geometric compactness, harmonic omission penalties, number of omitted notes, and major-third/natural-eleventh density.
+- Expanded **More explanation** for each selected Stradella realization: actual button combination, produced pitch classes, named omissions and roles, fixed-register extension compression, 11th/13th harmonic consequences, and a reason when the realization is marked Recommended. Explained that pitch-class completeness is distinct from literal upper-octave stacking.
+- Kept concise exported-diagram annotations unchanged to preserve legibility in teaching materials.
+
+## Unreleased - Chord Finder voicings, titles, and compact treble layouts
+
+- Added **Contextual** diagram titles as the default, shared across Chord Finders and Scale Finders; the pre-existing Auto, Custom, and None modes remain available. Removed redundant per-Chord-Finder title checkboxes.
+- Standardized unambiguous chord symbols (`Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`, `Cdim`, `Caug`) and ASCII-safe realization-specific export filenames.
+- Added dominant, major, and minor **eleventh** and **thirteenth** chords; chord types appear in increasing order of theoretical size.
+- Extended conservative omission rules: eleventh ninth omissions, qualified third omission for dominant/major elevenths, and fifth/ninth/eleventh omissions for thirteenths. Triads and altered fifths remain protected except the existing standard diminished-seventh-button exception.
+- Initially marked up to two distinct, musically useful extended-chord voicings as **Recommended**, ahead of other exact and approximate results. Complete alternatives remain available.
+- Added an optional treble extended-chord diagram footer describing the sounded notes and omitted harmonic roles.
+- Added **1-octave** and **2-octave** CBA/B-system treble size presets while keeping the existing sizes and all piano range options. Compact views expand and recenter when the highlighted or selected buttons require more room.
+- Updated Chord Finder, Scale Finder, and Settings guides; these are accessible in the in-app documentation viewer.
+
+## Previous development - Stradella Chord Finder refinements (October 2026)
 
 - Expanded **Bass + chord buttons** results to include bass/counterbass-only exact realizations alongside mixed and chord-only combinations.
 - Removed the previous five-result cap; candidate enumeration remains subject to the generator, ergonomic reach checks, and consolidation of equivalent button arrangements.
@@ -319,3 +343,7 @@ Major 3rd row: D#  A#   F    C    G    D
 - Added **Open documentation** in Settings → About.
 - Bundles the project Markdown guides into a searchable, navigable reader without external dependencies or network access.
 - Preserves the existing external README link.
+
+- Chord Finder: configurable maximum of 1–4 buttons and compact/moderate/extended hand span for combined searches.
+- Chord Finder: diagram titles identify realization exactness, button count and bass/chord composition; major-triad titles explicitly use `M`.
+- Diagram download filenames: ASCII-only labels with realization details, using safe hyphen separators.

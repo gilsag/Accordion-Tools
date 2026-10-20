@@ -50,11 +50,13 @@ export function getStradellaChordFinderResults(
   pattern: FinderChordPattern,
   mode: StradellaChordFinderMode,
   markRootBass = true,
+  maxButtons = 3,
+  spanColumns = 5.5,
 ): StradellaChordFinderResult[] {
   const targetPitches = orderedTargetPitches(root, pattern);
   if (targetPitches.length === 0) {
     return [notPlayableResult([], "Choose a valid chord.", "Choose a valid root and chord type.")];
   }
-  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern);
+  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern, maxButtons, spanColumns);
   return [getStradellaChordFinderResult(buttons, root, pattern, mode, markRootBass)];
 }

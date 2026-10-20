@@ -8,6 +8,7 @@
 
 import type { DiagramButton, FinderChordInversion, FinderChordOctave, FinderChordPattern } from "../types";
 import { INDEX_TO_PITCH, PITCH_INDEX } from "../music";
+import { treblePreferredIntervals } from "../music/chordVoicingPolicy";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
 
 /** Chord inversion labels shown in the Chord Finder UI. */
@@ -90,34 +91,54 @@ function chooseNextCandidate(
   })[0];
 }
 
-/** Builds one chord path around a root fixed in the requested octave, with the requested inversion order. */
+/** How the treble finder chooses which chord tones to display. */
+export type TrebleChordVoicingMode = "auto" | "full" | "practical";
+
+/**
+ * Builds a chord path at the requested root octave.
+ *
+ * Auto uses the complete chord whenever all its tones can be found with at
+ * most five keys/buttons. For six- or seven-tone extensions it uses a
+ * practical shell; the Full option always shows all available chord tones,
+ * including theoretical shapes that require more than five fingers.
+ */
 export function getChordFinderTrebleButtons(
   buttons: DiagramButton[],
   root: string,
   pattern: FinderChordPattern,
   inversion: FinderChordInversion,
   rootOctave: FinderChordOctave,
-) {
+  voicingMode: TrebleChordVoicingMode = "auto",
+): DiagramButton[] {
   if (!(root in PITCH_INDEX)) return [];
 
-  const intervals = applyChordFinderInversion(intervalsForChordFinder(pattern), inversion);
+  const full = applyChordFinderInversion(intervalsForChordFinder(pattern), inversion);
+  const practicalPitches = new Set(treblePreferredIntervals(pattern).map((interval) => interval % 12));
   const rootAbsolute = rootOctave * 12 + PITCH_INDEX[root];
-  const usedIds = new Set<string>();
-  const result: DiagramButton[] = [];
 
-  intervals.forEach((interval, index) => {
-    const { pitchClass, octave } = absoluteToPitch(rootAbsolute + interval);
-    const candidates = candidatesForPitch(buttons, pitchClass, octave);
-    const selected =
-      index === 0 && inversion === "root"
+  function select(intervals: number[]): DiagramButton[] {
+    const usedIds = new Set<string>();
+    const result: DiagramButton[] = [];
+    intervals.forEach((interval, index) => {
+      const { pitchClass, octave } = absoluteToPitch(rootAbsolute + interval);
+      const candidates = candidatesForPitch(buttons, pitchClass, octave);
+      const selected = index === 0 && inversion === "root"
         ? chooseRootCandidate(candidates)
         : chooseNextCandidate(candidates, result[result.length - 1], usedIds);
+      if (selected) {
+        usedIds.add(selected.id);
+        result.push(selected);
+      }
+    });
+    return result;
+  }
 
-    if (selected) {
-      usedIds.add(selected.id);
-      result.push(selected);
-    }
-  });
+  if (voicingMode === "full") return select(full);
+  const practical = select(full.filter((interval) => practicalPitches.has(interval % 12)));
+  if (voicingMode === "practical" || full.length > 5) return practical;
 
-  return result;
+  // No automatic omission for chords with five tones or fewer when the
+  // requested root octave and keyboard actually contain the full chord.
+  const complete = select(full);
+  return complete.length === full.length ? complete : practical;
 }

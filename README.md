@@ -32,7 +32,7 @@ Scale visualization and fingering paths on a chromatic button accordion treble l
 
 ![Stradella Chord Finder](docs/images/stradella-chord-finder.png)
 
-The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. It prioritizes fewer buttons and compact fingering, and can label exported diagrams with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**.
+The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. It ranks realizations by button count, geometric compactness, and harmonic omissions, and highlights up to three contrasting recommended voicings for extended chords. The expanded **More explanation** describes each selected realization, including octave compression on Stradella and the effect of omitted tones. Exported diagrams can be labeled with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**.
 
 ### Harmony Explorer
 
@@ -157,3 +157,7 @@ See [`LICENSE`](LICENSE) for the license applying to Accordion-Tools. Third-part
 ### Reading the documentation in the app
 
 Choose **Settings → About → Open documentation** to browse the bundled guides with topic navigation and search, without leaving the application. The GitHub README remains available through the existing link.
+
+### Contextual chord and scale diagrams
+
+**Settings → Title → Contextual** (the default) uses the selected chord or scale in diagram titles. Major and minor chords use explicit names (`Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`) so exported files are unambiguous. Extended chords now include dominant, major, and minor ninths, elevenths, and thirteenths, with recommended practical Stradella voicings and concise omission explanations. Chromatic-button treble diagrams offer one- and two-octave compact sizes alongside every existing preset; the view expands as needed to keep selected buttons visible. See [Chord Finder](docs/chord-finder.md) and [Settings](docs/settings.md).

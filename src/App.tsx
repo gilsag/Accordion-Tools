@@ -56,6 +56,7 @@ import {
   chordTones,
   fontClass,
   formatPitch,
+  transpose,
   INDEX_TO_PITCH,
   INTERVALS_FROM_C,
   isAccidentalPitch,
@@ -121,10 +122,11 @@ import {
   type ChordProgressionDefinition,
   type StradellaNotationAbcOptions,
 } from "./tools/bassPatternPlayerTools";
-import { getChordFinderTrebleButtons } from "./tools/chordFinderTools";
+import { getChordFinderTrebleButtons, type TrebleChordVoicingMode } from "./tools/chordFinderTools";
 import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
-import { realizationAnnotation } from "./tools/stradellaChordFinder/diagramAnnotations";
+import { realizationAnnotation, finderChordSymbol } from "./tools/stradellaChordFinder/diagramAnnotations";
+import { describeTrebleChord } from "./tools/trebleChordExplanation";
 import {
   playButtonArpeggioThenChord,
   playButtonCombination,
@@ -231,6 +233,8 @@ const ABC_EXAMPLE_FALLBACK_OPTIONS: AbcExampleOption[] = [
 
 /** Dropdown options for treble instrument range presets. */
 const TREBLE_SIZE_OPTIONS: Array<{ value: TrebleSizePreset; label: string }> = [
+  { value: "one-octave", label: "1 octave (auto-expand if needed)" },
+  { value: "two-octave", label: "2 octaves (auto-expand if needed)" },
   { value: "small", label: "Small CBA, about 3 octaves" },
   { value: "full", label: "Full-size CBA, about 3¾–4 octaves" },
   { value: "large", label: "Large CBA, about 5+ octaves" },
@@ -257,6 +261,8 @@ const PIANO_TREBLE_RANGE_OPTIONS: Array<{
 
 /** SVG viewBox widths chosen so each treble size has enough horizontal space. */
 const TREBLE_SIZE_VIEW_WIDTH: Record<TrebleSizePreset, number> = {
+  "one-octave": 500,
+  "two-octave": 650,
   small: 1080,
   full: 1220,
   large: 1460,
@@ -264,6 +270,8 @@ const TREBLE_SIZE_VIEW_WIDTH: Record<TrebleSizePreset, number> = {
 
 /** Default button sizes applied when a treble size preset is selected. */
 const TREBLE_PRESET_BUTTON_SIZE: Record<TrebleSizePreset, number> = {
+  "one-octave": 28,
+  "two-octave": 28,
   small: 28,
   full: 24,
   large: 20,
@@ -534,7 +542,7 @@ function App() {
   const [showStradellaRowLabels, setShowStradellaRowLabels] = useState(true);
 
   /* Title and label font state. */
-  const [titleMode, setTitleMode] = useState<TitleMode>("auto");
+  const [titleMode, setTitleMode] = useState<TitleMode>("contextual");
   const [customTitle, setCustomTitle] = useState("My accordion diagram");
   const [titleFont, setTitleFont] = useState<FontFamily>("system");
   const [titleSize, setTitleSize] = useState(24);
@@ -610,6 +618,8 @@ function App() {
 
   /* Chord Finder state for temporary treble-only chord highlights. */
   const [chordFinderActive, setChordFinderActive] = useState(false);
+  const [showTrebleVoicingNote, setShowTrebleVoicingNote] = useState(true);
+  const [trebleChordVoicingMode, setTrebleChordVoicingMode] = useState<TrebleChordVoicingMode>("auto");
   const [chordFinderRoot, setChordFinderRoot] = useState("C");
   const [chordFinderPattern, setChordFinderPattern] =
     useState<FinderChordPattern>("major-triad");
@@ -751,7 +761,8 @@ function App() {
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
     useState<StradellaChordFinderMode>("bass-and-chords");
   const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
-  const [showFinderChordTitle, setShowFinderChordTitle] = useState(true);
+  const [finderMaxButtons, setFinderMaxButtons] = useState(3);
+  const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
   const [pendingProgressionRealizationKey, setPendingProgressionRealizationKey] = useState<string | null>(null);
   const [
@@ -1001,7 +1012,7 @@ function App() {
         if ([3, 4, 5].includes(Number(defaults.trebleRows))) {
           setTrebleRows(Number(defaults.trebleRows) as 3 | 4 | 5);
         }
-        if (isOneOf(defaults.trebleSize, ["small", "full", "large"] as const)) {
+        if (isOneOf(defaults.trebleSize, ["one-octave", "two-octave", "small", "full", "large"] as const)) {
           setTrebleSize(defaults.trebleSize);
         }
         if (
@@ -1072,7 +1083,7 @@ function App() {
         ) {
           setColorTheme(defaults.colorTheme);
         }
-        if (isOneOf(defaults.titleMode, ["auto", "custom", "none"] as const)) {
+        if (isOneOf(defaults.titleMode, ["auto", "contextual", "custom", "none"] as const)) {
           setTitleMode(defaults.titleMode);
         }
         if (typeof defaults.customTitle === "string") {
@@ -1378,7 +1389,7 @@ function App() {
     if ([3, 4, 5].includes(Number(settings.scaleFinderRowLimit)))
       setScaleFinderRowLimit(Number(settings.scaleFinderRowLimit) as 3 | 4 | 5);
     if (typeof settings.chordFinderRoot === "string") setChordFinderRoot(settings.chordFinderRoot);
-    if (isOneOf(settings.chordFinderPattern, ["major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus4", "dominant7", "major6", "minor6", "dominant7b5", "dominant7b9", "dominant9", "dominant9sus4", "dominant11", "major7", "major9", "major7add9", "minor7", "minorMajor7", "minor7b5", "minor9", "minorMajor9", "diminished7"] as const))
+    if (isOneOf(settings.chordFinderPattern, ["major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus4", "dominant7", "major6", "minor6", "dominant7b5", "dominant7b9", "dominant9", "dominant9sus4", "dominant11", "major11", "minor11", "dominant13", "major13", "minor13", "major7", "major9", "major7add9", "minor7", "minorMajor7", "minor7b5", "minor9", "minorMajor9", "diminished7"] as const))
       setChordFinderPattern(settings.chordFinderPattern);
     if (isOneOf(settings.chordFinderInversion, ["root", "first", "second", "third"] as const))
       setChordFinderInversion(settings.chordFinderInversion);
@@ -1510,7 +1521,7 @@ function App() {
       setTrebleLayout(settings.trebleLayout);
     if ([3, 4, 5].includes(Number(settings.trebleRows)))
       setTrebleRows(Number(settings.trebleRows) as 3 | 4 | 5);
-    if (isOneOf(settings.trebleSize, ["small", "full", "large"] as const))
+    if (isOneOf(settings.trebleSize, ["one-octave", "two-octave", "small", "full", "large"] as const))
       setTrebleSize(settings.trebleSize);
     if (
       isOneOf(settings.pianoTrebleRange, [
@@ -1561,7 +1572,7 @@ function App() {
       ] as const)
     )
       setColorTheme(settings.colorTheme);
-    if (isOneOf(settings.titleMode, ["auto", "custom", "none"] as const))
+    if (isOneOf(settings.titleMode, ["auto", "contextual", "custom", "none"] as const))
       setTitleMode(settings.titleMode);
     if (typeof settings.customTitle === "string")
       setCustomTitle(settings.customTitle);
@@ -1884,22 +1895,50 @@ function App() {
       );
     }
 
-    return generateTreble(
-      trebleLayout === "piano" ? "c-system" : trebleLayout,
-      trebleRows,
-      trebleSize,
-      buttonSize,
-      spacing,
-      trebleAngle,
-      showTrebleOctaves,
-      diagramVerticalSpacing,
-    );
+    const system = trebleLayout === "piano" ? "c-system" : trebleLayout;
+    const compact = trebleSize === "one-octave" || trebleSize === "two-octave";
+    if (!compact) {
+      return generateTreble(system, trebleRows, trebleSize, buttonSize,
+        spacing, trebleAngle, showTrebleOctaves, diagramVerticalSpacing);
+    }
+    // Use full geometry to locate the complete selection. Then choose the
+    // smallest available preset containing all selected buttons.
+    const reference = generateTreble(system, trebleRows, "large", buttonSize,
+      spacing, trebleAngle, showTrebleOctaves, diagramVerticalSpacing);
+    const requested = chordFinderActive
+      ? getChordFinderTrebleButtons(reference, chordFinderRoot, chordFinderPattern, chordFinderInversion, chordFinderOctave, trebleChordVoicingMode)
+      : scaleFinderActive
+        ? getScaleFinderTrebleButtons(reference, scaleFinderRoot, scaleFinderPattern, scaleFinderRowLimit)
+        : [];
+    const markedIds = new Set([
+      ...Object.entries(overlays).filter(([, overlay]) => overlay.selected || overlay.finger).map(([id]) => id),
+      ...sequenceSteps.map((step) => step.id),
+    ]);
+    const marked = reference.filter((button) => markedIds.has(button.id));
+    const wanted = [...requested, ...marked].map((button) => button.column);
+    const low = Math.min(...wanted);
+    const high = Math.max(...wanted);
+    const presetWidths: Array<[TrebleSizePreset, number]> = [
+      ["one-octave", 5], ["two-octave", 9], ["small", 14], ["full", 18], ["large", 24],
+    ];
+    const minimum = trebleSize === "one-octave" ? 0 : 1;
+    const selected = presetWidths.slice(minimum).find(([, width]) => !wanted.length || high - low < width)
+      ?? presetWidths[presetWidths.length - 1];
+    const [effectivePreset, width] = selected;
+    const start = wanted.length
+      ? Math.max(0, Math.min(24 - width, Math.round((low + high - width + 1) / 2)))
+      : 0;
+    return generateTreble(system, trebleRows, effectivePreset, buttonSize,
+      spacing, trebleAngle, showTrebleOctaves, diagramVerticalSpacing, start);
   }, [
     side,
     basses,
     trebleLayout,
     trebleRows,
     trebleSize,
+    chordFinderActive, chordFinderRoot, chordFinderPattern, chordFinderInversion, chordFinderOctave, trebleChordVoicingMode,
+    scaleFinderActive, scaleFinderRoot, scaleFinderPattern, scaleFinderRowLimit,
+    overlays, sequenceSteps,
     pianoTrebleRange,
     buttonSize,
     spacing,
@@ -1961,6 +2000,9 @@ function App() {
     trebleLayout,
     trebleRows,
     trebleSize,
+    // Chord/scale selections and diagram markings do not change the physical
+    // keyboard configuration. Including them here would clear the finder as
+    // soon as the user selects a chord or scale (notably in compact layouts).
     pianoTrebleRange,
     buttonSize,
     spacing,
@@ -1988,7 +2030,6 @@ function App() {
       setTextNotes([]);
       setScaleFinderActive(false);
       setChordFinderActive(false);
-      setStradellaChordFinderActive(false);
       setStradellaChordFinderActive(false);
       previousLayoutSignatureRef.current = layoutSignature;
     }
@@ -2065,6 +2106,7 @@ function App() {
       chordFinderPattern,
       chordFinderInversion,
       chordFinderOctave,
+      trebleChordVoicingMode,
     );
   }, [
     buttons,
@@ -2073,6 +2115,7 @@ function App() {
     chordFinderPattern,
     chordFinderOctave,
     chordFinderInversion,
+    trebleChordVoicingMode,
     side,
   ]);
 
@@ -2472,6 +2515,8 @@ function App() {
       stradellaChordFinderPattern,
       stradellaChordFinderMode,
       stradellaChordFinderMarkRootBass,
+      finderMaxButtons,
+      finderSpanColumns,
     );
   }, [
     buttons,
@@ -2481,6 +2526,8 @@ function App() {
     stradellaChordFinderPattern,
     stradellaChordFinderMode,
     stradellaChordFinderMarkRootBass,
+    finderMaxButtons,
+    finderSpanColumns,
   ]);
 
   const stradellaChordFinderResult = useMemo(() => {
@@ -2492,7 +2539,7 @@ function App() {
 
   useEffect(() => {
     setStradellaChordFinderRealizationIndex(0);
-  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, side]);
+  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, finderMaxButtons, finderSpanColumns, side]);
 
   useEffect(() => {
     if (!pendingProgressionRealizationKey || stradellaChordFinderRealizations.length === 0) return;
@@ -3895,22 +3942,20 @@ function App() {
 
     // Match the title currently displayed on the diagram, including the
     // Chord Finder's automatically generated chord/realization title.
-    const displayedTitle = finderTitleEnabled
-      ? finderAnnotation?.title ?? ""
-      : titleMode !== "none"
-        ? finalTitle
-        : "";
-    const safeTitle = displayedTitle
-      .trim()
-      .replace(/[\\/:*?"<>|\x00-\x1f\x7f]/g, "-")
-      .replace(/[. ]+$/g, "")
+    const displayedTitle = titleMode !== "none" ? finalTitle : "";
+    // ASCII-only, Windows-safe filenames; identify individual Chord Finder recipes.
+    const rawName = titleMode === "contextual" && finderAnnotationActive && finderAnnotation
+      ? finderAnnotation.filenameKey
+      : displayedTitle;
+    const asciiName = rawName
+      .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
+      .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "")
-      .slice(0, 120)
-      .replace(/[. ]+$/g, "");
-    // Windows reserves these basenames even with an image extension.
-    const reservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i;
-    const filenameBase = safeTitle && !reservedName.test(safeTitle)
-      ? safeTitle
+      .slice(0, 160).replace(/-+$/g, "");
+    const reservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
+    const filenameBase = asciiName && !reservedName.test(asciiName)
+      ? asciiName
       : `${layoutName}-accordion-diagram`;
 
     if (downloadFormat === "png") {
@@ -4043,14 +4088,26 @@ function App() {
     ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult)
     : null;
   const finderAnnotationActive = side === "stradella" && stradellaChordFinderActive && finderAnnotation !== null;
-  const finderTitleEnabled = finderAnnotationActive && showFinderChordTitle;
   const finderFooterEnabled = finderAnnotationActive && showFinderRealizationNote;
+  // Report the actual highlighted buttons for every chord family.
+  const trebleChordExplanation = describeTrebleChord(
+    chordFinderButtons, chordFinderRoot, chordFinderPattern, trebleChordVoicingMode,
+  );
+  const trebleVoicingNote = side === "treble" && chordFinderActive ? trebleChordExplanation.note : "";
+  const trebleFooterEnabled = Boolean(showTrebleVoicingNote && trebleVoicingNote);
+  const contextualTitle = (() => {
+    if (side === "stradella" && stradellaChordFinderActive) {
+      return finderAnnotationActive ? finderAnnotation?.title ?? autoTitle()
+        : `${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern)} - No realization`;
+    }
+    if (side === "treble" && chordFinderActive) return finderChordSymbol(chordFinderRoot, chordFinderPattern);
+    if (scaleFinderActive) return `${scaleFinderRoot} ${SCALE_FINDER_OPTIONS.find((x) => x.value === scaleFinderPattern)?.label ?? "scale"}`;
+    return autoTitle();
+  })();
   const finalTitle =
-    titleMode === "auto"
-      ? autoTitle()
-      : titleMode === "custom"
-        ? customTitle
-        : "";
+    titleMode === "auto" ? autoTitle()
+      : titleMode === "contextual" ? contextualTitle
+      : titleMode === "custom" ? customTitle : "";
 
   const visibleRoots =
     side === "stradella" ? stradellaVisibleRoots(basses) : [];
@@ -4069,7 +4126,9 @@ function App() {
                 0.92 *
                 pianoKeyWidthScale,
           )
-        : TREBLE_SIZE_VIEW_WIDTH[trebleSize];
+        : ["one-octave", "two-octave"].includes(trebleSize)
+          ? Math.max(420, ...buttons.map((button) => button.x + buttonSize + 96))
+          : TREBLE_SIZE_VIEW_WIDTH[trebleSize];
 
   const baseViewHeight =
     side === "stradella"
@@ -4088,7 +4147,26 @@ function App() {
           )
         : 450 + diagramVerticalSpacing;
 
-  const viewHeight = baseViewHeight + (finderFooterEnabled ? 56 : 0);
+  // Keep the Treble Chord Finder note close to the actual keyboard. A fixed
+  // 450px base height leaves a large gap when the layout has only three rows.
+  // Piano and Stradella retain their existing footer positioning.
+  const buttonTrebleFooter = side === "treble" && !isPianoTreble && buttons.length > 0;
+  const trebleFooterY = buttonTrebleFooter
+    ? Math.max(...buttons.map((button) => button.y + buttonSize)) + Math.max(22, buttonSize * 0.8)
+    : baseViewHeight - 21;
+  // Reserve enough room for explanatory notes that wrap on narrow diagrams,
+  // including the one- and two-octave presets.
+  const trebleFooterFontSize = viewWidth < 600 ? 21 : 26;
+  const trebleFooterLineEstimate = Math.max(1, Math.ceil(
+    trebleVoicingNote.length * trebleFooterFontSize * 0.65 * 1.18 / Math.max(1, viewWidth - 64),
+  ));
+  const trebleFooterHeight = Math.max(
+    80,
+    Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
+  );
+  const viewHeight = trebleFooterEnabled && buttonTrebleFooter
+    ? trebleFooterY + trebleFooterHeight + 8
+    : baseViewHeight + (trebleFooterEnabled ? 112 : finderFooterEnabled ? 56 : 0);
 
   const sidebarWidth =
     interfaceDensity === "compact"
@@ -5187,7 +5265,8 @@ function App() {
                                         setTitleMode(event.target.value as TitleMode)
                                       }
                                     >
-                                      <option value="auto">Auto</option>
+                                      <option value="auto">Auto (instrument/layout)</option>
+                                      <option value="contextual">Contextual (tool and selection)</option>
                                       <option value="custom">Custom</option>
                                       <option value="none">None</option>
                                     </select>
@@ -5549,6 +5628,10 @@ function App() {
                   inversion={chordFinderInversion}
                   onInversionChange={setChordFinderInversion}
                   buttonCount={chordFinderButtons.length}
+                  voicingMode={trebleChordVoicingMode}
+                  onVoicingModeChange={setTrebleChordVoicingMode}
+                  realizationStatus={chordFinderActive ? trebleChordExplanation.status : "Not shown"}
+                  realizationExplanation={trebleChordExplanation.explanation}
                   isActive={chordFinderActive}
                   onToggleActive={() => {
                     setChordFinderActive((current) => !current);
@@ -5557,6 +5640,8 @@ function App() {
                   }}
                   onPlay={playChordFinder}
                   onClear={clearChordFinder}
+                  showVoicingNote={showTrebleVoicingNote}
+                  onShowVoicingNoteChange={setShowTrebleVoicingNote}
                 />
               )}
 
@@ -5573,8 +5658,10 @@ function App() {
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
-                  showChordTitle={showFinderChordTitle}
-                  onShowChordTitleChange={setShowFinderChordTitle}
+                  maxButtons={finderMaxButtons}
+                  onMaxButtonsChange={setFinderMaxButtons}
+                  spanColumns={finderSpanColumns}
+                  onSpanColumnsChange={setFinderSpanColumns}
                   showRealizationNote={showFinderRealizationNote}
                   onShowRealizationNoteChange={setShowFinderRealizationNote}
                   realizations={stradellaChordFinderRealizations}
@@ -6960,26 +7047,31 @@ function App() {
               </marker>
             </defs>
 
-            {(finderTitleEnabled || titleMode !== "none") && (
+            {titleMode !== "none" && (
               <text
                 x={viewWidth / 2}
                 y="34"
                 textAnchor="middle"
                 className={`title ${fontClass(titleFont)}`}
-                style={{ fontSize: finderTitleEnabled ? Math.max(36, titleSize) : titleSize }}
+                style={{ fontSize: titleSize }}
               >
-                {finderTitleEnabled ? finderAnnotation?.title : finalTitle}
+                {finalTitle}
               </text>
             )}
 
-            {finderFooterEnabled && finderAnnotation && (
-              <foreignObject x={32} y={baseViewHeight - 21} width={viewWidth - 64} height={74}>
-                <div xmlns="http://www.w3.org/1999/xhtml" style={{
-                  fontFamily: "Arial, sans-serif", fontSize: "26px", fontWeight: 600,
+            {(finderFooterEnabled || trebleFooterEnabled) && (
+              <foreignObject
+                x={32}
+                y={trebleFooterEnabled ? trebleFooterY : baseViewHeight - 21}
+                width={viewWidth - 64}
+                height={trebleFooterEnabled && buttonTrebleFooter ? trebleFooterHeight : trebleFooterEnabled ? 128 : 74}
+              >
+                <div style={{
+                  fontFamily: "Arial, sans-serif", fontSize: trebleFooterEnabled ? `${trebleFooterFontSize}px` : "26px", fontWeight: 600,
                   textAlign: "center", lineHeight: 1.15, overflowWrap: "anywhere",
                   color: "#20252a",
                 }}>
-                  {finderAnnotation.detail}
+                  {finderFooterEnabled ? finderAnnotation?.detail : trebleVoicingNote}
                 </div>
               </foreignObject>
             )}

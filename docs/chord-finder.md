@@ -1,100 +1,68 @@
 # Chord Finder
 
-Chord Finder locates chord shapes on the current layout.
+Accordion Tools provides two chord finders, one for C-system/B-system/piano treble and one for Stradella bass. Both use the same chord formulas and chord symbols (for example `Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`, `Cdim`, `Caug`, `C9`, `Cmaj11`, and `Cmin13`). Chord types are ordered by the number of tones in the complete chord, from triads through thirteenths.
 
-There are two related tools:
+## Supported extended chords
 
-- **Treble Chord Finder** for chromatic-button treble and piano treble layouts.
-- **Stradella Chord Finder** for Stradella bass layouts.
+| Family | Example | Theoretical tones |
+|---|---|---|
+| Dominant 9 | C9 | C, E, G, B♭, D |
+| Major 9 | Cmaj9 | C, E, G, B, D |
+| Minor 9 | Cmin9 | C, E♭, G, B♭, D |
+| Dominant 11 | C11 | C, E, G, B♭, D, F |
+| Major 11 | Cmaj11 | C, E, G, B, D, F |
+| Minor 11 | Cmin11 | C, E♭, G, B♭, D, F |
+| Dominant 13 | C13 | C, E, G, B♭, D, F, A |
+| Major 13 | Cmaj13 | C, E, G, B, D, F, A |
+| Minor 13 | Cmin13 | C, E♭, G, B♭, D, F, A |
 
-## Treble Chord Finder
+The full theoretical chord and the notes of a practical realization are not always the same. The unaltered fifth can be omitted in chords with at least four distinct notes. In elevenths, the ninth may also be omitted; dominant and major elevenths may omit the major third to create a **suspended-style** voicing. Minor elevenths ordinarily retain the minor third. Thirteenths may omit the fifth, ninth, and eleventh, leaving a conventional root–third–seventh–thirteenth shell. Triads are kept complete; an altered fifth is generally retained. The familiar single Stradella diminished-seventh button remains a special permitted approximation of a diminished seventh.
 
-Treble Chord Finder searches for compact chord shapes around a selected root.
-
-It supports:
-
-- chord type selection
-- inversion selection
-- octave/range behavior depending on the treble layout
-- playback of the found chord
-
-It works on C-system, B-system/Bayan, and piano treble diagrams.
+These are **conservative search rules**, not universal claims about jazz harmony. Rootless ensemble voicings are not included in ordinary Chord Finder approximations. Realizations may never add foreign pitch classes.
 
 ## Stradella Chord Finder
 
-Stradella Chord Finder is different because the bass side is not a free chromatic keyboard.
+Choose a chord root, chord type, and search mode:
 
-It supports three search modes:
+- **Bass rows only** builds a chord from individual bass and counterbass buttons.
+- **Chord buttons only** searches chord-row buttons. The optional root marker is visual only.
+- **Bass + chord buttons** includes mixed combinations, chord-only combinations, and bass/counterbass-only combinations.
 
-### Bass rows only
+The combined mode offers up to 1, 2, 3, or 4 buttons and Compact, Moderate, or Extended hand-span settings. Results pass a geometric reach filter, remove redundant buttons, and keep the preferred ergonomic position when physically different bass/counterbass buttons serve the same recipe. These are approximate hand-span thresholds, not certified fingering recommendations. There is no arbitrary five-realization cap.
 
-Finds chord tones using bass and counterbass note buttons. Playback plays the notes in pitch order and then the full chord.
+For extended chords, up to **three Recommended examples** appear first in the realization selector. The shortlist aims to illustrate contrasting useful approaches: a **compact, pitch-class-complete** realization, a **minimally reduced** voicing with few omissions, and (where meaningful) a **functional shell** such as 1–3–7–13. When some approaches are unavailable, other closely ranked physical arrangements may fill the available places, including multiple exact recipes with identical pitch-class content. All valid alternatives remain selectable, even if not marked Recommended.
 
-### Chord buttons only
+The score now balances **number of buttons**, **geometric hand span/compactness**, **musical omission cost**, **number of omitted tones**, and **third/eleventh tension** in major and dominant 11th/13th chords. A conventional 13th shell receives only a small preference rather than a dominant fixed bonus. Recommendation does **not** certify fingering comfort: the geometric reach estimate does not account for every player's hand technique or instrument variation. Exact/Approximate remains independent of Recommended.
 
-Uses only chord-row buttons. The optional root bass marker is a visual reference and does not count as a sounded chord tone.
+If enabled, the concise explanation **beneath the exported diagram** identifies selected buttons, sounded pitch classes, and omitted notes **with their harmonic roles**, for example `G (fifth)`, `D (ninth)`, and `F (eleventh)`. An omitted major third in an eleventh chord is identified as a suspended-style voicing.
 
-### Bass + chord buttons
+Expand **More explanation** in the Chord Finder panel for a realization-specific musical discussion. It describes the selected buttons and sounding pitch classes, then explains the consequences of omissions, why the result is Recommended (if applicable), and the Stradella's compressed chord register. On Stradella, seventh, ninth, eleventh, and thirteenth tones are **pitch-class descriptions**, not a guarantee that upper extensions are stacked in higher octaves; bass/counterbass tones use a separate register from chord rows. A thirteenth is the same pitch class as a sixth, so the retained seventh helps distinguish thirteenth harmony from an ordinary added-sixth chord. Major/dominant 11ths and 13ths discuss the potential semitone between the third and natural eleventh; minor 11ths explain the different whole-tone relation. The explanation is generated from the **actual selected result**, not just the chord name. Nonrecommended alternatives may still be valid and ergonomic; Recommended is an illustrative shortlist, not a hidden musical-validity filter.
 
-Searches for playable realizations using (1) mixed bass/counterbass and chord buttons, (2) chord buttons alone, and (3) bass/counterbass buttons alone. **Bass rows only** remains a separate search mode.
+## Treble Chord Finder
 
-The search ranks **exact** realizations before **approximate** ones. Among equally complete realizations, it prefers fewer buttons, then mixed combinations where button counts are equal, then physically compact arrangements. A reach check excludes widely separated combinations, and redundant buttons do not create additional realizations. Where equivalent bass and counterbass choices yield the same musical recipe, the more ergonomic physical version is kept. Results have no fixed five-item display limit, although they are limited to the candidates generated by the search and accepted by the ergonomic checks.
+Choose the root, octave, chord type, inversion, and **Voicing** mode:
 
-An **exact** realization supplies all requested pitch classes without additional tones. A conservative **approximation** may omit certain pitches but cannot add foreign tones:
+- **Auto (default)** displays the complete chord whenever all its tones are available on five or fewer buttons/keys. For 11th and 13th chords containing six or seven distinct tones, Auto chooses a practical reduced voicing instead.
+- **Full chord (all tones)** attempts to highlight every theoretical chord tone. Six- and seven-button shapes are useful as diagrams but **cannot be played simultaneously with five fingers**. If the chosen octave or keyboard range does not contain a required pitch, the result identifies it as missing.
+- **Practical voicing** uses the standard reduced arrangement: 11ths normally omit the fifth, and 13ths use root, third, seventh, and thirteenth. These choices are not the only musically valid voicings.
 
-- **Triads:** no omissions, including suspended and altered triads.
-- **Chords of four or more distinct tones:** a natural (perfect) fifth may be omitted. A root, third, seventh, altered fifth, and characteristic extension are retained, subject to the explicit exceptions below.
-- **Dominant eleventh chords:** the ninth may also be omitted; fewer omissions rank ahead of more omissions.
-- **Diminished seventh chords:** the standard single diminished-seventh button may be presented as an approximate realization even though it omits the diminished fifth. This is a specific exception, not a general permission to remove altered fifths.
+**Realization** indicates Exact when all theoretical chord tones are represented, and Approximate otherwise. It does not imply that a six- or seven-button exact illustration is playable with one hand. A note in **More explanation** gives the sounding tones, missing tones and why the result is complete or reduced.
 
-These are search rules for this tool, not general rules for every possible musical voicing. The selection depends on the buttons present in the chosen Stradella layout and the ergonomic checks.
+The **Show chord realization note below diagram** checkbox now works with **all chords**, including triads, sevenths, ninths, elevenths, and thirteenths. The SVG/PNG footer reports the actually selected tones and any missing tones with their harmonic roles. When the selected octave or keyboard range lacks a required note, the explanation distinguishes this from a deliberate simplification. The footer is not displayed while the tool is inactive.
 
-### Diagram labels and exported images
+## Contextual titles and downloads
 
-At the end of the Stradella Chord Finder controls, the **Show chord name and realization type in diagram title** and **Show realization description below diagram** checkboxes can be enabled independently. The title identifies the selected chord and whether the selected realization is exact or approximate; the full-width description identifies the chosen buttons, sounding tones, and any omitted pitch with its role in the chord.
+Under **Settings → Title**, choose:
 
-For example:
+- **Auto:** instrument or layout name.
+- **Contextual (default):** the active Chord Finder's chord name and, for Stradella, exactness and button count; the active Scale Finder's root and scale name; otherwise the instrument/layout title.
+- **Custom:** user-entered text.
+- **None:** suppress the diagram title.
 
-- **Em7 — Exact realization**; `E counterbass + G major → E–G–B–D`.
-- **C7 — Approximate realization**; the explanation identifies `G (fifth)` as omitted.
+No separate title checkbox is required in either Chord Finder. Title formatting settings apply to every mode. For example, a Stradella title might read `Cmaj13 - Approximate - 2 buttons`, while a treble title might read `Cmaj13`.
 
-Labels are incorporated into the diagram for SVG and PNG export. Downloads use the title currently displayed on the diagram as the filename, with invalid filename characters replaced. If no title is displayed, a layout-based filename is used. Musical Unicode characters such as ♯ and ♭ are preserved where the operating system permits them.
+SVG and PNG filenames use ASCII letters, numbers, and ordinary hyphens. Musical accidentals are converted to safe text. In Contextual mode, Stradella downloads include the selected button names to distinguish physical realizations, such as `Caug-Exact-3buttons-Bass-only-C-bass-E-counterbass-Gsharp-counterbass.svg` (actual names depend on the selected buttons). Filenames do not use typographical dashes, spaces, or other punctuation.
 
-## Supported chord types
+## Related tools
 
-The shared chord library includes common triads, sixths, sevenths, ninths, diminished/half-diminished chords, suspended chords, and altered dominants.
-
-If the chosen chord cannot be produced exactly in the selected mode/layout, the result is shown as **Not found**.
-
-## Playback
-
-If sound is enabled, found chord shapes can be played.
-
-Playback can use either the built-in synthesizer or the optional La Melodiosa sampled accordion, according to Sound settings.
-
-## Export
-
-Chord Finder highlights and enabled diagram labels are included in SVG/PNG downloads. The exported filename follows the displayed diagram title, after filename sanitization; see the annotation section above.
-
-## Related settings
-
-See [`settings.md`](settings.md) for:
-
-- `stradellaChordFinderMode`
-- `stradellaChordFinderMarkRootBass`
-- `notation`
-- `accidental`
-- `soundEnabled`
-
-
-In **Bass + chord buttons** mode, exact realizations are ranked first, but the list also keeps a valid fifth-omission approximation visible when one exists. Approximate results never add foreign tones.
-
-## Harmony Explorer and Progression Assistant integration
-
-Supported Stradella chord formulas include an **Explore harmony** action. The chord is treated as a related/outer-ring family while Harmony Explorer preserves the user's current inner reference family. If the chord was originally sent from Harmony Explorer with **Show on Stradella**, the previous Harmony selection is retained.
-
-Conversely, selecting a supported outer-ring chord in Harmony Explorer enables **Show on Stradella**, which transfers the root/chord type into this finder and opens **Bass + chord buttons** mode.
-
-The separate Stradella **Progression Assistant** optimizes realizations across several chords. Its selected step is previewed directly on the Stradella diagram; **Open preview in Chord Finder** opens that exact optimized realization here so the remaining ranked alternatives can be compared.
-
-See [`harmony-explorer.md`](harmony-explorer.md) and [`progression-assistant.md`](progression-assistant.md).
+The Harmony Explorer can send supported chord families to the Stradella finder, and the Stradella finder can open related chords in Harmony Explorer. The Progression Assistant can preview its selected chord realization in the finder. See [Harmony Explorer](harmony-explorer.md), [Progression Assistant](progression-assistant.md), and [Settings](settings.md).

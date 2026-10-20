@@ -6,6 +6,7 @@ import {
   type StradellaChordFinderResult,
 } from "../../tools/stradellaChordFinderTools";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
+import { explainStradellaRealization } from "../../tools/stradellaChordFinder/explainRealization";
 import { HelpTip } from "../ui/HelpTip";
 
 type StradellaChordFinderPanelProps = {
@@ -20,13 +21,15 @@ type StradellaChordFinderPanelProps = {
   markRootBass: boolean;
   onMarkRootBassChange: (value: boolean) => void;
   result: StradellaChordFinderResult;
-  showChordTitle: boolean;
-  onShowChordTitleChange: (value: boolean) => void;
   showRealizationNote: boolean;
   onShowRealizationNoteChange: (value: boolean) => void;
   realizations: StradellaChordFinderResult[];
   realizationIndex: number;
   onRealizationChange: (index: number) => void;
+  maxButtons: number;
+  onMaxButtonsChange: (value: number) => void;
+  spanColumns: number;
+  onSpanColumnsChange: (value: number) => void;
   buttonCount: number;
   playbackButtonCount: number;
   isActive: boolean;
@@ -52,13 +55,15 @@ export function StradellaChordFinderPanel({
   markRootBass,
   onMarkRootBassChange,
   result,
-  showChordTitle,
-  onShowChordTitleChange,
   showRealizationNote,
   onShowRealizationNoteChange,
   realizations,
   realizationIndex,
   onRealizationChange,
+  maxButtons,
+  onMaxButtonsChange,
+  spanColumns,
+  onSpanColumnsChange,
   buttonCount,
   playbackButtonCount,
   isActive,
@@ -105,7 +110,7 @@ export function StradellaChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons prefers compact mixed realizations and can offer ranked exact or conservative approximate alternatives. Approximations omit only permitted fifths or, in an eleventh chord, the ninth; no foreign tones are added." /></span>
+          <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons prefers compact mixed realizations and can offer ranked exact or conservative approximate alternatives. Higher chords may omit selected fifths, ninths, or elevenths; major or dominant 11ths can omit the third as a suspended-style voicing. No foreign tones are added." /></span>
           <select
             value={mode}
             onChange={(event) => onModeChange(event.target.value as StradellaChordFinderMode)}
@@ -131,13 +136,33 @@ export function StradellaChordFinderPanel({
           </label>
         )}
 
+        {mode === "bass-and-chords" && (
+          <>
+            <label>
+              <span className="label-line">Maximum buttons</span>
+              <select value={maxButtons} onChange={(event) => onMaxButtonsChange(Number(event.target.value))}>
+                {[1, 2, 3, 4].map((count) => <option value={count} key={count}>Up to {count}</option>)}
+              </select>
+            </label>
+            <label>
+              <span className="label-line">Maximum hand span</span>
+              <select value={spanColumns} onChange={(event) => onSpanColumnsChange(Number(event.target.value))}>
+                <option value={3.2}>Compact</option>
+                <option value={4.3}>Moderate</option>
+                <option value={5.5}>Extended</option>
+              </select>
+            </label>
+            <p className="hint">Recommended realizations appear first. {realizations.filter((item) => item.playable && item.exact).length} exact, {realizations.filter((item) => item.playable && !item.exact).length} approximate realizations</p>
+          </>
+        )}
+
         {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
           <label>
-            <span className="label-line">Realization <HelpTip text="Shows ranked musically distinct realizations, with ergonomic button choices. Exact results appear before conservative approximations." /></span>
+            <span className="label-line">Realization <HelpTip text="Shows ranked musically distinct realizations, with ergonomic button choices. Recommended extended-chord examples appear first; they represent compact complete, minimally reduced, or functional-shell approaches. Exact and Approximate still describe their pitch-class content." /></span>
             <select value={realizationIndex} onChange={(event) => onRealizationChange(Number(event.target.value))}>
               {realizations.map((candidate, index) => (
                 <option key={`${index}-${candidate.playbackButtons.map((button) => button.id).join("-")}`} value={index}>
-                  {index + 1}. {candidate.exact ? "Exact" : "Approx."} — {candidate.playbackButtons.map((button) => button.kind.startsWith("bass-") ? `${button.pitchClass} bass` : `${button.chordRoot} ${button.kind.replace("chord-", "")}`).join(" + ")}
+                  {candidate.recommended ? "★ Recommended · " : ""}{index + 1}. {candidate.exact ? "Exact" : "Approx."} — {candidate.playbackButtons.map((button) => button.kind.startsWith("bass-") ? `${button.pitchClass} bass` : `${button.chordRoot} ${button.kind.replace("chord-", "")}`).join(" + ")}
                 </option>
               ))}
             </select>
@@ -162,7 +187,9 @@ export function StradellaChordFinderPanel({
         {isActive && (
           <details className="tool-details">
             <summary>More explanation</summary>
-            <p className="hint">{formatText(result.explanation)}</p>
+            {explainStradellaRealization(root, pattern, result, mode).split(/\n\s*\n/).map((paragraph, index) => (
+              <p className="hint" key={index}>{formatText(paragraph)}</p>
+            ))}
           </details>
         )}
 
@@ -181,10 +208,6 @@ export function StradellaChordFinderPanel({
           </button>
         </div>
         <div className="finder-annotation-options">
-          <label className="checkbox-line">
-          <input type="checkbox" checked={showChordTitle} onChange={(event) => onShowChordTitleChange(event.target.checked)} />
-          <span>Show chord name and realization type in diagram title</span>
-          </label>
           <label className="checkbox-line">
           <input type="checkbox" checked={showRealizationNote} onChange={(event) => onShowRealizationNoteChange(event.target.checked)} />
           <span>Show realization explanation below diagram</span>
