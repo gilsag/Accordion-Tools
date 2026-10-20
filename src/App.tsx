@@ -56,7 +56,6 @@ import {
   chordTones,
   fontClass,
   formatPitch,
-  transpose,
   INDEX_TO_PITCH,
   INTERVALS_FROM_C,
   isAccidentalPitch,
