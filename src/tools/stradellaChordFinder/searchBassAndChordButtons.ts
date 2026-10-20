@@ -3,7 +3,7 @@
 
 import type { DiagramButton, FinderChordPattern } from "../../types";
 import { transpose } from "../../music";
-import { intervalsForChordFinder } from "../../music/chordDefinitions";
+import { isExtendedChord, permittedMissingTones, omissionPenalty, suspendedStyleOmission } from "../../music/chordVoicingPolicy";
 import { notPlayableResult, resultFromButtons, summarizeResult, type StradellaChordFinderResult } from "./results";
 import { buttonTones, chordKindLabel, combinationTones, isBassButton } from "./voicings";
 import {
@@ -21,6 +21,7 @@ type RankedRealization = {
   buttonCount: number;
   compactness: number;
   approximationPenalty: number;
+  recommended?: boolean;
 };
 
 function compactness(buttons: DiagramButton[]) {
@@ -42,7 +43,7 @@ function compactness(buttons: DiagramButton[]) {
 // Use the spacing between adjacent chord columns to obtain a layout-independent
 // maximum comfortable span. Very distant chord combinations are not playable
 // merely because they contain the correct pitch classes.
-function ergonomicSpanLimit(pool: DiagramButton[]) {
+export function ergonomicSpanLimit(pool: DiagramButton[], spanColumns = 5.5) {
   const distances = pool.flatMap((a) => pool
     .filter((b) => b.kind === a.kind && Math.abs(b.column - a.column) === 1)
     .map((b) => distance(a, b)));
@@ -50,7 +51,7 @@ function ergonomicSpanLimit(pool: DiagramButton[]) {
   // The previous 3.2-column cutoff excluded most musically distinct
   // combinations, particularly across bass and chord rows. Allow a moderate
   // five-and-a-half-column diagonal reach, while retaining a hard cap.
-  return Number.isFinite(spacing) ? spacing * 5.5 : Infinity;
+  return Number.isFinite(spacing) ? spacing * spanColumns : Infinity;
 }
 
 function practicalCombination(buttons: DiagramButton[], limit: number) {
@@ -141,19 +142,6 @@ function resultForCombination(
   return result;
 }
 
-function omissibleApproximationPitches(root: string, pattern: FinderChordPattern) {
-  // Triads must be complete. Only an unaltered fifth may be dropped in
-  // four-or-more-note chords; dominant 11 may also omit its ninth.
-  const intervals = intervalsForChordFinder(pattern);
-  const allowed = new Set<string>();
-  if (intervals.length < 4) return allowed;
-  if (intervals.includes(7)) allowed.add(transpose(root, 7));
-  if (pattern === "dominant11" && intervals.includes(14)) {
-    allowed.add(transpose(root, 14));
-  }
-  return allowed;
-}
-
 function isAcceptableApproximation(
   root: string,
   pattern: FinderChordPattern,
@@ -173,13 +161,14 @@ function isAcceptableApproximation(
     return summary.missingPitches.length === 1 &&
       summary.missingPitches[0] === transpose(root, 6);
   }
-  const omissible = omissibleApproximationPitches(root, pattern);
-  return summary.missingPitches.every((pitch) => omissible.has(pitch));
+  if (!permittedMissingTones(root, pattern, summary.missingPitches)) return false;
+  // A third omission in an 11th is only a suspended-style voicing while the 11th remains.
+  return !suspendedStyleOmission(root, pattern, summary.missingPitches) ||
+    summary.coveredPitches.includes(transpose(root, 17));
 }
 
-function approximationPenalty(targetPitches: string[], selected: DiagramButton[]) {
-  const summary = summarizeResult(selected, targetPitches);
-  return summary.missingPitches.length;
+function approximationPenalty(root: string, pattern: FinderChordPattern, targetPitches: string[], selected: DiagramButton[]) {
+  return omissionPenalty(root, pattern, summarizeResult(selected, targetPitches).missingPitches);
 }
 
 function realizationKey(result: StradellaChordFinderResult) {
@@ -197,18 +186,20 @@ export function bassAndChordResults(
   root: string,
   targetPitches: string[],
   pattern: FinderChordPattern,
+  maxButtons = 3,
+  spanColumns = 5.5,
 ): StradellaChordFinderResult[] {
   const rootReference = chooseRootReference(buttons, root);
   const targetSet = new Set(targetPitches);
   const pool = chordButtonPool(buttons);
   const ranked: RankedRealization[] = [];
-  const reachLimit = ergonomicSpanLimit(pool);
+  const reachLimit = ergonomicSpanLimit(pool, spanColumns);
 
   /* Exact candidates. A chord-button cluster is completed with only the missing
      bass notes. Bass choice is based on proximity to the chord cluster, which
      produces practical pairs such as E counterbass + G major for Em7. */
   const exactChordPool = pool.filter((button) => buttonTones(button).every((tone) => targetSet.has(tone)));
-  for (const chordButtons of chordCombinations(exactChordPool, 3)) {
+  for (const chordButtons of chordCombinations(exactChordPool, Math.min(4, maxButtons))) {
     if (hasRedundantButton(chordButtons)) continue;
     const chordTones = combinationTones(chordButtons);
     const missing = targetPitches.filter((pitch) => !chordTones.includes(pitch));
@@ -223,7 +214,7 @@ export function bassAndChordResults(
     }
     if (!possible) continue;
     const selected = [...bassButtons, ...chordButtons];
-    if (!practicalCombination(selected, reachLimit) || hasRedundantButton(selected)) continue;
+    if (selected.length > maxButtons || !practicalCombination(selected, reachLimit) || hasRedundantButton(selected)) continue;
     const summary = summarizeResult(selected, targetPitches);
     if (!summary.exact) continue;
     ranked.push({
@@ -243,7 +234,7 @@ export function bassAndChordResults(
      recipes it will typically require three or more buttons. */
   {
     const bassGroups = targetPitches.map((pitch) => bassCandidatesForPitch(buttons, pitch));
-    if (bassGroups.every((group) => group.length > 0)) {
+    if (bassGroups.length <= maxButtons && bassGroups.every((group) => group.length > 0)) {
       const best: { buttons?: DiagramButton[] } = {};
       let bestScore = Infinity;
       const visit = (index: number, selected: DiagramButton[]) => {
@@ -280,7 +271,7 @@ export function bassAndChordResults(
   /* Keep the established chord-only recipe as an alternative, but do not let it
      outrank a compact exact mixed realization in this mode. */
   const chordOnly = chordButtonRecipeResult(buttons, root, targetPitches, pattern, false);
-  if (chordOnly.playable && practicalCombination(chordOnly.playbackButtons, reachLimit) && !hasRedundantButton(chordOnly.playbackButtons)) {
+  if (chordOnly.playable && chordOnly.playbackButtons.length <= maxButtons && practicalCombination(chordOnly.playbackButtons, reachLimit) && !hasRedundantButton(chordOnly.playbackButtons)) {
     ranked.push({
       result: { ...chordOnly, shortDescription: "Exact chord-buttons-only alternative." },
       exact: true,
@@ -291,32 +282,38 @@ export function bassAndChordResults(
     });
   }
 
-  /* Conservative approximations: no added tones; preserve all triad tones,
-     essential chord tones and altered intervals. For dominant 11 the ninth
-     may also be omitted. */
-  for (const chordButtons of chordCombinations(pool, 2)) {
-    if (hasRedundantButton(chordButtons)) continue;
+  /* Generate useful reduced voicings without adding foreign pitches. A cluster
+     can be augmented by multiple bass notes, or none, as long as each button
+     contributes a tone and the full selection fits the user's hand span. */
+  for (const chordButtons of chordCombinations(pool, Math.min(3, maxButtons))) {
+    if (hasRedundantButton(chordButtons) || !practicalCombination(chordButtons, reachLimit)) continue;
     const baseTones = combinationTones(chordButtons);
+    if (baseTones.some((pitch) => !targetSet.has(pitch))) continue;
     const missing = targetPitches.filter((pitch) => !baseTones.includes(pitch));
-    const variants: DiagramButton[][] = [[...chordButtons]];
-    for (const pitch of missing.slice(0, 2)) {
-      const bass = bestBassForCluster(buttons, pitch, chordButtons, rootReference, new Set(), reachLimit);
-      if (bass) variants.push([bass, ...chordButtons]);
-    }
-    for (const selected of variants) {
-      if (!practicalCombination(selected, reachLimit) || hasRedundantButton(selected)) continue;
-      if (!isAcceptableApproximation(root, pattern, targetPitches, selected)) continue;
-      const bassButtons = selected.filter(isBassButton);
-      const chords = selected.filter((button) => !isBassButton(button));
-      ranked.push({
-        result: resultForCombination(selected, chords, bassButtons, targetPitches, false),
-        exact: false,
-        mixed: bassButtons.length > 0 && chords.length > 0,
-        buttonCount: selected.length,
-        compactness: compactness(selected),
-        approximationPenalty: approximationPenalty(targetPitches, selected),
-      });
-    }
+    const collect = (index: number, selected: DiagramButton[], bassButtons: DiagramButton[]) => {
+      if (selected.length > maxButtons || !practicalCombination(selected, reachLimit)) return;
+      if (index === missing.length) {
+        if (hasRedundantButton(selected) || !isAcceptableApproximation(root, pattern, targetPitches, selected)) return;
+        ranked.push({
+          result: resultForCombination(selected, chordButtons, bassButtons, targetPitches, false),
+          exact: false,
+          mixed: bassButtons.length > 0 && chordButtons.length > 0,
+          buttonCount: selected.length,
+          compactness: compactness(selected),
+          approximationPenalty: approximationPenalty(root, pattern, targetPitches, selected),
+        });
+        return;
+      }
+      const pitch = missing[index];
+      if (pitch === undefined) return;
+      // Omitting this pitch is allowed only when the final omission policy permits it.
+      collect(index + 1, selected, bassButtons);
+      if (selected.length >= maxButtons) return;
+      const bass = bestBassForCluster(buttons, pitch, selected, rootReference,
+        new Set(selected.map((item) => item.id)), reachLimit);
+      if (bass) collect(index + 1, [...selected, bass], [...bassButtons, bass]);
+    };
+    collect(0, [...chordButtons], []);
   }
 
   /* Final musical invariant. Candidate generators and fixed recipes may evolve
@@ -325,12 +322,88 @@ export function bassAndChordResults(
      chord. Non-exact results must also satisfy the conservative omission rule. */
   const validRanked = ranked.filter((item) => {
     const summary = summarizeResult(item.result.playbackButtons, targetPitches);
-    if (summary.extraPitches.length > 0 || !practicalCombination(item.result.playbackButtons, reachLimit) || hasRedundantButton(item.result.playbackButtons)) return false;
+    if (item.buttonCount > maxButtons || summary.extraPitches.length > 0 || !practicalCombination(item.result.playbackButtons, reachLimit) || hasRedundantButton(item.result.playbackButtons)) return false;
     if (item.exact) return summary.exact;
     return isAcceptableApproximation(root, pattern, targetPitches, item.result.playbackButtons);
   });
 
-  validRanked.sort((a, b) => {
+  // Recommendation is a curated shortlist, not an exhaustive ranking label.
+  // Distinct exact physical recipes remain eligible even when they produce the
+  // same pitch-class set. Favor compactness, few buttons, and clear function.
+  const is13 = ["dominant13", "major13", "minor13"].includes(pattern);
+  const hasThirdAndEleventh = ["dominant11", "major11", "dominant13", "major13"].includes(pattern);
+  const isConventionalShell = (item: RankedRealization) => is13 &&
+    [7, 14, 17].every((interval) => item.result.missingPitches.includes(transpose(root, interval))) &&
+    [0, pattern === "minor13" ? 3 : 4, pattern === "major13" ? 11 : 10, 21]
+      .every((interval) => item.result.coveredPitches.includes(transpose(root, interval)));
+  const hasDenseEleventh = (item: RankedRealization) => hasThirdAndEleventh &&
+    item.result.coveredPitches.includes(transpose(root, 4)) &&
+    item.result.coveredPitches.includes(transpose(root, 17));
+
+  const preferenceScore = (item: RankedRealization) => {
+    // A button carries more ergonomic cost than a modest change in spacing.
+    // An omitted ordinary fifth is inexpensive, while losing the 3rd in an
+    // eleventh remains a clearly labeled suspended-style choice.
+    const cost = item.buttonCount * 3 + item.compactness * 0.05 +
+      item.approximationPenalty * 0.9 + (item.exact ? -1 : 0);
+    const densityCost = hasDenseEleventh(item) ? 1.5 : 0;
+    // Prefer a one-tone omission to a two-tone omission when ergonomic costs
+    // are comparable. Standard 1-3-7-13 shells are a separate strategy.
+    const reductionCost = item.exact || isConventionalShell(item) ? 0 : item.result.missingPitches.length * 1.25;
+    // A useful thirteenth shell gets a small preference, never an automatic
+    // eight-point victory over a more compact near-complete realization.
+    return cost + densityCost + reductionCost - (isConventionalShell(item) ? 1.25 : 0);
+  };
+  const key = (item: RankedRealization) => realizationKey(item.result);
+  const candidatesByRecipe = new Map<string, RankedRealization>();
+  for (const item of validRanked) {
+    const previous = candidatesByRecipe.get(key(item));
+    if (!previous || preferenceScore(item) < preferenceScore(previous)) {
+      candidatesByRecipe.set(key(item), item);
+    }
+  }
+  const distinct = [...candidatesByRecipe.values()];
+
+  if (isExtendedChord(pattern)) {
+    type Strategy = "complete" | "minimally-reduced" | "functional-shell" | "alternative";
+    const strategy = (item: RankedRealization): Strategy => {
+      if (item.exact) return "complete";
+      if (isConventionalShell(item)) return "functional-shell";
+      if (item.result.missingPitches.length <= 2) return "minimally-reduced";
+      return "alternative";
+    };
+    const sorted = [...distinct].sort((a, b) => preferenceScore(a) - preferenceScore(b));
+    const preferred: RankedRealization[] = [];
+    const bestScore = sorted[0] ? preferenceScore(sorted[0]) : Infinity;
+    // Include contrasting harmonic approaches before filling the remaining
+    // places with another well-ranked physical realization (which can be exact).
+    for (const kind of ["complete", "minimally-reduced", "functional-shell"] as Strategy[]) {
+      const candidate = sorted.find((item) => strategy(item) === kind);
+      if (candidate && preferenceScore(candidate) <= bestScore + 3.5) preferred.push(candidate);
+    }
+    for (const candidate of sorted) {
+      if (preferred.length >= 3) break;
+      if (preferred.includes(candidate)) continue;
+      // Do not recommend a much less convenient alternative just to reach 3.
+      if (preferenceScore(candidate) <= bestScore + 2.75) preferred.push(candidate);
+    }
+    for (const item of preferred.slice(0, 3)) {
+      item.recommended = true;
+      const count = item.buttonCount;
+      const span = "compact physical grouping";
+      const kind = strategy(item);
+      item.result.recommendationReason = kind === "complete"
+        ? `It contains all required pitch classes with ${count} buttons and a ${span}. It is a compact example of a complete voicing, although all extended tones occupy the Stradella's limited registers.`
+        : kind === "minimally-reduced"
+          ? `It omits only ${item.result.missingPitches.length} permitted ${item.result.missingPitches.length === 1 ? "tone" : "tones"} and uses ${count} buttons. This balances relatively complete harmony with a compact physical arrangement.`
+          : kind === "functional-shell"
+            ? `It preserves root, third, seventh, and thirteenth in ${count} buttons, avoiding the extra density of fifth, ninth, and eleventh.`
+            : `It offers another useful physical combination with ${count} buttons and a ${span}; its button recipe is distinct from the other recommended examples.`;
+    }
+  }
+  distinct.sort((a, b) => {
+    if (Boolean(a.recommended) !== Boolean(b.recommended)) return a.recommended ? -1 : 1;
+    if (a.recommended && b.recommended) return preferenceScore(a) - preferenceScore(b);
     if (a.exact !== b.exact) return a.exact ? -1 : 1;
     if (a.approximationPenalty !== b.approximationPenalty) return a.approximationPenalty - b.approximationPenalty;
     if (a.buttonCount !== b.buttonCount) return a.buttonCount - b.buttonCount;
@@ -340,14 +413,10 @@ export function bassAndChordResults(
 
   /* One most-ergonomic physical button set per musical recipe. Keep all
      unique exact and valid approximate recipes; no arbitrary count limit. */
-  const seen = new Set<string>();
-  const results: StradellaChordFinderResult[] = [];
-  for (const item of validRanked) {
-    const key = realizationKey(item.result);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    results.push(item.result);
-  }
+  const results: StradellaChordFinderResult[] = distinct.map((item) => ({
+    ...item.result,
+    recommended: Boolean(item.recommended),
+  }));
 
   return results.length > 0
     ? results

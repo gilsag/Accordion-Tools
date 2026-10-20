@@ -10,7 +10,7 @@
   "pianoTrebleRange": "three-octave",
   "showTrebleOctaves": false,
   "colorTheme": "default",
-  "titleMode": "auto",
+  "titleMode": "contextual",
   "customTitle": "My accordion diagram",
   "showButtonLabels": true,
   "showBellowsGuide": true,

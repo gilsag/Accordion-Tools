@@ -18,7 +18,7 @@ export type AccidentalMode = "natural" | "flats" | "sharps" | "enharmonic";
 export type ChordLabelMode = "none" | "chord-name" | "root-only" | "chord-tones" | "row-function" | "functional-reference";
 
 /** Controls whether the diagram title is automatic, custom, or hidden. */
-export type TitleMode = "auto" | "custom" | "none";
+export type TitleMode = "auto" | "contextual" | "custom" | "none";
 
 /** Named font-family choices used by diagram labels and text notes. */
 export type FontFamily = "system" | "serif" | "mono" | "rounded";
@@ -81,7 +81,7 @@ export type TrebleSystem = "c-system" | "b-system";
 export type TrebleLayout = TrebleSystem | "piano";
 
 /** Preset instrument ranges for the chromatic-button treble side. */
-export type TrebleSizePreset = "small" | "full" | "large";
+export type TrebleSizePreset = "one-octave" | "two-octave" | "small" | "full" | "large";
 
 /** Preset instrument ranges for the piano treble side. */
 export type PianoTrebleRange = "two-octave" | "three-octave" | "four-octave";
@@ -130,6 +130,11 @@ export type FinderChordPattern =
   | "dominant9"
   | "dominant9sus4"
   | "dominant11"
+  | "major11"
+  | "minor11"
+  | "dominant13"
+  | "major13"
+  | "minor13"
   | "major7"
   | "major9"
   | "major7add9"

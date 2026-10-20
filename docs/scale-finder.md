@@ -59,3 +59,7 @@ See [`settings.md`](settings.md) for:
 - `soundEnabled`
 - `notation`
 - `accidental`
+
+## Contextual title and compact treble range
+
+When Settings → Title is **Contextual**, the diagram title contains the selected scale root and scale name. For chromatic-button treble diagrams, the new one- and two-octave sizes expand to the smallest larger preset containing all highlighted scale buttons as needed. Existing size presets remain available.

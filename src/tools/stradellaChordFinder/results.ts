@@ -13,6 +13,9 @@ export type StradellaChordFinderResult = {
   missingPitches: string[];
   extraPitches: string[];
   exact: boolean;
+  recommended?: boolean;
+  /** Short justification for the preferred teaching/playing shortlist. */
+  recommendationReason?: string;
   playable: boolean;
   shortDescription: string;
   explanation: string;

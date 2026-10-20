@@ -81,6 +81,8 @@ const TREBLE_SYSTEM_DEFINITIONS: Record<TrebleSystem, TrebleSystemDefinition> = 
   To customize the size presets manually, edit these values.
 */
 const TREBLE_SIZE_PRESETS: Record<TrebleSizePreset, TrebleSizeDefinition> = {
+  "one-octave": { baseColumns: 5 },
+  "two-octave": { baseColumns: 9 },
   small: {
     baseColumns: 14,
   },
@@ -144,6 +146,7 @@ export function generateTreble(
   angle: number,
   showOctaves: boolean,
   verticalOffset = 0,
+  startColumn = 0,
 ): DiagramButton[] {
   const systemDefinition = TREBLE_SYSTEM_DEFINITIONS[system];
   const sizeDefinition = TREBLE_SIZE_PRESETS[sizePreset];
@@ -161,7 +164,8 @@ export function generateTreble(
     const groupOffsetPx = ROW_GROUP_OFFSETS[row] * xGap;
     const diagonalOffsetPx = row * diagonalDx;
 
-    return Array.from({ length: columns }).map((_, column) => {
+    return Array.from({ length: columns }).map((_, localColumn) => {
+      const column = localColumn + startColumn;
       const semitoneOffset = column * rowDefinition.step;
       const pitchClass = transpose(rowDefinition.start, semitoneOffset);
       const octave = getOctaveNumber(rowDefinition, semitoneOffset);
@@ -171,7 +175,7 @@ export function generateTreble(
 
       return {
         id: `treble-${row}-${column}`,
-        x: 110 + column * xGap + groupOffsetPx + diagonalOffsetPx,
+        x: 110 + localColumn * xGap + groupOffsetPx + diagonalOffsetPx,
         y: 128 + verticalOffset + visualRow * yGap,
         row,
         column,

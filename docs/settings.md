@@ -46,7 +46,7 @@ This is the safest way to move your personal settings between machines without e
 | `basses` | Stradella bass count, such as `48`, `72`, `96`, or `120`. |
 | `trebleLayout` | Treble layout: `c-system`, `b-system`, or `piano`. |
 | `trebleRows` | Number of chromatic-button treble rows. |
-| `trebleSize` | Treble range preset for chromatic-button layouts. |
+| `trebleSize` | Chromatic-button treble size. Existing 3-octave and larger layouts are preserved; new 1- and 2-octave choices automatically expand if selected chord, scale, fingered, or sequence buttons require more columns. |
 | `pianoTrebleRange` | Piano keyboard range preset. |
 | `showTrebleOctaves` | Shows or hides octave numbers on treble labels. |
 
@@ -237,3 +237,11 @@ Harmony settings include an optional **Show inner note ring** control (off by de
 ## In-app documentation
 
 Open **Settings → About → Open documentation** to read the user guides without leaving Accordion Tools. The viewer includes topic navigation and a text search across the bundled Markdown guides. Links between Markdown guides open the corresponding topic in the viewer. The **Open README.md** link remains available for viewing the GitHub version.
+
+## Contextual diagram titles
+
+The `titleMode` setting supports **Auto** (instrument/layout), **Contextual** (default; chord/scale and selection information when a finder is active), **Custom**, and **None**. Contextual titles apply to both Chord Finders and both Scale Finders. There are no competing Chord Finder title checkboxes. The annotation checkbox in Stradella and the extended-chord voicing-note checkbox in Treble control footer text only. SVG/PNG filenames are ASCII-safe, with individual Stradella realization buttons included when Contextual is selected.
+
+## Treble layout range
+
+Chromatic-button instruments now offer **1 octave** and **2 octaves** in addition to all previous Treble size presets. The compact options center a window on selected buttons and expand to the smallest available larger preset if necessary. Piano range presets are unchanged. Export uses the actual resulting diagram width.

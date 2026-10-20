@@ -3,9 +3,10 @@ import type {
   FinderChordOctave,
   FinderChordPattern,
 } from "../../types";
-import { CHORD_FINDER_INVERSION_OPTIONS } from "../../tools/chordFinderTools";
+import { CHORD_FINDER_INVERSION_OPTIONS, type TrebleChordVoicingMode } from "../../tools/chordFinderTools";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
+import { isExtendedChord } from "../../music/chordVoicingPolicy";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 
@@ -22,10 +23,16 @@ type TrebleChordFinderPanelProps = {
   inversion: FinderChordInversion;
   onInversionChange: (value: FinderChordInversion) => void;
   buttonCount: number;
+  voicingMode: TrebleChordVoicingMode;
+  onVoicingModeChange: (mode: TrebleChordVoicingMode) => void;
+  realizationStatus: string;
+  realizationExplanation: string;
   isActive: boolean;
   onToggleActive: () => void;
   onPlay: () => void;
   onClear: () => void;
+  showVoicingNote: boolean;
+  onShowVoicingNoteChange: (show: boolean) => void;
 };
 
 /** Right-hand chord finder panel for CBA and piano treble layouts. */
@@ -42,10 +49,16 @@ export function TrebleChordFinderPanel({
   inversion,
   onInversionChange,
   buttonCount,
+  voicingMode,
+  onVoicingModeChange,
+  realizationStatus,
+  realizationExplanation,
   isActive,
   onToggleActive,
   onPlay,
   onClear,
+  showVoicingNote,
+  onShowVoicingNoteChange,
 }: TrebleChordFinderPanelProps) {
   return (
     <CollapsibleSection title="Chord Finder" isOpen={isOpen} onToggle={onToggle}>
@@ -55,8 +68,9 @@ export function TrebleChordFinderPanel({
       <details className="tool-details">
         <summary>More explanation</summary>
         <p className="hint">
-          The treble finder uses the selected root, octave, and inversion to look for nearby buttons or piano keys. It is a layout aid: on chromatic-button treble there may be several possible positions for the same pitch.
+          The treble finder selects nearby buttons or piano keys at the chosen root octave and inversion. Auto displays all chord tones when a complete five-button-or-fewer shape is available. For larger chords it uses a practical reduced voicing; Full chord displays all available tones, including theoretical six- or seven-button shapes that are not simultaneously playable with five fingers.
         </p>
+        {isActive && <p className="hint">{realizationExplanation}</p>}
       </details>
 
       <fieldset className="tool-fieldset">
@@ -113,10 +127,25 @@ export function TrebleChordFinderPanel({
           </select>
         </label>
 
+        <label>
+          <span className="label-line">Voicing <HelpTip text="Auto shows an exact chord when possible within five buttons; Full chord shows all available tones, including theoretical six- and seven-button shapes; Practical uses conventional omissions." /></span>
+          <select
+            value={voicingMode}
+            onChange={(event) => onVoicingModeChange(event.target.value as TrebleChordVoicingMode)}
+          >
+            <option value="auto">Auto (exact when playable)</option>
+            <option value="full">Full chord (all tones)</option>
+            <option value="practical">Practical voicing</option>
+          </select>
+        </label>
+        {isExtendedChord(pattern) && (
+          <p className="hint">Full eleventh and thirteenth chords have six or seven tones. Practical voicings omit selected tones to make the chord manageable on the treble keyboard.</p>
+        )}
         <div className="result-card">
           <div className="result-card-title">Treble chord result</div>
           <p>Target: {targetToneText}</p>
           <p>Buttons: <strong>{buttonCount}</strong></p>
+          <p>Realization: <strong>{realizationStatus}</strong></p>
           <p>Status: <strong>{isActive && buttonCount > 0 ? "Shown" : "Ready"}</strong></p>
         </div>
 
@@ -131,6 +160,14 @@ export function TrebleChordFinderPanel({
             Clear chord
           </button>
         </div>
+        <label className="checkbox-line">
+          <input
+            type="checkbox"
+            checked={showVoicingNote}
+            onChange={(event) => onShowVoicingNoteChange(event.target.checked)}
+          />
+          <span>Show chord realization note below diagram</span>
+        </label>
       </fieldset>
     </CollapsibleSection>
   );
