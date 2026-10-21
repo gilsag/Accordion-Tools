@@ -763,6 +763,7 @@ function App() {
   const [finderMaxButtons, setFinderMaxButtons] = useState(3);
   const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
+  const [finderExplanationFontSize, setFinderExplanationFontSize] = useState(26);
   const [pendingProgressionRealizationKey, setPendingProgressionRealizationKey] = useState<string | null>(null);
   const [
     stradellaChordFinderMarkRootBass,
@@ -4163,9 +4164,13 @@ function App() {
     80,
     Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
   );
+  const finderFooterLines = Math.max(1, Math.ceil(
+    (finderAnnotation?.detail.length ?? 0) * finderExplanationFontSize * 0.6 / Math.max(1, viewWidth - 64),
+  ));
+  const finderFooterHeight = Math.max(74, Math.ceil(finderFooterLines * finderExplanationFontSize * 1.15 + 16));
   const viewHeight = trebleFooterEnabled && buttonTrebleFooter
     ? trebleFooterY + trebleFooterHeight + 8
-    : baseViewHeight + (trebleFooterEnabled ? 112 : finderFooterEnabled ? 56 : 0);
+    : baseViewHeight + (trebleFooterEnabled ? 112 : finderFooterEnabled ? finderFooterHeight - 18 : 0);
 
   const sidebarWidth =
     interfaceDensity === "compact"
@@ -5663,6 +5668,8 @@ function App() {
                   onSpanColumnsChange={setFinderSpanColumns}
                   showRealizationNote={showFinderRealizationNote}
                   onShowRealizationNoteChange={setShowFinderRealizationNote}
+                  explanationFontSize={finderExplanationFontSize}
+                  onExplanationFontSizeChange={setFinderExplanationFontSize}
                   realizations={stradellaChordFinderRealizations}
                   realizationIndex={Math.min(stradellaChordFinderRealizationIndex, Math.max(0, stradellaChordFinderRealizations.length - 1))}
                   onRealizationChange={setStradellaChordFinderRealizationIndex}
@@ -7063,10 +7070,10 @@ function App() {
                 x={32}
                 y={trebleFooterEnabled ? trebleFooterY : baseViewHeight - 21}
                 width={viewWidth - 64}
-                height={trebleFooterEnabled && buttonTrebleFooter ? trebleFooterHeight : trebleFooterEnabled ? 128 : 74}
+                height={trebleFooterEnabled && buttonTrebleFooter ? trebleFooterHeight : trebleFooterEnabled ? 128 : finderFooterHeight}
               >
                 <div style={{
-                  fontFamily: "Arial, sans-serif", fontSize: trebleFooterEnabled ? `${trebleFooterFontSize}px` : "26px", fontWeight: 600,
+                  fontFamily: "Arial, sans-serif", fontSize: `${trebleFooterEnabled ? trebleFooterFontSize : finderExplanationFontSize}px`, fontWeight: 600,
                   textAlign: "center", lineHeight: 1.15, overflowWrap: "anywhere",
                   color: "#20252a",
                 }}>

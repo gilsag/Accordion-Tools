@@ -23,6 +23,8 @@ type StradellaChordFinderPanelProps = {
   result: StradellaChordFinderResult;
   showRealizationNote: boolean;
   onShowRealizationNoteChange: (value: boolean) => void;
+  explanationFontSize: number;
+  onExplanationFontSizeChange: (value: number) => void;
   realizations: StradellaChordFinderResult[];
   realizationIndex: number;
   onRealizationChange: (index: number) => void;
@@ -57,6 +59,8 @@ export function StradellaChordFinderPanel({
   result,
   showRealizationNote,
   onShowRealizationNoteChange,
+  explanationFontSize,
+  onExplanationFontSizeChange,
   realizations,
   realizationIndex,
   onRealizationChange,
@@ -212,6 +216,14 @@ export function StradellaChordFinderPanel({
           <input type="checkbox" checked={showRealizationNote} onChange={(event) => onShowRealizationNoteChange(event.target.checked)} />
           <span>Show realization explanation below diagram</span>
           </label>
+          <label htmlFor="finder-explanation-size">Explanation text size: {explanationFontSize} px</label>
+          <input
+            id="finder-explanation-size"
+            type="range" min={16} max={40} step={1}
+            value={explanationFontSize}
+            disabled={!showRealizationNote}
+            onChange={(event) => onExplanationFontSizeChange(Number(event.target.value))}
+          />
         </div>
       </fieldset>
     </CollapsibleSection>
