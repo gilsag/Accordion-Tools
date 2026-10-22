@@ -35,7 +35,7 @@ const selected = em7g.find((r) => r.playable && r.exact)!;
 const note = realizationAnnotation("E", "minor7", selected, model, "G");
 assert.match(note.title, /Emin7\/G/);
 assert.match(note.filenameKey, /Emin7-over-G/);
-assert.match(note.detail, /Requested bass: G/);
+assert.match(note.detail, /Harmonic identity: Emin7\/G · First inversion/);
 assert.match(explainStradellaRealization("E", "minor7", selected, "bass-and-chords", model, "G"), /Harmonic identity: Emin7\/G/);
 
 const raised: StradellaRegisterModel = {

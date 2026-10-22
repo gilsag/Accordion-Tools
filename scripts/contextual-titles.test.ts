@@ -11,9 +11,9 @@ const stradella = (requestedBass: string | null, modeledLowest: string | null) =
   bassOnly: false, modeledLowest,
 });
 assert.equal(stradella(null, "E2"), "Emin7 - Exact - 2 buttons");
-assert.equal(stradella(null, "G2"), "Emin7 - Exact - 2 buttons - modeled lowest G2");
+assert.equal(stradella(null, "G2"), "Emin7/G - Exact - 2 buttons");
 assert.equal(stradella("G", "G2"), "Emin7/G - Exact - 2 buttons");
-assert.equal(stradella("E", "E2"), "Emin7/E - Exact - 2 buttons");
+assert.equal(stradella("E", "E2"), "Emin7 - Exact - 2 buttons");
 assert.equal(stradella("G", "E2"), "Emin7/G - Exact - 2 buttons",
   "Do not silently replace requested harmonic identity with a modeled pitch");
 assert.equal(stradella(null, null), "Emin7 - Exact - 2 buttons");
@@ -41,16 +41,15 @@ const allOff = realizationAnnotation("E", "minor7", exact, DEFAULT_STRADELLA_REG
 assert.equal(allOff.title, annotation.title);
 assert.equal(allOff.filenameKey, annotation.filenameKey);
 assert.deepEqual(allOff.lines, []);
-// A selected non-root bass changes the nominal inversion, not the chord's name.
+// A selected non-root bass determines the realized slash bass without changing the chord root/quality.
 const cmaj13 = getStradellaChordFinderResults(buttons, "C", "major13", "bass-and-chords", false, 4, 5.5)
   .find((candidate) => candidate.playable && candidate.playbackButtons.some((button) =>
     button.pitchClass === "B" && button.kind.startsWith("bass-")));
 assert.ok(cmaj13, "Expect a Cmaj13 alternative with B in the bass");
 const shell = realizationAnnotation("C", "major13", cmaj13, DEFAULT_STRADELLA_REGISTER_MODEL);
-assert.match(shell.title, /^Cmaj13 - (Exact|Approximate) - \d+ buttons - modeled lowest B2$/);
-assert.doesNotMatch(shell.title, /Cmaj13\/B/, "Inferred voicing must not become an explicit slash chord");
-assert.ok(shell.filenameKey.startsWith("Cmaj13-"));
-assert.doesNotMatch(shell.filenameKey, /modeled|B2/, "Export recipe names must remain model-neutral");
+assert.match(shell.title, /^Cmaj13\/B - (Exact|Approximate) - \d+ buttons$/);
+assert.ok(shell.filenameKey.startsWith("Cmaj13-over-B-"));
+assert.doesNotMatch(shell.filenameKey, /[\/#♯♭\s]/, "Export filename keys must contain no unsafe characters");
 
 assert.deepEqual(Object.values(DEFAULT_STRADELLA_NOTE_LEVELS), [true, true, true, true]);
 

@@ -89,14 +89,17 @@ export function analyzeConfiguredStradellaVoicing(
 
 /** Ascending nominal pitches, with ×N identifying unison contributions from
  * separate played buttons. These are modeled notes, not spectral measurements. */
-export function formatModeledStradellaNotes(notes: readonly ModeledStradellaNote[]): string {
+export function formatModeledStradellaNotes(
+  notes: readonly ModeledStradellaNote[],
+  displayPitchClass: (pitchClass: string) => string = (pitchClass) => pitchClass,
+): string {
   if (notes.length === 0) return "None";
   const sorted = [...notes].sort((a, b) => a.midi - b.midi || a.buttonId.localeCompare(b.buttonId));
   const groups: { pitch: string; midi: number; count: number }[] = [];
   for (const note of sorted) {
     const previous = groups[groups.length - 1];
     if (previous && previous.midi === note.midi) previous.count += 1;
-    else groups.push({ pitch: `${note.pitchClass}${note.octave}`, midi: note.midi, count: 1 });
+    else groups.push({ pitch: `${displayPitchClass(note.pitchClass)}${note.octave}`, midi: note.midi, count: 1 });
   }
   return groups.map(({ pitch, count }) => `${pitch}${count > 1 ? ` ×${count}` : ""}`).join(" – ");
 }
@@ -112,15 +115,16 @@ export function explainConfiguredStradellaVoicing(
   playbackButtons: readonly DiagramButton[],
   rootPitchClass: string,
   model: StradellaRegisterModel,
+  displayPitchClass: (pitchClass: string) => string = (pitchClass) => pitchClass,
 ): string {
   const analysis = analyzeConfiguredStradellaVoicing(playbackButtons, rootPitchClass, model);
   if (!analysis.lowestPitch) return "Configured register model: no sounded notes to analyze.";
   const bassSources = analysis.lowestNotes.some((note) => note.source === "bass");
   const relationship = analysis.rootIsLowest
-    ? `the requested root ${rootPitchClass} is lowest in this model`
-    : `${analysis.lowestPitchClass} is below the requested root ${rootPitchClass} in this model`;
+    ? `the requested root ${displayPitchClass(rootPitchClass)} is lowest in this model`
+    : `${displayPitchClass(analysis.lowestPitchClass ?? "")} is below the requested root ${displayPitchClass(rootPitchClass)} in this model`;
   return `Configured register model: bass ${formatRegisterRange(model.bass)}; preset chords ${formatRegisterRange(model.chord)}. ` +
-    `Nominal pitches (low to high): ${formatModeledStradellaNotes(analysis.notes)}. ` +
-    `Lowest modeled pitch: ${analysis.lowestPitch}${bassSources ? " (bass/counterbass button)" : " (preset chord button)"}; ${relationship}. ` +
+    `Nominal pitches (low to high): ${formatModeledStradellaNotes(analysis.notes, displayPitchClass)}. ` +
+    `Lowest modeled pitch: ${displayPitchClass(analysis.lowestPitchClass ?? "")}${analysis.lowestNotes[0]?.octave ?? ""}${bassSources ? " (bass/counterbass button)" : " (preset chord button)"}; ${relationship}. ` +
     "This is a nominal one-pitch-per-tone calculation, not a verified acoustic inversion: recordings can contain octave doublings, and playback may follow these pitches or use its original mapping depending on sound settings.";
 }

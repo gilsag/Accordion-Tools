@@ -1,5 +1,6 @@
 import { DEFAULT_STRADELLA_NOTE_LEVELS, normalizeStradellaNoteLevels, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "./tools/contextualTitles";
+import { displayRoot, realizedChordName } from "./tools/stradellaChordFinder/chordSpelling";
 /*
   Application orchestration: React owns diagram/tool settings; src/tools/*
   supplies music algorithms, while src/sound.ts owns playback. Do not derive
@@ -4175,7 +4176,7 @@ function App() {
   const contextualTitle = (() => {
     if (side === "stradella" && stradellaChordFinderActive) {
       return finderAnnotationActive ? finderAnnotation?.title ?? autoTitle()
-        : `${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern)}${stradellaChordFinderRequestedBass ? `/${stradellaChordFinderRequestedBass}` : ""} - No realization`;
+        : `${realizedChordName(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderRequestedBass, stradellaChordFinderRequestedBass, `${displayRoot(stradellaChordFinderRoot)}${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern).slice(stradellaChordFinderRoot.length)}`)} - No realization`;
     }
     if (side === "treble" && chordFinderActive) return trebleContextualTitle({
       root: chordFinderRoot,

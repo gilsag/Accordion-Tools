@@ -28,10 +28,9 @@ type RankedRealization = {
   recommended?: boolean;
 };
 
-// Approximate ergonomic cost per adjacent Stradella column. At the previous
-// reference diagram size (38px buttons, 1.18 spacing), the old pixel coefficient
-// was 0.05 * (38 * 1.18 * 1.15) = 2.5783. Keep that relative weighting while
-// ensuring that diagram zoom does not change musical recommendations.
+// Dimensionless ergonomic cost per adjacent Stradella column. The factor
+// balances physical reach against button count and harmonic completeness;
+// scaling the diagram must not change a musical recommendation.
 const COMPACTNESS_WEIGHT_PER_COLUMN = 2.58;
 // Float rounding in scaled x/y coordinates must not break genuine geometric ties.
 const GEOMETRY_EPSILON = 1e-9;
@@ -399,7 +398,7 @@ export function bassAndChordResults(
     return isAcceptableApproximation(root, pattern, targetPitches, item.result.playbackButtons);
   });
 
-  /* Phase 3: preserve one useful *registral* addition even when it does not
+  /* Preserve one useful *registral* addition even when it does not
      contribute another pitch class. Start only from valid chord-button-only
      recipes: this makes the new role unambiguous and avoids accumulating two
      independent bass notes. Select the nearest playable root bass/counterbass
