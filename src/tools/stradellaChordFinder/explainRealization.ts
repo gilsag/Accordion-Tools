@@ -13,20 +13,21 @@ import { explainRegistralRole } from "./registralExplanation";
 import { explainConfiguredStradellaVoicing, analyzeConfiguredStradellaVoicing, type StradellaRegisterModel } from "./registerModel";
 import { requestedBassRole } from "./harmonicIdentity";
 import { analyzeVoicingDensity } from "./voicingDensity";
+import { chordToneName, displayRoot, realizedChordName, realizedInversionDescription, spellDensityNote } from "./chordSpelling";
 
 const ELEVENTHS: FinderChordPattern[] = ["dominant11", "major11", "minor11"];
 const THIRTEENTHS: FinderChordPattern[] = ["dominant13", "major13", "minor13"];
 
-function buttonName(button: StradellaChordFinderResult["playbackButtons"][number]) {
+function buttonName(button: StradellaChordFinderResult["playbackButtons"][number], spell: (pitch: string) => string) {
   if (isBassButton(button)) {
-    return `${button.pitchClass ?? "?"} ${button.kind === "bass-counterbass" ? "counterbass" : "bass"}`;
+    return `${spell(button.pitchClass ?? "?")} ${button.kind === "bass-counterbass" ? "counterbass" : "bass"}`;
   }
-  return `${button.chordRoot ?? "?"} ${chordKindLabel(button.kind)}`.trim();
+  return `${spell(button.chordRoot ?? "?")} ${chordKindLabel(button.kind)}`.trim();
 }
 
 function omittedRole(root: string, pattern: FinderChordPattern, pitch: string) {
   const interval = intervalsForChordFinder(pattern).find((value) => transpose(root, value) === pitch);
-  return `${pitch} (${interval === undefined ? "chord tone" : intervalRole(interval)})`;
+  return `${chordToneName(root, pattern, pitch)} (${interval === undefined ? "chord tone" : intervalRole(interval)})`;
 }
 
 /** Describe the *selected* physical realization and its permitted omissions.
@@ -43,8 +44,12 @@ export function explainStradellaRealization(
   if (!result.playable || result.playbackButtons.length === 0) return result.explanation;
 
   const selected = result.playbackButtons;
-  const chordName = `${finderChordSymbol(root, pattern)}${requestedBass ? `/${requestedBass}` : ""}`;
-  const sounding = result.coveredPitches.join("–");
+  const spell = (pc: string) => chordToneName(root, pattern, pc);
+  const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
+  const modeled = registerModel ? analyzeConfiguredStradellaVoicing(selected, root, registerModel) : null;
+  const chordName = realizedChordName(root, pattern, requestedBass, modeled?.lowestPitchClass, requestedSymbol);
+  const inversionDescription = realizedInversionDescription(root, pattern, requestedBass ?? modeled?.lowestPitchClass ?? null);
+  const sounding = result.coveredPitches.map(spell).join("–");
   const missing = result.missingPitches;
   const hasTone = (interval: number) => result.coveredPitches.includes(transpose(root, interval));
   const is11 = ELEVENTHS.includes(pattern);
@@ -56,7 +61,7 @@ export function explainStradellaRealization(
 
   paragraphs.push(
     `${chordName} uses ${selected.length} ${selected.length === 1 ? "button" : "buttons"}: ` +
-    `${selected.map(buttonName).join(" + ")}. ` +
+    `${selected.map((button) => buttonName(button, spell)).join(" + ")}. ` +
     `Together they produce the pitch classes ${sounding}. ` +
     (result.exact
       ? "Exact means every required chord pitch class is present; it does not imply that the extensions sound in their theoretical upper octaves."
@@ -65,24 +70,25 @@ export function explainStradellaRealization(
 
   if (requestedBass) {
     const harmonicRole = requestedBassRole({ root, pattern, requestedBass }) ?? "chord tone";
-    const modeled = registerModel
-      ? analyzeConfiguredStradellaVoicing(selected, root, registerModel) : null;
-    paragraphs.push(`Harmonic identity: ${chordName} requests ${requestedBass} (${harmonicRole}) in the bass. ` +
-      `That specification is different from the chord's theoretical root ${root}. ` +
+    paragraphs.push(`Harmonic identity: ${chordName}${inversionDescription ? ` (${inversionDescription.toLowerCase()})` : ""}. ` +
+      `The requested bass is ${spell(requestedBass)} (${harmonicRole}); the theoretical root remains ${spell(root)}. ` +
       (modeled?.lowestPitchClass === requestedBass
-        ? `The lowest modeled pitch is ${modeled.lowestPitch}, matching the requested bass.`
-        : "The lowest acoustic pitch cannot be established without a compatible register model."));
+        ? `The configured register model places ${spell(requestedBass)}${modeled.lowestNotes[0]?.octave ?? ""} lowest.`
+        : "The acoustic lowest pitch depends on the instrument and register configuration."));
   } else {
-    paragraphs.push(`Harmonic identity: ${chordName}, with no specified inversion. ` +
-      "Equivalent pitch-class collections can have other chord identities in a different harmonic context.");
+    paragraphs.push(`Harmonic identity: ${requestedSymbol}. ` +
+      (modeled?.lowestPitchClass && modeled.lowestPitchClass !== root
+        ? `This realization is ${chordName}${inversionDescription ? ` (${inversionDescription.toLowerCase()})` : ""} under the configured register model. `
+        : "This realization has no distinct slash bass under the configured register model. ") +
+      "The intended harmony is not changed by another possible interpretation of the same pitch classes.");
   }
   paragraphs.push(explainRegistralRole(root, pattern, result));
   if (registerModel) {
-    paragraphs.push(explainConfiguredStradellaVoicing(result.playbackButtons, root, registerModel));
+    paragraphs.push(explainConfiguredStradellaVoicing(result.playbackButtons, root, registerModel, spell));
     const modeledNotes = analyzeConfiguredStradellaVoicing(selected, root, registerModel).notes;
     const observation = analyzeVoicingDensity(modeledNotes);
     if (observation.note) {
-      paragraphs.push(`Voicing density: ${observation.note}. This close spacing can sound tense or congested, especially in lower registers, but can also be musically intentional. It is a nominal-pitch observation, not a measurement of acoustic reed doublings.`);
+      paragraphs.push(`Voicing density: ${spellDensityNote(observation.note, root, pattern)}. This close spacing can sound tense or congested, especially in lower registers, but can also be musically intentional. It is a nominal-pitch observation, not a measurement of acoustic reed doublings.`);
     }
   }
 
@@ -96,7 +102,7 @@ export function explainStradellaRealization(
   if (is13) {
     const seventh = pattern === "major13" ? "major seventh" : "minor seventh";
     const suffix = hasTone(21)
-      ? `The ${transpose(root, 21)} (thirteenth) has the same pitch class as a sixth. ${hasTone(pattern === "major13" ? 11 : 10) ? `The retained ${seventh} distinguishes this functional thirteenth chord from an ordinary added-sixth chord.` : `Without the theoretical ${seventh}, its extended-chord character is less clearly established.`}`
+      ? `The ${spell(transpose(root, 21))} (thirteenth) has the same pitch class as a sixth. ${hasTone(pattern === "major13" ? 11 : 10) ? `The retained ${seventh} distinguishes this functional thirteenth chord from an ordinary added-sixth chord.` : `Without the theoretical ${seventh}, its extended-chord character is less clearly established.`}`
       : "Without the thirteenth, this does not express the defining color of a thirteenth chord.";
     paragraphs.push(suffix);
     if (isMajorThirdFamily && hasThird && hasEleventh) {

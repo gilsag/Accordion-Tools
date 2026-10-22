@@ -14,8 +14,10 @@ import { explainStradellaRealization } from "../../tools/stradellaChordFinder/ex
 import { HelpTip } from "../ui/HelpTip";
 import { BinaryChoiceButton } from "../ui/BinaryChoiceButton";
 import { analyzeConfiguredStradellaVoicing, formatModeledStradellaNotes, type StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
-import { permittedRequestedBasses, harmonicIdentitySymbol } from "../../tools/stradellaChordFinder/harmonicIdentity";
+import { permittedRequestedBasses } from "../../tools/stradellaChordFinder/harmonicIdentity";
 import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
+import { chordToneName, displayRoot, realizedChordName } from "../../tools/stradellaChordFinder/chordSpelling";
+import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
 
 type StradellaChordFinderPanelProps = {
   isOpen: boolean;
@@ -98,7 +100,8 @@ export function StradellaChordFinderPanel({
   formatText,
 }: StradellaChordFinderPanelProps) {
   const modeledVoicing = analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel);
-  const identity = { root, pattern, requestedBass };
+  const spell = (pc: string) => chordToneName(root, pattern, pc);
+  const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
   const statusText = isActive && !result.playable ? "Not found" : result.exact ? "Exact / ready" : "Approximate / ready";
 
   return (
@@ -138,7 +141,7 @@ export function StradellaChordFinderPanel({
           <select value={requestedBass ?? ""} onChange={(event) => onRequestedBassChange(event.target.value || null)}>
             <option value="">Any (no specified bass)</option>
             {permittedRequestedBasses(root, pattern).map((tone) => (
-              <option key={tone} value={tone}>{tone}{tone === root ? " (root position)" : ""}</option>
+              <option key={tone} value={tone}>{spell(tone)}{tone === root ? " (root position)" : ""}</option>
             ))}
           </select>
         </label>
@@ -213,14 +216,14 @@ export function StradellaChordFinderPanel({
 
         <div className="result-card">
           <div className="result-card-title">Stradella chord result</div>
-          <p>Requested chord: <strong>{harmonicIdentitySymbol(identity)}</strong></p>
+          <p>Requested chord: <strong>{realizedChordName(root, pattern, requestedBass, requestedBass, requestedSymbol)}</strong></p>
           <p>Status: <strong>{statusText}</strong></p>
           <p>{isActive && !result.playable ? "Not found" : <>Buttons: <strong>{buttonCount}</strong></>}</p>
           {isActive && (
             <>
               <p><strong>{formatText(result.shortDescription)}</strong></p>
               <p>Target: {formatPitches(result.targetPitches)}</p>
-              {modeledVoicing.notes.length > 0 && <p>Nominal pitches (low to high): <strong>{formatModeledStradellaNotes(modeledVoicing.notes)}</strong> <HelpTip text="Calculated from the configured Stradella registers, with one nominal pitch per played tone. The actual reed sound may include octave doublings." /></p>}
+              {modeledVoicing.notes.length > 0 && <p>Nominal pitches (low to high): <strong>{formatModeledStradellaNotes(modeledVoicing.notes, spell)}</strong> <HelpTip text="Calculated from the configured Stradella registers, with one nominal pitch per played tone. The actual reed sound may include octave doublings." /></p>}
               <p>Covered: {formatPitches(result.coveredPitches)}</p>
               {result.missingPitches.length > 0 && <p>Missing: {formatPitches(result.missingPitches)}</p>}
               {result.extraPitches.length > 0 && <p>Extra: {formatPitches(result.extraPitches)}</p>}

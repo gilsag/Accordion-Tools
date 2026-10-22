@@ -1,3 +1,31 @@
+## v0.15.6 — Conservative legacy cleanup (2026-10-22)
+
+### Removed
+
+- Removed two unreferenced experimental React panels (the current Progression Assistant and Stradella functional-reference labels are unchanged).
+- Removed unused Vite/React template graphics, an unreferenced SVG sprite, and a byte-identical duplicate ABC example; retained the active `bella-ciao.abc` file.
+- Removed an unversioned, outdated planning appendix after the version-history template; preserved all dated release entries.
+
+### Changed
+
+- Moved contributor-facing developer and historical validation documents to `docs/internal/` so the in-app documentation viewer shows only user guides and the README/version history.
+- Updated documentation links, current control descriptions, and comments that referred to past implementation phases or obsolete treble-only Finder behavior.
+- Retained legacy settings support, ABC fallback parser, dormant public utility exports, SFZ source/preset/attribution, and all 100 La Melodiosa audio samples, including 17 recordings not currently referenced by the browser sample map.
+
+### Verification
+
+- Verified all 56 remaining source modules are reachable, TypeScript syntax and local documentation links are valid, and retained edited code emits unchanged executable JavaScript.
+- Offline regression tests passed, including 117 geometry checks, 223 Stradella configurations, 321 Treble Auto cases, Harmony, inversion, notation, notes, controls, and La Melodiosa mapping.
+- Full native build, lint, complete npm test suite, and browser/audio inspection remain unverified because required npm dependencies could not be installed; see `docs/internal/validation.md`.
+
+## v0.15.5 — Inversion labels and harmonic spelling (2026-10-22)
+
+- Display the **realized** Stradella chord with conventional slash bass when the configured nominal register places a non-root theoretical chord tone lowest, without changing the user's requested harmonic root and quality. Root position remains unslashed.
+- Remove redundant “bass unspecified” and “modeled lowest” wording from concise notes and contextual titles; show first, second or third inversion for triads and seventh chords, and bass-tone roles for extended chords.
+- Spell displayed theoretical chord tones by diatonic function (e.g., Cmin7: C–E♭–G–B♭), leaving internal pitch-class IDs and La Melodiosa mapping unchanged.
+- Generate ASCII-safe filename keys independently of musical labels (`-over-`, `flat`, `sharp`, etc.) and retain physical button detail so distinct chord recipes have distinct export names.
+- Update chord documentation and regression tests. No candidate generation, omission, rank, ergonomic, or audio changes.
+
 ## v0.15.4 — Voicing density, sample cleanup and clearer controls (2026-10-22)
 
 - Replaced action-style buttons for persistent two-choice settings with segmented choices that show both options and clearly indicate the active selection. Show/Hide commands remain action buttons.
@@ -36,7 +64,7 @@
 
 ## v0.15.0 — Stradella interpretation, realizations and contextual titles (2026-10-22)
 
-This release consolidates the previously unreleased Chord Finder developments since v0.14.0. It includes normalized ergonomic ranking, registral analysis, selectable register ranges, explicit requested-bass inversions, four independently selectable explanatory note levels, realization navigation and contextual-title refinements. The analytical register model is separate from actual sampled/synth playback and does not claim a measured acoustic inversion. See [Stradella configuration validation](docs/validation.md) for verification scope and remaining build/browser gates.
+This release consolidates the previously unreleased Chord Finder developments since v0.14.0. It includes normalized ergonomic ranking, registral analysis, selectable register ranges, explicit requested-bass inversions, four independently selectable explanatory note levels, realization navigation and contextual-title refinements. The analytical register model is separate from actual sampled/synth playback and does not claim a measured acoustic inversion. See [Stradella configuration validation](docs/internal/validation.md) for verification scope and remaining build/browser gates.
 
 ### Contextual title consistency audit
 
@@ -76,7 +104,7 @@ This release consolidates the previously unreleased Chord Finder developments si
 ### Code documentation audit
 
 - Added source-level comments and JSDoc around the ABC parser, bass-pattern timing, Stradella results/ranking, registral interpretation, sound/sample mapping, Harmony Explorer and core UI orchestration.
-- Added `docs/developer-guide.md` to document module boundaries, pitch-class versus playback-register assumptions, physical-button identity, ergonomic units, and release checks.
+- Added `docs/internal/developer-guide.md` to document module boundaries, pitch-class versus playback-register assumptions, physical-button identity, ergonomic units, and release checks.
 - Comments and documentation only: no runtime logic, scoring constants, API signatures, or UI behavior changed.
 
 ### Integration validation and release candidate (Phase 6)
@@ -84,7 +112,7 @@ This release consolidates the previously unreleased Chord Finder developments si
 - Audited the consolidated Phase 1–5 Stradella implementation, ranking, registral explanations, and binary-control replacements.
 - Updated an obsolete notation-test expectation to the existing **Major 9** UI label (test-only correction).
 - Added a static binary-controls regression test and a `test:controls` npm script; incorporated it into `test:all`.
-- Recorded functional regression results and explicit remaining production, browser, and audio verification gates in `docs/validation.md`.
+- Recorded functional regression results and explicit remaining production, browser, and audio verification gates in `docs/internal/validation.md`.
 - No additional changes to candidate generation, scoring, harmonic definitions, audio, or interface behavior. This is a **release candidate**, not a fully production-verified build.
 
 
@@ -459,20 +487,3 @@ Major 3rd row: D#  A#   F    C    G    D
 
 - 
 ```
-## La Melodiosa sampled sound integration
-
-- Added La Melodiosa as an optional sampled accordion sound source while retaining the built-in synthesizer.
-- Added independent treble and bass register selection for the three register states defined by the original instrument (upper, lower, both).
-- Preserved the supplied SFZ sample ranges, root pitches, tuning offsets, relative levels, and treble round-robin alternation.
-- Added lazy/cached Web Audio sample loading, selected-register preloading, synth fallback outside mapped ranges, and stop protection while samples are decoding.
-- Added La Melodiosa attribution in About, README/settings documentation, and the sample directory; retained the author's original README, SFZ, and Decent Sampler preset.
-
-### In-app documentation viewer (unreleased)
-
-- Added **Open documentation** in Settings → About.
-- Bundles the project Markdown guides into a searchable, navigable reader without external dependencies or network access.
-- Preserves the existing external README link.
-
-- Chord Finder: configurable maximum of 1–4 buttons and compact/moderate/extended hand span for combined searches.
-- Chord Finder: diagram titles identify realization exactness, button count and bass/chord composition; major-triad titles explicitly use `M`.
-- Diagram download filenames: ASCII-only labels with realization details, using safe hyphen separators.

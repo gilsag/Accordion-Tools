@@ -2,9 +2,9 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-Current version: **0.15.4**
+Current version: **0.15.6**
 
-Release verification: [Stradella configuration matrix](docs/validation.md) (includes testing limitations).
+Historical validation: [Stradella configuration matrix](docs/internal/validation.md) (offline test evidence and limitations; not a verified production build).
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
@@ -54,7 +54,7 @@ Create ordered button paths using numbers and arrows for exercises, bass movemen
 
 Optimize Stradella realizations across an entire chord progression, balancing harmonic voice movement and physical button movement. The assistant supports playback, accompaniment patterns, button highlighting, and staff notation.
 
-For contributors and maintainers, see the [Developer Guide](docs/developer-guide.md) for the source architecture, musical and registral assumptions, physical-button invariants, and validation checks.
+For contributors and maintainers, see the [Developer Guide](docs/internal/developer-guide.md) for the source architecture, musical and registral assumptions, physical-button invariants, and validation checks.
 
 ## Main workspaces
 
@@ -178,6 +178,13 @@ Stradella sound can now follow the configurable nominal bass/counterbass and pre
 ### Stradella register interpretation and concise notes (v0.15.2)
 
 The nominal octave/grouping settings for bass/counterbass and preset-chord buttons are located under their own **Settings → Stradella registers** section, independent from the sound-source/reed settings. In the Chord Finder, the four optional explanation lines can be selected only when **Show realization explanation below diagram** is enabled. Registral notes list the modeled pitches from low to high, including octave numbers and any repeated unisons; all diagram/export explanations are left-aligned. Help tooltips replace explanatory paragraphs. Adjacent ← / → buttons browse realizations without triggering playback. The register model is an assumption about sounding notes, not a measurement of an instrument's reeds.
+
+### v0.15.5 highlights
+
+- Contextual titles and the Harmonic identity note identify the selected Stradella realization with familiar slash-chord notation, e.g., **Cmin7/B♭ — Exact — 2 buttons**, instead of a technical "modeled lowest" suffix. Root-position chords need no slash.
+- Four-level notes and **More explanation** use chord-aware spellings (**C–E♭–G–B♭** for Cmin7) and identify conventional triad/seventh inversions. Nominal octave numbers stay in the registral line. Harmonic root/quality remains the user's selection.
+- SVG/PNG download filenames are sanitized independently: `Cmin7-over-Bflat-Exact-2buttons-Bflat-bass-C-minor.svg`, with no slash, accidental symbols, or other filesystem-sensitive characters.
+- This is a presentation-only revision. Chord generation, sampled audio, register settings, and ranking are unchanged.
 
 ### v0.15.4 highlights
 

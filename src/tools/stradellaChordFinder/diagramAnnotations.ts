@@ -3,14 +3,13 @@ import { transpose } from "../../music";
 import { intervalsForChordFinder } from "../../music/chordDefinitions";
 import type { StradellaChordFinderResult } from "./results";
 import { isBassButton, chordKindLabel } from "./voicings";
-import { requestedBassRole } from "./harmonicIdentity";
-import { briefRegistralRole } from "./registralExplanation";
 import { analyzeConfiguredStradellaVoicing, formatModeledStradellaNotes, type StradellaRegisterModel } from "./registerModel";
 
 export { finderChordSymbol } from "./chordSymbol";
 import { finderChordSymbol } from "./chordSymbol";
 import { stradellaContextualTitle } from "../contextualTitles";
 import { analyzeVoicingDensity } from "./voicingDensity";
+import { chordToneName, displayRoot, realizedChordName, realizedInversionDescription, safeChordFilenameKey, spellDensityNote } from "./chordSpelling";
 
 export function intervalRole(interval: number) {
   const roles: Record<number, string> = {
@@ -65,22 +64,25 @@ export function realizationAnnotation(
   const typeSegment = bassCount && !chordCount ? "-Bass-only" : "";
   const count = result.playbackButtons.length;
 
+  const spell = (pc: string) => chordToneName(root, pattern, pc);
   const buttons = result.playbackButtons.map((button) => {
-    if (isBassButton(button)) return `${button.pitchClass} ${button.kind === "bass-counterbass" ? "counterbass" : "bass"}`;
-    return `${button.chordRoot} ${chordKindLabel(button.kind)}`;
+    if (isBassButton(button)) return `${spell(button.pitchClass ?? "")} ${button.kind === "bass-counterbass" ? "counterbass" : "bass"}`;
+    return `${spell(button.chordRoot ?? "")} ${chordKindLabel(button.kind)}`;
   }).join(" + ");
-  const tones = result.coveredPitches.join("–");
+  const tones = result.coveredPitches.map(spell).join("–");
   const omissions = result.missingPitches.map((pitch) => {
     const interval = intervalsForChordFinder(pattern).find((i) => transpose(root, i) === pitch);
-    return `${pitch} (${interval === undefined ? "chord tone" : intervalRole(interval)})`;
+    return `${spell(pitch)} (${interval === undefined ? "chord tone" : intervalRole(interval)})`;
   });
-  // Register roles such as a separate root bass belong to voicing.
-  // Preset-chord-only construction instead describes the physical buttons.
-  const structuralRole = briefRegistralRole(result);
+  // The button names already identify root/non-root basses; avoid repeating
+  // the same bass note as a separate qualification in the concise footer.
   const chordButtonsOnly = chordCount > 0 && bassCount === 0;
   const modeled = registerModel
     ? analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel)
     : null;
+  const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
+  const realizedName = realizedChordName(root, pattern, requestedBass, modeled?.lowestPitchClass, requestedSymbol);
+  const inversionDescription = realizedInversionDescription(root, pattern, requestedBass ?? modeled?.lowestPitchClass ?? null);
   const title = stradellaContextualTitle({
     root, pattern, requestedBass, exact: result.exact,
     buttonCount: count, bassOnly: bassCount === count,
@@ -88,8 +90,7 @@ export function realizationAnnotation(
   });
   const lines: string[] = [];
   if (levels.identity) {
-    const slashRole = requestedBass ? requestedBassRole({ root, pattern, requestedBass }) : null;
-    lines.push(`Harmonic identity: ${finderChordSymbol(root, pattern)}${requestedBass ? `/${requestedBass} · Requested bass: ${requestedBass}${slashRole ? ` (${slashRole})` : ""}` : " · bass unspecified"}`);
+    lines.push(`Harmonic identity: ${realizedName}${inversionDescription ? ` · ${inversionDescription}` : ""}`);
   }
   if (levels.pitchClasses) {
     const suspendedStyle = (pattern === "dominant11" || pattern === "major11") && result.missingPitches.includes(transpose(root, 4));
@@ -97,17 +98,17 @@ export function realizationAnnotation(
   }
   if (levels.voicing) {
     const modeledLine = modeled?.notes.length
-      ? formatModeledStradellaNotes(modeled.notes)
+      ? formatModeledStradellaNotes(modeled.notes, spell)
       : "Nominal pitches unavailable";
     const density = modeled ? analyzeVoicingDensity(modeled.notes) : null;
-    lines.push(`Registral voicing: ${modeledLine}${density?.note ? ` · ${density.note}` : ""}`);
+    lines.push(`Registral voicing: ${modeledLine}${density?.note ? ` · ${spellDensityNote(density.note, root, pattern)}` : ""}`);
   }
   if (levels.physical) {
-    lines.push(`Physical realization: ${buttons} · ${count} played ${count === 1 ? "button" : "buttons"}${chordButtonsOnly ? " · Chord buttons only; no separate bass" : structuralRole ? ` · ${structuralRole}` : ""}${result.recommended ? " · Recommended" : ""}`);
+    lines.push(`Physical realization: ${buttons} · ${count} played ${count === 1 ? "button" : "buttons"}${chordButtonsOnly ? " · Chord buttons only; no separate bass" : ""}${result.recommended ? " · Recommended" : ""}`);
   }
   return {
     title,
-    filenameKey: `${finderChordSymbol(root, pattern)}${requestedBass ? `-over-${requestedBass}` : ""}-${result.exact ? "Exact" : "Approx"}-${count}buttons${typeSegment}-${buttons}`,
+    filenameKey: safeChordFilenameKey(`${realizedName}-${result.exact ? "Exact" : "Approx"}-${count}buttons${typeSegment}-${buttons}`),
     lines,
     detail: lines.join("\n"),
   };

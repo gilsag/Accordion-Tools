@@ -93,10 +93,7 @@ export type NumberPosition = "none" | "above" | "inside-top" | "inside-bottom";
 export type SequenceColorPreset = "red" | "blue" | "black" | "grey" | "theme";
 
 
-/**
- * Finder is currently treble-only.
- * This type is kept for compatibility with older code and future Stradella support.
- */
+/** Deprecated shared Finder target identifier, retained for compatibility. */
 export type FinderTarget = "treble" | "stradella";
 
 /** Finder mode: separate scale-finding and chord-finding workflows. */
@@ -172,7 +169,7 @@ export type DownloadFormat = "svg" | "png";
 /** Controls the density of sidebar controls. */
 export type InterfaceDensity = "compact" | "comfortable";
 
-/** Backward-compatible union of all Finder patterns. */
+/** Shared Finder pattern union retained for older integrations. */
 export type FinderPattern = FinderScalePattern | FinderChordPattern;
 /** Available browser sound engines. */
 export type SoundSource = "synth" | "la-melodiosa";

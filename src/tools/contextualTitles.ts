@@ -4,7 +4,7 @@
    export filename recipe keys. */
 import type { FinderChordInversion, FinderChordPattern } from "../types";
 import { finderChordSymbol } from "./stradellaChordFinder/chordSymbol";
-import { harmonicIdentitySymbol } from "./stradellaChordFinder/harmonicIdentity";
+import { displayRoot, realizedChordName } from "./stradellaChordFinder/chordSpelling";
 
 type StradellaTitleInput = {
   root: string;
@@ -19,16 +19,12 @@ type StradellaTitleInput = {
 
 export function stradellaContextualTitle(input: StradellaTitleInput): string {
   const { root, pattern, requestedBass, exact, buttonCount, bassOnly, modeledLowest } = input;
-  const identity = harmonicIdentitySymbol({ root, pattern, requestedBass });
+  const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
+  const identity = realizedChordName(root, pattern, requestedBass, modeledLowest?.replace(/-?\d+$/, ""), requestedSymbol);
   const countLabel = `${buttonCount} ${bassOnly ? "bass " : ""}${buttonCount === 1 ? "button" : "buttons"}`;
-  // An inferred slash symbol would incorrectly replace the requested harmonic
-  // identity. For unspecified basses, show a distinct *modeled* lowest tone
-  // only when its pitch class differs from the requested root.
-  const lowestClass = modeledLowest?.replace(/-?\d+$/, "");
-  const modeledLabel = requestedBass === null && modeledLowest && lowestClass !== root
-    ? ` - modeled lowest ${modeledLowest}`
-    : "";
-  return `${identity} - ${exact ? "Exact" : "Approximate"} - ${countLabel}${modeledLabel}`;
+  // Keep the selected harmonic root/quality. When there is no explicitly
+  // requested bass, the slash describes the nominal inversion of this result.
+  return `${identity} - ${exact ? "Exact" : "Approximate"} - ${countLabel}`;
 }
 
 const selectedInversion: Record<FinderChordInversion, string> = {

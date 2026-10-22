@@ -23,14 +23,14 @@ const named = (root: string, pattern: FinderChordPattern, names: string[], maxBu
   const text = explainStradellaRealization("E", "minor7", r);
   assert.match(text, /Registral character: root-supported/i);
   assert.match(text, /counterbass/i);
-  assert.match(realizationAnnotation("E", "minor7", r).detail, /Root supported by E counterbass/);
+  assert.match(realizationAnnotation("E", "minor7", r).detail, /Physical realization: E counterbass/);
 }
 {
   const r = named("C", "major7", ["bass:B", "chord-major:C"]);
   const text = explainStradellaRealization("C", "major7", r);
   assert.match(text, /potential Cmaj7\/B/);
   assert.match(text, /not proof that B is the lowest acoustic pitch/);
-  assert.match(realizationAnnotation("C", "major7", r).detail, /Non-root bass: B/);
+  assert.match(realizationAnnotation("C", "major7", r).detail, /Physical realization: B counterbass/);
 }
 {
   const r = named("C", "major13", ["bass:B", "chord-minor:A"]);

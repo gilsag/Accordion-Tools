@@ -10,7 +10,7 @@ const find = (root: string, pattern: FinderChordPattern, maxButtons = 4, spanCol
 const labels = (played: DiagramButton[]) => played.map((button) =>
   isBassButton(button) ? `${button.kind}:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`);
 
-// Phase 3: root reinforcement is a separate sounding button even when it adds
+// Root reinforcement is a separate sounding button even when it adds
 // no *new* pitch class to a triad. The regular chord-only option is retained.
 {
   const results = find("C", "major-triad", 2);
@@ -33,7 +33,7 @@ const labels = (played: DiagramButton[]) => played.map((button) =>
     "A reinforcing bass must respect the configured maximum physical span");
 }
 
-// This phase adds one root bass only to chord-button-only bases; no second
+// This search adds one root bass only to chord-button-only bases; no second
 // bass note or alternative non-root reinforcement is introduced.
 for (const [root, pattern] of [
   ["C", "major-triad"], ["C", "dominant11"], ["C", "minor11"],
@@ -69,8 +69,8 @@ for (const [root, pattern] of [
   }
 }
 
-// The earlier important outputs must remain accessible, even though the
-// candidate list is now larger. Recommendation tuning belongs to Phase 4.
+// Established musical realizations remain accessible even as the
+// candidate list expands to include bass reinforcement.
 {
   const em7 = find("E", "minor7", 3)[0];
   assert.deepEqual(labels(em7.playbackButtons), ["bass-counterbass:E", "chord-major:G"]);
