@@ -2,7 +2,9 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-Current version: **0.14.0**
+Current version: **0.15.4**
+
+Release verification: [Stradella configuration matrix](docs/validation.md) (includes testing limitations).
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
@@ -51,6 +53,8 @@ Create ordered button paths using numbers and arrows for exercises, bass movemen
 ![Stradella Progression Assistant](docs/images/progression-assistant.png)
 
 Optimize Stradella realizations across an entire chord progression, balancing harmonic voice movement and physical button movement. The assistant supports playback, accompaniment patterns, button highlighting, and staff notation.
+
+For contributors and maintainers, see the [Developer Guide](docs/developer-guide.md) for the source architecture, musical and registral assumptions, physical-button invariants, and validation checks.
 
 ## Main workspaces
 
@@ -160,4 +164,23 @@ Choose **Settings → About → Open documentation** to browse the bundled guide
 
 ### Contextual chord and scale diagrams
 
-**Settings → Title → Contextual** (the default) uses the selected chord or scale in diagram titles. Major and minor chords use explicit names (`Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`) so exported files are unambiguous. Extended chords now include dominant, major, and minor ninths, elevenths, and thirteenths, with recommended practical Stradella voicings and concise omission explanations. Chromatic-button treble diagrams offer one- and two-octave compact sizes alongside every existing preset; the view expands as needed to keep selected buttons visible. See [Chord Finder](docs/chord-finder.md) and [Settings](docs/settings.md).
+**Settings → Title → Contextual** (the default) uses the selected chord or scale in diagram titles, including Stradella realization status and relevant nominal non-root lowest tones, and the selected inversion and realization status on Treble. Major and minor chords use explicit names (`Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`) so exported files are unambiguous. Extended chords now include dominant, major, and minor ninths, elevenths, and thirteenths, with recommended practical Stradella voicings and concise omission explanations. Chromatic-button treble diagrams offer one- and two-octave compact sizes alongside every existing preset; the view expands as needed to keep selected buttons visible. See [Chord Finder](docs/chord-finder.md) and [Settings](docs/settings.md).
+
+### Stradella Chord Finder diagram notes
+
+The brief notes under a selected Stradella chord diagram and in SVG/PNG exports can display any combination of **Harmonic identity**, **Pitch-class realization**, **Registral voicing**, and **Physical realization**. Use the four checkboxes beneath **Show realization explanation below diagram** in the Chord Finder. The expanded **More explanation** remains available independently. These preferences can be exported/imported with Settings; see [Chord Finder](docs/chord-finder.md) and [Settings](docs/settings.md).
+
+
+### La Melodiosa register-following playback
+
+Stradella sound can now follow the configurable nominal bass/counterbass and preset-chord octave ranges using La Melodiosa WAV samples. Notes outside the mapped C2–B3 bass range are pitch-transposed from the nearest available sample region (no automatic synthesizer fallback). The original sample octave mapping remains selectable; the physical register I/II/III selection is independent of the nominal pitch range. See [Settings](docs/settings.md) for details, caveats about reed doublings and transposition, and configuration options.
+
+### Stradella register interpretation and concise notes (v0.15.2)
+
+The nominal octave/grouping settings for bass/counterbass and preset-chord buttons are located under their own **Settings → Stradella registers** section, independent from the sound-source/reed settings. In the Chord Finder, the four optional explanation lines can be selected only when **Show realization explanation below diagram** is enabled. Registral notes list the modeled pitches from low to high, including octave numbers and any repeated unisons; all diagram/export explanations are left-aligned. Help tooltips replace explanatory paragraphs. Adjacent ← / → buttons browse realizations without triggering playback. The register model is an assumption about sounding notes, not a measurement of an instrument's reeds.
+
+### v0.15.4 highlights
+
+- Clear selected-state controls for two-way Stradella register, sound and playback choices.
+- Optional, register-aware short descriptions of close voicings; modest preference adjustment without excluding valid chord combinations.
+- Only one deployed copy of each La Melodiosa WAV recording, preserving sample attribution and original mapping information.

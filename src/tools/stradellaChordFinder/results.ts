@@ -2,12 +2,18 @@
 
 import type { DiagramButton } from "../../types";
 import { combinationTones } from "./voicings";
+import { analyzeStradellaRegistralVoicing, type StradellaRegistralAnalysis } from "./registralAnalysis";
 
+/** Shared candidate contract. `buttons` may include non-sounding reference
+ * markers; `playbackButtons` is authoritative for harmonic completeness,
+ * audio and registral analysis. */
 export type StradellaChordFinderResult = {
   buttons: DiagramButton[];
   playbackButtons: DiagramButton[];
   primaryButtonIds: string[];
   rootBassButtonIds: string[];
+  /** Structural bass/preset-chord interpretation (not a literal octave map). */
+  registral: StradellaRegistralAnalysis;
   targetPitches: string[];
   coveredPitches: string[];
   missingPitches: string[];
@@ -48,6 +54,7 @@ export function notPlayableResult(
     playbackButtons: [],
     primaryButtonIds: [],
     rootBassButtonIds: [],
+    registral: analyzeStradellaRegistralVoicing([], targetPitches[0] ?? null),
     targetPitches,
     coveredPitches: [],
     missingPitches: targetPitches,
@@ -59,6 +66,8 @@ export function notPlayableResult(
   };
 }
 
+/** Shape a realization from played buttons and visual markers separately.
+ * Harmonic exactness describes pitch classes, never octave placement. */
 export function resultFromButtons(
   selectedButtons: DiagramButton[],
   playbackButtons: DiagramButton[],
@@ -74,6 +83,7 @@ export function resultFromButtons(
     playbackButtons,
     primaryButtonIds,
     rootBassButtonIds,
+    registral: analyzeStradellaRegistralVoicing(playbackButtons, targetPitches[0] ?? null),
     targetPitches,
     ...summary,
     playable: summary.exact,

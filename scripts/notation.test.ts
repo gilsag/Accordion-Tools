@@ -54,7 +54,7 @@ function formattedChordTones(
 }
 
 {
-  assert.equal(chordFinderLabel("major9"), "Major 9 / Maj7(9)", "Major 9 should use the systematic combined dropdown label.");
+  assert.equal(chordFinderLabel("major9"), "Major 9", "The Major 9 label should match the current Chord Finder dropdown.");
   assert.deepEqual(
     formattedChordTones("C", "dominant7b9", "english", "flats"),
     ["C", "E", "G", "Bb", "Db"],

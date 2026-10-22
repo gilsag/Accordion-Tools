@@ -6,6 +6,8 @@ import { notPlayableResult, resultFromButtons, summarizeResult, type StradellaCh
 import { chordKindLabel } from "./voicings";
 import { recipeButtons, rootBassCandidates } from "./utils";
 
+/** Use an idiomatic preset-chord recipe. A displayed root-bass reference
+ * is optional visual guidance, not another played note. */
 export function chordButtonRecipeResult(
   buttons: DiagramButton[],
   root: string,

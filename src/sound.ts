@@ -7,6 +7,7 @@ import type {
   StradellaBassVoicing,
 } from "./types";
 import { PITCH_INDEX, transpose } from "./music";
+import { nominalRegisterNote, type StradellaRegisterModel } from "./tools/stradellaChordFinder/registerModel";
 import {
   LA_MELODIOSA_REGIONS,
   LA_MELODIOSA_SAMPLE_BASE,
@@ -37,6 +38,9 @@ export type SoundOptions = {
   attackMs: number;
   releaseMs: number;
   stradellaBassVoicing: StradellaBassVoicing;
+  /** Opt-in to nominal Stradella register pitches with La Melodiosa sample transposition. */
+  laMelodiosaFollowStradellaRegisters?: boolean;
+  stradellaRegisterModel?: StradellaRegisterModel;
 };
 
 /** A concrete note to play, using internal pitch-class identity and octave. */
@@ -65,6 +69,8 @@ let activeSampleSources: AudioBufferSourceNode[] = [];
 const sampleBuffers = new Map<string, AudioBuffer>();
 const sampleBufferPromises = new Map<string, Promise<AudioBuffer>>();
 const roundRobinPositions = new Map<string, number>();
+// Incremented when stopping playback so late asynchronous sample decodes
+// cannot trigger audible notes belonging to an already-cancelled sequence.
 let playbackGeneration = 0;
 
 function getAudioContext() {
@@ -240,6 +246,9 @@ function registerForNote(note: SoundNote, options: SoundOptions) {
     : options.laMelodiosaBassRegister;
 }
 
+/** Pick the SFZ region matching a nominal MIDI note, extending the nearest
+ * region at the edges instead of silently changing sound engine. Such octave
+ * assignments are software playback conventions, not physical reed claims. */
 function findLaMelodiosaRegion(
   note: SoundNote,
   options: SoundOptions,
@@ -318,8 +327,9 @@ async function scheduleSampleNote(
   const targetMidi = midiForNote(note.pitchClass, note.octave);
 
   if (!region || targetMidi === null) {
-    const frequency = frequencyForNote(note.pitchClass, note.octave);
-    if (frequency) scheduleTone(frequency, startTime, durationSeconds, options, noteGain);
+    // Sample mode never switches silently to oscillators. A missing sample or
+    // invalid pitch results in silence for that note and an explicit warning.
+    console.warn("No La Melodiosa sample mapping for", note);
     return;
   }
 
@@ -480,10 +490,18 @@ function stradellaChordIntervals(kind: DiagramButton["kind"]) {
 }
 
 /** Converts one diagram button into the note or notes that should sound. */
+// Nominal sound octaves model this synthesizer/sample playback path only;
+// they must not dictate theoretical chord-search or structural inversion labels.
 export function notesForButton(
   button: DiagramButton,
-  options?: Pick<SoundOptions, "stradellaBassVoicing" | "source">,
+  options?: Pick<SoundOptions, "stradellaBassVoicing" | "source" | "stradellaRegisterModel" | "laMelodiosaFollowStradellaRegisters">,
 ): SoundNote[] {
+  // The configured octave mapping affects *sampled Stradella* notes only.
+  // Treble playback, chord identity, search results, and synthesizer voicing
+  // remain independent of this optional reproduction mode.
+  const modeled = options?.source === "la-melodiosa" &&
+    options.laMelodiosaFollowStradellaRegisters && options.stradellaRegisterModel
+    ? options.stradellaRegisterModel : null;
   if (button.kind === "treble-note") {
     if (!button.pitchClass) return [];
     return [
@@ -497,6 +515,11 @@ export function notesForButton(
 
   if (button.kind === "bass-root" || button.kind === "bass-counterbass") {
     if (!button.pitchClass) return [];
+
+    if (modeled) {
+      const note = nominalRegisterNote(button.pitchClass, modeled.bass);
+      return note ? [{ pitchClass: note.pitchClass, octave: note.octave, side: "bass" }] : [];
+    }
 
     const voicing =
       options?.source === "la-melodiosa"
@@ -521,17 +544,19 @@ export function notesForButton(
   const root = button.chordRoot ?? button.pitchClass;
   if (!root || intervals.length === 0) return [];
 
-  return intervals.map((interval) => ({
-    pitchClass: transpose(root, interval),
-    // Stradella chord reeds are pitch-class based rather than ascending piano
-    // voicings. In sampled mode keep every chord tone inside C3-B3, which is
-    // the complete chord register in the La Melodiosa SFZ.
-    octave:
-      options?.source === "la-melodiosa"
+  return intervals.map((interval) => {
+    const pitchClass = transpose(root, interval);
+    const nominal = modeled ? nominalRegisterNote(pitchClass, modeled.chord) : null;
+    return {
+      pitchClass,
+      // One nominal pitch per chord tone. The source WAV may itself contain
+      // octave-doubled reeds; transposition does not isolate those partials.
+      octave: nominal?.octave ?? (options?.source === "la-melodiosa"
         ? 3
-        : 3 + octaveShiftForTranspose(root, interval),
-    side: "bass" as const,
-  }));
+        : 3 + octaveShiftForTranspose(root, interval)),
+      side: "bass" as const,
+    };
+  });
 }
 
 export function playButtonSound(button: DiagramButton, options: SoundOptions) {
@@ -594,6 +619,8 @@ type ProgressionPlaybackCallbacks = {
  * chord; chord-row buttons form the accompaniment pulse. The callbacks are used by the diagram to
  * animate the buttons actually being sounded.
  */
+/** Schedule rhythmic bass/chord events from selected physical button IDs.
+ * A pitch-class-equivalent bass button may be ergonomically different. */
 export function playButtonRhythmProgression(
   combinations: DiagramButton[][],
   options: SoundOptions,

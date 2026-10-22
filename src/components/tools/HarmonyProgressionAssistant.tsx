@@ -1,3 +1,6 @@
+/* Harmony-to-Stradella progression controls. The optimizer supplies
+   selected physical buttons rather than only abstract chord symbols. */
+
 import type { HarmonySelection } from "../../tools/harmonyExplorer/types";
 import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";
 import { CHORD_FAMILIES, chordFamily, chordLabel, pitchName } from "../../tools/harmonyExplorer/music";

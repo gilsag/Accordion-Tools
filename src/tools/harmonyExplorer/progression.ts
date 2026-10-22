@@ -212,6 +212,9 @@ function chordDisplayLabel(chord: HarmonyProgressionChord) {
   return chordLabel(chord.rootPc, chord.familyId, chord.sectorIndex, false);
 }
 
+/* Limit each progression layer to usable candidate recipes. The global
+   optimizer compares transitions between these layers; physical button IDs
+   are retained for later playback and diagram highlighting. */
 function candidatesForChord(
   buttons: DiagramButton[],
   chord: HarmonyProgressionChord,

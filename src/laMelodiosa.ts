@@ -5,6 +5,8 @@ export type LaMelodiosaRegion = { side: LaMelodiosaSide; register: LaMelodiosaRe
 
 export const LA_MELODIOSA_SAMPLE_BASE = `${import.meta.env.BASE_URL}samples/la-melodiosa/audio/`;
 
+// Preserve the SFZ region bounds, tuning and root-note mappings. They select
+// samples but do not define a universal physical Stradella octave layout.
 export const LA_MELODIOSA_REGIONS: LaMelodiosaRegion[] = [
   { side: "bass", register: "I", lowMidi: 48, highMidi: 50, amplitude: 100, samples: [{ file: "BS-Csharp5-ba.wav", rootMidi: 49, tuneCents: -3 }] },
   { side: "bass", register: "I", lowMidi: 55, highMidi: 56, amplitude: 100, samples: [{ file: "BS-Gsharp5-ba.wav", rootMidi: 56, tuneCents: -7 }] },

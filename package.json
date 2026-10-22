@@ -1,18 +1,26 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.14.0",
+  "version": "0.15.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:chords": "tsx scripts/chord-logic.test.ts && tsx scripts/treble-chord-finder.test.ts",
+    "test:chords": "tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts",
     "test:notation": "tsx scripts/notation.test.ts",
-    "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony",
+    "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:controls && npm run test:audio",
     "test:abc": "tsx scripts/abc-ties.test.ts",
-    "test:harmony": "tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts"
+    "test:harmony": "tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts",
+    "test:controls": "tsx scripts/binary-controls.test.ts && npm run test:explanation-ui",
+    "test:inversions": "tsx scripts/stradella-requested-bass.test.ts",
+    "test:notes": "tsx scripts/stradella-four-level-notes.test.ts && npm run test:titles",
+    "test:titles": "tsx scripts/contextual-titles.test.ts",
+    "test:configurations": "tsx scripts/stradella-configurations.test.ts",
+    "test:audio": "tsx scripts/la-melodiosa-playback-mapping.test.ts",
+    "test:density": "tsx scripts/stradella-voicing-density.test.ts",
+    "test:explanation-ui": "tsx scripts/stradella-explanation-ui.test.ts"
   },
   "dependencies": {
     "abcjs": "^6.6.3",

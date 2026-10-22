@@ -1,3 +1,9 @@
+/*
+  Bass-pattern parsing, chord progression resolution, playback planning, and
+  notation export. Pattern times are meter-denominator units, not necessarily
+  quarter notes; conversion to ABC, LilyPond and MIDI is a later step.
+*/
+
 import type {
   BassPatternChordVoicing,
   DiagramButton,
@@ -399,6 +405,8 @@ function accentGain(accent: BassPatternAccent | undefined) {
   return 1;
 }
 
+// Use common integer ticks for fractional and dotted durations to prevent
+// floating-point drift at bar boundaries.
 const TICKS_PER_METER_UNIT = 5040;
 const SUPPORTED_RHYTHM_DENOMINATORS = new Set([
   1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
@@ -429,6 +437,8 @@ function parseFractionText(text: string): number | undefined {
   return numerator / denominator;
 }
 
+/** Parse additive fractions, quantize to the shared tick grid, and reject
+ * values that cannot be represented with the permitted precision. */
 export function parseBassPatternRhythmicValue(
   value: BassPatternRhythmicValue,
 ): ParsedRhythmicValue | undefined {
@@ -564,6 +574,8 @@ function parseBassPatternString(
   return steps;
 }
 
+/** Normalize compact-string and expanded-step patterns to one timing model
+ * before scheduling or meter validation. */
 export function normalizedPatternSteps(
   pattern: BassPatternDefinition,
 ): NormalizedBassPatternStep[] {
@@ -630,6 +642,8 @@ export function patternUnitsForPattern(
   return meterUnitsPerBarForPattern(pattern) * patternBarCount(pattern);
 }
 
+/** Validate token references and total meter/bar timing before playback;
+ * no malformed pattern should be interpreted as a complete accompaniment. */
 export function validateBassPatternLibrary(
   library: BassPatternLibrary,
 ): string[] {
@@ -776,6 +790,9 @@ function bassIntervalForToken(token: BassPatternPlayToken) {
   return interval === undefined ? undefined : interval + accidental;
 }
 
+/* Resolve each rhythm token to actual buttons. The previous bass choice
+   carries hand-position continuity across events; do not replace it solely
+   because another button has the same pitch class. */
 function selectButtonsForPlayTokens(
   tokens: BassPatternPlayToken[],
   buttons: DiagramButton[],
@@ -892,6 +909,8 @@ function resolvedChordName(root: string, pattern: FinderChordPattern) {
   return `${root}${chordSuffixForPattern(pattern)}`;
 }
 
+/** Expand a harmonic progression into playable, timed Stradella events.
+ * Retain missing-button diagnostics for unsupported physical combinations. */
 export function makeBassPatternEvents(
   buttons: DiagramButton[],
   pattern: BassPatternDefinition,
@@ -1255,6 +1274,8 @@ export type StradellaNotationAbcOptions = {
   staffSeparator?: number;
 };
 
+/** Emit separate bass and chord voices for teaching notation; this is a
+ * notation convention, not an acoustic transcription of every reed rank. */
 export function bassPatternEventsToStradellaNotationAbc(
   pattern: BassPatternDefinition,
   progression: ChordProgressionDefinition,
@@ -1577,6 +1598,8 @@ function midiPitchForButton(button: DiagramButton) {
   return baseOctave + ((pitchClass + 12) % 12);
 }
 
+/** Serialize the planned events as MIDI while preserving their timing and
+ * using the physical buttons chosen by the accompaniment planner. */
 export function bassPatternEventsToMidiBytes(
   events: BassPatternPlaybackEvent[],
   tempoBpm: number,

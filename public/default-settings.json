@@ -111,5 +111,16 @@
   "progressionAllowApproximations": true,
   "progressionHandMovementWeight": 0.65,
   "progressionRhythmPattern": "block",
-  "harmonyShowNoteRing": false
+  "harmonyShowNoteRing": false,
+  "stradellaBassRegisterOctave": 2,
+  "stradellaBassRegisterGrouping": "C-B",
+  "stradellaChordRegisterOctave": 3,
+  "stradellaChordRegisterGrouping": "C-B",
+  "stradellaNoteLevels": {
+    "identity": true,
+    "pitchClasses": true,
+    "voicing": true,
+    "physical": true
+  },
+  "laMelodiosaFollowStradellaRegisters": true
 }

@@ -1,3 +1,9 @@
+/*
+  ABC import and mapping pipeline. abcjs is the preferred parser; the narrower
+  handwritten parser is a fallback. Both produce AbcEvents with beat timing
+  independent of diagram geometry, after which each side maps physical buttons.
+*/
+
 import abcjs from "abcjs";
 import type { DiagramButton, FinderChordPattern, StradellaChordFinderMode } from "../types";
 import { INDEX_TO_PITCH } from "../music";
@@ -331,6 +337,8 @@ function sameTiedNotes(a: AbcNote[], b: AbcNote[]) {
   return aNotes.every((note, index) => note === bNotes[index]);
 }
 
+/** Merge consecutive identical tied notes of the same voice, but never merge
+ * across rests or chord-symbol changes. */
 function pushAbcEvent(
   state: {
     beat: number;
@@ -378,6 +386,8 @@ function pushAbcEvent(
   state.beat += durationBeats;
 }
 
+/** Restricted ABC fallback parser. Measure accidentals reset at barlines;
+ * rely on abcjs for the broader ABC grammar and polyphony. */
 function parseMusicLine(
   line: string,
   state: {
@@ -674,6 +684,8 @@ function abcjsChordSymbols(chords: AbcJsChord[] | undefined) {
     .filter((symbol): symbol is AbcChordSymbol => Boolean(symbol));
 }
 
+/** Convert abcjs sequence timing into quarter-note beats while preserving
+ * voice IDs and attached chord symbols for side-specific playback. */
 function parseAbcWithAbcjs(abcText: string): AbcParseResult {
   const tunes = abcjs.parseOnly(abcText);
   const tune = tunes[0];
@@ -780,6 +792,8 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
   };
 }
 
+/** Primary ABC entry point. A parser failure remains visible in `errors`
+ * even if the legacy parser can recover a subset of the notation. */
 export function parseAbc(abcText: string): AbcParseResult {
   try {
     return parseAbcWithAbcjs(abcText);
@@ -805,6 +819,8 @@ function uniqueEventVoiceIds(events: AbcEvent[]) {
   ];
 }
 
+/** For polyphonic material, choose a single melody voice on treble;
+ * Stradella has a separate voice-selection policy. */
 export function abcEventsForTrebleSide(events: AbcEvent[]) {
   const voiceIds = uniqueEventVoiceIds(events);
   if (voiceIds.length <= 1) return events;
@@ -1016,6 +1032,8 @@ function uniqueButtons(buttons: DiagramButton[]) {
   });
 }
 
+/** Convert notes and/or chord symbols into Stradella physical buttons.
+ * Use the shared finder for chord symbols so omission rules stay consistent. */
 export function mapAbcEventsToStradellaButtons(
   buttons: DiagramButton[],
   events: AbcEvent[],

@@ -3,7 +3,10 @@
 import type { DiagramButton } from "../../types";
 import { chooseClosestBassForPitch, chooseRootReference, sortButtonsByPitch } from "./utils";
 import { summarizeResult, type StradellaChordFinderResult } from "./results";
+import { analyzeStradellaRegistralVoicing } from "./registralAnalysis";
 
+/** Search only the single-note bass and counterbass rows; chord-row
+ * voicings must never be silently used as substitutes. */
 export function bassOnlyResult(
   buttons: DiagramButton[],
   root: string,
@@ -29,6 +32,7 @@ export function bassOnlyResult(
     playbackButtons,
     primaryButtonIds: result[0] ? [result[0].id] : [],
     rootBassButtonIds: [],
+    registral: analyzeStradellaRegistralVoicing(playbackButtons, root),
     targetPitches,
     ...summary,
     playable: summary.missingPitches.length === 0,

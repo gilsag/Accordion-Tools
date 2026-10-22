@@ -9,6 +9,10 @@ import { isExtendedChord, suspendedStyleOmission } from "../../music/chordVoicin
 import { finderChordSymbol, intervalRole } from "./diagramAnnotations";
 import type { StradellaChordFinderResult } from "./results";
 import { chordKindLabel, isBassButton } from "./voicings";
+import { explainRegistralRole } from "./registralExplanation";
+import { explainConfiguredStradellaVoicing, analyzeConfiguredStradellaVoicing, type StradellaRegisterModel } from "./registerModel";
+import { requestedBassRole } from "./harmonicIdentity";
+import { analyzeVoicingDensity } from "./voicingDensity";
 
 const ELEVENTHS: FinderChordPattern[] = ["dominant11", "major11", "minor11"];
 const THIRTEENTHS: FinderChordPattern[] = ["dominant13", "major13", "minor13"];
@@ -25,16 +29,21 @@ function omittedRole(root: string, pattern: FinderChordPattern, pitch: string) {
   return `${pitch} (${interval === undefined ? "chord tone" : intervalRole(interval)})`;
 }
 
+/** Describe the *selected* physical realization and its permitted omissions.
+ * Registral assertions must be based on played buttons, not visual markers
+ * or an assumed universal octave mapping. */
 export function explainStradellaRealization(
   root: string,
   pattern: FinderChordPattern,
   result: StradellaChordFinderResult,
   mode: StradellaChordFinderMode = "bass-and-chords",
+  registerModel?: StradellaRegisterModel,
+  requestedBass: string | null = null,
 ): string {
   if (!result.playable || result.playbackButtons.length === 0) return result.explanation;
 
   const selected = result.playbackButtons;
-  const chordName = finderChordSymbol(root, pattern);
+  const chordName = `${finderChordSymbol(root, pattern)}${requestedBass ? `/${requestedBass}` : ""}`;
   const sounding = result.coveredPitches.join("–");
   const missing = result.missingPitches;
   const hasTone = (interval: number) => result.coveredPitches.includes(transpose(root, interval));
@@ -54,18 +63,41 @@ export function explainStradellaRealization(
       : `This is an approximate realization. It omits ${missing.map((pitch) => omittedRole(root, pattern, pitch)).join(", ")}, without adding notes outside the chord.`),
   );
 
+  if (requestedBass) {
+    const harmonicRole = requestedBassRole({ root, pattern, requestedBass }) ?? "chord tone";
+    const modeled = registerModel
+      ? analyzeConfiguredStradellaVoicing(selected, root, registerModel) : null;
+    paragraphs.push(`Harmonic identity: ${chordName} requests ${requestedBass} (${harmonicRole}) in the bass. ` +
+      `That specification is different from the chord's theoretical root ${root}. ` +
+      (modeled?.lowestPitchClass === requestedBass
+        ? `The lowest modeled pitch is ${modeled.lowestPitch}, matching the requested bass.`
+        : "The lowest acoustic pitch cannot be established without a compatible register model."));
+  } else {
+    paragraphs.push(`Harmonic identity: ${chordName}, with no specified inversion. ` +
+      "Equivalent pitch-class collections can have other chord identities in a different harmonic context.");
+  }
+  paragraphs.push(explainRegistralRole(root, pattern, result));
+  if (registerModel) {
+    paragraphs.push(explainConfiguredStradellaVoicing(result.playbackButtons, root, registerModel));
+    const modeledNotes = analyzeConfiguredStradellaVoicing(selected, root, registerModel).notes;
+    const observation = analyzeVoicingDensity(modeledNotes);
+    if (observation.note) {
+      paragraphs.push(`Voicing density: ${observation.note}. This close spacing can sound tense or congested, especially in lower registers, but can also be musically intentional. It is a nominal-pitch observation, not a measurement of acoustic reed doublings.`);
+    }
+  }
+
   if (isExtendedChord(pattern)) {
     paragraphs.push(
-      "Stradella chord buttons sound in a fixed, compact register rather than spreading the 9th, 11th, and 13th above the seventh. " +
-      "Bass and counterbass buttons have a separate sounding register. Here, Exact and Approximate describe pitch-class content, not octave stacking or a particular inversion.",
+      "Extended-chord labels describe harmonic functions and pitch classes, not guaranteed upper-octave placements of the ninth, eleventh, or thirteenth. " +
+      "Preset chord buttons occupy their own instrument-dependent register; bass/counterbass buttons may activate different reed banks and octave doublings.",
     );
   }
 
   if (is13) {
     const seventh = pattern === "major13" ? "major seventh" : "minor seventh";
     const suffix = hasTone(21)
-      ? `The ${transpose(root, 21)} (thirteenth) has the same pitch class as a sixth; the ${seventh}, which is present here, gives the chord its extended-thirteenth character rather than an ordinary added-sixth identity.`
-      : "Without the thirteenth, this would not have the defining color of a thirteenth chord.";
+      ? `The ${transpose(root, 21)} (thirteenth) has the same pitch class as a sixth. ${hasTone(pattern === "major13" ? 11 : 10) ? `The retained ${seventh} distinguishes this functional thirteenth chord from an ordinary added-sixth chord.` : `Without the theoretical ${seventh}, its extended-chord character is less clearly established.`}`
+      : "Without the thirteenth, this does not express the defining color of a thirteenth chord.";
     paragraphs.push(suffix);
     if (isMajorThirdFamily && hasThird && hasEleventh) {
       paragraphs.push("The major third and natural eleventh are both present, a semitone apart by pitch class. Their close placement in the Stradella register may sound dense or tense; a voicing without the eleventh often sounds clearer.");

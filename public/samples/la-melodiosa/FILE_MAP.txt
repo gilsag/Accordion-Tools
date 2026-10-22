@@ -8,3 +8,12 @@ I-D#4-ba.wav -> audio/I-Dsharp4-ba.wav
 BS-C#5-ba.wav -> audio/BS-Csharp5-ba.wav
 
 The original SFZ and Decent Sampler preset are retained unchanged for provenance.
+
+Accordion Tools v0.15.4 and later deploy ONLY the audio/ WAV files.
+The 100 former top-level WAV files were byte-for-byte duplicates of their
+corresponding audio/ files (after # -> sharp filename normalization).
+The untouched original SFZ and Decent Sampler files are retained for attribution
+and mapping reference; their original relative WAV paths are no longer present.
+For standalone use in another sampler, restore its originally named WAV paths
+from audio/ by reversing the documented normalization, then place them beside
+the original instrument file. All audio data is retained without modification.

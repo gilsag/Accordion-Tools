@@ -1,3 +1,7 @@
+/* Stradella Chord Finder UI. The tools layer owns candidate generation,
+   ranking, and registral analysis; this panel only displays the selected
+   result and accepts settings/actions from the parent application. */
+
 import type { FinderChordPattern, StradellaChordFinderMode } from "../../types";
 import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
@@ -8,6 +12,10 @@ import {
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { explainStradellaRealization } from "../../tools/stradellaChordFinder/explainRealization";
 import { HelpTip } from "../ui/HelpTip";
+import { BinaryChoiceButton } from "../ui/BinaryChoiceButton";
+import { analyzeConfiguredStradellaVoicing, formatModeledStradellaNotes, type StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
+import { permittedRequestedBasses, harmonicIdentitySymbol } from "../../tools/stradellaChordFinder/harmonicIdentity";
+import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
 
 type StradellaChordFinderPanelProps = {
   isOpen: boolean;
@@ -16,12 +24,17 @@ type StradellaChordFinderPanelProps = {
   onRootChange: (value: string) => void;
   pattern: FinderChordPattern;
   onPatternChange: (value: FinderChordPattern) => void;
+  requestedBass: string | null;
+  onRequestedBassChange: (value: string | null) => void;
   mode: StradellaChordFinderMode;
   onModeChange: (value: StradellaChordFinderMode) => void;
   markRootBass: boolean;
   onMarkRootBassChange: (value: boolean) => void;
   result: StradellaChordFinderResult;
+  registerModel: StradellaRegisterModel;
   showRealizationNote: boolean;
+  noteLevels: StradellaNoteLevels;
+  onNoteLevelChange: (level: keyof StradellaNoteLevels, enabled: boolean) => void;
   onShowRealizationNoteChange: (value: boolean) => void;
   explanationFontSize: number;
   onExplanationFontSizeChange: (value: number) => void;
@@ -52,12 +65,17 @@ export function StradellaChordFinderPanel({
   onRootChange,
   pattern,
   onPatternChange,
+  requestedBass,
+  onRequestedBassChange,
   mode,
   onModeChange,
   markRootBass,
   onMarkRootBassChange,
   result,
+  registerModel,
   showRealizationNote,
+  noteLevels,
+  onNoteLevelChange,
   onShowRealizationNoteChange,
   explanationFontSize,
   onExplanationFontSizeChange,
@@ -79,6 +97,8 @@ export function StradellaChordFinderPanel({
   formatPitches,
   formatText,
 }: StradellaChordFinderPanelProps) {
+  const modeledVoicing = analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel);
+  const identity = { root, pattern, requestedBass };
   const statusText = isActive && !result.playable ? "Not found" : result.exact ? "Exact / ready" : "Approximate / ready";
 
   return (
@@ -114,6 +134,16 @@ export function StradellaChordFinderPanel({
         </label>
 
         <label>
+          <span className="label-line">Requested bass / inversion <HelpTip text="Optional: request a chord tone as the lowest modeled sounding pitch. The result depends on the analytical bass and chord register settings; this is not a claim about actual reeds." /></span>
+          <select value={requestedBass ?? ""} onChange={(event) => onRequestedBassChange(event.target.value || null)}>
+            <option value="">Any (no specified bass)</option>
+            {permittedRequestedBasses(root, pattern).map((tone) => (
+              <option key={tone} value={tone}>{tone}{tone === root ? " (root position)" : ""}</option>
+            ))}
+          </select>
+        </label>
+
+        <label>
           <span className="label-line">Search mode <HelpTip text="Bass rows use single notes; Chord buttons only ignores bass notes; Bass + chord buttons prefers compact mixed realizations and can offer ranked exact or conservative approximate alternatives. Higher chords may omit selected fifths, ninths, or elevenths; major or dominant 11ths can omit the third as a suspended-style voicing. No foreign tones are added." /></span>
           <select
             value={mode}
@@ -128,16 +158,13 @@ export function StradellaChordFinderPanel({
         </label>
 
         {mode === "chord-buttons-only" && (
-          <label>
-            <span className="label-line">Mark root bass reference <HelpTip text="Shows the root bass button as a location reference only. It does not complete or play the chord." /></span>
-            <select
-              value={markRootBass ? "on" : "off"}
-              onChange={(event) => onMarkRootBassChange(event.target.value === "on")}
-            >
-              <option value="on">On</option>
-              <option value="off">Off</option>
-            </select>
-          </label>
+          <BinaryChoiceButton
+            label={<>Root bass reference <HelpTip text="Shows the root bass button as a location reference only. It does not complete or play the chord." /></>}
+            enabled={markRootBass}
+            onToggle={() => onMarkRootBassChange(!markRootBass)}
+            whenEnabled="Hide root bass reference"
+            whenDisabled="Show root bass reference"
+          />
         )}
 
         {mode === "bass-and-chords" && (
@@ -172,15 +199,28 @@ export function StradellaChordFinderPanel({
             </select>
           </label>
         )}
+        {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
+          <div className="realization-navigation" role="group" aria-label="Browse chord realizations">
+            <button type="button" className="small-button" title="Previous realization" aria-label="Previous realization"
+              disabled={realizationIndex <= 0}
+              onClick={() => onRealizationChange(Math.max(0, realizationIndex - 1))}>←</button>
+            <span className="hint" aria-live="polite">{realizationIndex + 1} / {realizations.length}</span>
+            <button type="button" className="small-button" title="Next realization" aria-label="Next realization"
+              disabled={realizationIndex >= realizations.length - 1}
+              onClick={() => onRealizationChange(Math.min(realizations.length - 1, realizationIndex + 1))}>→</button>
+          </div>
+        )}
 
         <div className="result-card">
           <div className="result-card-title">Stradella chord result</div>
+          <p>Requested chord: <strong>{harmonicIdentitySymbol(identity)}</strong></p>
           <p>Status: <strong>{statusText}</strong></p>
           <p>{isActive && !result.playable ? "Not found" : <>Buttons: <strong>{buttonCount}</strong></>}</p>
           {isActive && (
             <>
               <p><strong>{formatText(result.shortDescription)}</strong></p>
               <p>Target: {formatPitches(result.targetPitches)}</p>
+              {modeledVoicing.notes.length > 0 && <p>Nominal pitches (low to high): <strong>{formatModeledStradellaNotes(modeledVoicing.notes)}</strong> <HelpTip text="Calculated from the configured Stradella registers, with one nominal pitch per played tone. The actual reed sound may include octave doublings." /></p>}
               <p>Covered: {formatPitches(result.coveredPitches)}</p>
               {result.missingPitches.length > 0 && <p>Missing: {formatPitches(result.missingPitches)}</p>}
               {result.extraPitches.length > 0 && <p>Extra: {formatPitches(result.extraPitches)}</p>}
@@ -191,7 +231,7 @@ export function StradellaChordFinderPanel({
         {isActive && (
           <details className="tool-details">
             <summary>More explanation</summary>
-            {explainStradellaRealization(root, pattern, result, mode).split(/\n\s*\n/).map((paragraph, index) => (
+            {explainStradellaRealization(root, pattern, result, mode, registerModel, requestedBass).split(/\n\s*\n/).map((paragraph, index) => (
               <p className="hint" key={index}>{formatText(paragraph)}</p>
             ))}
           </details>
@@ -213,17 +253,35 @@ export function StradellaChordFinderPanel({
         </div>
         <div className="finder-annotation-options">
           <label className="checkbox-line">
-          <input type="checkbox" checked={showRealizationNote} onChange={(event) => onShowRealizationNoteChange(event.target.checked)} />
-          <span>Show realization explanation below diagram</span>
+            <input type="checkbox" checked={showRealizationNote}
+              onChange={(event) => onShowRealizationNoteChange(event.target.checked)} />
+            <span>Show realization explanation below diagram</span>
+            <HelpTip text="Controls only the concise diagram note and SVG/PNG export. More explanation remains available separately. If every level is off, no footer space is reserved." />
           </label>
-          <label htmlFor="finder-explanation-size">Explanation text size: {explanationFontSize} px</label>
-          <input
-            id="finder-explanation-size"
-            type="range" min={16} max={40} step={1}
-            value={explanationFontSize}
-            disabled={!showRealizationNote}
-            onChange={(event) => onExplanationFontSizeChange(Number(event.target.value))}
-          />
+          {showRealizationNote && (
+            <div className="finder-note-level-options" role="group" aria-label="Concise explanation levels">
+              <div className="label-line">Explanation levels
+                <HelpTip text="Select which short explanations appear beneath the diagram and in exported SVG/PNG images. The four levels can be combined independently." />
+              </div>
+              {([
+                ["identity", "1. Harmonic identity"],
+                ["pitchClasses", "2. Pitch-class realization"],
+                ["voicing", "3. Registral voicing"],
+                ["physical", "4. Physical realization"],
+              ] as const).map(([level, label]) => (
+                <label className="checkbox-line" key={level}>
+                  <input type="checkbox" checked={noteLevels[level]}
+                    onChange={(event) => onNoteLevelChange(level, event.target.checked)} />
+                  <span>{label}</span>
+                </label>
+              ))}
+              <label htmlFor="finder-explanation-size">Explanation text size: {explanationFontSize} px</label>
+              <input id="finder-explanation-size" type="range" min={16} max={40} step={1}
+                value={explanationFontSize}
+                disabled={!Object.values(noteLevels).some(Boolean)}
+                onChange={(event) => onExplanationFontSizeChange(Number(event.target.value))} />
+            </div>
+          )}
         </div>
       </fieldset>
     </CollapsibleSection>

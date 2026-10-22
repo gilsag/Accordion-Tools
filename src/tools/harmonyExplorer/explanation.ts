@@ -1,3 +1,6 @@
+/* Harmonic-circle descriptive text. Distinguish a ring hidden by display
+   settings from one absent because no chord survived the diatonic filter. */
+
 export type DiagramExplanationInput = {
   referenceFamilyName: string;
   relatedFamilyName: string;
