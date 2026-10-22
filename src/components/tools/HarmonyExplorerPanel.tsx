@@ -1,3 +1,6 @@
+/* Harmony Explorer controls. The React panel adjusts filters and recording
+   actions; music-theory relationships are computed in the tools layer. */
+
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import type { HarmonySelection } from "../../tools/harmonyExplorer/types";

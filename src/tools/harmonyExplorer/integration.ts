@@ -1,3 +1,9 @@
+/*
+  Translation boundary between numerical Harmony pitch classes/family IDs and
+  the named Chord Finder API. Some families have no finder equivalent; callers
+  must handle a null mapping rather than invent an approximate chord type.
+*/
+
 import type { FinderChordPattern } from "../../types";
 import type { ChordFamilyId } from "./music";
 

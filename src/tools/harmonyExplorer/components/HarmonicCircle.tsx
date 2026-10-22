@@ -1,3 +1,9 @@
+/*
+  SVG rendering and interaction for the Harmonic Circle. Sectors arrive from
+  the harmony engine; this component lays out rings, labels, tooltips, and
+  selection. Visual polar distances are not physical Stradella ergonomics.
+*/
+
 import { useEffect, useState } from "react";
 import type { Ref, MouseEvent as ReactMouseEvent } from "react";
 import type { HarmonyPlaybackStyle, HarmonySelection, HarmonyVoicingStyle } from "../types";
@@ -95,6 +101,8 @@ function ordinal(value: number) {
   return `${value}th`;
 }
 
+/** Bound text by both ring height and circumferential arc width so outer
+ * labels remain readable without overflowing neighboring sectors. */
 function fittedFontSize(
   requested: number,
   ringWidth: number,

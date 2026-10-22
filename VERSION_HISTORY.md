@@ -1,19 +1,148 @@
+## v0.15.4 — Voicing density, sample cleanup and clearer controls (2026-10-22)
+
+- Replaced action-style buttons for persistent two-choice settings with segmented choices that show both options and clearly indicate the active selection. Show/Hide commands remain action buttons.
+- Removed the redundant register-ordering qualifier from concise diagram notes. Added concise, optional semitone/cluster observations to Registral voicing when justified by the configured nominal MIDI pitches; fuller discussion appears in More explanation.
+- Introduced a restrained, register-aware density score (maximum 1.1 points) for Stradella recommendations; exactness, requested inversions and physical validity are unchanged. Some orderings may change where alternatives are otherwise comparable.
+- Removed 100 duplicated, top-level La Melodiosa WAV files after SHA-256 validation against the browser-audio copies. Preserved the original instrument definitions and attribution; standalone original-SFZ reuse requires restoring the original relative filenames, as documented in FILE_MAP.txt.
+- Added regression tests for nominal density, note wording, and selected-state controls. Updated Settings, Chord Finder, and Developer guides.
+- Native npm production build and browser/audio acceptance tests remain to be verified locally.
+
+## v0.15.3 — Concise notes and documentation cleanup (2026-10-22)
+
+- Removed the redundant “Low to high:” phrase from the Registral voicing line; the nominal MIDI pitches remain in ascending order.
+- Moved “Chord buttons only; no separate bass” from Registral voicing to Physical realization in the optional four-level notes. Detailed More explanation and search logic are unchanged.
+- Kept only `README.md` and `VERSION_HISTORY.md` as root-level Markdown. Moved the developer guide and configuration validation audit into `docs/`, retired superseded phase-by-phase release notes and installation text files, and repaired links.
+- Added regression assertions that the four independently selectable levels contain the appropriate information.
+- This release does not modify harmonic candidate generation, inversions, rankings, sampled playback or diagram export mechanisms.
+
+## v0.15.2 — Stradella configuration and explanation UX (2026-10-22)
+
+- Moved independent nominal bass/counterbass and preset-chord octave/grouping controls from Sound into **Settings → Stradella registers**, retaining their persisted setting keys and sample-playback integration.
+- Replaced “Lowest modeled: … (not measured)” in concise diagram notes with ascending modeled pitches and octave numbers; unison contributions display multiplicity where applicable. More explanation still documents acoustic limitations.
+- Grouped the Previous/Next realization buttons into one compact, accessible ← / → navigation row with an index indicator; no autoplay/wraparound.
+- Show the four explanation levels and text-size slider only when their master display checkbox is enabled, preserving previous choices.
+- Moved lengthy instructional paragraphs into help tooltips.
+- Left-aligned four-level notes in the SVG/PNG diagram footer with bold labels and adjusted wrap spacing; Treble footer alignment remains unchanged.
+- Updated tests, Settings/Chord Finder guides, README and Developer Guide; musical search and playback logic remain unchanged.
+
+## v0.15.1 — Sampled Stradella register-following playback (2026-10-22)
+
+- La Melodiosa remains the default sound source; sampled Stradella button playback can now follow the configured independent bass and chord octave groupings, enabled by default.
+- Added a Show/Hide-style action to restore the legacy sample C2–B2/C3–B3 mapping without changing the analytical register configuration.
+- Kept La Melodiosa reed selections I/II/III independent of nominal MIDI octave mapping and kept Harmony Explorer abstract pitch-class playback unchanged.
+- For notes beyond SFZ C2–B3 bass coverage, reused the nearest sample region with playback-rate transposition; no automatic oscillator fallback on missing mappings. Explicit synth source remains available.
+- Preserved setting import/export and older configuration files; added standalone nominal playback mapping tests and documentation of out-of-range sample transposition, timbral/duration limitations and multi-reed ambiguity.
+- Native npm build and browser audio validation remain pending unless separately verified.
+
+## v0.15.0 — Stradella interpretation, realizations and contextual titles (2026-10-22)
+
+This release consolidates the previously unreleased Chord Finder developments since v0.14.0. It includes normalized ergonomic ranking, registral analysis, selectable register ranges, explicit requested-bass inversions, four independently selectable explanatory note levels, realization navigation and contextual-title refinements. The analytical register model is separate from actual sampled/synth playback and does not claim a measured acoustic inversion. See [Stradella configuration validation](docs/validation.md) for verification scope and remaining build/browser gates.
+
+### Contextual title consistency audit
+
+- Preserved the requested Stradella harmonic identity and explicit slash bass in titles; for unspecified-bass combinations with a different nominal lowest pitch, added a clearly labeled `modeled lowest` suffix (never an inferred slash chord).
+- Added the selected inversion and Exact/Approximate/No realization status to Treble Chord Finder contextual titles, reflecting the actual highlighted pitches.
+- Kept contextual title formatting independent of the four optional concise diagram-note levels, auto-fit longer contextual titles on compact diagrams, and kept existing Stradella recipe-based export filenames stable across register-model changes.
+- Added isolated title-format regression tests and updated the Chord Finder, Settings, README, and developer documentation. No changes to harmonic search, voicing analysis, scoring, or playback.
+
+### Independently selectable four-level diagram explanations
+
+- Added four independently selectable concise Stradella Chord Finder note levels: harmonic identity, pitch-class realization, registral voicing, and physical realization.
+- Updated on-screen diagram captions and SVG/PNG exports to show only enabled levels, including correct footer sizing and no empty footer when all levels are off.
+- Preserved the separate More explanation section and all musical candidate, recommendation, playback, and title/filename behavior.
+- Added import/export/default-settings support with backward-compatible handling of older settings and a focused regression test.
+- Updated the Chord Finder guide, Settings guide, and developer architecture guide.
+
+### Explicit Stradella chord identity and requested bass (Phase D)
+
+- Added a requested bass/inversion selector to Stradella Chord Finder, defaulting to Any, with the choice restricted to theoretical chord tones.
+- Kept harmonic identity independent of pitch-class realization: e.g., `Emin7/G` is not automatically reinterpreted as `Gmaj6`.
+- Added strict modeled-lowest-pitch filtering using independent bass/preset-chord octave grouping settings. Bass specifications cannot be silently replaced by a different inversion.
+- Allowed one reinforcing button for the explicitly requested chord-tone bass, even when it duplicates the pitch class of a preset chord; preserved ergonomic, omission, and button-count safeguards.
+- Selected Recommended alternatives only after inversion filtering. Without a specified bass, retained the previous root-support ranking behavior.
+- Updated More explanation, result caption, contextual title and ASCII-safe export filenames (`-over-G`) to reflect the user's intended bass.
+- Added requested-bass tests and documentation. No audio or sample-map changes.
+
 # Accordion Tools — Version History
 
-## Unreleased - Treble Chord Finder completeness and notes
+### Configurable Stradella register analysis
+
+- Added independent analytical register settings for bass/counterbass and preset-chord buttons: octave start and `C–B` / `F–E` grouping.
+- Added a pure, played-buttons-only nominal voicing model reporting ordered pitches and the lowest modeled note; its acoustic limitations are explicit.
+- Integrated the model into Chord Finder results, More explanation, and exported diagram annotations, without changing pitch-class search, ranking, physical reach, or playback.
+- Added Previous/Next navigation for ranked mixed-mode Stradella realizations.
+- Persisted the four new settings in startup defaults and imported/exported settings; added mapping and regression tests.
+
+### Code documentation audit
+
+- Added source-level comments and JSDoc around the ABC parser, bass-pattern timing, Stradella results/ranking, registral interpretation, sound/sample mapping, Harmony Explorer and core UI orchestration.
+- Added `docs/developer-guide.md` to document module boundaries, pitch-class versus playback-register assumptions, physical-button identity, ergonomic units, and release checks.
+- Comments and documentation only: no runtime logic, scoring constants, API signatures, or UI behavior changed.
+
+### Integration validation and release candidate (Phase 6)
+
+- Audited the consolidated Phase 1–5 Stradella implementation, ranking, registral explanations, and binary-control replacements.
+- Updated an obsolete notation-test expectation to the existing **Major 9** UI label (test-only correction).
+- Added a static binary-controls regression test and a `test:controls` npm script; incorporated it into `test:all`.
+- Recorded functional regression results and explicit remaining production, browser, and audio verification gates in `docs/validation.md`.
+- No additional changes to candidate generation, scoring, harmonic definitions, audio, or interface behavior. This is a **release candidate**, not a fully production-verified build.
+
+
+### Stradella registral explanations and binary control cleanup (Phase 5)
+
+- Expanded **More explanation** with result-specific root support, conditional slash-bass character, preset-chord-only compression, and multiple-bass ambiguity. Explanations use played buttons (`playbackButtons`) only and never assume universal reed octaves.
+- Added a compact structural bass-role label to optional exported diagram annotations, retaining selected buttons, chord pitch classes, and named omissions.
+- Clarified the functional seventh in thirteenth-chord explanations without assuming it is always present.
+- Replaced all static two-option dropdowns with one state-aware action button: Stradella row labels, treble octave numbers, visual root marker, panel density, sound source, Harmony playback/relationship styles, Bass Pattern voicing, ABC chord symbols, and SVG/PNG format selection.
+- Kept all existing setting state variables, persistence, harmonic searching, candidate generation, recommendation ranking, and playback logic.
+- Added registral explanation tests and retained the previous Stradella and Harmony regression suites.
+
+
+### Registrally informed Stradella recommendations (Phase 4)
+
+- Added a small one-point cost advantage for a **single played root bass/counterbass supporting preset chord buttons**, based on Phase 2 structural registral metadata. The bonus is smaller than the three-point additional-button cost; non-root slash basses, chord-only voicings, and multi-bass combinations are not penalized.
+- Applied the bounded preference to extended-chord Recommended selection and to compactness tie-breaking between otherwise comparably classified nonextended realizations. Harmonic exactness, omission penalties, button-count priorities, and physical reach constraints remain unchanged.
+- Root-supported extended-chord recommendations now mention separate bass reinforcement in their existing *Why Recommended* text, without asserting universal octave assignments.
+- Preserved Em7 (E counterbass + G major), Cmaj7/B (B counterbass + C major), and Cmaj13 compact, slash-bass shell, and complete alternatives. Added dedicated root-support and recommendation regression tests, including a C9 realization with C bass + C major + G minor.
+
+
+### Selective Stradella root-bass reinforcement (Phase 3)
+
+- Added playable mixed-mode alternatives in which one physical C-style root bass/counterbass reinforces a root pitch class already supplied by preset chord buttons; this gives a distinct bass-register role rather than a new harmonic pitch class.
+- Restricted additional reinforcement to previously valid chord-button-only recipes, at most one bass button, and the existing button-count and weighted hand-span limits. All other redundant chord/bass combinations remain disallowed.
+- Consolidated equivalent physical bass placements by musical recipe and kept the original chord-only, mixed, and bass-only alternatives. No changes to exactness/omission rules, recommendation scoring, audio playback, or explanatory UI.
+- Added targeted regression tests for C root reinforcement, count/span limits, deduplication, harmonic invariants, and preserved Em7, Cmaj7, and Cmaj13 examples.
+
+### Stradella structural registral interpretation (Phase 2)
+
+- Added a pure, independent registral-analysis module, distinguishing actual sounded bass/counterbass buttons from preset chords and optional visual root markers.
+- Every Stradella Chord Finder result now exposes structural `registral` metadata: root pitch-class presence, played-root bass support, bass roles, separate chord-register participation, overlapping reinforced tones and conditional non-root slash-bass character. Multiple distinct bass notes are left indeterminate for inversion.
+- Explicitly classified inference as button-structure-only: no universal octave assumptions, sample-register claims or changes to playback.
+- Added regression tests for Em7, Cmaj7/B, Cmaj13 shell and chord-only cases, visual root markers, bass-only cases and multi-bass ambiguity.
+- Left harmonic search, ranking, Exact/Approximate labels, explanatory UI and audio unchanged for later development phases.
+
+### Stradella Chord Finder: scale-independent ergonomics (Phase 1)
+
+- Applied a small 1.10 ergonomic weight along the physical accordion’s vertical circle-of-fifths axis (the diagram’s horizontal direction), keeping the perpendicular direction at 1.00; applied consistently to Stradella proximity, filtering, and ranking. Column spacing remains unweighted for size normalization.
+- Normalized mixed-mode physical compactness by the spacing between adjacent Stradella columns, rather than scoring raw screen pixels. The physical reach filter still uses the same relative column span.
+- Calibrated the normalized compactness weight to preserve recommendations at the established 38px / 1.18-spacing reference layout where possible.
+- Made equally compact bass-only choices and recommendation ties deterministic, independently of diagram button size or spacing; maintained ergonomic preference for clusters near the requested root reference.
+- Added ranked-result invariance tests covering 13 chord/layout/reach configurations at nine diagram geometries (117 comparisons), plus reference-chord assertions. No change to harmonic omission rules, audio, or registral interpretation.
+
+### Treble Chord Finder completeness and notes
 
 - Added Auto, Full chord, and Practical voicing choices to the Treble Chord Finder. Auto now retains all available chord tones for chords with five or fewer tones; Full chord exposes complete six- and seven-tone extended chords as theoretical diagrams.
 - Made chord-result classification and the optional SVG/PNG explanation apply to every chord family, not just extended chords. Missing tones and their harmonic roles are identified, with a warning for six- or seven-button theoretical shapes and for tones outside the selected keyboard range.
 - Added targeted treble chord regression tests covering major/minor/augmented chords, sevenths, ninths, elevenths, and thirteenths on C-system, B-system, and piano layouts.
 
-## Unreleased - Stradella recommendation and explanation refinements
+### Stradella recommendation and explanation refinements
 
 - Replaced the two-recommendation, pitch-class-deduplicated shortlist with up to **three recommended examples** reflecting compact complete voicings, minimal omissions, and functional extended-chord shells. Distinct exact button recipes can each qualify; all valid alternatives remain available.
 - Reduced the previous strong fixed preference for thirteenth shells. Recommendation scoring now balances button count, geometric compactness, harmonic omission penalties, number of omitted notes, and major-third/natural-eleventh density.
 - Expanded **More explanation** for each selected Stradella realization: actual button combination, produced pitch classes, named omissions and roles, fixed-register extension compression, 11th/13th harmonic consequences, and a reason when the realization is marked Recommended. Explained that pitch-class completeness is distinct from literal upper-octave stacking.
 - Kept concise exported-diagram annotations unchanged to preserve legibility in teaching materials.
 
-## Unreleased - Chord Finder voicings, titles, and compact treble layouts
+### Chord Finder voicings, titles, and compact treble layouts
 
 - Added **Contextual** diagram titles as the default, shared across Chord Finders and Scale Finders; the pre-existing Auto, Custom, and None modes remain available. Removed redundant per-Chord-Finder title checkboxes.
 - Standardized unambiguous chord symbols (`Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`, `Cdim`, `Caug`) and ASCII-safe realization-specific export filenames.
@@ -24,7 +153,7 @@
 - Added **1-octave** and **2-octave** CBA/B-system treble size presets while keeping the existing sizes and all piano range options. Compact views expand and recenter when the highlighted or selected buttons require more room.
 - Updated Chord Finder, Scale Finder, and Settings guides; these are accessible in the in-app documentation viewer.
 
-## Previous development - Stradella Chord Finder refinements (October 2026)
+### Earlier work: Stradella Chord Finder refinements (October 2026)
 
 - Expanded **Bass + chord buttons** results to include bass/counterbass-only exact realizations alongside mixed and chord-only combinations.
 - Removed the previous five-result cap; candidate enumeration remains subject to the generator, ergonomic reach checks, and consolidation of equivalent button arrangements.
@@ -33,7 +162,7 @@
 - Added independent diagram options for an automatic chord/realization title and a full-width realization explanation, including omitted-pitch roles.
 - SVG/PNG diagram downloads now use the visible title as the filename when available, sanitizing invalid filename characters and using a layout-based fallback otherwise.
 
-These notes document the supplied Chord Finder patches; a new numbered release has not been assigned.
+
 
 ## v0.14.0 - Harmony progression recording and note ring
 

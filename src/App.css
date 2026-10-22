@@ -2064,3 +2064,53 @@ input[type="range"] {
   height: 1rem;
   margin-top: 0.12rem;
 }
+
+/* Compact binary controls: the button states the next action. */
+.binary-choice-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+.binary-choice-control .small-button {
+  max-width: 100%;
+  text-align: left;
+}
+
+/* Keep realization navigation on one line, including narrow tool sidebars. */
+.realization-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 0.35rem 0 0.6rem;
+  white-space: nowrap;
+}
+.realization-navigation .small-button {
+  min-width: 2.35rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+.finder-note-level-options {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  padding-left: 1.4rem;
+}
+
+/* Persistent two-way settings show the active choice rather than the next action. */
+.segmented-choice-control { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; }
+.segmented-choice { display: flex; width: 100%; border: 1px solid #c9d1e3; border-radius: 9px; overflow: hidden; }
+.segmented-choice-button { flex: 1 1 0; min-width: 0; padding: 7px 6px; font: inherit; font-size: 12px; background: #fff; color: #172033; border: 0; cursor: pointer; overflow-wrap: anywhere; }
+.segmented-choice-button + .segmented-choice-button { border-left: 1px solid #c9d1e3; }
+.segmented-choice-button.selected { background: #e9efff; color: #173fa6; font-weight: 800; }
+.segmented-choice-button:focus-visible { position: relative; z-index: 1; outline: 2px solid #1746d0; outline-offset: -2px; }
+
+/* The toolbar format selector is deliberately compact beside Download. */
+.topbar-format-choice { flex: 0 0 auto; width: 126px; }
+.topbar-format-choice .segmented-choice-control { gap: 2px; }
+.topbar-format-choice .label-line { font-size: 10px; }
+.topbar-format-choice .segmented-choice-button { padding: 5px 3px; }

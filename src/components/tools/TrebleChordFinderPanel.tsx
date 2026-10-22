@@ -1,3 +1,6 @@
+/* Treble Chord Finder controls. Full theoretical harmony and a practical
+   keyboard voicing are distinct options, even for the same chord symbol. */
+
 import type {
   FinderChordInversion,
   FinderChordOctave,

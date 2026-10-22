@@ -38,6 +38,22 @@ export function distance(a: DiagramButton, b: DiagramButton) {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
 
+// The diagram is rotated relative to the instrument: moving along its x axis
+// follows the Stradella circle-of-fifths direction, which is vertical on the
+// physical accordion. Apply a modest ergonomic penalty in that direction.
+// This is a heuristic for hand movement, not a measurement of finger comfort.
+export const STRADELLA_VERTICAL_WEIGHT = 1.10;
+
+/** Weighted distance in diagram coordinates. The fifths direction is
+ * physical vertical but diagram horizontal; both offsets are normalized by
+ * column spacing later in the ranking calculation. */
+export function ergonomicDistance(a: DiagramButton, b: DiagramButton) {
+  return Math.hypot(
+    STRADELLA_VERTICAL_WEIGHT * (a.x - b.x),
+    a.y - b.y,
+  );
+}
+
 export function rootBassCandidates(buttons: DiagramButton[], root: string) {
   return buttons
     .filter((button) => isBassButton(button) && button.pitchClass === root)
@@ -66,7 +82,7 @@ export function chooseClosestBassForPitch(
 
   return [...candidates].sort((a, b) => {
     if (rootReference) {
-      const distanceDifference = distance(a, rootReference) - distance(b, rootReference);
+      const distanceDifference = ergonomicDistance(a, rootReference) - ergonomicDistance(b, rootReference);
       if (Math.abs(distanceDifference) > 0.001) return distanceDifference;
     }
     if (a.kind !== b.kind) return a.kind === "bass-root" ? -1 : 1;
@@ -101,7 +117,7 @@ export function chooseClosestChordButton(
 
   return [...candidates].sort((a, b) => {
     if (reference) {
-      const distanceDifference = distance(a, reference) - distance(b, reference);
+      const distanceDifference = ergonomicDistance(a, reference) - ergonomicDistance(b, reference);
       if (Math.abs(distanceDifference) > 0.001) return distanceDifference;
     }
     if (a.column !== b.column) return a.column - b.column;
@@ -140,7 +156,7 @@ export function chordButtonPool(buttons: DiagramButton[]) {
 
 export function totalDistance(buttons: DiagramButton[], reference: DiagramButton | undefined) {
   if (!reference) return 0;
-  return buttons.reduce((sum, button) => sum + distance(button, reference), 0);
+  return buttons.reduce((sum, button) => sum + ergonomicDistance(button, reference), 0);
 }
 
 export function chordCombinations(pool: DiagramButton[], maxSize: number) {

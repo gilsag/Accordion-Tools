@@ -80,7 +80,7 @@ These settings control rendered staff-notation panels in the accordion workspace
 | Setting | Purpose |
 |---|---|
 | `colorTheme` | Diagram color theme. |
-| `titleMode` | Automatic, custom, or hidden title behavior. |
+| `titleMode` | Auto (layout), Contextual (tool and selected realization; default), Custom, or None. In Chord Finder, Contextual shows harmonic identity plus realization status, with a modeled-lowest qualifier for unspecified Stradella non-root voicings and the selected inversion for Treble. This does not affect recipe-based filenames. |
 | `customTitle` | Title used when custom title mode is active. |
 | `showButtonLabels` | Shows or hides button/key labels. |
 | `showBellowsGuide` | Shows or hides the bellows guide. |
@@ -117,6 +117,33 @@ These settings control rendered staff-notation panels in the accordion workspace
 | `selectionOnClick` | Enables or disables selecting buttons/keys by clicking them. |
 | `downloadFormat` | Default diagram download format: SVG or PNG. |
 
+## Two-way controls
+
+Persistent binary **choices** use a segmented control with **both options visible** and the active option highlighted, such as `C–B | F–E` for Stradella grouping, `La Melodiosa | Synthesizer` for sound source, `Configured registers | Original mapping` for sample pitch mapping, interface density, chord playback, Bass Pattern voicing, ABC chord symbols, and SVG/PNG export. Changes preserve the original saved-setting keys.
+
+Commands that show or hide content (e.g., **Show/Hide Stradella row labels**, **Show/Hide octave numbers**) remain action buttons, describing the next action; visibility controls also expose their current state to assistive technologies. All three-or-more-option selectors remain dropdowns.
+
+## Stradella analytical registers
+
+Under **Settings → Stradella registers** (a separate section from Sound), specify two independent twelve-pitch ranges:
+
+| Setting | Default | Choices |
+|---|---|---|
+| Bass/counterbass starting octave | 2 | Octaves 1–4 |
+| Bass/counterbass grouping | `C-B` | `C-B` or `F-E` |
+| Preset chord starting octave | 3 | Octaves 2–5 |
+| Preset chord grouping | `C-B` | `C-B` or `F-E` |
+
+`C2–B2` maps C2 through B2; `F2–E3` maps F2 through B2 followed by C3 through E3. The two groupings are **different twelve-note octave partitions**, not different chord formulas. The controls save and load via the keys `stradellaBassRegisterOctave`, `stradellaBassRegisterGrouping`, `stradellaChordRegisterOctave`, and `stradellaChordRegisterGrouping`.
+
+**Scope:** these are nominal one-pitch-per-tone assumptions, *not* an acoustic recording of any particular accordion. They determine the nominal pitches listed from low to high in the Chord Finder and four-level diagram notes, as well as the modeled lowest pitch used for inversion analysis. When **Follow configured Stradella registers** is enabled under La Melodiosa playback, they also determine the MIDI pitches requested from the sampler. The underlying WAV files and the selected sample reed register I/II/III do not change. Acoustic reed doublings within a sample can alter the perceived lowest note. These settings never change chord identity, harmonic completeness, ergonomics or the optional synthesizer's mapping. With register-aware density ranking enabled, changing modeled octaves can slightly reorder otherwise comparable Chord Finder recommendations.
+
+## Stradella Chord Finder diagram notes
+
+The **Show realization explanation below diagram** master checkbox controls four subordinate options: **Harmonic identity**, **Pitch-class realization**, **Registral voicing**, and **Physical realization**. These controls appear only while the master option is enabled; turning it off keeps the previous selections. The lines appear below the diagram and in SVG/PNG exports, with left-aligned text and bold level labels. Registral voicing directly shows an ascending list of nominal pitches and their octaves (including unison multipliers such as `C3 ×2`), rather than a single lowest-note label. Chord-button-only construction is stated in Physical realization, not Registral voicing. A help tooltip explains the difference between these concise notes and **More explanation**. When all four choices are disabled, the footer is omitted, including its otherwise reserved diagram space. These controls do not alter **More explanation**, the recommendation algorithm, playback, or file names.
+
+The import/export setting `stradellaNoteLevels` is an object with boolean fields `identity`, `pitchClasses`, `voicing`, and `physical`, all `true` by default. Older settings files omit this object and continue to show all four lines. A partially specified object defaults only its missing/invalid fields to `true`. The default settings file in `public/default-settings.json` contains the same keys.
+
 ## Sound settings
 
 | Setting | Purpose |
@@ -125,7 +152,8 @@ These settings control rendered staff-notation panels in the accordion workspace
 | `soundVolume` | Default sound volume. |
 | `soundSource` | Chooses the built-in synthesizer or the La Melodiosa sampled accordion. |
 | `laMelodiosaTrebleRegister` | La Melodiosa treble register: `I` (upper), `II` (lower), or `III` (both). |
-| `laMelodiosaBassRegister` | La Melodiosa bass register: `I` (upper), `II` (lower), or `III` (both). |
+| `laMelodiosaBassRegister` | La Melodiosa bass sample reed selection: `I` (upper), `II` (lower), or `III` (both). |
+| `laMelodiosaFollowStradellaRegisters` | `true` (default): sample playback follows the independently configured bass and chord ranges. `false`: preserve the original C2–B2 bass / C3–B3 chord MIDI mapping. |
 | `soundVoicePreset` | Default synthesized voice preset. |
 | `soundWaveform` | Default oscillator waveform. |
 | `soundMusetteDetuneCents` | Default detune amount for musette-style sound. |
@@ -134,7 +162,7 @@ These settings control rendered staff-notation panels in the accordion workspace
 | `soundNoteDurationMs` | Default button-click note duration. |
 | `stradellaBassVoicing` | Chooses the synthetic voicing used for Stradella bass buttons. |
 
-The sound engine uses the browser Web Audio API. The built-in synthesizer is intended primarily for reference and practice. La Melodiosa provides sampled accordion playback using the original SFZ mappings. Notes outside the mapped sample range fall back to the synthesized renderer.
+The sound engine uses the browser Web Audio API. The built-in synthesizer is an explicit alternative for reference and practice. La Melodiosa plays recorded WAV samples using its SFZ region mappings; outside the mapped range it transposes the nearest available recording rather than falling back to synthesis. If no usable sample loads, that note is silent and a warning is logged.
 
 ### La Melodiosa attribution
 
@@ -177,7 +205,7 @@ Secondary Harmony Explorer preferences are stored in Settings so the main Harmon
 | `stradellaChordFinderMode` | Default search mode for Stradella Chord Finder. |
 | `stradellaChordFinderMarkRootBass` | Marks the root bass as a visual reference in chord-button results. |
 
-The Stradella Chord Finder also has two in-panel diagram-label checkboxes for the automatic chord/realization title and the realization explanation beneath the diagram. They are located at the bottom of the tool panel. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
+The Stradella Chord Finder has a master **Show realization explanation below diagram** checkbox with dependent level controls and tooltip guidance; its chord/realization title is controlled centrally by **Title** settings. The root bass location reference in **Chord buttons only** is now controlled by a Show/Hide button. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
 | `chordFinderRoot` | Default Chord Finder root. |
 | `chordFinderPattern` | Default Chord Finder pattern. |
 | `chordFinderInversion` | Default Chord Finder inversion. |
@@ -245,3 +273,13 @@ The `titleMode` setting supports **Auto** (instrument/layout), **Contextual** (d
 ## Treble layout range
 
 Chromatic-button instruments now offer **1 octave** and **2 octaves** in addition to all previous Treble size presets. The compact options center a window on selected buttons and expand to the smallest available larger preset if necessary. Piano range presets are unchanged. Export uses the actual resulting diagram width.
+
+### La Melodiosa sampled register-following mode
+
+The preferred sound source is **La Melodiosa**. With **Follow configured Stradella registers** enabled, each sounded bass/counterbass button is assigned one nominal MIDI pitch from the selected bass range, and each pitch class contributed by a preset chord button is assigned one nominal MIDI pitch from the selected chord range. The selected physical buttons are preserved. For example, with bass `F2–E3` and chord `F3–E4`, a C bass sounds as nominal C3 and a C-major chord requests C4–E4–G3. The Chord Finder's nominal lowest note and sample MIDI requests therefore agree. This also applies to other features that call the shared Stradella button playback engine (such as Bass Pattern Player and physical-button progressions); Harmony Explorer's abstract pitch-class chord player keeps its own convention.
+
+**Native mapping versus transposition.** La Melodiosa's bundled bass-side SFZ covers MIDI 36–59 (C2–B3) in reed selections I, II and III. Within this range its regions still transpose nearby recorded WAV samples: "native range" does not imply a separate recording of every semitone. For requested notes outside C2–B3, the sampler selects the nearest bass-side region of the chosen sample register and alters WAV playback rate to reach the requested MIDI pitch. The treble-side sample map is independent. Extreme shifts may alter timbre, attack, sustain, perceived reed registers and note duration. Recorded samples may contain octave-doubled partials, so the result is not a measured replication of a specific acoustic accordion.
+
+**No automatic synthetic fallback.** When La Melodiosa is selected, missing or invalid sample mappings produce a warning and silence for the affected note rather than silently substituting an oscillator. The synthesizer remains available only if the user explicitly selects it as the sound source. No missing sample recordings are fabricated.
+
+For a direct comparison, switch to **Use original La Melodiosa octave mapping** to leave sampled note requests at the original C2–B2 bass and C3–B3 chord ranges. Analytical descriptions continue to use the separately configured ranges in this legacy playback mode, so their computed lowest notes may not match what is requested from the sampler. Settings files from older versions are supported: the new mode defaults to `true` if the key is absent.

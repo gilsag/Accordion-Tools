@@ -1,3 +1,6 @@
+/* Progression controls and playback display. Selected button recipes must
+   come from the global optimizer, not a per-chord greedy reconstruction. */
+
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";

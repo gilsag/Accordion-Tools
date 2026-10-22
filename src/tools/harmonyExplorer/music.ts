@@ -1,3 +1,9 @@
+/*
+  Pitch-class mathematics for the Harmonic Circle Explorer. Common tones,
+  diatonic membership and voice leading are harmonic abstractions: no acoustic
+  octave or physical accordion button is implied by this module.
+*/
+
 export type ChordFamilyId =
   | "major"
   | "minor"
@@ -188,6 +194,9 @@ function circularDistance(a: number, b: number, length: number) {
   return Math.min(direct, length - direct);
 }
 
+/** Bucket candidate chords by *shared pitch-class count* relative to each
+ * sector's reference chord. Distant octaves and physical voicing do not enter
+ * this graph; the optional zero-overlap ring is a display/search choice. */
 export function buildSectorRelationships(
   referenceFamilyId: ChordFamilyId,
   relatedFamilyId: RelatedFamilyId,

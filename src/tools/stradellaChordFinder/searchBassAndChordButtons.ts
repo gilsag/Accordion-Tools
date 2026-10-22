@@ -11,8 +11,12 @@ import {
   chordButtonPool,
   chordCombinations,
   distance,
+  ergonomicDistance,
 } from "./utils";
 import { chordButtonRecipeResult } from "./searchChordButtonsOnly";
+import { registralPreferenceAdjustment } from "./registralPreference";
+import { analyzeVoicingDensity } from "./voicingDensity";
+import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "./registerModel";
 
 type RankedRealization = {
   result: StradellaChordFinderResult;
@@ -24,11 +28,28 @@ type RankedRealization = {
   recommended?: boolean;
 };
 
-function compactness(buttons: DiagramButton[]) {
+// Approximate ergonomic cost per adjacent Stradella column. At the previous
+// reference diagram size (38px buttons, 1.18 spacing), the old pixel coefficient
+// was 0.05 * (38 * 1.18 * 1.15) = 2.5783. Keep that relative weighting while
+// ensuring that diagram zoom does not change musical recommendations.
+const COMPACTNESS_WEIGHT_PER_COLUMN = 2.58;
+// Float rounding in scaled x/y coordinates must not break genuine geometric ties.
+const GEOMETRY_EPSILON = 1e-9;
+
+function compareMetric(a: number, b: number) {
+  const difference = a - b;
+  return Math.abs(difference) <= GEOMETRY_EPSILON ? 0 : difference;
+}
+
+function physicalKey(buttons: DiagramButton[]) {
+  return buttons.map((button) => button.id).sort().join("|");
+}
+
+function compactness(buttons: DiagramButton[], columnSpacing: number) {
   const pairDistances: number[] = [];
   for (let i = 0; i < buttons.length; i += 1) {
     for (let j = i + 1; j < buttons.length; j += 1) {
-      pairDistances.push(distance(buttons[i], buttons[j]));
+      pairDistances.push(ergonomicDistance(buttons[i], buttons[j]));
     }
   }
   if (pairDistances.length === 0) return 0;
@@ -37,28 +58,35 @@ function compactness(buttons: DiagramButton[]) {
   // The furthest reach dominates ergonomics, while mean pair spacing breaks
   // ties in favor of a tighter hand cluster. This is a purely physical score;
   // equivalent bass/counterbass pitches remain harmonically identical.
-  return maximum + mean * 0.25;
+  // Dimensionless: the same physical button recipe scores identically at any
+  // diagram button size or uniform spacing scale.
+  return (maximum + mean * 0.25) / columnSpacing;
 }
 
 // Use the spacing between adjacent chord columns to obtain a layout-independent
 // maximum comfortable span. Very distant chord combinations are not playable
 // merely because they contain the correct pitch classes.
-export function ergonomicSpanLimit(pool: DiagramButton[], spanColumns = 5.5) {
+function adjacentColumnSpacing(pool: DiagramButton[]) {
   const distances = pool.flatMap((a) => pool
     .filter((b) => b.kind === a.kind && Math.abs(b.column - a.column) === 1)
     .map((b) => distance(a, b)));
   const spacing = Math.min(...distances.filter((value) => value > 0));
+  return Number.isFinite(spacing) ? spacing : 0;
+}
+
+export function ergonomicSpanLimit(pool: DiagramButton[], spanColumns = 5.5) {
   // The previous 3.2-column cutoff excluded most musically distinct
   // combinations, particularly across bass and chord rows. Allow a moderate
   // five-and-a-half-column diagonal reach, while retaining a hard cap.
-  return Number.isFinite(spacing) ? spacing * spanColumns : Infinity;
+  const spacing = adjacentColumnSpacing(pool);
+  return spacing > 0 ? spacing * spanColumns : Infinity;
 }
 
 function practicalCombination(buttons: DiagramButton[], limit: number) {
   if (new Set(buttons.map((button) => button.id)).size !== buttons.length) return false;
   for (let i = 0; i < buttons.length; i += 1) {
     for (let j = i + 1; j < buttons.length; j += 1) {
-      if (distance(buttons[i], buttons[j]) > limit) return false;
+      if (ergonomicDistance(buttons[i], buttons[j]) > limit) return false;
     }
   }
   return true;
@@ -71,6 +99,28 @@ function hasRedundantButton(buttons: DiagramButton[]) {
   return buttons.some((_, i) => {
     const without = new Set(combinationTones(buttons.filter((__, j) => i !== j)));
     return all.size === without.size && [...all].every((tone) => without.has(tone));
+  });
+}
+
+// A single root bass (or explicitly requested bass) can reinforce a pitch
+// class already present in preset chord buttons without being acoustically redundant: bass and preset chords
+// occupy different reed roles. This narrowly scoped exception does not allow
+// extra chord buttons or duplicate/non-root bass buttons to become redundant.
+/** Distinguish a useful root-bass register from genuinely redundant notes:
+ * exactly one harmonically requested reinforcing bass may accompany chord
+ * buttons; extra chord or other bass buttons do not get that exception. */
+function hasUnnecessaryButton(buttons: DiagramButton[], reinforcingPitch: string) {
+  const bassButtons = buttons.filter(isBassButton);
+  const chordButtons = buttons.filter((button) => !isBassButton(button));
+  const permittedRootBass = bassButtons.length === 1 && chordButtons.length > 0 &&
+    bassButtons[0].pitchClass === reinforcingPitch && combinationTones(chordButtons).includes(reinforcingPitch)
+    ? bassButtons[0]
+    : undefined;
+  const all = new Set(combinationTones(buttons));
+  return buttons.some((button, index) => {
+    const without = new Set(combinationTones(buttons.filter((_, j) => index !== j)));
+    const isRedundant = all.size === without.size && [...all].every((tone) => without.has(tone));
+    return isRedundant && button.id !== permittedRootBass?.id;
   });
 }
 
@@ -92,9 +142,9 @@ function bestBassForCluster(
   return [...candidates].sort((a, b) => {
     const clusterDistance = (candidate: DiagramButton) =>
       cluster.length > 0
-        ? cluster.reduce((sum, other) => sum + distance(candidate, other), 0) / cluster.length
+        ? cluster.reduce((sum, other) => sum + ergonomicDistance(candidate, other), 0) / cluster.length
         : rootReference
-          ? distance(candidate, rootReference)
+          ? ergonomicDistance(candidate, rootReference)
           : 0;
     const d = clusterDistance(a) - clusterDistance(b);
     if (Math.abs(d) > 0.001) return d;
@@ -181,6 +231,9 @@ function realizationKey(result: StradellaChordFinderResult) {
   ).sort().join("|");
 }
 
+/** Generate physical recipes, validate pitch classes/omissions, enforce
+ * ergonomics, and rank without discarding other valid realizations. Only
+ * the optional Recommended shortlist is capped at three. */
 export function bassAndChordResults(
   buttons: DiagramButton[],
   root: string,
@@ -188,12 +241,18 @@ export function bassAndChordResults(
   pattern: FinderChordPattern,
   maxButtons = 3,
   spanColumns = 5.5,
+  requestedBass: string | null = null,
+  registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
 ): StradellaChordFinderResult[] {
   const rootReference = chooseRootReference(buttons, root);
   const targetSet = new Set(targetPitches);
   const pool = chordButtonPool(buttons);
   const ranked: RankedRealization[] = [];
-  const reachLimit = ergonomicSpanLimit(pool, spanColumns);
+  const columnSpacing = adjacentColumnSpacing(pool);
+  // Standard layouts always contain adjacent columns; retain a finite metric
+  // for degenerate caller-provided diagrams with no measurable column spacing.
+  const compactnessUnit = columnSpacing > 0 ? columnSpacing : 1;
+  const reachLimit = columnSpacing > 0 ? columnSpacing * spanColumns : Infinity;
 
   /* Exact candidates. A chord-button cluster is completed with only the missing
      bass notes. Bass choice is based on proximity to the chord cluster, which
@@ -222,7 +281,7 @@ export function bassAndChordResults(
       exact: true,
       mixed: chordButtons.length > 0 && bassButtons.length > 0,
       buttonCount: selected.length,
-      compactness: compactness(selected),
+      compactness: compactness(selected, compactnessUnit),
       approximationPenalty: 0,
     });
   }
@@ -237,11 +296,25 @@ export function bassAndChordResults(
     if (bassGroups.length <= maxButtons && bassGroups.every((group) => group.length > 0)) {
       const best: { buttons?: DiagramButton[] } = {};
       let bestScore = Infinity;
+      let bestReferenceDistance = Infinity;
+      let bestPhysicalKey = "";
       const visit = (index: number, selected: DiagramButton[]) => {
         if (index === bassGroups.length) {
-          const score = compactness(selected);
-          if (score < bestScore) {
+          const score = compactness(selected, compactnessUnit);
+          // Equivalent clusters may have identical physical spread but differ
+          // in their position on the diagram. Prefer the one near the requested
+          // chord's root reference, then break true ties by stable button IDs.
+          const referenceDistance = rootReference
+            ? selected.reduce((sum, button) => sum + ergonomicDistance(button, rootReference), 0) / compactnessUnit
+            : 0;
+          const selectionKey = physicalKey(selected);
+          const costDifference = compareMetric(score, bestScore);
+          if (costDifference < 0 || (costDifference === 0 &&
+              (compareMetric(referenceDistance, bestReferenceDistance) < 0 ||
+                (compareMetric(referenceDistance, bestReferenceDistance) === 0 && selectionKey < bestPhysicalKey)))) {
             bestScore = score;
+            bestReferenceDistance = referenceDistance;
+            bestPhysicalKey = selectionKey;
             best.buttons = [...selected];
           }
           return;
@@ -261,7 +334,7 @@ export function bassAndChordResults(
           exact: true,
           mixed: false,
           buttonCount: selected.length,
-          compactness: compactness(selected),
+          compactness: compactness(selected, compactnessUnit),
           approximationPenalty: 0,
         });
       }
@@ -277,7 +350,7 @@ export function bassAndChordResults(
       exact: true,
       mixed: false,
       buttonCount: chordOnly.playbackButtons.length,
-      compactness: compactness(chordOnly.playbackButtons),
+      compactness: compactness(chordOnly.playbackButtons, compactnessUnit),
       approximationPenalty: 0,
     });
   }
@@ -299,7 +372,7 @@ export function bassAndChordResults(
           exact: false,
           mixed: bassButtons.length > 0 && chordButtons.length > 0,
           buttonCount: selected.length,
-          compactness: compactness(selected),
+          compactness: compactness(selected, compactnessUnit),
           approximationPenalty: approximationPenalty(root, pattern, targetPitches, selected),
         });
         return;
@@ -316,10 +389,9 @@ export function bassAndChordResults(
     collect(0, [...chordButtons], []);
   }
 
-  /* Final musical invariant. Candidate generators and fixed recipes may evolve
-     independently, so enforce the public mixed-mode contract once more here:
-     no returned playable realization may contain a pitch outside the requested
-     chord. Non-exact results must also satisfy the conservative omission rule. */
+  /* First validate conventional candidates under the existing strict
+     redundancy rule. Root reinforcement is an *addition* to this set, not a
+     relaxation of the harmonic rules governing ordinary combinations. */
   const validRanked = ranked.filter((item) => {
     const summary = summarizeResult(item.result.playbackButtons, targetPitches);
     if (item.buttonCount > maxButtons || summary.extraPitches.length > 0 || !practicalCombination(item.result.playbackButtons, reachLimit) || hasRedundantButton(item.result.playbackButtons)) return false;
@@ -327,38 +399,89 @@ export function bassAndChordResults(
     return isAcceptableApproximation(root, pattern, targetPitches, item.result.playbackButtons);
   });
 
+  /* Phase 3: preserve one useful *registral* addition even when it does not
+     contribute another pitch class. Start only from valid chord-button-only
+     recipes: this makes the new role unambiguous and avoids accumulating two
+     independent bass notes. Select the nearest playable root bass/counterbass
+     position; equivalent physical root buttons are consolidated by recipe
+     below. No new harmonic approximations or altered-chord omissions arise. */
+  const reinforced: RankedRealization[] = [];
+  for (const item of validRanked) {
+    const chords = item.result.playbackButtons;
+    const reinforcingPitch = requestedBass ?? root;
+    if (item.buttonCount >= maxButtons || chords.length === 0 ||
+        chords.some(isBassButton) || !combinationTones(chords).includes(reinforcingPitch)) continue;
+    const bass = bestBassForCluster(buttons, reinforcingPitch, chords, rootReference,
+      new Set(chords.map((button) => button.id)), reachLimit);
+    if (!bass) continue;
+    const selected = [bass, ...chords];
+    if (hasUnnecessaryButton(selected, reinforcingPitch)) continue;
+    reinforced.push({
+      result: resultForCombination(selected, chords, [bass], targetPitches, item.exact),
+      exact: item.exact,
+      mixed: true,
+      buttonCount: selected.length,
+      compactness: compactness(selected, compactnessUnit),
+      approximationPenalty: item.approximationPenalty,
+    });
+  }
+  validRanked.push(...reinforced);
+
+  /* Explicit slash bass is a modeled inversion constraint, not a cosmetic
+     score bonus. Keep only candidates whose lowest nominal sounding pitch
+     matches the requested bass. Do this BEFORE choosing Recommended items. */
+  const eligible = requestedBass === null ? validRanked : validRanked.filter((item) =>
+    analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel)
+      .lowestPitchClass === requestedBass,
+  );
+
   // Recommendation is a curated shortlist, not an exhaustive ranking label.
   // Distinct exact physical recipes remain eligible even when they produce the
   // same pitch-class set. Favor compactness, few buttons, and clear function.
   const is13 = ["dominant13", "major13", "minor13"].includes(pattern);
-  const hasThirdAndEleventh = ["dominant11", "major11", "dominant13", "major13"].includes(pattern);
   const isConventionalShell = (item: RankedRealization) => is13 &&
     [7, 14, 17].every((interval) => item.result.missingPitches.includes(transpose(root, interval))) &&
     [0, pattern === "minor13" ? 3 : 4, pattern === "major13" ? 11 : 10, 21]
       .every((interval) => item.result.coveredPitches.includes(transpose(root, interval)));
-  const hasDenseEleventh = (item: RankedRealization) => hasThirdAndEleventh &&
-    item.result.coveredPitches.includes(transpose(root, 4)) &&
-    item.result.coveredPitches.includes(transpose(root, 17));
 
+  const registralAdjustment = (item: RankedRealization) => {
+    if (requestedBass === null) return registralPreferenceAdjustment(item.result.registral);
+    // A matching bass button is helpful but not worth another button by itself.
+    return item.result.registral.bassPitchClasses.length === 1 &&
+      item.result.registral.bassPitchClasses[0] === requestedBass &&
+      item.result.registral.chordButtonCount > 0 ? -1 : 0;
+  };
   const preferenceScore = (item: RankedRealization) => {
     // A button carries more ergonomic cost than a modest change in spacing.
     // An omitted ordinary fifth is inexpensive, while losing the 3rd in an
     // eleventh remains a clearly labeled suspended-style choice.
-    const cost = item.buttonCount * 3 + item.compactness * 0.05 +
+    const cost = item.buttonCount * 3 + item.compactness * COMPACTNESS_WEIGHT_PER_COLUMN +
       item.approximationPenalty * 0.9 + (item.exact ? -1 : 0);
-    const densityCost = hasDenseEleventh(item) ? 1.5 : 0;
+    // Density is based on actual nominal pitch spacing, not just the presence
+    // of a theoretically dissonant interval in the chord pitch classes.
+    const densityCost = analyzeVoicingDensity(
+      analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel).notes,
+    ).penalty;
     // Prefer a one-tone omission to a two-tone omission when ergonomic costs
     // are comparable. Standard 1-3-7-13 shells are a separate strategy.
     const reductionCost = item.exact || isConventionalShell(item) ? 0 : item.result.missingPitches.length * 1.25;
     // A useful thirteenth shell gets a small preference, never an automatic
     // eight-point victory over a more compact near-complete realization.
-    return cost + densityCost + reductionCost - (isConventionalShell(item) ? 1.25 : 0);
+    // Explicit root-bass support receives a small advantage over otherwise
+    // comparable realizations. Non-root bass (e.g., Cmaj7/B), chord-only,
+    // and ambiguous multiple-bass voicings incur no blanket penalty.
+    return cost + densityCost + reductionCost - (isConventionalShell(item) ? 1.25 : 0) +
+      registralAdjustment(item);
   };
   const key = (item: RankedRealization) => realizationKey(item.result);
+  const comparePreference = (a: RankedRealization, b: RankedRealization) =>
+    compareMetric(preferenceScore(a), preferenceScore(b)) || key(a).localeCompare(key(b));
   const candidatesByRecipe = new Map<string, RankedRealization>();
-  for (const item of validRanked) {
+  for (const item of eligible) {
     const previous = candidatesByRecipe.get(key(item));
-    if (!previous || preferenceScore(item) < preferenceScore(previous)) {
+    if (!previous || compareMetric(preferenceScore(item), preferenceScore(previous)) < 0 ||
+        (compareMetric(preferenceScore(item), preferenceScore(previous)) === 0 &&
+          physicalKey(item.result.playbackButtons) < physicalKey(previous.result.playbackButtons))) {
       candidatesByRecipe.set(key(item), item);
     }
   }
@@ -372,20 +495,20 @@ export function bassAndChordResults(
       if (item.result.missingPitches.length <= 2) return "minimally-reduced";
       return "alternative";
     };
-    const sorted = [...distinct].sort((a, b) => preferenceScore(a) - preferenceScore(b));
+    const sorted = [...distinct].sort(comparePreference);
     const preferred: RankedRealization[] = [];
     const bestScore = sorted[0] ? preferenceScore(sorted[0]) : Infinity;
     // Include contrasting harmonic approaches before filling the remaining
     // places with another well-ranked physical realization (which can be exact).
     for (const kind of ["complete", "minimally-reduced", "functional-shell"] as Strategy[]) {
       const candidate = sorted.find((item) => strategy(item) === kind);
-      if (candidate && preferenceScore(candidate) <= bestScore + 3.5) preferred.push(candidate);
+      if (candidate && preferenceScore(candidate) <= bestScore + 3.5 + GEOMETRY_EPSILON) preferred.push(candidate);
     }
     for (const candidate of sorted) {
       if (preferred.length >= 3) break;
       if (preferred.includes(candidate)) continue;
       // Do not recommend a much less convenient alternative just to reach 3.
-      if (preferenceScore(candidate) <= bestScore + 2.75) preferred.push(candidate);
+      if (preferenceScore(candidate) <= bestScore + 2.75 + GEOMETRY_EPSILON) preferred.push(candidate);
     }
     for (const item of preferred.slice(0, 3)) {
       item.recommended = true;
@@ -399,16 +522,30 @@ export function bassAndChordResults(
           : kind === "functional-shell"
             ? `It preserves root, third, seventh, and thirteenth in ${count} buttons, avoiding the extra density of fifth, ninth, and eleventh.`
             : `It offers another useful physical combination with ${count} buttons and a ${span}; its button recipe is distinct from the other recommended examples.`;
+      if (registralAdjustment(item) < 0) {
+        item.result.recommendationReason +=
+          requestedBass === null
+            ? ` A separate bass/counterbass button also reinforces ${root}; sounding octaves depend on registration.`
+            : ` A separate bass/counterbass button supports the requested ${requestedBass} bass; sounding octaves depend on registration.`;
+      }
     }
   }
   distinct.sort((a, b) => {
     if (Boolean(a.recommended) !== Boolean(b.recommended)) return a.recommended ? -1 : 1;
-    if (a.recommended && b.recommended) return preferenceScore(a) - preferenceScore(b);
+    if (a.recommended && b.recommended) return comparePreference(a, b);
     if (a.exact !== b.exact) return a.exact ? -1 : 1;
     if (a.approximationPenalty !== b.approximationPenalty) return a.approximationPenalty - b.approximationPenalty;
     if (a.buttonCount !== b.buttonCount) return a.buttonCount - b.buttonCount;
     if (a.mixed !== b.mixed) return a.mixed ? -1 : 1;
-    return a.compactness - b.compactness;
+    // In nonextended chords, preserve exactness, fewer buttons, and mixed-mode
+    // preferences before the limited root-support tie-break. Using the same
+    // normalized score keeps this independent of the diagram's pixel size.
+    return compareMetric(
+      a.compactness * COMPACTNESS_WEIGHT_PER_COLUMN + registralAdjustment(a) +
+        analyzeVoicingDensity(analyzeConfiguredStradellaVoicing(a.result.playbackButtons, root, registerModel).notes).penalty,
+      b.compactness * COMPACTNESS_WEIGHT_PER_COLUMN + registralAdjustment(b) +
+        analyzeVoicingDensity(analyzeConfiguredStradellaVoicing(b.result.playbackButtons, root, registerModel).notes).penalty,
+    ) || key(a).localeCompare(key(b));
   });
 
   /* One most-ergonomic physical button set per musical recipe. Keep all
@@ -422,8 +559,10 @@ export function bassAndChordResults(
     ? results
     : [notPlayableResult(
         targetPitches,
-        "No practical bass-and-chord-button realization.",
-        "No exact or close Stradella realization was found with the visible bass and chord rows.",
+        requestedBass ? `No realization for requested bass ${requestedBass}.` : "No practical bass-and-chord-button realization.",
+        requestedBass
+          ? `No valid realization places ${requestedBass} lowest under the configured nominal register ranges and current reach/button limits. Try a different register setting or increase the reach/button limit.`
+          : "No exact or close Stradella realization was found with the visible bass and chord rows.",
       )];
 }
 
@@ -432,6 +571,8 @@ export function bassAndChordResult(
   root: string,
   targetPitches: string[],
   pattern: FinderChordPattern,
+  requestedBass: string | null = null,
+  registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
 ): StradellaChordFinderResult {
-  return bassAndChordResults(buttons, root, targetPitches, pattern)[0];
+  return bassAndChordResults(buttons, root, targetPitches, pattern, 3, 5.5, requestedBass, registerModel)[0];
 }

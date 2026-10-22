@@ -1,3 +1,12 @@
+import { DEFAULT_STRADELLA_NOTE_LEVELS, normalizeStradellaNoteLevels, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
+import { trebleContextualTitle } from "./tools/contextualTitles";
+/*
+  Application orchestration: React owns diagram/tool settings; src/tools/*
+  supplies music algorithms, while src/sound.ts owns playback. Do not derive
+  harmonic content from SVG highlights: an optional root reference may be
+  highlighted without sounding. Finder results expose playbackButtons for that.
+*/
+
 /*
   Main application component.
 
@@ -125,6 +134,7 @@ import { getChordFinderTrebleButtons, type TrebleChordVoicingMode } from "./tool
 import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
 import { realizationAnnotation, finderChordSymbol } from "./tools/stradellaChordFinder/diagramAnnotations";
+import { DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaOctaveGrouping, type StradellaRegisterModel, formatRegisterRange } from "./tools/stradellaChordFinder/registerModel";
 import { describeTrebleChord } from "./tools/trebleChordExplanation";
 import {
   playButtonArpeggioThenChord,
@@ -143,6 +153,8 @@ import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
 import { StradellaChordFinderPanel } from "./components/tools/StradellaChordFinderPanel";
 import { HelpTip } from "./components/ui/HelpTip";
+import { BinaryChoiceButton } from "./components/ui/BinaryChoiceButton";
+import { SegmentedChoice } from "./components/ui/SegmentedChoice";
 import { HarmonyExplorerPanel } from "./components/tools/HarmonyExplorerPanel";
 import { ProgressionAssistantPanel } from "./components/tools/ProgressionAssistantPanel";
 import { HarmonicCircle } from "./tools/harmonyExplorer/components/HarmonicCircle";
@@ -293,6 +305,7 @@ const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
 };
 
 type DefaultSettingsFile = Partial<{
+  stradellaNoteLevels: StradellaNoteLevels;
   side: Side;
   notation: NotationMode;
   accidental: AccidentalMode;
@@ -322,6 +335,10 @@ type DefaultSettingsFile = Partial<{
   downloadFormat: DownloadFormat;
   soundEnabled: boolean;
   stradellaBassVoicing: StradellaBassVoicing;
+  stradellaBassRegisterOctave: number;
+  stradellaBassRegisterGrouping: StradellaOctaveGrouping;
+  stradellaChordRegisterOctave: number;
+  stradellaChordRegisterGrouping: StradellaOctaveGrouping;
   stradellaChordFinderMode: StradellaChordFinderMode;
   stradellaChordFinderMarkRootBass: boolean;
   abcStradellaMode: AbcStradellaMode;
@@ -381,6 +398,7 @@ type DefaultSettingsFile = Partial<{
   soundSource: SoundSource;
   laMelodiosaTrebleRegister: SampleRegister;
   laMelodiosaBassRegister: SampleRegister;
+  laMelodiosaFollowStradellaRegisters: boolean;
   soundVoicePreset: SoundVoicePreset;
   soundWaveform: SoundWaveform;
   soundMusetteDetuneCents: number;
@@ -559,6 +577,7 @@ function App() {
     | "notation"
     | "musicNotation"
     | "sound"
+    | "stradellaRegisters"
     | "harmony"
     | "about"
     | null;
@@ -760,9 +779,21 @@ function App() {
   const [stradellaChordFinderMode, setStradellaChordFinderMode] =
     useState<StradellaChordFinderMode>("bass-and-chords");
   const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
+  // Per-chord harmonic intention, not a global instrument preference.
+  const [stradellaChordFinderRequestedBass, setStradellaChordFinderRequestedBass] = useState<string | null>(null);
+  // Register assumptions describe nominal pitch placement, not sound source or reed registration.
+  const [stradellaBassRegisterOctave, setStradellaBassRegisterOctave] = useState(DEFAULT_STRADELLA_REGISTER_MODEL.bass.startOctave);
+  const [stradellaBassRegisterGrouping, setStradellaBassRegisterGrouping] = useState<StradellaOctaveGrouping>(DEFAULT_STRADELLA_REGISTER_MODEL.bass.grouping);
+  const [stradellaChordRegisterOctave, setStradellaChordRegisterOctave] = useState(DEFAULT_STRADELLA_REGISTER_MODEL.chord.startOctave);
+  const [stradellaChordRegisterGrouping, setStradellaChordRegisterGrouping] = useState<StradellaOctaveGrouping>(DEFAULT_STRADELLA_REGISTER_MODEL.chord.grouping);
+  const stradellaRegisterModel: StradellaRegisterModel = useMemo(() => ({
+    bass: { startOctave: stradellaBassRegisterOctave, grouping: stradellaBassRegisterGrouping },
+    chord: { startOctave: stradellaChordRegisterOctave, grouping: stradellaChordRegisterGrouping },
+  }), [stradellaBassRegisterOctave, stradellaBassRegisterGrouping, stradellaChordRegisterOctave, stradellaChordRegisterGrouping]);
   const [finderMaxButtons, setFinderMaxButtons] = useState(3);
   const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
+  const [stradellaNoteLevels, setStradellaNoteLevels] = useState<StradellaNoteLevels>({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
   const [finderExplanationFontSize, setFinderExplanationFontSize] = useState(26);
   const [pendingProgressionRealizationKey, setPendingProgressionRealizationKey] = useState<string | null>(null);
   const [
@@ -869,6 +900,7 @@ function App() {
     useState<SampleRegister>("I");
   const [laMelodiosaBassRegister, setLaMelodiosaBassRegister] =
     useState<SampleRegister>("III");
+  const [laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters] = useState(true);
   const [soundVoicePreset, setSoundVoicePreset] =
     useState<SoundVoicePreset>("soft-reed");
   const [soundWaveform, setSoundWaveform] = useState<SoundWaveform>("triangle");
@@ -1116,6 +1148,9 @@ function App() {
         if (isOneOf(defaults.laMelodiosaBassRegister, ["I", "II", "III"] as const)) {
           setLaMelodiosaBassRegister(defaults.laMelodiosaBassRegister);
         }
+        if (typeof defaults.laMelodiosaFollowStradellaRegisters === "boolean") {
+          setLaMelodiosaFollowStradellaRegisters(defaults.laMelodiosaFollowStradellaRegisters);
+        }
         if (
           isOneOf(defaults.stradellaBassVoicing, [
             "single-low",
@@ -1125,6 +1160,15 @@ function App() {
         ) {
           setStradellaBassVoicing(defaults.stradellaBassVoicing);
         }
+        if (defaults.stradellaNoteLevels) setStradellaNoteLevels(normalizeStradellaNoteLevels(defaults.stradellaNoteLevels));
+        if ([1, 2, 3, 4].includes(Number(defaults.stradellaBassRegisterOctave)))
+          setStradellaBassRegisterOctave(Number(defaults.stradellaBassRegisterOctave));
+        if (isOneOf(defaults.stradellaBassRegisterGrouping, ["C-B", "F-E"] as const))
+          setStradellaBassRegisterGrouping(defaults.stradellaBassRegisterGrouping);
+        if ([2, 3, 4, 5].includes(Number(defaults.stradellaChordRegisterOctave)))
+          setStradellaChordRegisterOctave(Number(defaults.stradellaChordRegisterOctave));
+        if (isOneOf(defaults.stradellaChordRegisterGrouping, ["C-B", "F-E"] as const))
+          setStradellaChordRegisterGrouping(defaults.stradellaChordRegisterGrouping);
         if (
           isOneOf(defaults.stradellaChordFinderMode, [
             "bass-only",
@@ -1415,6 +1459,8 @@ function App() {
       setLaMelodiosaTrebleRegister(settings.laMelodiosaTrebleRegister);
     if (isOneOf(settings.laMelodiosaBassRegister, ["I", "II", "III"] as const))
       setLaMelodiosaBassRegister(settings.laMelodiosaBassRegister);
+    if (typeof settings.laMelodiosaFollowStradellaRegisters === "boolean")
+      setLaMelodiosaFollowStradellaRegisters(settings.laMelodiosaFollowStradellaRegisters);
     if (isOneOf(settings.soundVoicePreset, ["single", "soft-reed", "bright-reed", "musette", "organ", "bass-reed"] as const))
       setSoundVoicePreset(settings.soundVoicePreset);
     if (isOneOf(settings.soundWaveform, ["sine", "triangle", "square", "sawtooth"] as const))
@@ -1596,6 +1642,15 @@ function App() {
       ] as const)
     )
       setStradellaBassVoicing(settings.stradellaBassVoicing);
+    if (settings.stradellaNoteLevels) setStradellaNoteLevels(normalizeStradellaNoteLevels(settings.stradellaNoteLevels));
+    if ([1, 2, 3, 4].includes(Number(settings.stradellaBassRegisterOctave)))
+      setStradellaBassRegisterOctave(Number(settings.stradellaBassRegisterOctave));
+    if (isOneOf(settings.stradellaBassRegisterGrouping, ["C-B", "F-E"] as const))
+      setStradellaBassRegisterGrouping(settings.stradellaBassRegisterGrouping);
+    if ([2, 3, 4, 5].includes(Number(settings.stradellaChordRegisterOctave)))
+      setStradellaChordRegisterOctave(Number(settings.stradellaChordRegisterOctave));
+    if (isOneOf(settings.stradellaChordRegisterGrouping, ["C-B", "F-E"] as const))
+      setStradellaChordRegisterGrouping(settings.stradellaChordRegisterGrouping);
     if (
       isOneOf(settings.stradellaChordFinderMode, [
         "bass-only",
@@ -1719,8 +1774,13 @@ function App() {
       downloadFormat,
       soundEnabled,
       stradellaBassVoicing,
+      stradellaBassRegisterOctave,
+      stradellaBassRegisterGrouping,
+      stradellaChordRegisterOctave,
+      stradellaChordRegisterGrouping,
       stradellaChordFinderMarkRootBass,
       stradellaChordFinderMode,
+      stradellaNoteLevels,
       diagramVerticalSpacing,
       pianoKeyWidthScale,
       pianoKeyHeightScale,
@@ -1786,6 +1846,7 @@ function App() {
       soundSource,
       laMelodiosaTrebleRegister,
       laMelodiosaBassRegister,
+      laMelodiosaFollowStradellaRegisters,
       soundVoicePreset,
       soundWaveform,
       soundMusetteDetuneCents,
@@ -2507,6 +2568,8 @@ function App() {
     }
   }
 
+  /* Memoize the full candidate list against the selected physical layout.
+     Diagram, recommendation selection, and export must use the same recipe. */
   const stradellaChordFinderRealizations = useMemo(() => {
     if (!stradellaChordFinderActive || side !== "stradella") return [];
     return getStradellaChordFinderResults(
@@ -2517,6 +2580,8 @@ function App() {
       stradellaChordFinderMarkRootBass,
       finderMaxButtons,
       finderSpanColumns,
+      stradellaChordFinderRequestedBass,
+      stradellaRegisterModel,
     );
   }, [
     buttons,
@@ -2528,19 +2593,23 @@ function App() {
     stradellaChordFinderMarkRootBass,
     finderMaxButtons,
     finderSpanColumns,
+    stradellaChordFinderRequestedBass,
+    stradellaRegisterModel,
   ]);
 
   const stradellaChordFinderResult = useMemo(() => {
     if (stradellaChordFinderRealizations.length === 0) {
-      return getStradellaChordFinderResult([], stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderMarkRootBass);
+      return getStradellaChordFinderResult([], stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderMarkRootBass, stradellaChordFinderRequestedBass, stradellaRegisterModel);
     }
     return stradellaChordFinderRealizations[Math.min(stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations.length - 1)];
-  }, [stradellaChordFinderRealizations, stradellaChordFinderRealizationIndex, stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderMarkRootBass]);
+  }, [stradellaChordFinderRealizations, stradellaChordFinderRealizationIndex, stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderMarkRootBass, stradellaChordFinderRequestedBass, stradellaRegisterModel]);
 
   useEffect(() => {
     setStradellaChordFinderRealizationIndex(0);
-  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, finderMaxButtons, finderSpanColumns, side]);
+  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderRequestedBass, stradellaRegisterModel, finderMaxButtons, finderSpanColumns, side]);
 
+  /* A progression choice must retain its original physical button identities;
+     pitch-class-equivalent bass and counterbass positions are not substitutes. */
   useEffect(() => {
     if (!pendingProgressionRealizationKey || stradellaChordFinderRealizations.length === 0) return;
     const index = stradellaChordFinderRealizations.findIndex((result) =>
@@ -2550,6 +2619,8 @@ function App() {
     setPendingProgressionRealizationKey(null);
   }, [pendingProgressionRealizationKey, stradellaChordFinderRealizations]);
 
+  /* `buttons` includes optional visual guides; `playbackButtons` contains
+     only pressed buttons and is authoritative for sound/registral analysis. */
   const stradellaChordFinderButtons = stradellaChordFinderResult.buttons;
   const stradellaChordFinderPlaybackButtons =
     stradellaChordFinderResult.playbackButtons;
@@ -2613,6 +2684,8 @@ function App() {
     source: soundSource,
     laMelodiosaTrebleRegister,
     laMelodiosaBassRegister,
+    laMelodiosaFollowStradellaRegisters,
+    stradellaRegisterModel,
     voicePreset: soundVoicePreset,
     waveform: soundWaveform,
     musetteDetuneCents: soundMusetteDetuneCents,
@@ -2696,6 +2769,8 @@ function App() {
     soundSequenceTempoBpm,
     soundSource,
     laMelodiosaBassRegister,
+    laMelodiosaFollowStradellaRegisters,
+    stradellaRegisterModel,
     stradellaBassVoicing,
   ]);
 
@@ -3035,6 +3110,7 @@ function App() {
     setLeftPanelMode("tools");
     setActiveToolSection("stradellaChordFinder");
     setStradellaChordFinderRoot(pitchClassNameFromNumber(step.chord.rootPc));
+    setStradellaChordFinderRequestedBass(null);
     setStradellaChordFinderPattern(pattern);
     setStradellaChordFinderMode("bass-and-chords");
     setStradellaChordFinderActive(true);
@@ -3097,6 +3173,7 @@ function App() {
     setLeftPanelMode("tools");
     setActiveToolSection("stradellaChordFinder");
     setStradellaChordFinderRoot(pitchClassNameFromNumber(harmonySelection.candidate.rootPc));
+    setStradellaChordFinderRequestedBass(null);
     setStradellaChordFinderPattern(pattern);
     setStradellaChordFinderMode("bass-and-chords");
     setStradellaChordFinderRealizationIndex(0);
@@ -4085,10 +4162,10 @@ function App() {
 
   /* Derived values used by rendering. */
   const finderAnnotation = stradellaChordFinderResult.playable
-    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult)
+    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult, stradellaRegisterModel, stradellaChordFinderRequestedBass, stradellaNoteLevels)
     : null;
   const finderAnnotationActive = side === "stradella" && stradellaChordFinderActive && finderAnnotation !== null;
-  const finderFooterEnabled = finderAnnotationActive && showFinderRealizationNote;
+  const finderFooterEnabled = finderAnnotationActive && showFinderRealizationNote && Boolean(finderAnnotation?.lines.length);
   // Report the actual highlighted buttons for every chord family.
   const trebleChordExplanation = describeTrebleChord(
     chordFinderButtons, chordFinderRoot, chordFinderPattern, trebleChordVoicingMode,
@@ -4098,9 +4175,15 @@ function App() {
   const contextualTitle = (() => {
     if (side === "stradella" && stradellaChordFinderActive) {
       return finderAnnotationActive ? finderAnnotation?.title ?? autoTitle()
-        : `${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern)} - No realization`;
+        : `${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern)}${stradellaChordFinderRequestedBass ? `/${stradellaChordFinderRequestedBass}` : ""} - No realization`;
     }
-    if (side === "treble" && chordFinderActive) return finderChordSymbol(chordFinderRoot, chordFinderPattern);
+    if (side === "treble" && chordFinderActive) return trebleContextualTitle({
+      root: chordFinderRoot,
+      pattern: chordFinderPattern,
+      inversion: chordFinderInversion,
+      hasButtons: chordFinderButtons.length > 0,
+      exact: trebleChordExplanation.exact,
+    });
     if (scaleFinderActive) return `${scaleFinderRoot} ${SCALE_FINDER_OPTIONS.find((x) => x.value === scaleFinderPattern)?.label ?? "scale"}`;
     return autoTitle();
   })();
@@ -4129,6 +4212,13 @@ function App() {
         : ["one-octave", "two-octave"].includes(trebleSize)
           ? Math.max(420, ...buttons.map((button) => button.x + buttonSize + 96))
           : TREBLE_SIZE_VIEW_WIDTH[trebleSize];
+
+  // Longer contextual titles (especially selected treble inversions) must
+  // remain within compact one-/two-octave SVG widths and exported PNGs.
+  // Only contextual titles auto-fit; keep the user's custom font size intact.
+  const effectiveTitleSize = titleMode === "contextual"
+    ? Math.min(titleSize, Math.max(10, Math.floor((viewWidth - 64) / (Math.max(1, finalTitle.length) * 0.62))))
+    : titleSize;
 
   const baseViewHeight =
     side === "stradella"
@@ -4164,10 +4254,11 @@ function App() {
     80,
     Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
   );
-  const finderFooterLines = Math.max(1, Math.ceil(
-    (finderAnnotation?.detail.length ?? 0) * finderExplanationFontSize * 0.6 / Math.max(1, viewWidth - 64),
-  ));
-  const finderFooterHeight = Math.max(74, Math.ceil(finderFooterLines * finderExplanationFontSize * 1.15 + 16));
+  // Count wrapping in each selected level independently; blank space for
+  // hidden levels must not remain in the exported SVG/PNG canvas.
+  const finderFooterLines = (finderAnnotation?.lines ?? []).reduce((sum, line) => sum +
+    Math.max(1, Math.ceil(line.length * finderExplanationFontSize * 0.6 / Math.max(1, viewWidth - 64))), 0);
+  const finderFooterHeight = Math.max(74, Math.ceil(finderFooterLines * finderExplanationFontSize * 1.45 + 22));
   const viewHeight = trebleFooterEnabled && buttonTrebleFooter
     ? trebleFooterY + trebleFooterHeight + 8
     : baseViewHeight + (trebleFooterEnabled ? 112 : finderFooterEnabled ? finderFooterHeight - 18 : 0);
@@ -4414,18 +4505,7 @@ function App() {
                                         </label>
                                       )}
               
-                                      <label>
-                                        Octave numbers
-                                        <select
-                                          value={showTrebleOctaves ? "on" : "off"}
-                                          onChange={(event) =>
-                                            setShowTrebleOctaves(event.target.value === "on")
-                                          }
-                                        >
-                                          <option value="off">Off</option>
-                                          <option value="on">On</option>
-                                        </select>
-                                      </label>
+                                      <BinaryChoiceButton label={"Octave numbers"} enabled={showTrebleOctaves} onToggle={() => setShowTrebleOctaves((value) => !value)} whenEnabled="Hide octave numbers" whenDisabled="Show octave numbers" />
                                     </>
                                   )}
                                 </div>
@@ -4643,23 +4723,7 @@ function App() {
               
                               {activeSettingsSection === "appearance" && (
                                 <div className="section-content">
-                                  <label>
-                                    <span className="label-line">
-                                      Interface density{" "}
-                                      <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." />
-                                    </span>
-                                    <select
-                                      value={interfaceDensity}
-                                      onChange={(event) =>
-                                        setInterfaceDensity(
-                                          event.target.value as InterfaceDensity,
-                                        )
-                                      }
-                                    >
-                                      <option value="compact">Compact</option>
-                                      <option value="comfortable">Comfortable</option>
-                                    </select>
-                                  </label>
+                                  <SegmentedChoice label={<>Interface density <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }]} />
               
                                   <label className="checkbox-label">
                                     <input
@@ -4775,20 +4839,7 @@ function App() {
                                   </button>
               
                                   {side === "stradella" && (
-                                    <label>
-                                      Show Stradella row labels
-                                      <select
-                                        value={showStradellaRowLabels ? "on" : "off"}
-                                        onChange={(event) =>
-                                          setShowStradellaRowLabels(
-                                            event.target.value === "on",
-                                          )
-                                        }
-                                      >
-                                        <option value="on">On</option>
-                                        <option value="off">Off</option>
-                                      </select>
-                                    </label>
+                                    <BinaryChoiceButton label={"Stradella row labels"} enabled={showStradellaRowLabels} onToggle={() => setShowStradellaRowLabels((value) => !value)} whenEnabled="Hide Stradella row labels" whenDisabled="Show Stradella row labels" />
                                   )}
               
                                   <label>
@@ -4986,13 +5037,7 @@ function App() {
                 </button>
                 {activeSettingsSection === "appearance" && (
                   <div className="section-content">
-                    <label>
-                      Interface density
-                      <select value={interfaceDensity} onChange={(event) => setInterfaceDensity(event.target.value as InterfaceDensity)}>
-                        <option value="compact">Compact</option>
-                        <option value="comfortable">Comfortable</option>
-                      </select>
-                    </label>
+                    <SegmentedChoice label={<>Interface density <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }]} />
                     <label className="checkbox-label">
                       <input type="checkbox" checked={showStatusBar} onChange={(event) => setShowStatusBar(event.target.checked)} />
                       <span>Show status bar</span>
@@ -5013,6 +5058,38 @@ function App() {
               </section>
             )}
 
+              {workspaceMode === "accordion" && side === "stradella" && (
+                <section className="control-section">
+                  <button type="button" className="section-title" onClick={() => toggleSettingsSection("stradellaRegisters")}>
+                    Stradella registers <span>{activeSettingsSection === "stradellaRegisters" ? "−" : "+"}</span>
+                  </button>
+                  {activeSettingsSection === "stradellaRegisters" && (
+                    <div className="section-content">
+                    <fieldset className="tool-fieldset">
+                      <legend>Chord formation and register placement</legend>
+                      <p className="hint">Configure the nominal octave placement of bass/counterbass and preset-chord tones independently. This determines the Chord Finder’s ordered pitches and requested inversions; La Melodiosa can also follow these settings.</p>
+                        <label>
+                          Bass/counterbass starting octave
+                          <select value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
+                            {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>Octave {octave}</option>)}
+                          </select>
+                        </label>
+                        <SegmentedChoice label="Bass/counterbass grouping" value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                        <p className="hint">Selected bass range: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
+                        <label>
+                          Preset chord starting octave
+                          <select value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
+                            {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>Octave {octave}</option>)}
+                          </select>
+                        </label>
+                        <SegmentedChoice label="Preset chord grouping" value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                        <p className="hint">Selected chord range: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
+                    </fieldset>
+                    </div>
+                  )}
+                </section>
+              )}
+
               <section className="control-section">
                 <button
                   className="section-title"
@@ -5030,18 +5107,9 @@ function App() {
                       playback on or off.
                     </p>
 
-                    <label>
-                      Sound source
-                      <select
-                        value={soundSource}
-                        onChange={(event) =>
-                          setSoundSource(event.target.value as SoundSource)
-                        }
-                      >
-                        <option value="synth">Built-in synthesizer</option>
-                        <option value="la-melodiosa">La Melodiosa samples</option>
-                      </select>
-                    </label>
+
+
+                    <SegmentedChoice label="Sound source" value={soundSource} onChange={setSoundSource} options={[{ value: "la-melodiosa", label: "La Melodiosa" }, { value: "synth", label: "Synthesizer" }]} />
 
                     {soundSource === "la-melodiosa" && (
                       <>
@@ -5078,6 +5146,16 @@ function App() {
                               <option value="III">III · Both registers</option>
                             </select>
                           </label>
+                        )}
+                        {(workspaceMode === "accordion" && side === "stradella") && (
+                          <>
+                            <SegmentedChoice label="Stradella sample pitch mapping" value={laMelodiosaFollowStradellaRegisters ? "configured" : "original"} onChange={(next) => setLaMelodiosaFollowStradellaRegisters(next === "configured")} options={[{ value: "configured", label: "Configured registers" }, { value: "original", label: "Original mapping" }]} />
+                            <p className="hint">
+                              {laMelodiosaFollowStradellaRegisters
+                                ? "Playback follows the bass and preset-chord ranges under Stradella registers. Out-of-range notes use transposed La Melodiosa samples; no synthesizer fallback."
+                                : "Playback uses the original C2–B2 bass and C3–B3 chord mapping, independently of Stradella registers settings."}
+                            </p>
+                          </>
                         )}
                         <p className="hint">
                           La Melodiosa was sampled and programmed by Petri Pohjanmies (2026), used under CC-BY.
@@ -5378,20 +5456,8 @@ function App() {
 
                         <fieldset className="tool-fieldset">
                           <legend>Playback</legend>
-                          <label>
-                            Chord playback
-                            <select value={harmonyPlaybackStyle} onChange={(event) => setHarmonyPlaybackStyle(event.target.value as HarmonyPlaybackStyle)}>
-                              <option value="block">Block chord</option>
-                              <option value="arpeggio">Arpeggio</option>
-                            </select>
-                          </label>
-                          <label>
-                            Relationship playback
-                            <select value={harmonyVoicingStyle} onChange={(event) => setHarmonyVoicingStyle(event.target.value as HarmonyVoicingStyle)}>
-                              <option value="root">Selected chord only</option>
-                              <option value="smooth">Reference → related chord</option>
-                            </select>
-                          </label>
+                          <SegmentedChoice label="Chord playback" value={harmonyPlaybackStyle} onChange={setHarmonyPlaybackStyle} options={[{ value: "block", label: "Block" }, { value: "arpeggio", label: "Arpeggio" }]} />
+                          <SegmentedChoice label="Relationship playback" value={harmonyVoicingStyle} onChange={setHarmonyVoicingStyle} options={[{ value: "root", label: "Selected only" }, { value: "smooth", label: "Reference → related" }]} />
                           <p className="hint">Harmony uses the current sound source and Stradella bass register from Sound settings.</p>
                         </fieldset>
                       </div>
@@ -5654,20 +5720,25 @@ function App() {
                   isOpen={activeToolSection === "stradellaChordFinder"}
                   onToggle={() => toggleToolSection("stradellaChordFinder")}
                   root={stradellaChordFinderRoot}
-                  onRootChange={setStradellaChordFinderRoot}
+                  onRootChange={(next) => { setStradellaChordFinderRoot(next); setStradellaChordFinderRequestedBass(null); }}
                   pattern={stradellaChordFinderPattern}
-                  onPatternChange={setStradellaChordFinderPattern}
+                  onPatternChange={(next) => { setStradellaChordFinderPattern(next); setStradellaChordFinderRequestedBass(null); }}
+                  requestedBass={stradellaChordFinderRequestedBass}
+                  onRequestedBassChange={setStradellaChordFinderRequestedBass}
                   mode={stradellaChordFinderMode}
                   onModeChange={setStradellaChordFinderMode}
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
+                  registerModel={stradellaRegisterModel}
                   maxButtons={finderMaxButtons}
                   onMaxButtonsChange={setFinderMaxButtons}
                   spanColumns={finderSpanColumns}
                   onSpanColumnsChange={setFinderSpanColumns}
                   showRealizationNote={showFinderRealizationNote}
                   onShowRealizationNoteChange={setShowFinderRealizationNote}
+                  noteLevels={stradellaNoteLevels}
+                  onNoteLevelChange={(level, enabled) => setStradellaNoteLevels((current) => ({ ...current, [level]: enabled }))}
                   explanationFontSize={finderExplanationFontSize}
                   onExplanationFontSizeChange={setFinderExplanationFontSize}
                   realizations={stradellaChordFinderRealizations}
@@ -6272,26 +6343,7 @@ function App() {
                         </select>
                       </label>
 
-                      <label>
-                        <span className="label-line">
-                          Chord voicing{" "}
-                          <HelpTip text="Simple uses one practical Stradella chord button. Full uses the fuller Chord Finder recipe when available." />
-                        </span>
-                        <select
-                          value={bassPatternChordVoicing}
-                          onChange={(event) => {
-                            stopBassPatternPlayback();
-                            setBassPatternChordVoicing(
-                              event.target.value as BassPatternChordVoicing,
-                            );
-                          }}
-                        >
-                          <option value="simple">Simple chord button</option>
-                          <option value="full">
-                            Full recipe when available
-                          </option>
-                        </select>
-                      </label>
+                      <SegmentedChoice label={<>Chord voicing <HelpTip text="Simple uses one practical Stradella chord button. Full uses the fuller Chord Finder recipe when available." /></>} value={bassPatternChordVoicing} onChange={(next) => { stopBassPatternPlayback(); setBassPatternChordVoicing(next); }} options={[{ value: "simple", label: "Simple" }, { value: "full", label: "Full" }]} />
 
                       <div className="compact-control-grid">
                         <label>
@@ -6573,25 +6625,7 @@ function App() {
                       )}
 
                       {isTrebleLikeSide && (
-                        <label>
-                          <span className="label-line">
-                            Chord symbols{" "}
-                            <HelpTip text='Quoted ABC chord symbols such as "C" or "G7" can be ignored or played as treble block chords.' />
-                          </span>
-                          <select
-                            value={abcTrebleChordSymbolsMode}
-                            onChange={(event) => {
-                              pauseAbcPlayback();
-                              setAbcActiveButtonIds([]);
-                              setAbcTrebleChordSymbolsMode(
-                                event.target.value as AbcTrebleChordSymbolsMode,
-                              );
-                            }}
-                          >
-                            <option value="ignore">Ignore</option>
-                            <option value="play">Play as treble chords</option>
-                          </select>
-                        </label>
+                        <SegmentedChoice label={<>Chord symbols <HelpTip text='Quoted ABC chord symbols such as "C" or "G7" can be ignored or played as treble block chords.' /></>} value={abcTrebleChordSymbolsMode} onChange={(next) => { pauseAbcPlayback(); setAbcActiveButtonIds([]); setAbcTrebleChordSymbolsMode(next); }} options={[{ value: "ignore", label: "Ignore" }, { value: "play", label: "Play" }]} />
                       )}
 
                       <label>
@@ -6931,17 +6965,10 @@ function App() {
             Reset
           </button>
 
-          <select
-            className="topbar-select"
-            value={downloadFormat}
-            onChange={(event) =>
-              setDownloadFormat(event.target.value as DownloadFormat)
-            }
-            aria-label="Download file type"
-          >
-            <option value="svg">SVG</option>
-            <option value="png">PNG</option>
-          </select>
+          <div className="topbar-format-choice">
+            <SegmentedChoice label="Download format" value={downloadFormat} onChange={setDownloadFormat}
+              options={[{ value: "svg", label: "SVG" }, { value: "png", label: "PNG" }]} />
+          </div>
 
           <button
             className="topbar-button download-button"
@@ -7059,7 +7086,7 @@ function App() {
                 y="34"
                 textAnchor="middle"
                 className={`title ${fontClass(titleFont)}`}
-                style={{ fontSize: titleSize }}
+                style={{ fontSize: effectiveTitleSize }}
               >
                 {finalTitle}
               </text>
@@ -7073,11 +7100,21 @@ function App() {
                 height={trebleFooterEnabled && buttonTrebleFooter ? trebleFooterHeight : trebleFooterEnabled ? 128 : finderFooterHeight}
               >
                 <div style={{
-                  fontFamily: "Arial, sans-serif", fontSize: `${trebleFooterEnabled ? trebleFooterFontSize : finderExplanationFontSize}px`, fontWeight: 600,
-                  textAlign: "center", lineHeight: 1.15, overflowWrap: "anywhere",
-                  color: "#20252a",
+                  fontFamily: "Arial, sans-serif",
+                  fontSize: `${trebleFooterEnabled ? trebleFooterFontSize : finderExplanationFontSize}px`,
+                  fontWeight: trebleFooterEnabled ? 600 : 400,
+                  textAlign: finderFooterEnabled ? "left" : "center",
+                  lineHeight: finderFooterEnabled ? 1.3 : 1.15,
+                  overflowWrap: "anywhere", color: "#20252a",
                 }}>
-                  {finderFooterEnabled ? finderAnnotation?.detail : trebleVoicingNote}
+                  {finderFooterEnabled
+                    ? finderAnnotation?.lines.map((line, index) => {
+                      const colon = line.indexOf(":");
+                      return <div key={index} style={{ marginBottom: "0.25em" }}>
+                        {colon > 0 ? <><strong>{line.slice(0, colon + 1)}</strong>{line.slice(colon + 1)}</> : line}
+                      </div>;
+                    })
+                    : trebleVoicingNote}
                 </div>
               </foreignObject>
             )}
