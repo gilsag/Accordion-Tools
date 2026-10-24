@@ -9,7 +9,7 @@ import {
   CHORD_FAMILIES,
   SCALES,
   chordFamily,
-  chordLabel,
+  circleChordLabel,
   relatedFamilyName,
   pitchName,
 } from "../../tools/harmonyExplorer/music";
@@ -30,6 +30,8 @@ type HarmonyExplorerPanelProps = {
   highlightDiatonic: boolean;
   onHighlightDiatonicChange: (value: boolean) => void;
   showEnharmonics: boolean;
+  showNoteRing: boolean;
+  onShowNoteRingChange: (value: boolean) => void;
   selected: HarmonySelection | null;
   onShowOnStradella: () => void;
   onAddSelectedRelationshipToProgression: () => void;
@@ -58,6 +60,8 @@ export function HarmonyExplorerPanel({
   highlightDiatonic,
   onHighlightDiatonicChange,
   showEnharmonics,
+  showNoteRing,
+  onShowNoteRingChange,
   selected,
   onShowOnStradella,
   onAddSelectedRelationshipToProgression,
@@ -81,7 +85,7 @@ export function HarmonyExplorerPanel({
     ? finderPatternForHarmonyFamily(selected.referenceFamilyId)
     : null;
   const selectedLabel = selected
-    ? chordLabel(
+    ? circleChordLabel(
         selected.candidate.rootPc,
         selected.candidate.familyId,
         selected.sectorIndex,
@@ -97,7 +101,7 @@ export function HarmonyExplorerPanel({
   return (
     <CollapsibleSection title="Harmony Explorer" isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        Explore common-tone relationships. Display, ring, tooltip, and playback preferences are under Settings → Harmony.
+        Explore common-tone relationships. Additional display, tooltip, and playback preferences are under Settings → Harmony.
       </p>
 
       <fieldset className="tool-fieldset">
@@ -142,6 +146,15 @@ export function HarmonyExplorerPanel({
           <button className="small-button" type="button" onClick={() => chooseSeventhPreset("dominant7")}>7</button>
           <button className="small-button" type="button" onClick={() => chooseSeventhPreset("diminished7")}>°7</button>
         </div>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={showNoteRing}
+            onChange={(event) => onShowNoteRingChange(event.target.checked)}
+          />
+          Show inner note ring
+          <HelpTip text="Show individual pitch classes inside the reference chord ring. This is the same setting found under Settings → Harmony." />
+        </label>
       </fieldset>
 
       <fieldset className="tool-fieldset">
@@ -220,7 +233,7 @@ export function HarmonyExplorerPanel({
               <span className="harmony-recorded-chord" key={event.id}>
                 {event.kind === "note"
                   ? `${index + 1}. Note ${pitchName(event.pitchClass, event.sectorIndex, showEnharmonics)}`
-                  : `${index + 1}. ${chordLabel(event.rootPc, event.familyId, event.sectorIndex, showEnharmonics)}`}
+                  : `${index + 1}. ${circleChordLabel(event.rootPc, event.familyId, event.sectorIndex, showEnharmonics)}`}
               </span>
             ))}
           </div>

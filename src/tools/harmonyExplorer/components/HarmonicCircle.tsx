@@ -12,7 +12,7 @@ import {
   analyzeVoiceLeading,
   chordFamily,
   chordFamilyColor,
-  chordLabel,
+  circleChordLabel,
   chordPitchNames,
   isSubset,
   pitchClassesForScale,
@@ -504,7 +504,7 @@ export function HarmonicCircle({
         {sectors.map((sector, sectorIndex) => {
           const angle = -90 + sectorIndex * 30;
           const position = polar(cx, cy, referenceRadius, angle);
-          const label = chordLabel(
+          const label = circleChordLabel(
             sector.referenceRootPc,
             referenceFamilyId,
             sectorIndex,
@@ -572,7 +572,7 @@ export function HarmonicCircle({
               const angle = (angleDegrees * Math.PI) / 180;
               const center = polar(cx, cy, layout.radius, angleDegrees);
               const labels = candidates.map((candidate) =>
-                chordLabel(candidate.rootPc, candidate.familyId, sectorIndex, showEnharmonics),
+                circleChordLabel(candidate.rootPc, candidate.familyId, sectorIndex, showEnharmonics),
               );
 
               if (allFamiliesMode) {
@@ -679,13 +679,13 @@ export function HarmonicCircle({
         const sector = sectors[selected.sectorIndex];
         if (!sector) return null;
         const candidate = selected.candidate;
-        const referenceLabel = chordLabel(
+        const referenceLabel = circleChordLabel(
           sector.referenceRootPc,
           referenceFamilyId,
           selected.sectorIndex,
           showEnharmonics,
         );
-        const targetLabel = chordLabel(
+        const targetLabel = circleChordLabel(
           candidate.rootPc,
           candidate.familyId,
           selected.sectorIndex,

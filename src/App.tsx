@@ -793,6 +793,8 @@ function App() {
   }), [stradellaBassRegisterOctave, stradellaBassRegisterGrouping, stradellaChordRegisterOctave, stradellaChordRegisterGrouping]);
   const [finderMaxButtons, setFinderMaxButtons] = useState(3);
   const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
+  // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
+  const [mobileDiagramView, setMobileDiagramView] = useState<"readable" | "fit">("readable");
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
   const [stradellaNoteLevels, setStradellaNoteLevels] = useState<StradellaNoteLevels>({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
   const [finderExplanationFontSize, setFinderExplanationFontSize] = useState(26);
@@ -5514,6 +5516,8 @@ function App() {
                   highlightDiatonic={harmonyHighlightDiatonic}
                   onHighlightDiatonicChange={setHarmonyHighlightDiatonic}
                   showEnharmonics={harmonyShowEnharmonics}
+                  showNoteRing={harmonyShowNoteRing}
+                  onShowNoteRingChange={setHarmonyShowNoteRing}
                   selected={harmonySelection}
                   onShowOnStradella={showHarmonySelectionOnStradella}
                   onAddSelectedRelationshipToProgression={addSelectedHarmonyRelationshipToProgression}
@@ -6990,6 +6994,20 @@ function App() {
           </div>
         )}
 
+        {workspaceMode === "accordion" && (
+          <div className="mobile-diagram-view-control">
+            <SegmentedChoice
+              label="Diagram on small screens"
+              value={mobileDiagramView}
+              onChange={setMobileDiagramView}
+              options={[
+                { value: "readable", label: "Readable · scroll" },
+                { value: "fit", label: "Fit entire diagram" },
+              ]}
+            />
+          </div>
+        )}
+
         {workspaceMode === "harmony" ? (
           <>
             {harmonyAvailableCounts.length === 0 && (
@@ -7042,7 +7060,10 @@ function App() {
             </div>
           </>
         ) : (
-        <div className="canvas-wrap">
+        <div
+          className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
+          style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
+        >
           <svg
             ref={svgRef}
             preserveAspectRatio="xMinYMin meet"
