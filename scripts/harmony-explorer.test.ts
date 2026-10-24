@@ -4,6 +4,7 @@ import {
   analyzeVoiceLeading,
   buildSectorRelationships,
   chordLabel,
+  circleChordLabel,
   filterRelationshipCounts,
   isSubset,
   pitchClassesForChord,
@@ -39,6 +40,14 @@ for (const sector of allMajor7) {
 assert.deepEqual(pitchClassesForChord(0, "minor7"), [0, 3, 7, 10]);
 assert.equal(chordLabel(6, "minor7", 4, false), "F♯m7");
 assert.equal(chordLabel(6, "minor7", 4, true), "F♯m7/G♭m7");
+// Only labels shown inside Harmony's circle use M to distinguish major chords
+// from individual notes in the optional inner note ring.
+assert.equal(chordLabel(0, "major", 0), "C", "Ordinary chordLabel stays unchanged");
+assert.equal(circleChordLabel(0, "major", 0), "CM");
+assert.equal(circleChordLabel(6, "major", 4, true), "F♯M/G♭M");
+assert.equal(circleChordLabel(0, "minor", 0), "Cm");
+assert.equal(circleChordLabel(0, "major7", 0), "Cmaj7");
+
 
 const allFamiliesDiatonic = buildSectorRelationships("major", "all", "ionian", false)[0];
 const allFamiliesDiatonicWithZero = buildSectorRelationships("major", "all", "ionian", false, true)[0];

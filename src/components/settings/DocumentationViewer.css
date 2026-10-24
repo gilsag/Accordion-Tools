@@ -14,4 +14,21 @@
 .documentation-article p, .documentation-article li { margin-bottom: .55em; }.documentation-article pre { overflow: auto; padding: 12px; border-radius: 5px; background: #80808023; }.documentation-article code { overflow-wrap: anywhere; }.documentation-table-scroll { overflow-x: auto; }
 .documentation-article table { border-collapse: collapse; width: 100%; }.documentation-article th,.documentation-article td { padding: 7px 9px; border: 1px solid #9996; text-align: left; vertical-align: top; }
 .documentation-inline-link { border: none; padding: 0; background: none; color: #2771b7; text-decoration: underline; cursor: pointer; font: inherit; }
-@media(max-width: 620px) { .documentation-body { grid-template-columns: 125px minmax(0,1fr); }.documentation-sidebar { padding: 6px; }.documentation-sidebar button { font-size: 12px; }.documentation-content { padding: 12px; }.documentation-article { font-size: 13px; } }
+/* Phone: a horizontally scrollable topic strip above the readable article. */
+@media (max-width: 620px) {
+  .documentation-backdrop { padding: 0; }
+  .documentation-dialog { width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; }
+  .documentation-header { padding: 9px 12px; }
+  .documentation-header button { min-height: 40px; }
+  .documentation-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0,1fr); }
+  .documentation-sidebar {
+    display: flex; flex-direction: row; flex-wrap: nowrap;
+    align-items: center; gap: 5px; overflow-x: auto; overflow-y: hidden;
+    padding: 7px; max-height: 94px; border-right: 0;
+    border-bottom: 1px solid #9995; scrollbar-width: thin;
+  }
+  .documentation-sidebar input { flex: 0 0 145px; width: 145px; margin: 0; min-height: 40px; }
+  .documentation-sidebar button { flex: 0 0 auto; font-size: 12px; min-height: 40px; white-space: nowrap; }
+  .documentation-content { padding: 14px; }
+  .documentation-article { font-size: 14px; overflow-wrap: break-word; }
+}

@@ -1,3 +1,16 @@
+## v0.15.7 — Responsive interface release candidate (2026-10-23)
+
+- Added **Show inner note ring** directly to the Harmony Explorer tool panel while keeping the Settings → Harmony control synchronized.
+- Display major triads in the Harmony circle using an uppercase **M** (e.g., CM, F♯M/G♭M) to distinguish chords from individual notes. Other chord-family labels and harmonic relationships are unchanged.
+- Updated the Harmony Explorer guide and chord-label regressions.
+- Added Readable/scrollable and Fit diagram viewer modes on phone/tablet widths up to 860 CSS pixels. Viewer sizing is scoped to the **parent container**, leaving SVG viewBox geometry and exports untouched.
+- Allowed the desktop toolbar to wrap to available workspace width, removing the fixed canvas-height assumption.
+- Reduced the height of long tool panels on phones; increased common touch targets; made HelpTips explicitly clickable and keyboard accessible without activating parent labels.
+- Reflowed the documentation viewer into a one-column article with a horizontally scrollable topic strip on phones.
+- Added a dependency-free responsive-layout source regression check (`npm run test:responsive`) and documented controlled Chromium viewport fixture results.
+- **Validation limitation:** CSS was evaluated in headless Chromium at seven viewports using representative application DOM, not a running Vite/React build. Native npm build, real-device interaction/audio/export checks remain outstanding. This is a release candidate, not a fully device-verified release.
+- No changes to chord logic, physical button generation, harmonic ranking, voicing, audio mappings, sample assets, settings persistence, or SVG/PNG export modules.
+
 ## v0.15.6 — Conservative legacy cleanup (2026-10-22)
 
 ### Removed

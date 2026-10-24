@@ -8,6 +8,15 @@ Accordion-Tools has two kinds of settings:
 The app also lets you save and load a separate settings JSON file from the About panel. Loading a settings file changes the current session; it does not rewrite `public/default-settings.json`.
 
 
+## Mobile diagram viewing (not a saved setting)
+
+When the viewport is at most **860 CSS px**, the diagram viewer offers **Readable · scroll** and **Fit entire diagram**.
+
+- **Readable · scroll** is the initial mobile/tablet view. The on-screen diagram is larger and scrolls horizontally to keep button targets readable.
+- **Fit entire diagram** displays the whole keyboard at once, with smaller button targets.
+
+These choices affect the **browser viewer only**. They do not modify `diagramScale`, musical geometry, SVG/PNG exports, audio, or the saved settings JSON. On narrow phones the left tool panel scrolls separately, help tips can be tapped, and the documentation viewer uses a horizontal topic list.
+
 ## Workspace-specific settings
 
 The Settings sidebar is filtered by the active workspace so controls that cannot affect the current diagram are not shown.

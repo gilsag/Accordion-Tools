@@ -18,7 +18,8 @@ The compact Tools panel contains the choices that change the harmonic question i
 - **Related chord family (outer rings)**, including **All families (diatonic only)**;
 - **Parent scale / mode**;
 - diatonic-only filtering or diatonic highlighting;
-- quick presets for m7, maj7, dominant 7, and diminished 7 relationships.
+- quick presets for m7, maj7, dominant 7, and diminished 7 relationships;
+- **Show inner note ring**, synchronized with the option under Settings → Harmony.
 
 The **All families** mode is intentionally diatonic-only to keep aggregate diagrams readable.
 
@@ -102,4 +103,7 @@ Choose **Send to Progression Assistant** to transfer the recorded chord events t
 
 ## Optional note ring
 
-**Settings → Harmony → Show inner note ring** adds a small pitch-class ring inside the reference-family ring. The twelve notes follow the same circle-of-fifths orientation as the chord sectors. Clicking a note auditions that pitch using the current Harmony sound source. While Harmony recording is active, note-ring clicks are also captured as note events, appear in the recorded sequence, and are included in its staff notation. The option is off by default.
+**Show inner note ring**, available both in **Harmony Explorer** and under **Settings → Harmony**, adds a small pitch-class ring inside the reference-family ring. The twelve notes follow the same circle-of-fifths orientation as the chord sectors. Clicking a note auditions that pitch using the current Harmony sound source. While Harmony recording is active, note-ring clicks are also captured as note events, appear in the recorded sequence, and are included in its staff notation. The option is off by default.
+
+
+Major triads in the Harmony circle use an uppercase **M** (for example, **CM** or **F♯M**) to distinguish chord labels from individual notes on the inner note ring. This does not change minor, seventh, other chord-family labels, or harmonic relationships.

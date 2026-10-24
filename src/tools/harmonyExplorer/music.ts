@@ -181,6 +181,20 @@ export function chordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex:
     .join("/");
 }
 
+/**
+ * Circle-only chord label. An explicit M distinguishes major triads from the
+ * individual pitch-class labels of the optional inner note ring. The ordinary
+ * chordLabel API is unchanged for progression notation and other consumers.
+ */
+export function circleChordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false) {
+  if (familyId !== "major") return chordLabel(rootPc, familyId, sectorIndex, showEnharmonics);
+  // Each enharmonic spelling needs its own suffix (F♯M/G♭M, not F♯/G♭M).
+  return pitchName(rootPc, sectorIndex, showEnharmonics)
+    .split("/")
+    .map((root) => `${root}M`)
+    .join("/");
+}
+
 export function chordPitchNames(rootPc: number, familyId: ChordFamilyId, sectorIndex: number) {
   return pitchClassesForChord(rootPc, familyId).map((pc) => pitchName(pc, sectorIndex, false));
 }

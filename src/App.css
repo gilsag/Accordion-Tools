@@ -67,6 +67,10 @@ body {
 
 .topbar {
   min-height: 48px;
+  flex-wrap: wrap;
+  row-gap: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   border-bottom: 1px solid #d9deea;
   background: #ffffff;
   display: flex;
@@ -722,11 +726,7 @@ input[type="range"] {
   }
 }
 
-@media (min-width: 861px) {
-  .canvas-wrap {
-    height: calc(100dvh - 49px);
-  }
-}
+/* Canvas flex sizing accounts for toolbars that wrap to multiple lines. */
 
 .selected-remove-button {
   border: 0;
@@ -1008,6 +1008,11 @@ input[type="range"] {
 }
 
 .help-tip {
+  appearance: none;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+  flex: 0 0 auto;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1031,7 +1036,8 @@ input[type="range"] {
 }
 
 .help-tip:hover::after,
-.help-tip:focus::after {
+.help-tip:focus::after,
+.help-tip[data-open="true"]::after {
   content: attr(aria-label);
   position: absolute;
   z-index: 20;
@@ -2114,3 +2120,55 @@ input[type="range"] {
 .topbar-format-choice .segmented-choice-control { gap: 2px; }
 .topbar-format-choice .label-line { font-size: 10px; }
 .topbar-format-choice .segmented-choice-button { padding: 5px 3px; }
+
+/* Responsive UI: presentation-only. No standalone exported SVG can match
+   rules requiring the .canvas-wrap ancestor. */
+.mobile-diagram-view-control { display: none; }
+
+@media (max-width: 860px) {
+  .mobile-diagram-view-control {
+    display: block;
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    background: #f5f7fb;
+    border-bottom: 1px solid #d9deea;
+  }
+  .mobile-diagram-view-control .segmented-choice-control { gap: 4px; }
+  .mobile-diagram-view-control .segmented-choice { max-width: 100%; }
+  .mobile-diagram-view-control .segmented-choice-button { min-height: 40px; }
+  .canvas-wrap.diagram-readable > .diagram {
+    width: 100%;
+    min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
+  }
+  .canvas-wrap.diagram-fit > .diagram { width: 100%; min-width: 0; }
+}
+
+@media (max-width: 620px) {
+  .app { overflow-x: hidden; overflow-y: auto; min-width: 0; }
+  /* An expanded tool form should not push the entire diagram below the phone.
+     The controls remain scrollable inside their own panel. */
+  .left-panel {
+    max-height: min(34dvh, 290px);
+    min-height: 100px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .workspace { min-height: 60dvh; }
+  .canvas-wrap { min-height: 38dvh; }
+  .topbar { gap: 6px; padding: 7px 9px; }
+  .topbar-spacer, .topbar-separator { display: none; }
+  .topbar-button { min-height: 40px; padding: 7px 10px; }
+  .small-button, .tiny-button, .style-toggle,
+  .realization-navigation .small-button, .segmented-choice-button { min-height: 40px; }
+  .tiny-button { min-width: 40px; }
+  .style-toggle { min-width: 40px; }
+  .realization-navigation .small-button { min-width: 44px; }
+  .help-tip { min-width: 40px; min-height: 40px; width: 40px; height: 40px; }
+  .label-line { white-space: normal; align-items: center; }
+  .help-tip::after { max-width: min(220px, 65vw); }
+}
+@media (max-width: 860px) and (pointer: coarse) {
+  .small-button, .topbar-button, .segmented-choice-button,
+  .tiny-button, .style-toggle { min-height: 40px; }
+  .help-tip { min-width: 40px; min-height: 40px; }
+}
