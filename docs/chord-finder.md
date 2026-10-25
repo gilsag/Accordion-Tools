@@ -2,6 +2,24 @@
 
 Accordion Tools provides two chord finders, one for C-system/B-system/piano treble and one for Stradella bass. Both use the same chord formulas and chord symbols (for example `Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`, `Cdim`, `Caug`, `C9`, `Cmaj11`, and `Cmin13`). Chord types are ordered by the number of tones in the complete chord, from triads through thirteenths.
 
+## Additional chord families (v0.15.8)
+
+Both Finders include **Csus2, C7sus4, Cadd9, Cm(add9), C6/9,
+Cm6/9, C7♯5, C7♯9, and Cmaj7♯11**. Altered fifths, altered ninths,
+altered elevenths, suspensions and explicitly added ninths are defining tones:
+a reduced realization must retain them. C7♯9 can be represented by the
+Stradella preset **C7 + C minor** (the minor-third pitch class is spelled as
+an augmented ninth in the requested chord). Additional combinations use the
+existing exact/mixed search; some require four buttons or cannot be realized
+within the selected preset and ergonomic limits.
+
+**Ranking:** For requested chords with up to four distinct tones, exactness
+retains its established priority. For five or more distinct tones, the
+mixed-mode score applies stronger nominal low-register semitone and cluster
+penalties. Conventional omissions may therefore be preferable to denser
+complete realizations. This is a ranking preference, not a validity filter,
+and it reflects configured nominal pitches rather than measured reeds.
+
 ## Supported extended chords
 
 | Family | Example | Theoretical tones |
@@ -32,7 +50,7 @@ Choose a chord root, chord type, and search mode:
 
 The **Requested bass / inversion** selector defaults to **Any (no specified bass)**. Choose a particular tone of the requested chord (for example, G for `Emin7/G`) to require that pitch class to be the **lowest modeled note**. The Finder uses the analytical register ranges configured in Settings for the separate bass/counterbass and preset-chord buttons. A slash specification is an actual constraint: candidates with a different lowest modeled note are excluded before the Recommended shortlist is chosen. If the current layout, button-count/reach limits, and register assumptions cannot realize the specified bass, no valid result is shown; the Finder does not silently substitute another inversion.
 
-Root, chord quality, pitch-class coverage, modeled register, and physical button selection remain separate. For example, `Emin7/G` and `Gmaj6` both contain E–G–B–D, but they have different requested harmonic identities. This iteration supports only slash basses that are tones of the requested chord, not arbitrary outside pedal tones. When needed, one non-root bass button may reinforce a tone already present in preset chord buttons, subject to existing geometry and button limits. With no slash-bass selection, the earlier search and ranking remain unchanged. Exported notes and contextual titles identify the realized slash bass when the configured register model places a non-root chord tone lowest. The requested root and chord quality remain unchanged; filenames use safe text such as `-over-Bflat` or `-over-G`.
+Root, chord quality, pitch-class coverage, modeled register, and physical button selection remain separate. For example, `Emin7/G` and `Gmaj6` both contain E–G–B–D, but they have different requested harmonic identities. This iteration supports only slash basses that are tones of the requested chord, not arbitrary outside pedal tones. When needed, one non-root bass button may reinforce a tone already present in preset chord buttons, subject to existing geometry and button limits. With no slash-bass selection, candidate validity is unchanged, although five-plus-tone recommendation ordering reflects the new density policy. Exported notes and contextual titles identify the realized slash bass when the configured register model places a non-root chord tone lowest. The requested root and chord quality remain unchanged; filenames use safe text such as `-over-Bflat` or `-over-G`.
 
 These inversions apply to the **configured one-pitch-per-tone model**, not an acoustically verified transcription: real accordions may add reeds or octave doublings, and La Melodiosa has both register-following sampled playback and an optional original-mapping mode. Adjust the register model to match the instrument's observed behavior where known.
 
@@ -44,14 +62,18 @@ The score now balances **number of buttons**, **geometric hand span/compactness*
 
 ### Four-level concise diagram notes
 
-Under **Chord Finder → Show realization explanation below diagram**, independently enable any combination of four labeled notes:
+Under **Chord Finder → Show realization explanation below diagram**, select any combination of the four explanation levels:
 
-1. **Harmonic identity** — the requested chord root/quality and the **realized** slash bass where relevant (e.g., `Cmin7/B♭ · Third inversion`). There is no "bass unspecified" label; a root-position realization has no slash. This identifies the inversion under the selected nominal register settings, not a different chord function.
-2. **Pitch-class realization** — the pitch classes produced, Exact/Approximate status, and any omitted chord tones with their harmonic roles (e.g., `G (fifth)`). Theoretical notes are spelled by harmonic role (Cmin7 = C–E♭–G–B♭), not by internal sharp-only IDs. Octave placement does not affect Exact/Approximate classification.
-3. **Registral voicing** — root or non-root bass support and the **nominal sounding pitches** under the two configured analytical register ranges. Chord-button-only construction belongs to Physical realization. The model is not an acoustic measurement. It agrees with the **nominal sampled MIDI pitches** when La Melodiosa is set to follow the configured registers, but the recorded reeds may contain additional octave components.
-4. **Physical realization** — the actual played Stradella bass/counterbass and preset chord buttons, their count, and the Recommended label when applicable. Highlighted visual-only reference buttons are excluded.
+- **Harmonic identity:** Requested root and quality, with the realized slash bass when applicable (e.g., `Cmin7/B♭ · Third inversion`). Inversions are interpreted using the selected nominal register settings.
+- **Pitch-class realization:** Sounding pitch classes, Exact/Approximate status, and omitted chord tones with their harmonic roles. Pitch classes do not specify octaves.
+- **Physical realization:** Played Stradella bass/counterbass and preset chord buttons, button count, and Recommended status when applicable. Reference buttons that are highlighted but not sounded are excluded.
+- **Registral voicing:** Sounding pitches and octaves under the configured analytical bass and chord registers. This is a nominal model, not an acoustic measurement of reed frequencies or octave doublings.
 
-All four levels are enabled by default. Each checkbox works independently while the master **Show realization explanation below diagram** is active. Switching the master off hides the subordinate controls and the entire note without erasing their selections; disabling all four levels also hides the footer without leaving empty space. The level descriptions and More explanation relationship are now available via help tooltips, rather than persistent instructional paragraphs. The diagram/export footer is left-aligned with bold level labels, and the registral note lists nominal pitches directly in ascending order with their respective octaves (e.g., `C2 – E3 – G3`), without an additional introductory phrase. Repeated unison pitches are marked `×2` where applicable. The text-size slider still applies to the shown lines. On-screen diagram notes and **SVG/PNG exports** display only enabled levels, while the contextual title and export filename remain unchanged. Selections can be exported/imported using the `stradellaNoteLevels` settings object; older settings without this field default to all four enabled.
+The levels appear in this order in both the settings menu and the SVG/PNG diagram footer. Each checkbox operates independently while **Show realization explanation below diagram** is enabled. All four levels are enabled by default. Disabling the master option hides the footer without changing the saved selections; disabling all four levels removes the footer and its reserved space.
+
+Registral voicing normally lists distinct nominal pitches in ascending order (for example, `C2 – E3 – G3`), marking unison contributions as `×2` where applicable. The nested **Show nominal note spacing** option replaces this text with a compact chart beside the Registral voicing heading. It shows the number of semitones between each pair of consecutive nominal pitches, with one-semitone intervals highlighted red. Labels respond to the explanation text-size control while using bounded chart typography and collision-avoiding spacing. Line lengths may be expanded for legibility; the numbers give the actual nominal semitone distances. The chart is included in SVG/PNG downloads when enabled. The explanatory tooltip identifies the register model as configured, not measured audio.
+
+The note-spacing option is disabled when Registral voicing is unchecked, without discarding its selection. The contextual title and download filenames do not depend on which note levels are visible. The `stradellaNoteLevels` selections can be imported or exported; absent fields in older settings default to enabled.
 
 These short notes do **not** filter or rescore candidates, change their sounding pitches, or hide the separate **More explanation** discussion. In particular, showing a lowest *modeled* pitch is not a claim that the actual acoustic lowest reed has been measured.
 
@@ -107,4 +129,8 @@ The Harmony Explorer can send supported chord families to the Stradella finder, 
 
 When the nominal register model predicts adjacent semitones in the bass or chord registers, concise **Registral voicing** notes may identify a close pair (for example, `close E3–F3 semitone`) or a cluster of four or more neighboring pitches. **More explanation** discusses why these intervals can be intentional but might sound congested in the lower register. The observation depends on distinct modeled MIDI pitches; a unison doubled by two buttons is not counted as dissonance.
 
-In **Bass + chord buttons** recommendations, a small density adjustment (capped at 1.1 score points, below the three-point cost of an added button) can reorder otherwise comparable choices. It does not remove valid realizations, override a requested slash-bass constraint, or claim verified physical-acoustic reed voicing. Larger octave/rank combinations on real instruments may sound different from the simplified model.
+In **Bass + chord buttons** recommendations, chords of up to four distinct tones retain the restrained density adjustment (capped at 1.1 points). Chords with five or more tones use a stronger register-aware density cost, so a congested low-register interval can outweigh another button. It does not remove valid realizations, override a requested slash-bass constraint, or claim verified physical-acoustic reed voicing. Larger octave/rank combinations on real instruments may sound different from the simplified model.
+
+## Chord symbol display
+
+Chord symbols shown in diagrams and explanations follow **Settings → Notation → Chord symbol style**. For example, a C minor seventh realization may appear as **Cm7/B♭** or **Cmin7/B♭**. The chord search, inversion constraints, and download filename identifiers are unaffected.

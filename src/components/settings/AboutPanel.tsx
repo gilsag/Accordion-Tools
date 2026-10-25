@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { DocumentationViewer } from "./DocumentationViewer";
 import { APP_INFO } from "../../config/appInfo";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
+import { useI18n } from "../../i18n/context";
 
 type AboutPanelProps = {
   isOpen: boolean;
@@ -13,35 +14,35 @@ type AboutPanelProps = {
 /** Compact app metadata shown in Settings → About. */
 export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
   const [docsOpen, setDocsOpen] = useState(false);
+  const { t } = useI18n();
   return (
-    <CollapsibleSection title="About" isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("about.title")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        <strong>{APP_INFO.name}</strong> is a browser-based diagram and exploration tool for
-        Stradella bass, chromatic-button treble, piano treble, and harmonic relationships.
+        <strong>{APP_INFO.name}</strong> {t("about.description")}
       </p>
       <p className="hint">
-        Author:{" "}
+        {t("about.author")}:{" "}
         <a href={APP_INFO.authorGithubUrl} target="_blank" rel="noreferrer">
-          gilsag on GitHub
+          {t("ui.contactSource")}
         </a>
       </p>
-      <p className="hint">Version: {APP_INFO.version}</p>
+      <p className="hint">{t("about.version")}: {APP_INFO.version}</p>
       <p className="hint">
-        Accordion samples: <strong>La Melodiosa</strong> by Petri Pohjanmies
-        (2026), used under CC-BY.
+        {t("about.samples")}: <strong>La Melodiosa</strong> {t("ui.attribution")}{" "}
+        {t("ui.sampleCreditLicense")}
       </p>
       <p className="hint">
-        License:{" "}
+        {t("about.license")}:{" "}
         <a href={APP_INFO.licenseUrl} target="_blank" rel="noreferrer">
           CC BY-NC 4.0
         </a>
       </p>
       <p className="hint">
-        <button type="button" className="small-button" onClick={() => setDocsOpen(true)}>Open documentation</button>
+        <button type="button" className="small-button" onClick={() => setDocsOpen(true)}> {t("about.openDocs")}</button>
       </p>
       <p className="hint">
         <a href={APP_INFO.readmeUrl} target="_blank" rel="noreferrer">
-          Open README.md
+          {t("about.openReadme")}
         </a>
       </p>
       {children}

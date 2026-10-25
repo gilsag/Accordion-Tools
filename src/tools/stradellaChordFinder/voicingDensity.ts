@@ -47,3 +47,25 @@ export function analyzeVoicingDensity(notes: readonly ModeledStradellaNote[]): C
   if (clusterSize >= 4) parts.push(`${clusterSize}-note close cluster`);
   return { closestSemitone, clusterSize, penalty, note: parts.length ? parts.join('; ') : null };
 }
+
+/** More consequential, register-dependent congestion cost for five-plus-tone
+ * chords only. Ranking changes; musical validity and diagram geometry do not.
+ * Notes doubled at the same MIDI pitch do not count as adjacent intervals.
+ */
+export function extendedVoicingDensityPenalty(notes: readonly ModeledStradellaNote[]): number {
+  const pitches = [...new Set(notes.map((note) => note.midi))].sort((a, b) => a - b);
+  let cost = 0;
+  let chain = 1;
+  for (let i = 1; i < pitches.length; i += 1) {
+    const lower = pitches[i - 1];
+    const interval = pitches[i] - lower;
+    if (interval === 1) cost += lower < 48 ? 5 : lower < 60 ? 3.3 : 1.5;
+    if (interval === 2) cost += lower < 48 ? 1.5 : lower < 60 ? 0.9 : 0.3;
+    chain = interval <= 2 ? chain + 1 : 1;
+    if (chain >= 3) cost += chain === 3 ? 0.8 : 1.25;
+  }
+  for (let i = 0; i + 3 < pitches.length; i += 1) {
+    if (pitches[i + 3] - pitches[i] <= 6) cost += pitches[i] < 60 ? 1.4 : 0.5;
+  }
+  return cost;
+}

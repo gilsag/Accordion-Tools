@@ -1,23 +1,16 @@
 import type { FinderChordPattern } from "../types";
 import { transpose } from "../music";
 import { intervalsForChordFinder } from "./chordDefinitions";
+import { chordToneFunctions } from "./chordToneRoles";
 
 export function isExtendedChord(pattern: FinderChordPattern) {
-  return ["dominant9", "major9", "minor9", "minorMajor9", "dominant9sus4", "dominant11", "major11", "minor11", "dominant13", "major13", "minor13", "dominant7b9"].includes(pattern);
+  // Preserve completeness-first treatment of chords with three/four tones.
+  return intervalsForChordFinder(pattern).length >= 5;
 }
 
-/** Notes allowed to disappear in a reduced chord, NOT permission for added tones. */
+/** Only non-defining tones may be omitted; altered and added tones are protected. */
 export function permittedOmissionIntervals(pattern: FinderChordPattern): number[] {
-  const intervals = intervalsForChordFinder(pattern);
-  if (intervals.length < 4) return [];
-  const allowed: number[] = [];
-  if (intervals.includes(7)) allowed.push(7); // unaltered perfect fifth
-  if (["dominant11", "major11", "minor11", "dominant13", "major13", "minor13"].includes(pattern)) allowed.push(14);
-  if (["dominant13", "major13", "minor13"].includes(pattern)) allowed.push(17);
-  // The major third may be omitted in dominant/major 11 to avoid the 3rd/11th clash,
-  // but such realizations should be identified as suspended-style.
-  if (pattern === "dominant11" || pattern === "major11") allowed.push(4);
-  return allowed;
+  return chordToneFunctions(pattern).filter((tone) => !tone.defining).map((tone) => tone.interval);
 }
 
 export function permittedMissingTones(root: string, pattern: FinderChordPattern, missing: string[]) {

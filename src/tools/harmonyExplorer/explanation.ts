@@ -1,3 +1,4 @@
+import { translate, type InterfaceLanguage } from "../../i18n/catalog";
 /* Harmonic-circle descriptive text. Distinguish a ring hidden by display
    settings from one absent because no chord survived the diatonic filter. */
 
@@ -11,15 +12,21 @@ export type DiagramExplanationInput = {
   counts: readonly number[];
   availableCounts: readonly number[];
   allCounts: readonly number[];
+  language?: InterfaceLanguage;
 };
 
-function listNumbers(values: readonly number[]) {
+function listNumbers(values: readonly number[], language: InterfaceLanguage = "en") {
   if (values.length === 1) return String(values[0]);
-  if (values.length === 2) return `${values[0]} and ${values[1]}`;
-  return `${values.slice(0, -1).join(", ")}, and ${values.at(-1)}`;
+  if (values.length === 2) return `${values[0]} ${language === "es" ? "y" : "and"} ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")}${language === "es" ? " y " : ", and "}${values.at(-1)}`;
 }
 
-function ringPhrase(values: readonly number[]) {
+function ringPhrase(values: readonly number[], language: InterfaceLanguage = "en") {
+  const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
+  if (language === "es") {
+    return values.length === 1 ? t("analysis.harmonyRingOne", { count: values[0], unit: values[0] === 1 ? t("analysis.noteSingular") : t("analysis.notePlural") })
+      : t("analysis.harmonyRingMany", { counts: listNumbers(values, language) });
+  }
   if (values.length === 1) {
     const count = values[0];
     return `The ${count}-shared-${count === 1 ? "note" : "notes"} ring is hidden by the display settings.`;
@@ -37,7 +44,25 @@ export function buildDiagramExplanation({
   counts,
   availableCounts,
   allCounts,
+  language = "en",
 }: DiagramExplanationInput) {
+  const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
+  if (language === "es") {
+    const parts = [t(allFamiliesMode ? "analysis.harmonyAll" : "analysis.harmonyInner", { reference: referenceFamilyName.toLowerCase(), related: relatedFamilyName.toLowerCase() })];
+    const hidden = availableCounts.filter((count) => !counts.includes(count));
+    if (allFamiliesMode) {
+      parts.push(t("analysis.harmonyAllDiatonic", { scale: scaleName }));
+      parts.push(t(availableCounts.length ? "analysis.harmonyOnlyAvailable" : "analysis.harmonyNoSupported"));
+    } else if (diatonicOnly) {
+      parts.push(t("analysis.harmonyOnlyDiatonic", { scale: scaleName }));
+      const filtered = allCounts.filter((count) => !availableCounts.includes(count));
+      if (!availableCounts.length && allCounts.length) parts.push(t("analysis.harmonyNoDiatonic"));
+      else if (filtered.length === 1) parts.push(t("analysis.harmonyFilteredOne", { count: filtered[0], unit: filtered[0] === 1 ? t("analysis.noteSingular") : t("analysis.notePlural") }));
+      else if (filtered.length > 1) parts.push(t("analysis.harmonyFilteredMany", { counts: listNumbers(filtered, language) }));
+    } else parts.push(t(highlightDiatonic ? "analysis.harmonyHighlight" : "analysis.harmonyWithoutHighlight", { scale: scaleName }));
+    if (hidden.length) parts.push(ringPhrase(hidden, language));
+    return parts.join(" ");
+  }
   const parts = [
     allFamiliesMode
       ? `The inner ring shows ${referenceFamilyName.toLowerCase()} chords. Outer rings combine all supported chord families, with more shared pitch classes placed closer to the center.`

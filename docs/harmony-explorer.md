@@ -85,6 +85,8 @@ A selected relationship can also be sent to the separate **Progression Assistant
 
 See [`progression-assistant.md`](progression-assistant.md).
 
+The legend uses proportional text-width estimates and a heading column sized to its labels, keeping descriptions on one line when they fit while wrapping longer English or Spanish text within the exported SVG.
+
 ## Export
 
 The top-bar SVG/PNG download control exports the active Harmony Explorer diagram when the Harmony workspace is selected. Temporary tooltips, selection marks, and navigation highlights are excluded from exported diagrams.
@@ -107,3 +109,7 @@ Choose **Send to Progression Assistant** to transfer the recorded chord events t
 
 
 Major triads in the Harmony circle use an uppercase **M** (for example, **CM** or **F♯M**) to distinguish chord labels from individual notes on the inner note ring. This does not change minor, seventh, other chord-family labels, or harmonic relationships.
+
+## Chord symbols
+
+The Harmonic Circle, selected relationships, and recorded chord labels use the selected chord notation style. The optional inner note ring continues to display pitch names without chord-quality suffixes.
