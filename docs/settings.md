@@ -17,6 +17,12 @@ When the viewport is at most **860 CSS px**, the diagram viewer offers **Readabl
 
 These choices affect the **browser viewer only**. They do not modify `diagramScale`, musical geometry, SVG/PNG exports, audio, or the saved settings JSON. On narrow phones the left tool panel scrolls separately, help tips can be tapped, and the documentation viewer uses a horizontal topic list.
 
+## Interface language
+
+Choose **Auto (browser)**, **English**, **Español**, **Français**, **Português (Brasil)**, **Italiano**, or **Deutsch** in Settings → Language. Auto uses the first supported language preference from the browser, including regional locale tags such as `es-CL`, `fr-CA`, `pt-BR`, `it-IT`, and `de-DE`; unsupported preferences fall back to English. The `pt` language uses Brazilian Portuguese for all Portuguese regional variants, including `pt-PT`. The explicit selection persists independently of music notation settings and is compatible with existing imported/exported settings JSON.
+
+Interface translations cover controls, tooltips, status summaries, Harmony legends, and major generated chord explanations. The bundled Markdown help articles remain in English, as do some third-party parser diagnostics and user-authored text. Changing interface language does not alter musical IDs, chords, pitch spelling settings, playback, or export filenames. The developer instructions are in [`internal/adding-interface-languages.md`](internal/adding-interface-languages.md).
+
 ## Workspace-specific settings
 
 The Settings sidebar is filtered by the active workspace so controls that cannot affect the current diagram are not shown.

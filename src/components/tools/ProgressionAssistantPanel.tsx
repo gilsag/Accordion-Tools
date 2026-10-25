@@ -1,4 +1,5 @@
-import { familyName } from "../../i18n/musicTerms";
+import { familyName, stradellaButtonFunction } from "../../i18n/musicTerms";
+import { translate, type InterfaceLanguage } from "../../i18n/catalog";
 import type { ChordDisplayStyle } from "../../tools/chordDisplay";
 /* Progression controls and playback display. Selected button recipes must
    come from the global optimizer, not a per-chord greedy reconstruction. */
@@ -20,16 +21,16 @@ import type {
 import type { ProgressionRhythmPattern } from "../../sound";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 
-function realizationText(step: OptimizedProgressionPlan["steps"][number], locale: "en" | "es" = "en") {
+function realizationText(step: OptimizedProgressionPlan["steps"][number], locale: InterfaceLanguage = "en") {
   return step.result.playbackButtons
     .map((button) => {
-      if (button.kind === "bass-counterbass") return `${button.pitchClass} ${locale === "es" ? "contrabajo" : "counterbass"}`;
-      if (button.kind === "bass-root") return `${button.pitchClass} ${locale === "es" ? "bajo" : "bass"}`;
+      if (button.kind === "bass-counterbass") return `${button.pitchClass} ${translate(locale, "ui.counterbass")}`;
+      if (button.kind === "bass-root") return `${button.pitchClass} ${translate(locale, "ui.bass")}`;
       const kind = button.kind
         .replace("chord-", "")
         .replace("dominant7", "7")
         .replace("diminished7", "°7");
-      return `${button.chordRoot} ${kind}`;
+      return `${button.chordRoot} ${locale !== "en" && locale !== "es" && (kind === "major" || kind === "minor") ? stradellaButtonFunction(kind, locale) : kind}`;
     })
     .join(" + ");
 }

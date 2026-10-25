@@ -3,8 +3,8 @@ import type { ReactNode } from "react";
 type SegmentedChoiceProps<T extends string> = {
   label: ReactNode;
   value: T;
-  options: readonly { value: T; label: string }[];
-  onChange: (next: T) => void;
+  options: readonly { value: NoInfer<T>; label: string }[];
+  onChange: (next: NoInfer<T>) => void;
 };
 
 /** Both persistent choices remain visible. aria-pressed communicates which is

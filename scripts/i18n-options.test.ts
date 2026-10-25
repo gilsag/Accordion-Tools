@@ -13,6 +13,11 @@ assert.equal(translate("es", "ui.bassPatternPlayer"), "Patrones de bajo");
 assert.equal(translate("es", "ui.top"), "Arriba");
 assert.equal(translate("es", "ui.bottom"), "Abajo");
 assert.equal(translate("en", "ui.bassPatternPlayer"), "Bass Pattern Player");
+assert.equal(translate("fr", "ui.bassPatternPlayer"), "Lecteur de motifs de basses");
+assert.equal(progressionName("pop-rock", "Pop-rock progression", "fr"), "Progression pop-rock");
+assert.equal(bassPatternName("oom-pah-pah", "Waltz", "fr"), "Valse");
+assert.equal(abcExampleName("c-major-scale", "C major scale", "fr"), "Gamme de do majeur");
+assert.equal(abcExampleName("c-major-scale", "User example", "fr"), "User example");
 
 assert.equal(progressionName("pop-rock", "Pop-rock progression", "es"), "Progresión pop-rock");
 assert.equal(progressionName("pop-rock", "Pop-rock progression", "en"), "Pop-rock progression");
@@ -29,6 +34,7 @@ for (const row of ["bass-counterbass", "bass-root", "chord-major", "chord-minor"
   const spanish = translateKnownLabel("es", english);
   assert.notEqual(spanish, english, `Missing translation for Stradella row ${row}`);
   assert.equal(translateKnownLabel("en", english), english);
+  assert.notEqual(stradellaDiagramRowLabel(row, english, "fr"), english);
   assert.equal(stradellaDiagramRowLabel(row, english, "en"), english);
   assert.notEqual(stradellaDiagramRowLabel(row, english, "es"), english);
 }

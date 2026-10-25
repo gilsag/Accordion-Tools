@@ -11,6 +11,7 @@ import { familyName, scaleName } from "../src/i18n/musicTerms";
 // The examples reported in the UI, tested as actual formatted output in both languages.
 assert.equal(diagramAutoTitle("stradella", 96, "c-system", "en"), "96-Bass Stradella");
 assert.equal(diagramAutoTitle("stradella", 96, "c-system", "es"), "Stradella de 96 bajos");
+assert.equal(diagramAutoTitle("stradella", 96, "c-system", "fr"), "Stradella à 96 basses");
 assert.equal(diagramAutoTitle("treble", 96, "c-system", "en"), "C-system Treble");
 assert.equal(diagramAutoTitle("treble", 96, "c-system", "es"), "Agudos · Sistema C");
 assert.equal(diagramAutoTitle("treble", 96, "b-system", "en"), "B-system / Bayan Treble");
@@ -41,7 +42,7 @@ assert.equal(harmonyLegendFamilyText("séptima menor", "es", true, false), "Acor
 assert.equal(harmonyLegendFamilyText("Minor seventh", "en", true, false), "Diatonic minor seventh");
 assert.equal(harmonyLegendFamilyText("ignored", "es", true, true), "Acordes diatónicos (todas las familias)");
 
-for (const language of ["en", "es"] as const) {
+for (const language of ["en", "es", "fr", "pt", "it", "de"] as const) {
   for (const notation of ["english", "german", "solfege", "intervals", "blank"] as const) {
     const name = notationStatusLabel(notation, language);
     assert.ok(name && !name.startsWith("status."), `${language}/${notation}: untranslated notation`);
@@ -84,4 +85,4 @@ assert.ok(circle.includes("harmonyLegendFamilyText(relatedFamilyName, language, 
 assert.ok(circle.includes("const referenceName = familyName(referenceFamilyId, referenceFamily.name, language);"),
   "Measure localized reference legend text, not English width");
 assert.equal(translate("es", "ui.diatonicFamily", { family: "séptima menor" }), "Acordes diatónicos: séptima menor");
-console.log("✓ Localized titles, status summaries, Harmony legends and unchanged filename policy passed (both languages)");
+console.log("✓ Localized titles, status summaries, Harmony legends and unchanged filename policy passed (six languages)");

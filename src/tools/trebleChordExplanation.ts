@@ -50,7 +50,7 @@ export function describeTrebleChord(
   }
 
   // English output is kept byte-for-byte compatible with earlier regression fixtures.
-  if (language === "es") {
+  if (language !== "en") {
     const notes = sounding.join("–");
     const status = t("analysis.trebleStatus", {
       status: exact ? t("analysis.exact") : t("analysis.approximate"),
