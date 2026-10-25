@@ -16,14 +16,18 @@ export type DiagramExplanationInput = {
 };
 
 function listNumbers(values: readonly number[], language: InterfaceLanguage = "en") {
+  const conjunction: Record<InterfaceLanguage, string> = {
+    en: "and", es: "y", fr: "et", pt: "e", it: "e", de: "und",
+  };
+  const word = conjunction[language];
   if (values.length === 1) return String(values[0]);
-  if (values.length === 2) return `${values[0]} ${language === "es" ? "y" : "and"} ${values[1]}`;
-  return `${values.slice(0, -1).join(", ")}${language === "es" ? " y " : ", and "}${values.at(-1)}`;
+  if (values.length === 2) return `${values[0]} ${word} ${values[1]}`;
+  return `${values.slice(0, -1).join(", ")}${language === "en" ? "," : ""} ${word} ${values.at(-1)}`;
 }
 
 function ringPhrase(values: readonly number[], language: InterfaceLanguage = "en") {
   const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
-  if (language === "es") {
+  if (language !== "en") {
     return values.length === 1 ? t("analysis.harmonyRingOne", { count: values[0], unit: values[0] === 1 ? t("analysis.noteSingular") : t("analysis.notePlural") })
       : t("analysis.harmonyRingMany", { counts: listNumbers(values, language) });
   }
@@ -47,7 +51,7 @@ export function buildDiagramExplanation({
   language = "en",
 }: DiagramExplanationInput) {
   const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
-  if (language === "es") {
+  if (language !== "en") {
     const parts = [t(allFamiliesMode ? "analysis.harmonyAll" : "analysis.harmonyInner", { reference: referenceFamilyName.toLowerCase(), related: relatedFamilyName.toLowerCase() })];
     const hidden = availableCounts.filter((count) => !counts.includes(count));
     if (allFamiliesMode) {

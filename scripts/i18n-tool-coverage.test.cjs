@@ -14,7 +14,7 @@ const sources = [
   'src/components/tools/ProgressionAssistantPanel.tsx',
   'src/tools/harmonyExplorer/components/HarmonicCircle.tsx',
 ];
-const allowed = /^(?:English|Español|ABC|MIDI|LilyPond|La Melodiosa|public\/default-settings\.json|CC BY-NC 4\.0|BPM|px|ms|cents|maj7|st\s*·|Do Re Mi Fa|C(?:\sD\sE\sF(?:\sG\sA\sH)?)?|C, Cm, Cmaj7|CM, Cm, CM7|Cmaj, Cmin, Cmaj7)$/;
+const allowed = /^(?:English|Español|Français|ABC|MIDI|LilyPond|La Melodiosa|public\/default-settings\.json|CC BY-NC 4\.0|BPM|px|ms|cents|maj7|st\s*·|Do Re Mi Fa|C(?:\sD\sE\sF(?:\sG\sA\sH)?)?|C, Cm, Cmaj7|CM, Cm, CM7|Cmaj, Cmin, Cmaj7)$/;
 const problems = [];
 for (const file of sources) {
   const text = fs.readFileSync(file, 'utf8');

@@ -1,3 +1,20 @@
+## v0.15.14 — Portuguese, Italian and German interfaces
+
+- Adds **Português (Brasil)** (`pt`), **Italiano** (`it`) and **Deutsch** (`de`) with complete translations of the interface catalog, including accessible labels, context help and generated musical explanations.
+- Extends chord-family, scale, chord-tone and Stradella-row terminology, plus bundled progression, bass-pattern and ABC example names, without changing stable musical identifiers or user-authored content.
+- Automatically recognizes `pt-*`, `it-*` and `de-*` browser locales; manual language preferences and existing settings remain compatible. Portuguese uses the Brazilian translation for all `pt` regional variants.
+- Preserves the nominal-versus-measured register distinction, harmonic calculations, audio behavior and language-independent export filenames.
+- Expands localization regression coverage and developer guidance. Bundled Markdown help articles remain in English.
+
+## v0.15.13 — Scalable interface localization and French
+
+- Separates English, Spanish and French translation catalogs into `src/i18n/en.ts`, `es.ts` and `fr.ts`; `catalog.ts` provides typed locale registration, lookup and English fallback.
+- Adds **Français** to the language selector and recognizes French browser locales, including regional variants, while retaining manual preferences and existing settings JSON compatibility.
+- Localizes interface controls, generated Stradella and Treble explanations, Harmony descriptions, musical terminology and built-in pattern/example labels. Keeps musical calculations, notation choices, audio, and export filenames independent of interface language.
+- Includes the language-extension developer guide at `docs/internal/adding-interface-languages.md`; bundled user-guide articles remain in English.
+- Validates catalog-key and placeholder coverage, language detection, representative explanations, notation/filename invariants and existing localization tests.
+- Keeps segmented settings controls type-safe under strict TypeScript compilation without changing their behavior.
+
 ## v0.15.12 — Harmony legend and Stradella realization notes (release candidate)
 
 - Aligns Harmony Explorer legend descriptions and headings with available horizontal space and supports multiline English/Spanish text.

@@ -2,19 +2,27 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-**Version:** 0.15.11
+**Version:** 0.15.14
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
 ## Interface languages
 
-Use **Settings → Language** to select **Auto (browser)**, **English**, or **Español**. The initial choice is Auto: Spanish browser preferences (`es`, `es-CL`, etc.) select Spanish, while unsupported languages use English. A manual choice takes precedence and is retained in local preferences and settings JSON.
+Use **Settings → Language** to select **Auto (browser)**, **English**, **Español**, **Français**, **Português (Brasil)**, **Italiano**, or **Deutsch**. The initial choice is Auto: supported Spanish (`es-*`), French (`fr-*`), Portuguese (`pt-*`), Italian (`it-*`), and German (`de-*`) browser preferences select their respective languages; unsupported locales use English. A manual choice takes precedence and is retained in local preferences and settings JSON.
 
-The application's navigation, settings, tools, tooltips, and major generated chord/Harmony explanations support English and Spanish. The interface language is separate from pitch notation and chord symbol style; it does not change pitches, chord calculations, audio, file formats, or **download filenames**. User-edited pattern names and imported music data are displayed as supplied, and some low-level parser or pattern-validation messages may remain in English.
+The application's navigation, settings, tools, tooltips, and major generated chord/Harmony explanations support English, Spanish, French, Brazilian Portuguese, Italian and German. The interface language is separate from pitch notation and chord symbol style; it does not change pitches, chord calculations, audio, file formats, or **download filenames**. User-edited pattern names and imported music data are displayed as supplied, and some low-level parser or pattern-validation messages may remain in English.
 
-**Español:** En **Configuración → Idioma** puede elegir **Automático (navegador)**, **English** o **Español**. La detección automática utiliza las preferencias del navegador; la selección manual tiene prioridad. El idioma de la interfaz es independiente de la notación musical y no modifica los nombres de los archivos exportados.
+**Español:** En **Configuración → Idioma** puede elegir **Automático (navegador)**, **English**, **Español**, **Français**, **Português (Brasil)**, **Italiano** o **Deutsch**. La detección automática utiliza las preferencias del navegador; la selección manual tiene prioridad. El idioma de la interfaz es independiente de la notación musical y no modifica los nombres de los archivos exportados.
 
-The bundled guides and the remainder of this README are in English.
+**Français :** Dans **Paramètres → Langue**, choisissez **Automatique (navigateur)** ou une langue explicite. La langue de l’interface ne change ni les calculs musicaux, ni les échantillons audio, ni les noms des fichiers exportés.
+
+**Português (Brasil):** Em **Configurações → Idioma**, escolha **Automático (navegador)** ou outro idioma. A tradução não altera os cálculos musicais nem os nomes dos arquivos exportados.
+
+**Italiano:** In **Impostazioni → Lingua**, scegli **Automatico (browser)** o una lingua. La traduzione non modifica i calcoli musicali né i nomi dei file esportati.
+
+**Deutsch:** Unter **Einstellungen → Sprache** wählen Sie **Automatisch (Browser)** oder eine Sprache. Die Übersetzung ändert weder musikalische Berechnungen noch Exportdateinamen.
+
+Portuguese currently uses Brazilian Portuguese for all `pt` browser locales. The bundled Markdown help articles and the remainder of this README are in English. For the localization architecture and how to add languages, see the [Adding Interface Languages guide](docs/internal/adding-interface-languages.md).
 
 ## Responsive viewing
 

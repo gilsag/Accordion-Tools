@@ -1,7 +1,7 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.15.12",
+  "version": "0.15.14",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -23,7 +23,7 @@
     "test:explanation-ui": "tsx scripts/stradella-explanation-ui.test.ts",
     "test:responsive": "node scripts/responsive-layout.test.mjs",
     "test:display": "tsx scripts/chord-display.test.ts && tsx scripts/voicing-ui-regression.test.ts",
-    "test:i18n": "tsx scripts/interface-language.test.ts && tsx scripts/i18n-display-coverage.test.ts && tsx scripts/i18n-bindings.test.ts && node scripts/i18n-tool-coverage.test.cjs && tsx scripts/i18n-options.test.ts && tsx scripts/i18n-diagram-labels.test.ts"
+    "test:i18n": "tsx scripts/interface-language.test.ts && tsx scripts/i18n-display-coverage.test.ts && tsx scripts/i18n-bindings.test.ts && node scripts/i18n-tool-coverage.test.cjs && tsx scripts/i18n-options.test.ts && tsx scripts/i18n-diagram-labels.test.ts && tsx scripts/french-localization.test.ts && tsx scripts/multilingual-localization.test.ts"
   },
   "dependencies": {
     "abcjs": "^6.6.3",

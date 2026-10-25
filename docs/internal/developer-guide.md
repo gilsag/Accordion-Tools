@@ -2,6 +2,8 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
+**Localization:** `src/i18n/catalog.ts` registers `en`, `es`, `fr`, `pt` (Brazilian Portuguese), `it` and `de`. Separate typed catalogs define interface text; `musicTerms.ts`, `optionLabels.ts` and localized explanation templates provide musical terminology and generated descriptions. See [Adding Interface Languages](adding-interface-languages.md) for key and placeholder parity, saved preferences, and export invariants.
+
 ## Code ownership and data flow
 
 | Layer | Main files | Responsibility |
@@ -125,3 +127,7 @@ Persistent two-way choices use `SegmentedChoice` (`aria-pressed` on both visible
 - Avoid removing saved-settings migration fields or the ABC legacy parser without versioned compatibility tests.
 - Preserve La Melodiosa SFZ source metadata, sample attribution, and unmapped recordings until a separate sample-archive decision.
 - An unused export is not necessarily disposable: verify external consumers and run the native build before deleting it.
+
+## Interface localization
+
+The English, Spanish and French string catalogs are stored in `src/i18n/en.ts`, `es.ts` and `fr.ts`. The typed locale registry and fallback in `src/i18n/catalog.ts` are the public API. UI option labels, generated descriptions, musical terminology and example names use separate presentation helpers without modifying harmonic IDs, sounding pitches or filename recipes. The Settings language menu derives its options from the registry. See [Adding Interface Languages](adding-interface-languages.md) for adding locales and the corresponding validation requirements.

@@ -1,5 +1,5 @@
 import { translate, type InterfaceLanguage } from "../../i18n/catalog";
-import { chordRole } from "../../i18n/musicTerms";
+import { chordRole, stradellaButtonFunction } from "../../i18n/musicTerms";
 import type { FinderChordPattern } from "../../types";
 import { displayRealizedChord, type ChordDisplayStyle } from "../chordDisplay";
 import { transpose } from "../../music";
@@ -74,10 +74,9 @@ export function realizationAnnotation(
 
   const spell = (pc: string) => chordToneName(root, pattern, pc);
   const buttons = result.playbackButtons.map((button) => {
-    if (isBassButton(button)) return `${spell(button.pitchClass ?? "")} ${button.kind === "bass-counterbass" ? (language === "es" ? "contrabajo" : "counterbass") : (language === "es" ? "bajo" : "bass")}`;
+    if (isBassButton(button)) return `${spell(button.pitchClass ?? "")} ${t(button.kind === "bass-counterbass" ? "ui.counterbass" : "ui.bass")}`;
     const kind = chordKindLabel(button.kind);
-    const es: Record<string, string> = { major: "mayor", minor: "menor", dominant7: "séptima dominante", diminished7: "disminuido" };
-    return `${spell(button.chordRoot ?? "")} ${language === "es" ? es[kind] ?? kind : kind}`;
+    return `${spell(button.chordRoot ?? "")} ${language === "en" || language === "es" ? kind : stradellaButtonFunction(kind, language)}`;
   }).join(" + ");
   const tones = result.coveredPitches.map(spell).join("–");
   const omissions = result.missingPitches.map((pitch) => {
@@ -94,11 +93,11 @@ export function realizationAnnotation(
   const realizedName = realizedChordName(root, pattern, requestedBass, modeled?.lowestPitchClass, requestedSymbol);
   const visibleName = displayRealizedChord(root, pattern, realizedName, displayStyle);
   const inversionDescription = realizedInversionDescription(root, pattern, requestedBass ?? modeled?.lowestPitchClass ?? null);
-  const visibleInversion = language === "es" && inversionDescription
-    ? inversionDescription.replace("First inversion", "Primera inversión")
-      .replace("Second inversion", "Segunda inversión")
-      .replace("Third inversion", "Tercera inversión")
-      .replace(" in bass", " en el bajo")
+  const visibleInversion = language !== "en" && inversionDescription
+    ? inversionDescription.replace("First inversion", t("ui.firstInversion"))
+      .replace("Second inversion", t("ui.secondInversion"))
+      .replace("Third inversion", t("ui.thirdInversion"))
+      .replace(" in bass", ` ${t("ui.inBass")}`)
     : inversionDescription;
   const title = stradellaContextualTitle({
     root, pattern, requestedBass, exact: result.exact,
@@ -115,7 +114,11 @@ export function realizationAnnotation(
     lines.push(`${t("analysis.pitchClassRealization")}: ${tones} · ${result.exact ? t("analysis.exactComplete") : `${t("analysis.approximate")} · ${t("analysis.omitted")}: ${omissions.join(", ") || t("analysis.none")}`}${suspendedStyle ? ` · ${t("analysis.suspended")}` : ""}`);
   }
   if (levels.physical) {
-    const buttonCountLabel = language === "es" ? `${count} ${count === 1 ? "botón pulsado" : "botones pulsados"}` : `${count} played ${count === 1 ? "button" : "buttons"}`;
+    const buttonCountLabel = language === "en"
+      ? `${count} played ${count === 1 ? "button" : "buttons"}`
+      : language === "es" ? `${count} ${count === 1 ? "botón pulsado" : "botones pulsados"}`
+        : language === "fr" ? `${count} ${count === 1 ? "bouton joué" : "boutons joués"}`
+          : t("analysis.playedButtons", { count, unit: t(count === 1 ? "analysis.buttonOne" : "analysis.buttonMany") });
     lines.push(`${t("analysis.physicalRealization")}: ${buttons} · ${buttonCountLabel}${chordButtonsOnly ? ` · ${t("analysis.chordOnly")}` : ""}${result.recommended ? ` · ${t("analysis.recommended")}` : ""}`);
   }
   if (levels.voicing) {

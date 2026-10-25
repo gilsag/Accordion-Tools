@@ -1,5 +1,5 @@
 import { translate, type InterfaceLanguage } from "../../i18n/catalog";
-import { chordRole } from "../../i18n/musicTerms";
+import { chordRole, stradellaButtonFunction } from "../../i18n/musicTerms";
 /* Educational Stradella realization notes. The sounding pitch-class set is
    derived from the selected buttons; register statements deliberately avoid
    claiming a particular bass/chord octave or inversion. */
@@ -25,41 +25,39 @@ const THIRTEENTHS: FinderChordPattern[] = ["dominant13", "major13", "minor13"];
 
 /** Localized presentation only. Candidate generation, ranking and filename symbols
  * remain independent of interface language. */
-function explainSpanishRealization(
+function explainLocalizedRealization(
   root: string,
   pattern: FinderChordPattern,
   result: StradellaChordFinderResult,
   registerModel?: StradellaRegisterModel,
   requestedBass: string | null = null,
   displayStyle: ChordDisplayStyle = LEGACY_CHORD_DISPLAY_STYLE,
+  language: Exclude<InterfaceLanguage, "en"> = "es",
 ): string {
-  const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate("es", key, params);
-  if (!result.playable || !result.playbackButtons.length) return "No se encontró una realización para este acorde y la configuración elegida.";
+  const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
+  if (!result.playable || !result.playbackButtons.length) return language === "es"
+    ? "No se encontró una realización para este acorde y la configuración elegida." : t("ui.noSupportedRealization");
   const selected = result.playbackButtons;
   const spell = (pc: string) => chordToneName(root, pattern, pc);
-  const kindName: Record<string, string> = {
-    "chord-major": "mayor", "chord-minor": "menor", "chord-dominant7": "séptima dominante",
-    "chord-diminished7": "disminuido",
-  };
   const buttons = selected.map((button) => isBassButton(button)
-    ? `${spell(button.pitchClass ?? "?")} ${button.kind === "bass-counterbass" ? "contrabajo" : "bajo"}`
-    : `${spell(button.chordRoot ?? "?")} ${kindName[button.kind] ?? chordKindLabel(button.kind)}`);
+    ? `${spell(button.pitchClass ?? "?")} ${t(button.kind === "bass-counterbass" ? "ui.counterbass" : "ui.bass")}`
+    : `${spell(button.chordRoot ?? "?")} ${stradellaButtonFunction(chordKindLabel(button.kind), language)}`);
   const modeled = registerModel ? analyzeConfiguredStradellaVoicing(selected, root, registerModel) : null;
   const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
   const chordName = displayRealizedChord(root, pattern, realizedChordName(root, pattern, requestedBass, modeled?.lowestPitchClass, requestedSymbol), displayStyle);
   const missing = result.missingPitches.map((pitch) => {
     const interval = intervalsForChordFinder(pattern).find((value) => transpose(root, value) === pitch);
-    return `${spell(pitch)} (${chordRole(interval === undefined ? "chord tone" : intervalRole(interval), "es")})`;
+    return `${spell(pitch)} (${chordRole(interval === undefined ? "chord tone" : intervalRole(interval), language)})`;
   });
   const first = t(result.exact ? "analysis.stradellaFirstExact" : "analysis.stradellaFirstApprox", {
-    chord: chordName, count: selected.length, unit: selected.length === 1 ? "botón" : "botones",
+    chord: chordName, count: selected.length, unit: t(selected.length === 1 ? "analysis.buttonOne" : "analysis.buttonMany"),
     buttons: buttons.join(" + "), notes: result.coveredPitches.map(spell).join("–"), missing: missing.join(", "),
   });
   const paragraphs = [first];
   if (requestedBass) {
     paragraphs.push(t("analysis.stradellaRequestedBass", {
       chord: chordName, bass: spell(requestedBass), root: spell(root),
-      role: chordRole(requestedBassRole({ root, pattern, requestedBass }) ?? "chord tone", "es"),
+      role: chordRole(requestedBassRole({ root, pattern, requestedBass }) ?? "chord tone", language),
     }));
     paragraphs.push(modeled?.lowestPitchClass === requestedBass
       ? t("analysis.stradellaModelLowest", { pitch: `${spell(requestedBass)}${modeled.lowestNotes[0]?.octave ?? ""}` })
@@ -117,7 +115,7 @@ export function explainStradellaRealization(
   displayStyle: ChordDisplayStyle = LEGACY_CHORD_DISPLAY_STYLE,
   language: InterfaceLanguage = "en",
 ): string {
-  if (language === "es") return explainSpanishRealization(root, pattern, result, registerModel, requestedBass, displayStyle);
+  if (language !== "en") return explainLocalizedRealization(root, pattern, result, registerModel, requestedBass, displayStyle, language);
   if (!result.playable || result.playbackButtons.length === 0) return result.explanation;
 
   const selected = result.playbackButtons;

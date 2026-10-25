@@ -320,7 +320,7 @@ export function HarmonicCircle({
   const legendRows = [
     { heading: `${t("ui.innerRing")}:`, name: referenceName, details: "" },
     ...counts.map((count, index) => ({
-      heading: language === "es" ? `${t("ui.ringOrdinal", { count: index + 2 })}:` : `${ordinal(index + 2)} ring:`,
+      heading: language !== "en" ? `${t("ui.ringOrdinal", { count: index + 2 })}:` : `${ordinal(index + 2)} ring:`,
       name: harmonyLegendFamilyText(relatedFamilyName, language, diatonicOnly, allFamiliesMode),
       details: t("ui.sharedCount", { count, tone: count === 1 ? t("ui.oneNote") : t("ui.manyNotes") }),
     })),

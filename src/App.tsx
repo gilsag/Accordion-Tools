@@ -27,9 +27,11 @@ import {
   browserLanguagePreferences,
   detectBrowserLanguage,
   isInterfaceLanguagePreference,
+  SUPPORTED_LANGUAGES,
   resolveInterfaceLanguage,
   translate, translateKnownLabel,
   type InterfaceLanguagePreference,
+  type InterfaceLanguage,
 } from "./i18n/catalog";
 import { LanguageProvider } from "./i18n/context";
 import { abcExampleName, bassPatternName, progressionName } from "./i18n/optionLabels";
@@ -479,7 +481,7 @@ function normalizeProgressionText(value: string) {
     .toLowerCase();
 }
 
-function formatProgressionOptionLabel(progression: ChordProgressionDefinition, language: "en" | "es") {
+function formatProgressionOptionLabel(progression: ChordProgressionDefinition, language: InterfaceLanguage) {
   const localizedName = progressionName(progression.id, progression.name, language);
   const chordList = chordProgressionSteps(progression)
     .map((step) => step.symbol)
@@ -4481,8 +4483,9 @@ function App() {
                     {t("settings.language")}
                     <select value={languagePreference} onChange={(event) => changeLanguage(event.target.value as InterfaceLanguagePreference)}>
                       <option value="auto">{t("settings.languageAuto")}</option>
-                      <option value="en">English</option>
-                      <option value="es">Español</option>
+                      {SUPPORTED_LANGUAGES.map(({ code, label }) => (
+                        <option key={code} value={code}>{label}</option>
+                      ))}
                     </select>
                   </label>
                 </div>
