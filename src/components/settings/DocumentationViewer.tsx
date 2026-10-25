@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useI18n } from "../../i18n/context";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import "./DocumentationViewer.css";
@@ -116,6 +117,7 @@ function MarkdownArticle({ source, navigate }: { source: string; navigate: (file
 }
 
 export function DocumentationViewer({ onClose }: { onClose: () => void }) {
+  const { t } = useI18n();
   const [selected, setSelected] = useState("README.md");
   const [filter, setFilter] = useState("");
   const selectedDoc = documents.find(doc => doc.filename === selected) ?? documents[0];
@@ -127,15 +129,15 @@ export function DocumentationViewer({ onClose }: { onClose: () => void }) {
   }, [onClose]);
   return createPortal(
     <div className="documentation-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="documentation-dialog" role="dialog" aria-modal="true" aria-label="Accordion Tools documentation">
-        <header className="documentation-header"><strong>Documentation</strong><button type="button" onClick={onClose} aria-label="Close documentation">Close ×</button></header>
+      <section className="documentation-dialog" role="dialog" aria-modal="true" aria-label={t("ui.docsDialog")}>
+        <header className="documentation-header"><strong>{t("ui.documentation")}</strong><button type="button" onClick={onClose} aria-label={t("ui.closeDocs")}>{t("ui.close")}</button></header>
         <div className="documentation-body">
-          <nav className="documentation-sidebar" aria-label="Documentation topics">
-            <input type="search" placeholder="Find a topic or text…" value={filter} onChange={event => setFilter(event.target.value)} aria-label="Search documentation" />
+          <nav className="documentation-sidebar" aria-label={t("ui.docsTopics")}>
+            <input type="search" placeholder={t("ui.docsFind")} value={filter} onChange={event => setFilter(event.target.value)} aria-label={t("ui.docsSearch")} />
             {shownDocs.map(doc => <button type="button" key={doc.filename} className={doc.filename === selected ? "active" : ""} onClick={() => setSelected(doc.filename)}>{doc.title}</button>)}
-            {shownDocs.length === 0 && <p>No matching topics.</p>}
+            {shownDocs.length === 0 && <p>{t("ui.noMatchingTopics")}</p>}
           </nav>
-          <main className="documentation-content" key={selectedDoc?.filename}>{selectedDoc ? <MarkdownArticle source={selectedDoc.content} navigate={setSelected}/> : <p>No documentation found.</p>}</main>
+          <main className="documentation-content" key={selectedDoc?.filename}>{selectedDoc ? <MarkdownArticle source={selectedDoc.content} navigate={setSelected}/> : <p>{t("ui.noDocumentationFound")}</p>}</main>
         </div>
       </section>
     </div>, document.body

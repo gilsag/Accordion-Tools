@@ -1,7 +1,9 @@
 import type { FinderChordPattern } from "../../types";
 
 const suffix: Partial<Record<FinderChordPattern, string>> = {
-  "major-triad": "maj", "minor-triad": "min", "augmented-triad": "aug",
+  "major-triad": "maj", "sus2": "sus2", "dominant7sus4": "7sus4",
+  "majorAdd9": "add9", "minorAdd9": "madd9", "major6add9": "6add9", "minor6add9": "m6add9",
+  "dominant7sharp5": "7#5", "dominant7sharp9": "7#9", "major7sharp11": "maj7#11", "minor-triad": "min", "augmented-triad": "aug",
   "diminished-triad": "dim", "sus4": "sus4", "major6": "maj6",
   "minor6": "min6", "dominant7": "7", "major7": "maj7", "minor7": "min7",
   "minorMajor7": "minMaj7", "diminished7": "dim7", "minor7b5": "min7b5",

@@ -1,0 +1,125 @@
+diff --git a/VERSION_HISTORY.md b/VERSION_HISTORY.md
+--- a/VERSION_HISTORY.md
++++ b/VERSION_HISTORY.md
+@@ -1,29 +1,9 @@
+-## v0.15.11 — Realization footer order and collision-safe spacing (unreleased)
+-
+-- Removes the outdated numbering from both English and Spanish realization-level checkboxes, and keeps **Physical realization** before **Registral voicing** permanently in the menu, notes, and exports, regardless of the note-spacing toggle.
+-- Prevents collision of upper/lower nominal pitch labels, doubled-note markers and semitone labels at explanation sizes 16–40 px. Consecutive pitches retain accurate interval numbers; rendered horizontal gaps may expand for readability.
+-- Reserves matching footer height for wrapped explanatory text and chart content, preserving the compact inline placement and one-semitone red cue.
+-- Leaves chord validity, ergonomic ranking, configured register analysis, sound and user settings unchanged.
+-
+-## v0.15.11 — Inline spacing scale and synchronized controls (unreleased)
+-
+-- Stops nominal spacing charts from expanding a short graph to the full available SVG width; caps label sizes relative to the realization explanation slider and reserves room for lower note labels.
+-- Nests the note-spacing option under **Registral voicing**, disables it when that note level is hidden, and synchronizes the settings order with the diagram order (Registral voicing last while spacing is selected).
+-- Preserves the optional exported chart, red semitone marker, analytical register model, and default-off preference without touching chord search, ranking, or playback.
+-- Updates an older localization source assertion to reflect the existing localized Harmony legend variable.
+-
+-## v0.15.11 — Integrated voicing-layout follow-up (unreleased)
+-
+-- Places the optional nominal note-spacing chart beside the Registral voicing label inside the Stradella diagram footer, replacing the redundant pitch-list text when enabled and including the chart in diagram exports.
+-- Uses larger pitch and interval labels with a red line for one-semitone gaps; keeps the configured-register disclaimer in the option help.
+-- Tightens Harmony Explorer legend row spacing and places concise note labels and wrapped values in aligned columns.
+-- Does not change chord-search, audio, registral calculations, or exported settings.
+-
+-## v0.15.11 — Layout refinement (unreleased patch against uploaded snapshot)
+-
+-- Reduces premature Harmony Explorer legend wrapping by accounting for proportional text widths and sizing the label column to its translated headings; wrapping is retained where truly needed.
+-- Presents the optional Stradella nominal note-spacing diagram in a compact 88px strip, with its title beside the chart where room permits and the register/measurement caveat in an accessible help tooltip; small screens retain horizontal scrolling.
+-- Keeps nominal-pitch calculations, chord results, exported diagrams, audio and saved settings unchanged.
++## v0.15.12 — Harmony legend and Stradella realization notes (release candidate)
++
++- Aligns Harmony Explorer legend descriptions and headings with available horizontal space and supports multiline English/Spanish text.
++- Displays Stradella realization levels in the same order in the settings menu and diagram: Harmonic identity, Pitch-class realization, Physical realization, Registral voicing. Setting labels have no numerical prefixes.
++- Provides optional nominal chord-note spacing alongside Registral voicing, with SVG/PNG export support, text sizing limits, separation for accidentals and adjacent notes, and red indicators for one-semitone gaps. The labeled semitone distances remain exact even when segments expand to prevent collisions.
++- Preserves the distinction between configured nominal pitches and measured audio. Chord generation, ergonomic ranking, playback and existing settings remain unchanged.
+ 
+ ## v0.15.11 — Toolbar, Harmony legend, and voicing-interval display (release candidate)
+ 
+diff --git a/docs/chord-finder.md b/docs/chord-finder.md
+--- a/docs/chord-finder.md
++++ b/docs/chord-finder.md
+@@ -62,14 +62,18 @@
+ 
+ ### Four-level concise diagram notes
+ 
+-Under **Chord Finder → Show realization explanation below diagram**, independently enable any combination of four labeled notes:
++Under **Chord Finder → Show realization explanation below diagram**, select any combination of the four explanation levels:
+ 
+-1. **Harmonic identity** — the requested chord root/quality and the **realized** slash bass where relevant (e.g., `Cmin7/B♭ · Third inversion`). There is no "bass unspecified" label; a root-position realization has no slash. This identifies the inversion under the selected nominal register settings, not a different chord function.
+-2. **Pitch-class realization** — the pitch classes produced, Exact/Approximate status, and any omitted chord tones with their harmonic roles (e.g., `G (fifth)`). Theoretical notes are spelled by harmonic role (Cmin7 = C–E♭–G–B♭), not by internal sharp-only IDs. Octave placement does not affect Exact/Approximate classification.
+-3. **Physical realization** — the actual played Stradella bass/counterbass and preset chord buttons, their count, and the Recommended label when applicable. Highlighted visual-only reference buttons are excluded.
+-4. **Registral voicing** — the **nominal sounding pitches** under the two configured analytical register ranges, optionally shown as adjacent-semitone spacing. Chord-button-only construction belongs to Physical realization. This is not an acoustic measurement: recorded reeds may contain additional octave components even when the sampled MIDI pitches follow configured registers.
++- **Harmonic identity:** Requested root and quality, with the realized slash bass when applicable (e.g., `Cmin7/B♭ · Third inversion`). Inversions are interpreted using the selected nominal register settings.
++- **Pitch-class realization:** Sounding pitch classes, Exact/Approximate status, and omitted chord tones with their harmonic roles. Pitch classes do not specify octaves.
++- **Physical realization:** Played Stradella bass/counterbass and preset chord buttons, button count, and Recommended status when applicable. Reference buttons that are highlighted but not sounded are excluded.
++- **Registral voicing:** Sounding pitches and octaves under the configured analytical bass and chord registers. This is a nominal model, not an acoustic measurement of reed frequencies or octave doublings.
+ 
+-All four levels are enabled by default. Each checkbox works independently while the master **Show realization explanation below diagram** is active. Switching the master off hides the subordinate controls and the entire note without erasing their selections; disabling all four levels also hides the footer without leaving empty space. The level descriptions and More explanation relationship are now available via help tooltips, rather than persistent instructional paragraphs. The diagram/export footer is left-aligned with bold level labels, and the registral note lists nominal pitches directly in ascending order with their respective octaves (e.g., `C2 – E3 – G3`), without an additional introductory phrase. Repeated unison pitches are marked `×2` where applicable. The text-size slider still applies to the shown lines. The optional **Show nominal note spacing** checkbox is nested under the Registral voicing checkbox and is unavailable when that note level is hidden. It replaces the plain registral text line with a compact, intrinsically sized interval chart alongside its heading, both on screen and in SVG/PNG exports. Its labels scale modestly with the explanation text size, rather than expanding to fill unused width, and one-semitone gaps are red. The menu and the footer always place Registral voicing last, with or without the chart. Menu labels are unnumbered so they cannot contradict the displayed order. Adjacent note labels and semitone numbers are given independent clearance; compact intervals may be stretched graphically for readability, but the displayed numerals are exact semitone distances. The semitone/register disclaimer remains available from the checkbox help tooltip rather than as another visible line. On-screen diagram notes and **SVG/PNG exports** display only enabled levels, while the contextual title and export filename remain unchanged. Selections can be exported/imported using the `stradellaNoteLevels` settings object; older settings without this field default to all four enabled.
++The levels appear in this order in both the settings menu and the SVG/PNG diagram footer. Each checkbox operates independently while **Show realization explanation below diagram** is enabled. All four levels are enabled by default. Disabling the master option hides the footer without changing the saved selections; disabling all four levels removes the footer and its reserved space.
++
++Registral voicing normally lists distinct nominal pitches in ascending order (for example, `C2 – E3 – G3`), marking unison contributions as `×2` where applicable. The nested **Show nominal note spacing** option replaces this text with a compact chart beside the Registral voicing heading. It shows the number of semitones between each pair of consecutive nominal pitches, with one-semitone intervals highlighted red. Labels respond to the explanation text-size control while using bounded chart typography and collision-avoiding spacing. Line lengths may be expanded for legibility; the numbers give the actual nominal semitone distances. The chart is included in SVG/PNG downloads when enabled. The explanatory tooltip identifies the register model as configured, not measured audio.
++
++The note-spacing option is disabled when Registral voicing is unchecked, without discarding its selection. The contextual title and download filenames do not depend on which note levels are visible. The `stradellaNoteLevels` selections can be imported or exported; absent fields in older settings default to enabled.
+ 
+ These short notes do **not** filter or rescore candidates, change their sounding pitches, or hide the separate **More explanation** discussion. In particular, showing a lowest *modeled* pitch is not a claim that the actual acoustic lowest reed has been measured.
+ 
+diff --git a/docs/settings.md b/docs/settings.md
+--- a/docs/settings.md
++++ b/docs/settings.md
+@@ -149,9 +149,9 @@
+ 
+ ## Stradella Chord Finder diagram notes
+ 
+-The **Show realization explanation below diagram** master checkbox controls four subordinate options: **Harmonic identity**, **Pitch-class realization**, **Physical realization**, and **Registral voicing**. These controls appear only while the master option is enabled; turning it off keeps the previous selections. The lines appear below the diagram and in SVG/PNG exports, with left-aligned text and bold level labels. Registral voicing directly shows an ascending list of nominal pitches and their octaves (including unison multipliers such as `C3 ×2`), rather than a single lowest-note label. Chord-button-only construction is stated in Physical realization, not Registral voicing. A help tooltip explains the difference between these concise notes and **More explanation**. When all four choices are disabled, the footer is omitted, including its otherwise reserved diagram space. These controls do not alter **More explanation**, the recommendation algorithm, playback, or file names.
+-
+-The nested **Show nominal note spacing** option requires the Registral voicing level to be active; disabling that level retains but temporarily disables the spacing selection. Registral voicing is always the last item in both the settings menu and the footer. When selected, its original note list is replaced by a compact, intrinsically sized chart alongside the heading. The chart follows the explanation font slider within a bounded type scale. It reserves separate space for alternating pitch labels and semitone numbers, expands particularly tight horizontal gaps as needed, uses the configured Stradella register model, is exported with the diagram, and highlights one-semitone gaps in red. The numerals—not the exact drawn segment lengths—identify the semitone distances. The spacing option remains off by default.
++**Show realization explanation below diagram** controls the four optional footer levels: **Harmonic identity**, **Pitch-class realization**, **Physical realization**, and **Registral voicing**. They appear in that order in the settings menu and in exported SVG/PNG diagrams. The level checkboxes appear when the master option is enabled; disabling it preserves their selections. All four levels are enabled by default, and hiding all four removes the footer and its reserved space.
++
++**Registral voicing** lists nominal modeled pitches and octaves (including `×2` for duplicated unisons) from the configured Stradella bass and chord registers. These values do not represent measured acoustic frequencies. The nested **Show nominal note spacing** option, off by default, substitutes an interval chart for the pitch list. It displays semitone differences between adjacent nominal pitches, marks one-semitone gaps red, and includes the chart in SVG/PNG exports. The diagram text-size control affects the chart within bounded font sizes. Its horizontal spacing can expand to avoid collisions, so the numerical intervals, rather than line lengths, indicate semitone distances. Hiding Registral voicing disables the nested control without changing its stored value. Neither option alters chord generation, harmonic interpretation, ranking, audio, or filenames.
+ 
+ The import/export setting `stradellaNoteLevels` is an object with boolean fields `identity`, `pitchClasses`, `voicing`, and `physical`, all `true` by default. Older settings files omit this object and continue to show all four lines. A partially specified object defaults only its missing/invalid fields to `true`. The default settings file in `public/default-settings.json` contains the same keys.
+ 
+diff --git a/src/config/appInfo.ts b/src/config/appInfo.ts
+--- a/src/config/appInfo.ts
++++ b/src/config/appInfo.ts
+@@ -2,7 +2,7 @@
+ 
+ export const APP_INFO = {
+   name: "Accordion-Tools",
+-  version: "0.15.10",
++  version: "0.15.12",
+   authorName: "gilsag",
+   authorGithubUrl: "https://github.com/gilsag",
+   readmeUrl: "https://github.com/gilsag/Accordion-Tools/blob/main/README.md",
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "accordion-diagram-generator",
+   "private": true,
+-  "version": "0.15.11",
++  "version": "0.15.12",
+   "type": "module",
+   "scripts": {
+     "dev": "vite",
+diff --git a/package-lock.json b/package-lock.json
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "accordion-diagram-generator",
+-  "version": "0.15.11",
++  "version": "0.15.12",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "accordion-diagram-generator",
+-      "version": "0.15.11",
++      "version": "0.15.12",
+       "dependencies": {
+         "abcjs": "^6.6.3",
+         "react": "^19.2.5",

@@ -1,6 +1,9 @@
+import { familyName } from "../../i18n/musicTerms";
+import type { ChordDisplayStyle } from "../../tools/chordDisplay";
 /* Progression controls and playback display. Selected button recipes must
    come from the global optimizer, not a per-chord greedy reconstruction. */
 
+import { useI18n } from "../../i18n/context";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";
@@ -17,11 +20,11 @@ import type {
 import type { ProgressionRhythmPattern } from "../../sound";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 
-function realizationText(step: OptimizedProgressionPlan["steps"][number]) {
+function realizationText(step: OptimizedProgressionPlan["steps"][number], locale: "en" | "es" = "en") {
   return step.result.playbackButtons
     .map((button) => {
-      if (button.kind === "bass-counterbass") return `${button.pitchClass} counterbass`;
-      if (button.kind === "bass-root") return `${button.pitchClass} bass`;
+      if (button.kind === "bass-counterbass") return `${button.pitchClass} ${locale === "es" ? "contrabajo" : "counterbass"}`;
+      if (button.kind === "bass-root") return `${button.pitchClass} ${locale === "es" ? "bajo" : "bass"}`;
       const kind = button.kind
         .replace("chord-", "")
         .replace("dominant7", "7")
@@ -33,6 +36,7 @@ function realizationText(step: OptimizedProgressionPlan["steps"][number]) {
 
 type ProgressionAssistantPanelProps = {
   isOpen: boolean;
+  chordDisplayStyle: ChordDisplayStyle;
   onToggle: () => void;
   progression: HarmonyProgressionChord[];
   plan: OptimizedProgressionPlan;
@@ -61,6 +65,7 @@ type ProgressionAssistantPanelProps = {
 
 export function ProgressionAssistantPanel({
   isOpen,
+  chordDisplayStyle,
   onToggle,
   progression,
   plan,
@@ -86,20 +91,21 @@ export function ProgressionAssistantPanel({
   onPlay,
   onStop,
 }: ProgressionAssistantPanelProps) {
+  const { t, language } = useI18n();
   const previewStep =
     previewIndex !== null && plan.playable ? plan.steps[previewIndex] ?? null : null;
 
   return (
-    <CollapsibleSection title="Progression Assistant" isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("ui.progressionAssistant")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        Build a chord sequence and optimize its Stradella realizations across the whole progression. Click an optimized step to preview its buttons on the Stradella diagram.
+        {t("ui.progressionIntro")}
       </p>
 
       <fieldset className="tool-fieldset">
-        <legend>Progression</legend>
+        <legend>{t("ui.progression")}</legend>
         <div className="progression-add-grid">
           <label>
-            Root
+            {t("ui.root")}
             <select value={manualRoot} onChange={(event) => onManualRootChange(event.target.value)}>
               {FINDER_ROOT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -109,45 +115,45 @@ export function ProgressionAssistantPanel({
             </select>
           </label>
           <label>
-            Chord family
+            {t("ui.chordFamily")}
             <select
               value={manualFamilyId}
               onChange={(event) => onManualFamilyChange(event.target.value as ChordFamilyId)}
             >
               {CHORD_FAMILIES.map((family) => (
                 <option key={family.id} value={family.id}>
-                  {family.name}
+                  {familyName(family.id, family.name, language)}
                 </option>
               ))}
             </select>
           </label>
           <button className="small-button progression-add-button" type="button" onClick={onAddManualChord}>
-            Add chord
+            {t("ui.addChord")}
           </button>
         </div>
 
         <div className="button-row">
           <button className="small-button" type="button" disabled={progression.length === 0} onClick={onClear}>
-            Clear progression
+            {t("ui.clearProgression")}
           </button>
         </div>
 
         {progression.length === 0 ? (
           <p className="hint">
-            Add chords here, or send a selected relationship from Harmony Explorer.
+            {t("ui.addChordsHereOrSendASelectedRelationshipFromHarmonyExplorer")}
           </p>
         ) : (
           <ol className="harmony-progression-list">
             {progression.map((chord, index) => (
               <li key={chord.id}>
                 <span>
-                  <strong>{chordLabel(chord.rootPc, chord.familyId, chord.sectorIndex, false)}</strong>
-                  <small>{chordFamily(chord.familyId).shortName}</small>
+                  <strong>{chordLabel(chord.rootPc, chord.familyId, chord.sectorIndex, false, chordDisplayStyle)}</strong>
+                  <small>{familyName(chord.familyId, chordFamily(chord.familyId).shortName, language)}</small>
                 </span>
                 <span className="progression-list-actions">
-                  <button type="button" className="tiny-button" disabled={index === 0} onClick={() => onMoveChord(index, -1)} aria-label="Move chord earlier">↑</button>
-                  <button type="button" className="tiny-button" disabled={index === progression.length - 1} onClick={() => onMoveChord(index, 1)} aria-label="Move chord later">↓</button>
-                  <button type="button" className="tiny-button" onClick={() => onRemoveChord(index)} aria-label="Remove chord">×</button>
+                  <button type="button" className="tiny-button" disabled={index === 0} onClick={() => onMoveChord(index, -1)} aria-label={t("ui.moveChordEarlier")}>↑</button>
+                  <button type="button" className="tiny-button" disabled={index === progression.length - 1} onClick={() => onMoveChord(index, 1)} aria-label={t("ui.moveChordLater")}>↓</button>
+                  <button type="button" className="tiny-button" onClick={() => onRemoveChord(index)} aria-label={t("ui.removeChord")}>×</button>
                 </span>
               </li>
             ))}
@@ -156,20 +162,21 @@ export function ProgressionAssistantPanel({
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>Optimization</legend>
+        <legend>{t("ui.optimization")}</legend>
         <label className="check-row">
           <input
             type="checkbox"
             checked={allowApproximations}
             onChange={(event) => onAllowApproximationsChange(event.target.checked)}
           />
-          Allow conservative fifth-omission approximations
+          {t("ui.allowConservativeFifthOmissionApproximations")}
+          <HelpTip text={t("ui.progressionApproxHelp")} />
         </label>
 
         <label>
           <span className="label-line">
-            Hand-movement emphasis: {Math.round(handMovementWeight * 100)}%
-            <HelpTip text="Higher values favor nearby Stradella button combinations. Lower values give more weight to minimum pitch-class voice motion. Exact realizations are still preferred." />
+            {t("ui.handMovementEmphasis")}: {Math.round(handMovementWeight * 100)}%
+            <HelpTip text={t("ui.progressionHandHelp")} />
           </span>
           <input
             type="range"
@@ -183,21 +190,21 @@ export function ProgressionAssistantPanel({
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>Playback</legend>
+        <legend>{t("ui.playback")}</legend>
         <label>
-          Rhythmic pattern
+          {t("ui.rhythmicPattern")}
           <select
             value={rhythmPattern}
             onChange={(event) => onRhythmPatternChange(event.target.value as ProgressionRhythmPattern)}
           >
-            <option value="block">All buttons together</option>
-            <option value="oom-pah">Basic oom-pah (2/4)</option>
-            <option value="waltz">Waltz (3/4)</option>
-            <option value="march">March (4/4)</option>
+            <option value="block">{t("ui.allButtonsTogether")}</option>
+            <option value="oom-pah">{t("ui.basicOomPah24")}</option>
+            <option value="waltz">{t("ui.waltz34")}</option>
+            <option value="march">{t("ui.march44")}</option>
           </select>
         </label>
         <label>
-          Tempo: {tempoBpm} BPM
+          {t("ui.tempoBpm", { tempo: tempoBpm })}
           <input
             type="range"
             min="40"
@@ -207,27 +214,27 @@ export function ProgressionAssistantPanel({
             onChange={(event) => onTempoBpmChange(Number(event.target.value))}
           />
         </label>
-        <p className="hint">During playback the active Stradella buttons are highlighted on the diagram.</p>
+        <p className="hint">{t("ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram")}</p>
       </fieldset>
 
       {progression.length > 0 && !plan.playable && (
         <div className="result-card progression-result-card">
-          <div className="result-card-title">Optimized Stradella path</div>
-          <p><strong>Not available for the complete progression.</strong></p>
+          <div className="result-card-title">{t("ui.optimizedStradellaPath")}</div>
+          <p><strong>{t("ui.notAvailableForTheCompleteProgression")}</strong></p>
           {plan.unsupportedLabels.length > 0 && (
-            <p className="hint">No supported realization: {plan.unsupportedLabels.join(", ")}.</p>
+            <p className="hint">{t("ui.noSupportedRealization")}: {plan.unsupportedLabels.join(", ")}.</p>
           )}
         </div>
       )}
 
       {plan.playable && (
         <div className="result-card progression-result-card">
-          <div className="result-card-title">Optimized Stradella path</div>
+          <div className="result-card-title">{t("ui.optimizedStradellaPath")}</div>
           <p>
-            Voice motion: <strong>{plan.totalHarmonicMotion} semitones</strong> · Hand movement:{" "}
-            <strong>{plan.totalPhysicalMovement.toFixed(1)} button spacings</strong>
+            {t("ui.voiceMotion")}: <strong>{plan.totalHarmonicMotion} {t("ui.semitones")}</strong> · {t("ui.handMovement")}: {" "}
+            <strong>{plan.totalPhysicalMovement.toFixed(1)} {t("ui.buttonSpacings")}</strong>
           </p>
-          <p>Approximate realizations: <strong>{plan.approximateCount}</strong></p>
+          <p>{t("ui.approxRealizations")}: <strong>{plan.approximateCount}</strong></p>
           <div className="progression-plan-steps">
             {plan.steps.map((step, index) => {
               const transition = step.transitionFromPrevious;
@@ -239,14 +246,14 @@ export function ProgressionAssistantPanel({
                   onClick={() => onPreviewStep(index)}
                 >
                   <span className="progression-plan-step-title">
-                    {index + 1}. {step.label} {step.result.exact ? "" : "(approx.)"}
+                    {index + 1}. {step.label} {step.result.exact ? "" : t("ui.approxAbbrev")}
                   </span>
-                  <span>{realizationText(step)}</span>
+                  <span>{realizationText(step, language)}</span>
                   {transition && (
                     <span className="progression-plan-metrics">
-                      voice {transition.harmonicMotion} st · hand {transition.physicalMovement.toFixed(1)}
+                      {t("ui.voiceMotion")} {transition.harmonicMotion} st · {t("ui.handMovement")} {transition.physicalMovement.toFixed(1)}
                       {transition.sharedPitchClasses.length > 0
-                        ? ` · shared ${transition.sharedPitchClasses.map((pc) => pitchName(pc, step.chord.sectorIndex, false)).join(", ")}`
+                        ? ` · ${t("ui.sharedNotes")} ${transition.sharedPitchClasses.map((pc) => pitchName(pc, step.chord.sectorIndex, false)).join(", ")}`
                         : ""}
                     </span>
                   )}
@@ -256,10 +263,10 @@ export function ProgressionAssistantPanel({
           </div>
           <div className="button-row">
             <button type="button" className="small-button active-tool" onClick={onPlay}>
-              Play optimized progression
+              {t("ui.playOptimizedProgression")}
             </button>
             <button type="button" className="small-button" onClick={onStop}>
-              Stop
+              {t("ui.stop")}
             </button>
             <button
               type="button"
@@ -267,12 +274,12 @@ export function ProgressionAssistantPanel({
               disabled={!previewStep}
               onClick={() => previewIndex !== null && onOpenStepInChordFinder(previewIndex)}
             >
-              Open preview in Chord Finder
+              {t("ui.openPreviewInChordFinder")}
             </button>
           </div>
           {previewStep && (
             <p className="hint">
-              Previewing <strong>{previewStep.label}</strong>: {realizationText(previewStep)}.
+              {t("ui.preview")} <strong>{previewStep.label}</strong>: {realizationText(previewStep, language)}.
             </p>
           )}
         </div>

@@ -1,3 +1,47 @@
+## v0.15.12 — Harmony legend and Stradella realization notes (release candidate)
+
+- Aligns Harmony Explorer legend descriptions and headings with available horizontal space and supports multiline English/Spanish text.
+- Displays Stradella realization levels in the same order in the settings menu and diagram: Harmonic identity, Pitch-class realization, Physical realization, Registral voicing. Setting labels have no numerical prefixes.
+- Provides optional nominal chord-note spacing alongside Registral voicing, with SVG/PNG export support, text sizing limits, separation for accidentals and adjacent notes, and red indicators for one-semitone gaps. The labeled semitone distances remain exact even when segments expand to prevent collisions.
+- Preserves the distinction between configured nominal pitches and measured audio. Chord generation, ergonomic ranking, playback and existing settings remain unchanged.
+
+## v0.15.11 — Toolbar, Harmony legend, and voicing-interval display (release candidate)
+
+- Wraps Harmony legend descriptions within their allocated SVG box; row and footer heights expand to accommodate longer labels, including Spanish translations.
+- Removes the visible Download format heading above SVG/PNG buttons (retained for accessibility) and shifts Sound/Reset slightly left.
+- Adds selected tooltip help for Stradella hand span/button count, Harmony scale/diatonic filtering, and Progression Assistant approximate realizations.
+- Adds an optional, default-off Stradella Chord Finder interval strip beneath the main diagram. It plots nominal sounding pitches on a semitone-proportional axis, combines unison duplicates, and labels distances between consecutive notes; mobile layouts can scroll horizontally.
+- Note-spacing presentation is derived from the user-configured nominal register model, not measured reed voicings. It is outside exported SVG/PNG and cannot affect harmonic rankings or playback.
+- Adds a focused regression for interval calculations and bilingual Harmony legend wrapping; full native npm build and test suite require local validation.
+
+## v0.15.10 — English/Spanish interface localization (release candidate)
+
+- Extended interface translation to Settings, navigation, Stradella and Treble chord finders, Harmony Explorer, Progression Assistant, patterns, ABC, sequences, annotation controls, accessible labels, and context help.
+- Translated display-side chord-family and scale descriptions without altering harmonic IDs or chord-symbol conventions.
+- Added localized four-level Stradella diagram notes, detailed Spanish realization summaries, Treble chord feedback, and Harmony relationship explanations. Existing English explanations remain the default for old APIs.
+- Preserved deterministic download filenames across language settings, including translated diagram notes.
+- Added translation parity and music-display regression tests; updated static UI tests for translation bindings.
+- Continued to support Auto (browser), English fallback, and explicit persisted language preference; documentation stays in English.
+
+## v0.15.9 — Interface localization foundation (release candidate)
+
+- Added a typed English/Spanish interface catalog and English fallback for untranslated keys.
+- Added **Settings → Language** with **Auto (browser)**, **English**, and **Español**. Autodetection uses browser language preferences (including regional Spanish locales), falls back to English, and does not override a manual choice.
+- Saves the language preference locally and in imported/exported settings JSON; respects existing explicit preferences from older settings files and refreshes the document language for accessibility.
+- Localized the main navigation, prominent settings, About panel, and key Stradella, Treble and Harmony tool controls. Additional tool strings remain English pending later passes.
+- Kept user guides and the README English-only. Music algorithms, chord identities, displayed pitch notation choices, filenames, audio and exported music data were not changed.
+- Added `test:i18n` for locale detection, preference precedence, translation fallback and interpolation. Native npm build and full regression suite still require verification.
+
+## v0.15.8 — Chord family expansion and extended-voicing ranking (release candidate)
+
+- Added nine Finder chord types: sus2, 7sus4, major/minor add9, major/minor 6/9, 7♯5, 7♯9, and major7♯11.
+- Introduced chord-tone roles to protect suspensions, specified alterations and explicitly added tones from approximation omissions; preserved strict no-extra-tone rules.
+- Linked existing Harmony Explorer sus2 and augmented-dominant-7 families to their new exact Finder equivalents, without expanding the Harmony circle's selectable families.
+- Added a C7 + Cm chord-buttons-only recipe for C7♯9, with correct enharmonic spelling.
+- Kept completeness-first ranking for chords up to four tones. Five-plus-tone chords now incur stronger nominal, register-dependent semitone/cluster penalties; valid alternatives remain available.
+- Preserved existing chord IDs, audio mappings, physical diagram geometry, display-style preferences and existing download filename conventions. Added focused regressions.
+- Requires native `npm run test:all` and `npm run build` verification on the user's computer before release.
+
 ## v0.15.7 — Responsive interface release candidate (2026-10-23)
 
 - Added **Show inner note ring** directly to the Harmony Explorer tool panel while keeping the Settings → Harmony control synchronized.
@@ -500,3 +544,9 @@ Major 3rd row: D#  A#   F    C    G    D
 
 - 
 ```
+
+### Display notation and documentation maintenance (v0.15.7)
+
+- Added three global visual chord-notation styles, available in Settings → Notation, across chord diagrams, Harmony Explorer and textual explanations. Internal harmonic identifiers, playback and download filenames are unchanged.
+- Simplified the Harmony Explorer inner-note-ring tooltip, and consolidated README feature descriptions; release-by-release details remain in this version history.
+- Added an implementation plan for future interface localization in `docs/internal/localization-plan.md`; English remains the only implemented UI language.

@@ -1,3 +1,4 @@
+import type { ChordDisplayStyle } from "../chordDisplay";
 /*
   Pitch-class mathematics for the Harmonic Circle Explorer. Common tones,
   diatonic membership and voice leading are harmonic abstractions: no acoustic
@@ -171,24 +172,37 @@ export function pitchName(pc: number, sectorIndex: number, showEnharmonics = fal
   return COMMON_NAMES[normalized];
 }
 
-export function chordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false) {
+function harmonySuffix(familyId: ChordFamilyId, style: ChordDisplayStyle): string {
+  const original = chordFamily(familyId).suffix;
+  const map: Partial<Record<ChordFamilyId, [string, string, string]>> = {
+    major: ["", "M", "maj"], minor: ["m", "m", "min"],
+    sixth: ["6", "M6", "maj6"], minor6: ["m6", "m6", "min6"],
+    major7: ["maj7", "M7", "maj7"], minor7: ["m7", "m7", "min7"],
+    minorMajor7: ["m(maj7)", "m(M7)", "minMaj7"],
+    halfDiminished7: ["ø7", "ø7", "ø7"],
+    augmentedMajor7: ["+maj7", "+M7", "+maj7"],
+  };
+  return map[familyId]?.[style === "compact" ? 0 : style === "letter" ? 1 : 2] ?? original;
+}
+
+export function chordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false, style?: ChordDisplayStyle) {
   const family = chordFamily(familyId);
+  const suffix = style ? harmonySuffix(familyId, style) : family.suffix;
   const root = pitchName(rootPc, sectorIndex, showEnharmonics);
-  if (!showEnharmonics || !root.includes("/")) return `${root}${family.suffix}`;
+  if (!showEnharmonics || !root.includes("/")) return `${root}${suffix}`;
   return root
     .split("/")
-    .map((name) => `${name}${family.suffix}`)
+    .map((name) => `${name}${suffix}`)
     .join("/");
 }
 
-/**
- * Circle-only chord label. An explicit M distinguishes major triads from the
- * individual pitch-class labels of the optional inner note ring. The ordinary
- * chordLabel API is unchanged for progression notation and other consumers.
- */
-export function circleChordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false) {
+/** Chord labels follow the selected visual notation; inner-ring note labels
+ * remain pitch names without a chord-quality suffix. */
+export function circleChordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false, style?: ChordDisplayStyle) {
+  // Preserve the previously published circle-label API for callers that have
+  // not opted into a display style.
+  if (style) return chordLabel(rootPc, familyId, sectorIndex, showEnharmonics, style);
   if (familyId !== "major") return chordLabel(rootPc, familyId, sectorIndex, showEnharmonics);
-  // Each enharmonic spelling needs its own suffix (F♯M/G♭M, not F♯/G♭M).
   return pitchName(rootPc, sectorIndex, showEnharmonics)
     .split("/")
     .map((root) => `${root}M`)

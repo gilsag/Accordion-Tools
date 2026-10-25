@@ -142,6 +142,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  text-align: left;
 }
 
 .section-title span {
@@ -2106,6 +2107,15 @@ input[type="range"] {
   gap: 0.4rem;
   padding-left: 1.4rem;
 }
+.finder-note-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+.finder-voicing-spacing-option {
+  margin-left: 1.5rem;
+  font-size: 0.92em;
+}
 
 /* Persistent two-way settings show the active choice rather than the next action. */
 .segmented-choice-control { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; }
@@ -2118,7 +2128,20 @@ input[type="range"] {
 /* The toolbar format selector is deliberately compact beside Download. */
 .topbar-format-choice { flex: 0 0 auto; width: 126px; }
 .topbar-format-choice .segmented-choice-control { gap: 2px; }
-.topbar-format-choice .label-line { font-size: 10px; }
+.topbar-format-choice .label-line {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.topbar-after-reset-space { flex: 0 0 20px; }
+@media (max-width: 860px) {
+  .topbar-after-reset-space { display: none; }
+}
 .topbar-format-choice .segmented-choice-button { padding: 5px 3px; }
 
 /* Responsive UI: presentation-only. No standalone exported SVG can match
@@ -2171,4 +2194,66 @@ input[type="range"] {
   .small-button, .topbar-button, .segmented-choice-button,
   .tiny-button, .style-toggle { min-height: 40px; }
   .help-tip { min-width: 40px; min-height: 40px; }
+}
+
+/* Finder footers: use a consistent label/value grid so wrapped explanatory text
+   remains readable, and let the Stradella nominal-spacing guide live inside
+   the exported diagram beside Registral voicing. */
+.finder-annotation-block {
+  display: grid;
+  gap: 0.34em;
+}
+
+.finder-annotation-line {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 12px;
+  align-items: start;
+  margin-bottom: 0.08em;
+}
+
+.finder-annotation-label {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.finder-annotation-value {
+  min-width: 0;
+}
+
+.finder-annotation-line-voicing {
+  align-items: center;
+}
+
+.voicing-interval-chart {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.voicing-interval-svg {
+  display: block;
+  /* An intrinsic chart width prevents SVG viewBox magnification. */
+  max-width: 100%;
+  overflow: visible;
+}
+
+.voicing-interval-track { stroke: #bdc6d4; stroke-width: 2.4; }
+.voicing-interval-gap-tight { stroke: #c43f35; stroke-width: 4.5; }
+.voicing-interval-close { stroke: #c77736; stroke-width: 4; }
+.voicing-interval-open { stroke: #509c8a; stroke-width: 3.5; }
+.voicing-interval-bass { fill: #3266aa; stroke: #fff; stroke-width: 1.8; }
+.voicing-interval-chord { fill: #426c5d; stroke: #fff; stroke-width: 1.8; }
+.voicing-interval-distance { fill: #495567; font-weight: 800; }
+.voicing-interval-note { fill: #172033; font-weight: 800; }
+
+@media (max-width: 900px) {
+  .finder-annotation-line {
+    grid-template-columns: 1fr;
+    row-gap: 0.08em;
+  }
+
+  .finder-annotation-label {
+    white-space: normal;
+  }
+
 }

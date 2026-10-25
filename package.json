@@ -1,16 +1,16 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.15.7",
+  "version": "0.15.12",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:chords": "tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts",
+    "test:chords": "tsx scripts/chord-family-expansion.test.ts && tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts",
     "test:notation": "tsx scripts/notation.test.ts",
-    "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:controls && npm run test:audio",
+    "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:controls && npm run test:audio && npm run test:display && npm run test:i18n",
     "test:abc": "tsx scripts/abc-ties.test.ts",
     "test:harmony": "tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts",
     "test:controls": "tsx scripts/binary-controls.test.ts && npm run test:explanation-ui",
@@ -21,7 +21,9 @@
     "test:audio": "tsx scripts/la-melodiosa-playback-mapping.test.ts",
     "test:density": "tsx scripts/stradella-voicing-density.test.ts",
     "test:explanation-ui": "tsx scripts/stradella-explanation-ui.test.ts",
-    "test:responsive": "node scripts/responsive-layout.test.mjs"
+    "test:responsive": "node scripts/responsive-layout.test.mjs",
+    "test:display": "tsx scripts/chord-display.test.ts && tsx scripts/voicing-ui-regression.test.ts",
+    "test:i18n": "tsx scripts/interface-language.test.ts && tsx scripts/i18n-display-coverage.test.ts && tsx scripts/i18n-bindings.test.ts && node scripts/i18n-tool-coverage.test.cjs && tsx scripts/i18n-options.test.ts && tsx scripts/i18n-diagram-labels.test.ts"
   },
   "dependencies": {
     "abcjs": "^6.6.3",
