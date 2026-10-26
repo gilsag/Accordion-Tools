@@ -1,7 +1,7 @@
 import { translate, type InterfaceLanguage } from "../../i18n/catalog";
-import { chordRole, stradellaButtonFunction } from "../../i18n/musicTerms";
+import { chordRole } from "../../i18n/musicTerms";
 import type { FinderChordPattern } from "../../types";
-import { displayRealizedChord, type ChordDisplayStyle } from "../chordDisplay";
+import { displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "../chordDisplay";
 import { transpose } from "../../music";
 import { intervalsForChordFinder } from "../../music/chordDefinitions";
 import type { StradellaChordFinderResult } from "./results";
@@ -75,8 +75,9 @@ export function realizationAnnotation(
   const spell = (pc: string) => chordToneName(root, pattern, pc);
   const buttons = result.playbackButtons.map((button) => {
     if (isBassButton(button)) return `${spell(button.pitchClass ?? "")} ${t(button.kind === "bass-counterbass" ? "ui.counterbass" : "ui.bass")}`;
-    const kind = chordKindLabel(button.kind);
-    return `${spell(button.chordRoot ?? "")} ${language === "en" || language === "es" ? kind : stradellaButtonFunction(kind, language)}`;
+    // Printed chord-button symbols are concise (CM, Fm, G7, Bdim7);
+    // bass and counterbass roles remain fully written and localized.
+    return displayStradellaButtonChord(spell(button.chordRoot ?? ""), button.kind, "letter");
   }).join(" + ");
   const tones = result.coveredPitches.map(spell).join("–");
   const omissions = result.missingPitches.map((pitch) => {

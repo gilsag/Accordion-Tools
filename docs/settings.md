@@ -140,7 +140,7 @@ Commands that show or hide content (e.g., **Show/Hide Stradella row labels**, **
 
 ## Stradella analytical registers
 
-Under **Settings → Stradella registers** (a separate section from Sound), specify two independent twelve-pitch ranges:
+Under **Settings → Stradella registers** (separate from Sound), two compact groups—**Bass / counterbass** and **Preset chords**—provide independent **Starting octave** and **Grouping** controls, followed by their **Configured range**. The C–B/F–E grouping tooltip explains the octave boundary. The section help explains that these are nominal model pitches rather than measured reed frequencies. Configure the two twelve-pitch ranges independently:
 
 | Setting | Default | Choices |
 |---|---|---|
@@ -155,9 +155,9 @@ Under **Settings → Stradella registers** (a separate section from Sound), spec
 
 ## Stradella Chord Finder diagram notes
 
-**Show realization explanation below diagram** controls the four optional footer levels: **Harmonic identity**, **Pitch-class realization**, **Physical realization**, and **Registral voicing**. They appear in that order in the settings menu and in exported SVG/PNG diagrams. The level checkboxes appear when the master option is enabled; disabling it preserves their selections. All four levels are enabled by default, and hiding all four removes the footer and its reserved space.
+**Show diagram explanation** controls the four optional footer levels: **Harmonic identity**, **Pitch-class realization**, **Physical realization**, and **Registral voicing**. They appear in that order in the settings menu and in exported SVG/PNG diagrams. The level checkboxes appear when the master option is enabled; disabling it preserves their selections. All four levels are enabled by default, and hiding all four removes the footer and its reserved space.
 
-**Registral voicing** lists nominal modeled pitches and octaves (including `×2` for duplicated unisons) from the configured Stradella bass and chord registers. These values do not represent measured acoustic frequencies. The nested **Show nominal note spacing** option, on by default, substitutes an interval chart for the pitch list. It displays semitone differences between adjacent nominal pitches, marks one-semitone gaps red, and includes the chart in SVG/PNG exports. The diagram text-size control affects the chart within bounded font sizes. Its horizontal spacing can expand to avoid collisions, so the numerical intervals, rather than line lengths, indicate semitone distances. Hiding Registral voicing disables the nested control without changing its stored value. The checkbox value is stored in settings JSON as `stradellaShowNominalNoteSpacing`; older settings without that field use the default. The four explanation levels align left, with only the subordinate spacing option indented. Neither option alters chord generation, harmonic interpretation, ranking, audio, or filenames.
+**Registral voicing** lists nominal modeled pitches and octaves (including `×2` for duplicated unisons) from the configured Stradella bass and chord registers. These values do not represent measured acoustic frequencies. The nested **Show nominal note spacing** option, on by default, substitutes an interval chart for the pitch list. It displays semitone differences between adjacent nominal pitches, marks one-semitone gaps red, and includes the chart in SVG/PNG exports. The diagram text-size control affects the chart within bounded font sizes. Its pitch-marker positions and connecting interval lines remain strictly proportional to semitones; note labels use separate rows for collision avoidance, short marker ticks, and interval counts below the axis. Hiding Registral voicing disables the nested control without changing its stored value. The checkbox value is stored in settings JSON as `stradellaShowNominalNoteSpacing`; older settings without that field use the default. The diagram footer uses one shared label column across all four explanation levels. Preset chord-button symbols are compact while bass/counterbass roles remain unabbreviated; only the subordinate spacing option is indented in the settings panel. Neither option alters chord generation, harmonic interpretation, ranking, audio, or filenames.
 
 The import/export setting `stradellaNoteLevels` is an object with boolean fields `identity`, `pitchClasses`, `voicing`, and `physical`, all `true` by default. Older settings files omit this object and continue to show all four lines. A partially specified object defaults only its missing/invalid fields to `true`. The default settings file in `public/default-settings.json` contains the same keys.
 
@@ -180,6 +180,11 @@ The import/export setting `stradellaNoteLevels` is an object with boolean fields
 | `stradellaBassVoicing` | Chooses the synthetic voicing used for Stradella bass buttons. |
 
 The sound engine uses the browser Web Audio API. The built-in synthesizer is an explicit alternative for reference and practice. La Melodiosa plays recorded WAV samples using its SFZ region mappings; outside the mapped range it transposes the nearest available recording rather than falling back to synthesis. If no usable sample loads, that note is silent and a warning is logged.
+
+
+### Compact settings controls
+
+The Appearance sliders display each translated label, its current value and a range control in a compact vertical group. The Stradella row-label action is a full-width Show/Hide toggle alongside the button-label and bellows-guide actions. Sound has contextual help for the source and pitch-mapping controls; the visible mapping summary identifies the currently selected behavior. Stradella registers use two mirrored groups for bass/counterbass and preset chords. Each shows its configured nominal range and a grouping tooltip; the section help distinguishes configured pitches from measured accordion voicing. La Melodiosa attribution and transposition limitations remain in About and this guide.
 
 ### La Melodiosa attribution
 
@@ -223,7 +228,7 @@ Secondary Harmony Explorer preferences are stored in Settings so the main Harmon
 | `stradellaChordFinderMode` | Default search mode for Stradella Chord Finder. |
 | `stradellaChordFinderMarkRootBass` | Marks the root bass as a visual reference in chord-button results. |
 
-The Stradella Chord Finder has a master **Show realization explanation below diagram** checkbox with dependent level controls and tooltip guidance; its chord/realization title is controlled centrally by **Title** settings. The root bass location reference in **Chord buttons only** is now controlled by a Show/Hide button. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
+The Stradella Chord Finder has a master **Show diagram explanation** checkbox with dependent level controls and tooltip guidance; its chord/realization title is controlled centrally by **Title** settings. The root bass location reference in **Chord buttons only** is now controlled by a Show/Hide button. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
 | `chordFinderRoot` | Default Chord Finder root. |
 | `chordFinderPattern` | Default Chord Finder pattern. |
 | `chordFinderInversion` | Default Chord Finder inversion. |

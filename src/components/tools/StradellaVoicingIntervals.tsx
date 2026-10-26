@@ -84,8 +84,8 @@ export function StradellaVoicingIntervals({
             />
             <line
               x1={note.x} x2={note.x}
-              y1={metrics.topLabelY + note.lane * metrics.laneStep + 4}
-              y2={metrics.trackY - metrics.circleRadius - 3}
+              y1={metrics.leaderTopY}
+              y2={metrics.leaderBottomY}
               className="voicing-interval-leader"
             />
             <text

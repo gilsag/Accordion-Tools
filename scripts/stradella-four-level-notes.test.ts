@@ -36,6 +36,11 @@ assert.deepEqual(normalizeStradellaNoteLevels({ identity: false, voicing: false 
 });
 assert.deepEqual(normalizeStradellaNoteLevels(null), DEFAULT_STRADELLA_NOTE_LEVELS);
 assert.match(all.lines[3], /Registral voicing: G2/);
+assert.match(all.lines[2], /Physical realization: .*\b[A-G](?:♯|♭)?[Mm7]/,
+  "preset chord buttons use concise letter-style chord symbols");
+assert.doesNotMatch(all.lines[2], /\b(?:major|minor|diminished)\b/i,
+  "do not spell out preset-chord qualities in the concise physical footer");
+assert.match(all.lines[2], /(?:bass|counterbass)/, "bass and counterbass names remain unabbreviated");
 assert.doesNotMatch(all.lines[3], /Low to high:/);
 assert.doesNotMatch(all.lines[3], /not measured|Lowest modeled:/i);
 const chordOnly = getStradellaChordFinderResults(buttons, "C", "major13", "bass-and-chords", false, 4, 5.5)

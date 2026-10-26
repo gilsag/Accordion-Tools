@@ -3455,19 +3455,10 @@ function App() {
   }
 
   /** Clears the Scale Finder highlight without changing its selected root or pattern. */
-  function clearScaleFinder() {
-    setScaleFinderActive(false);
-  }
 
   /** Clears the Chord Finder highlight without changing its selected root or pattern. */
-  function clearChordFinder() {
-    setChordFinderActive(false);
-  }
 
   /** Clears the Stradella Chord Finder highlight without changing its selected options. */
-  function clearStradellaChordFinder() {
-    setStradellaChordFinderActive(false);
-  }
 
   /** Plays the currently highlighted Stradella Chord Finder result. */
   function playStradellaChordFinder() {
@@ -4484,7 +4475,9 @@ function App() {
     80,
     Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
   );
-  const finderAnnotationLabelWidth = Math.min(285, Math.max(190, finderExplanationFontSize * 10.8));
+  // Match the shared CSS label column using the longest enabled translated label.
+  const finderAnnotationLabelWidth = Math.max(150, ...finderAnnotationDisplayLines.map((line) =>
+    Math.ceil(Math.max(0, line.indexOf(":") + 1) * finderExplanationFontSize * 0.65)));
   const finderAnnotationContentWidth = Math.max(220, viewWidth - 64 - finderAnnotationLabelWidth - 18);
   const finderVoicingChartHeight = finderVoicingChartVisible ? finderVoicingLayout!.metrics.height : 0;
   const finderFooterHeight = (() => {
@@ -4505,9 +4498,16 @@ function App() {
     }
     return Math.max(82, Math.ceil(total));
   })();
+  // Place the annotation closer to the lowest physical button, retaining a
+  // clearance for selection outlines and alternate Stradella row configurations.
+  const stradellaFinderFooterY = Math.max(
+    baseViewHeight - 90,
+    Math.max(0, ...buttons.map((button) => button.y + buttonSize * 0.58)) + 24,
+  );
   const viewHeight = trebleFooterEnabled && buttonTrebleFooter
     ? trebleFooterY + trebleFooterHeight + 8
-    : baseViewHeight + (trebleFooterEnabled ? 112 : finderFooterEnabled ? finderFooterHeight - 8 : 0);
+    : finderFooterEnabled ? stradellaFinderFooterY + finderFooterHeight + 12
+      : baseViewHeight + (trebleFooterEnabled ? 112 : 0);
 
   const sidebarWidth =
     interfaceDensity === "compact"
@@ -5091,7 +5091,7 @@ function App() {
               
                                   <button
                                     type="button"
-                                    className={`small-button ${showButtonLabels ? "active-tool" : ""}`}
+                                    className={`small-button appearance-label-toggle ${showButtonLabels ? "active-tool" : ""}`}
                                     onClick={() => setShowButtonLabels((current) => !current)}
                                   >
                                     {showButtonLabels
@@ -5101,7 +5101,7 @@ function App() {
               
                                   <button
                                     type="button"
-                                    className={`small-button ${showBellowsGuide ? "active-tool" : ""}`}
+                                    className={`small-button appearance-label-toggle ${showBellowsGuide ? "active-tool" : ""}`}
                                     onClick={() => setShowBellowsGuide((current) => !current)}
                                   >
                                     {showBellowsGuide
@@ -5110,7 +5110,14 @@ function App() {
                                   </button>
               
                                   {side === "stradella" && (
-                                    <BinaryChoiceButton label={t("ui.stradellaRowLabels")} enabled={showStradellaRowLabels} onToggle={() => setShowStradellaRowLabels((value) => !value)} whenEnabled={t("ui.hideStradellaRowLabels")} whenDisabled={t("ui.showStradellaRowLabels")} />
+                                    <button
+                                      type="button"
+                                      className={`small-button appearance-label-toggle ${showStradellaRowLabels ? "active-tool" : ""}`}
+                                      aria-pressed={showStradellaRowLabels}
+                                      onClick={() => setShowStradellaRowLabels((value) => !value)}
+                                    >
+                                      {showStradellaRowLabels ? t("ui.hideStradellaRowLabels") : t("ui.showStradellaRowLabels")}
+                                    </button>
                                   )}
               
                                   <label>
@@ -5336,26 +5343,34 @@ function App() {
                   </button>
                   {activeSettingsSection === "stradellaRegisters" && (
                     <div className="section-content">
-                    <fieldset className="tool-fieldset">
-                      <legend>{t("ui.chordFormationAndRegisterPlacement")}</legend>
-                      <p className="hint">{t("ui.stradellaRegisterIntro")}</p>
-                        <label>
-                          {t("ui.bassCounterbassStartingOctave")}
-                          <select value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
-                            {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
-                          </select>
-                        </label>
-                        <SegmentedChoice label={t("ui.bassCounterbassGrouping")} value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
-                        <p className="hint">{t("ui.selectedBassRange")}: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
-                        <label>
-                          {t("ui.presetChordStartingOctave")}
-                          <select value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
-                            {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
-                          </select>
-                        </label>
-                        <SegmentedChoice label={t("ui.presetChordGrouping")} value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
-                        <p className="hint">{t("ui.selectedChordRange")}: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
-                    </fieldset>
+                      <div className="stradella-register-settings">
+                        <div className="stradella-register-intro-help">
+                          <span>{t("ui.registerNominalModel")}</span>
+                          <HelpTip text={t("ui.stradellaRegisterIntro")} />
+                        </div>
+                        <section className="stradella-register-group" aria-labelledby="stradella-bass-register-heading">
+                          <h3 id="stradella-bass-register-heading">{t("ui.registerBassGroup")}</h3>
+                          <label>
+                            {t("ui.registerStartingOctave")}
+                            <select aria-label={t("ui.bassCounterbassStartingOctave")} value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
+                              {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
+                            </select>
+                          </label>
+                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.bassCounterbassGrouping")} value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
+                        </section>
+                        <section className="stradella-register-group" aria-labelledby="stradella-chord-register-heading">
+                          <h3 id="stradella-chord-register-heading">{t("ui.registerChordGroup")}</h3>
+                          <label>
+                            {t("ui.registerStartingOctave")}
+                            <select aria-label={t("ui.presetChordStartingOctave")} value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
+                              {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
+                            </select>
+                          </label>
+                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.presetChordGrouping")} value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
+                        </section>
+                      </div>
                     </div>
                   )}
                 </section>
@@ -5372,13 +5387,7 @@ function App() {
 
                 {activeSettingsSection === "sound" && (
                   <div className="section-content">
-                    <p className="hint">
-                      {t("ui.soundSourceHint")}
-                    </p>
-
-
-
-                    <SegmentedChoice label={t("ui.soundSource")} value={soundSource} onChange={setSoundSource} options={[{ value: "la-melodiosa", label: "La Melodiosa" }, { value: "synth", label: t("ui.synthesizer") }]} />
+                    <SegmentedChoice label={<>{t("ui.soundSource")} <HelpTip text={`${t("ui.soundSourceHint")} ${t("ui.melodiosaCredit")}`} /></>} ariaLabel={t("ui.soundSource")} value={soundSource} onChange={setSoundSource} options={[{ value: "la-melodiosa", label: "La Melodiosa" }, { value: "synth", label: t("ui.synthesizer") }]} />
 
                     {soundSource === "la-melodiosa" && (
                       <>
@@ -5418,17 +5427,14 @@ function App() {
                         )}
                         {(workspaceMode === "accordion" && side === "stradella") && (
                           <>
-                            <SegmentedChoice label={t("ui.samplePitchMapping")} value={laMelodiosaFollowStradellaRegisters ? "configured" : "original"} onChange={(next) => setLaMelodiosaFollowStradellaRegisters(next === "configured")} options={[{ value: "configured", label: t("ui.configuredRegisters") }, { value: "original", label: t("ui.originalMapping") }]} />
-                            <p className="hint">
+                            <SegmentedChoice label={<>{t("ui.samplePitchMapping")} <HelpTip text={laMelodiosaFollowStradellaRegisters ? t("ui.melodiosaConfigured") : t("ui.melodiosaOriginal")} /></>} ariaLabel={t("ui.samplePitchMapping")} value={laMelodiosaFollowStradellaRegisters ? "configured" : "original"} onChange={(next) => setLaMelodiosaFollowStradellaRegisters(next === "configured")} options={[{ value: "configured", label: t("ui.configuredRegisters") }, { value: "original", label: t("ui.originalMapping") }]} />
+                            <p className="hint sound-configuration-summary">
                               {laMelodiosaFollowStradellaRegisters
-                                ? t("ui.melodiosaConfigured")
-                                : t("ui.melodiosaOriginal")}
+                                ? t("ui.melodiosaConfiguredShort")
+                                : t("ui.melodiosaOriginalShort")}
                             </p>
                           </>
                         )}
-                        <p className="hint">
-                          {t("ui.melodiosaCredit")}
-                        </p>
                       </>
                     )}
 
@@ -5456,7 +5462,7 @@ function App() {
                     {(workspaceMode === "harmony" || side === "stradella") && (
                       <>
                         <label>
-                          {t("ui.stradellaBassVoicing")}
+                          <span className="label-line">{t("ui.stradellaBassVoicing")} <HelpTip text={t("ui.soundBassVoicingHelp")} /></span>
                           <select
                             value={stradellaBassVoicing}
                             onChange={(event) =>
@@ -5475,9 +5481,6 @@ function App() {
                           </select>
                         </label>
 
-                        <p className="hint">
-                          {t("ui.soundBassVoicingHelp")}
-                        </p>
                       </>
                     )}
 
@@ -5947,12 +5950,6 @@ function App() {
                             {t("ui.playScale")}
                           </button>
 
-                          <button
-                            className="small-button"
-                            onClick={clearScaleFinder}
-                          >
-                            {t("ui.clearScale")}
-                          </button>
                         </div>
                       </fieldset>
                     </div>
@@ -5985,7 +5982,6 @@ function App() {
                     setStradellaChordFinderActive(false);
                   }}
                   onPlay={playChordFinder}
-                  onClear={clearChordFinder}
                   showVoicingNote={showTrebleVoicingNote}
                   onShowVoicingNoteChange={setShowTrebleVoicingNote}
                 />
@@ -6038,7 +6034,6 @@ function App() {
                     setChordFinderActive(false);
                   }}
                   onPlay={playStradellaChordFinder}
-                  onClear={clearStradellaChordFinder}
                   canExploreHarmony={harmonyFamilyForFinderPattern(stradellaChordFinderPattern) !== null}
                   onExploreHarmony={exploreCurrentStradellaChordInHarmony}
                   formatPitches={formatStradellaFinderPitches}
@@ -7395,7 +7390,7 @@ function App() {
             {(finderFooterEnabled || trebleFooterEnabled) && (
               <foreignObject
                 x={32}
-                y={trebleFooterEnabled ? trebleFooterY : baseViewHeight - 21}
+                y={trebleFooterEnabled ? trebleFooterY : stradellaFinderFooterY}
                 width={viewWidth - 64}
                 height={trebleFooterEnabled && buttonTrebleFooter ? trebleFooterHeight : trebleFooterEnabled ? 128 : finderFooterHeight}
               >

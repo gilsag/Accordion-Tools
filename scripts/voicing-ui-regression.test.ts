@@ -46,23 +46,25 @@ for (const fontSize of [16, 20, 26, 32, 40]) {
         `labels in the same lane overlap at font ${fontSize}`);
     }
   }
-  assert.ok(dense.metrics.distanceY >= dense.metrics.topLabelY +
-    (Math.max(...dense.positions.map((n) => n.lane)) * dense.metrics.laneStep) + metrics.distanceFontSize,
-    "all label lanes remain above the interval numbers");
-  assert.ok(metrics.lowerLabelY > metrics.trackY + metrics.noteFontSize,
-    "lower note labels clear the marker line");
+  assert.ok(dense.metrics.distanceY > dense.metrics.trackY + dense.metrics.circleRadius + dense.metrics.distanceFontSize,
+    "semitone numbers sit below the proportional note axis");
+  assert.ok(dense.metrics.trackY > dense.metrics.topLabelY +
+    Math.max(...dense.positions.map((n) => n.lane)) * dense.metrics.laneStep,
+    "note label lanes remain above the proportional axis");
+  assert.ok(dense.metrics.leaderBottomY - dense.metrics.leaderTopY <= 12,
+    "marker leaders are short even with dense labels");
   assert.ok(dense.width >= dense.positions.at(-1)!.x + dense.positions.at(-1)!.labelWidth / 2,
     "final note label fits within the chart width");
 }
 
 const metrics = voicingIntervalMetrics(24);
 assert.ok(metrics.noteFontSize > metrics.distanceFontSize, "note labels stay visually prominent");
-assert.ok(metrics.height >= 60 && metrics.height - metrics.lowerLabelY >= 8,
-  "compact chart reserves room for the lower note labels");
+assert.ok(metrics.height >= 60 && metrics.height - metrics.distanceY >= 8,
+  "compact chart reserves space below the interval labels");
 assert.ok(metrics.noteFontSize <= 20, "chart font stays smaller than main footer text");
 assert.ok(voicingIntervalMetrics(40).noteFontSize <= 20, "maximum explanation size cannot inflate the chart");
-assert.ok(voicingIntervalMetrics(40).height >= 100,
-  "chart reserves enough vertical space for separate label lanes instead of squeezing them");
+assert.ok(voicingIntervalMetrics(40, 3).height >= 100,
+  "dense layouts reserve room for separate label lanes instead of squeezing them");
 assert.equal(voicingIntervalLayout([note(60, "C", 3, "C"), note(64, "E", 3, "E"),
   note(67, "G", 3, "G")]).width, 300, "small triads use their intrinsic width, not a stretched 480px panel");
 
@@ -92,6 +94,8 @@ const intervalComponent = readFileSync(new URL("../src/components/tools/Stradell
 const css = readFileSync(new URL("../src/App.css", import.meta.url), "utf8");
 assert.match(intervalComponent, /voicing-interval-gap-tight/, "1-semitone gaps receive a dedicated red style");
 assert.match(intervalComponent, /width=\{width\}/, "SVG retains intrinsic chart width");
+assert.match(intervalComponent, /y1=\{metrics.leaderTopY\}/, "leader lines are bounded independent of label lanes");
+assert.match(intervalComponent, /y=\{metrics.distanceY\}/, "interval values render below the pitch track");
 assert.match(intervalComponent, /x1=\{gap.fromX\}[\s\S]*?x2=\{gap.toX\}/,
   "colored interval lines use full proportional center-to-center distances");
 assert.match(intervalComponent, /width: `min\(100%, \$\{width\}px\)`/, "only shrink long charts, never upscale short ones");
@@ -103,9 +107,10 @@ assert.match(panel, /\["physical", t\("tools\.physicalRealization"\)\][\s\S]*?\[
   "physical realization precedes registral voicing in the menu at all times");
 assert.match(app, /const finderAnnotationDisplayLines = finderAnnotation\?\.lines \?\? \[\]/,
   "diagram uses permanent note-generator ordering, independent of chart setting");
-assert.match(css, /\.finder-annotation-line \{[\s\S]*?grid-template-columns: max-content minmax\(0, 1fr\)/,
-  "footer notes use a label/value grid to reduce awkward wrapped lines");
-assert.match(css, /\.finder-annotation-line-voicing \{[\s\S]*?align-items: center/, "title and chart share the same footer row");
+assert.match(css, /\.finder-annotation-block \{[\s\S]*?grid-template-columns: max-content minmax\(0, 1fr\)/,
+  "all footer lines share the same label/value grid columns");
+assert.match(css, /\.finder-annotation-line \{[\s\S]*?display: contents/, "row wrappers allow shared columns");
+assert.match(css, /\.finder-annotation-line-voicing \.finder-annotation-label/, "voicing heading aligns with chart");
 assert.match(css, /\.voicing-interval-gap-tight \{[\s\S]*?stroke: #c43f35/,
   "1-semitone intervals are highlighted in red");
 console.log("✓ Nominal interval spacing and bilingual SVG legend wrapping passed");

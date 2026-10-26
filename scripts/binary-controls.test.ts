@@ -9,7 +9,8 @@ const app = source("src/App.tsx");
 const panel = source("src/components/tools/StradellaChordFinderPanel.tsx");
 const component = source("src/components/ui/BinaryChoiceButton.tsx");
 
-assert.match(app, /whenEnabled=\{t\("ui\.hideStradellaRowLabels"\)\} whenDisabled=\{t\("ui\.showStradellaRowLabels"\)\}/);
+assert.match(app, /showStradellaRowLabels \? t\("ui\.hideStradellaRowLabels"\) : t\("ui\.showStradellaRowLabels"\)/);
+assert.match(app, /aria-pressed=\{showStradellaRowLabels\}/);
 assert.match(panel, /whenEnabled=\{t\("ui\.hideRootBass"\)\}/);
 assert.match(panel, /whenDisabled=\{t\("ui\.showRootBass"\)\}/);
 assert.match(component, /aria-pressed=\{enabled\}/, "Binary buttons should expose their selected state");

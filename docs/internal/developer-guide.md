@@ -56,7 +56,7 @@ When changing scoring, preserve tests for diagram-size invariance, stable tie-br
 
 ### Configured nominal Stradella register model
 
-`src/tools/stradellaChordFinder/registerModel.ts` maps actual `playbackButtons` into a *hypothetical* pitch set using independent bass/counterbass and preset-chord ranges. The ranges are a starting MIDI octave and grouping (`C-B` or `F-E`); for `F-E`, C through E lie in the octave **above** the starting F. The calculation returns a lowest *modeled* pitch, retaining its played-button source, and **must not** be treated as measured reed voicing. Real-world registers may produce multi-octave ranks. This model is not passed into harmonic candidate search or ergonomic scoring. When sampled playback is configured to follow the register model, the sound engine uses its nominal MIDI mapping, as documented below. The app stores four independent setting fields, and the explanatory UI explicitly labels the result as a model prediction.
+`src/tools/stradellaChordFinder/registerModel.ts` maps actual `playbackButtons` into a *hypothetical* pitch set using independent bass/counterbass and preset-chord ranges. The ranges are a starting MIDI octave and grouping (`C-B` or `F-E`); for `F-E`, C through E lie in the octave **above** the starting F. The calculation returns a lowest *modeled* pitch, retaining its played-button source, and **must not** be treated as measured reed voicing. Real-world registers may produce multi-octave ranks. This model is not passed into harmonic candidate search or ergonomic scoring. When sampled playback is configured to follow the register model, the sound engine uses its nominal MIDI mapping, as documented below. The app stores four independent setting fields, and the explanatory UI explicitly labels the result as a model prediction. The Stradella registers panel mirrors bass/counterbass and preset-chord groups with independent starting-octave and grouping controls; the displayed configured ranges must be computed from the same register model as the Chord Finder and sample mapping. The C–B/F–E help is a presentation concern, not a change to the underlying octave assignments.
 
 ## Other key invariants
 
@@ -135,3 +135,19 @@ The English, Spanish and French string catalogs are stored in `src/i18n/en.ts`, 
 ### Nominal spacing and batch export regression coverage
 
 Keep nominal registral MIDI positions strictly proportional; stack/offset note labels vertically rather than displacing pitch marks. The user-selected minimum adjacent gap must filter candidates before recommendation selection; do not reclassify filtered musical chord tones as harmonically invalid. Confirm the same settings in single SVG/PNG and ZIP exports. Check dense pitch labels at 16, 26 and 40 px, ZIP contents and filename uniqueness, reset scopes, and tooltips near every viewport edge in browser-rendered UI; source tests alone cannot establish visual or exported fidelity.
+
+### Registral interval chart and footer alignment
+
+The Stradella diagram footer shares one CSS grid across its four independently
+selectable label/value rows. The inner voicing chart is part of the exported
+SVG `foreignObject`; verify both SVG and PNG exports in a browser. Its
+`voicingIntervalLayout` positions are fixed by nominal MIDI differences, never
+shifted for label collisions. Independent label lanes, short marker ticks, and
+semitone counts below the axis keep pitch geometry distinct from typography.
+Do not infer physical reed pitches from this nominal model. Compact chord-button
+notation in Physical realization is a presentation choice; filenames, harmony,
+register analysis and sound samples retain their existing rules.
+
+### Left-panel control layout
+
+Keep slider label/value text adjacent to the range control, using density-aware group spacing without reducing input targets. Translation labels used with appended dynamic values should omit trailing punctuation to avoid doubled separators. Use full-width action buttons for Appearance's button-label, bellows-guide and Stradella row-label visibility toggles. The Finders' Show/Hide actions retain parameters; do not add Clear buttons that duplicate them. Preserve distinct Clear actions in recorders and sequence editors. Keep sound-source attribution visible in About and full technical information in contextual help and guides, while nominal bass/chord register ranges remain visible in Settings. Check six languages and narrow screens for clipped labels and tooltip accessibility.

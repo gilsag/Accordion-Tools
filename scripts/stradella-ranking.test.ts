@@ -1,3 +1,4 @@
+import { omissionPenalty } from "../src/music/chordVoicingPolicy";
 import assert from "node:assert/strict";
 import { generateStradella } from "../src/stradella.ts";
 import { getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools.ts";
@@ -120,3 +121,16 @@ assert.ok(cmaj13Results.some((item) => item.recipe.join("|") ===
 assert.ok(cmaj13Recommended.every((item) => item.extraPitches.length === 0));
 
 console.log(`✓ Stradella ranking is size- and spacing-independent (${scenarios.length} scenarios × ${sizes.length * spacings.length} geometries)`);
+
+// For dominant/major 13ths, the natural 11th can be omitted to avoid
+// rubbing against the retained major third; keeping the ninth is preferable.
+// This is a soft preference only: compare like-for-like requests, not C13/D
+// against C13/E (different bass constraints and different physical recipes).
+for (const family of ["dominant13", "major13"] as const) {
+  assert.ok(omissionPenalty("C", family, ["G", "F"]) <
+    omissionPenalty("C", family, ["G", "D"]),
+  `${family}: omission of natural 11th should cost less than omission of 9th`);
+}
+assert.ok(omissionPenalty("C", "minor13", ["F"]) >
+  omissionPenalty("C", "minor13", ["D"]),
+"minor thirteenth retains the distinct, non-clashing eleventh policy");
