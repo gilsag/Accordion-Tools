@@ -131,3 +131,7 @@ Persistent two-way choices use `SegmentedChoice` (`aria-pressed` on both visible
 ## Interface localization
 
 The English, Spanish and French string catalogs are stored in `src/i18n/en.ts`, `es.ts` and `fr.ts`. The typed locale registry and fallback in `src/i18n/catalog.ts` are the public API. UI option labels, generated descriptions, musical terminology and example names use separate presentation helpers without modifying harmonic IDs, sounding pitches or filename recipes. The Settings language menu derives its options from the registry. See [Adding Interface Languages](adding-interface-languages.md) for adding locales and the corresponding validation requirements.
+
+### Nominal spacing and batch export regression coverage
+
+Keep nominal registral MIDI positions strictly proportional; stack/offset note labels vertically rather than displacing pitch marks. The user-selected minimum adjacent gap must filter candidates before recommendation selection; do not reclassify filtered musical chord tones as harmonically invalid. Confirm the same settings in single SVG/PNG and ZIP exports. Check dense pitch labels at 16, 26 and 40 px, ZIP contents and filename uniqueness, reset scopes, and tooltips near every viewport edge in browser-rendered UI; source tests alone cannot establish visual or exported fidelity.

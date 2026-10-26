@@ -1,3 +1,12 @@
+## v0.15.16 — Proportional registral spacing and bulk diagram export
+
+- The nominal-note chart places pitch markers at proportional semitone intervals, using separate label rows and leader lines where necessary.
+- The Stradella Chord Finder can exclude candidates with adjacent distinct nominal notes separated by one semitone, or by one or two semitones. The default allows all distances. The filter acts before recommended candidates are selected and leaves harmonic validity unchanged.
+- Increased ranking penalties for close one-semitone nominal pitches; unison doubling does not count as a collision.
+- A single button downloads all playable realizations under the current settings as a ZIP containing SVG or PNG diagrams, as selected in the main toolbar.
+- The Reset control offers separate clear-current-work and restore-current-tool-defaults actions in one menu. Tooltip placement accounts for measured content height to reduce clipping.
+- Shortened the diagram-explanation checkbox and updated translations, settings documentation and version metadata.
+
 ## v0.15.15 — Harmony note ring and Chord Finder explanation controls
 
 - Shows the twelve-note inner pitch-class ring by default in Harmony Explorer and synchronizes its visibility with the legend and optional diagram explanation. Explicit saved settings that hide the ring remain respected.

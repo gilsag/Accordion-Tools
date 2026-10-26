@@ -2,7 +2,7 @@ import type { FinderChordPattern } from "../../types";
 import { chordToneName } from "../../tools/stradellaChordFinder/chordSpelling";
 import type { ModeledStradellaNote } from "../../tools/stradellaChordFinder/registerModel";
 import { useI18n } from "../../i18n/context";
-import { voicingIntervalLayout, voicingIntervalMetrics } from "../../tools/stradellaChordFinder/voicingIntervalLayout";
+import { voicingIntervalLayout } from "../../tools/stradellaChordFinder/voicingIntervalLayout";
 
 type StradellaVoicingIntervalsProps = {
   notes: readonly ModeledStradellaNote[];
@@ -20,12 +20,11 @@ export function StradellaVoicingIntervals({
   className = "",
 }: StradellaVoicingIntervalsProps) {
   const { t } = useI18n();
-  const { positions, distances, width } = voicingIntervalLayout(notes, {
+  const { positions, distances, width, metrics } = voicingIntervalLayout(notes, {
     fontSize,
     displayLabel: (note, count) =>
       `${chordToneName(root, pattern, note.pitchClass)}${note.octave}${count > 1 ? ` ×${count}` : ""}`,
   });
-  const metrics = voicingIntervalMetrics(fontSize);
   if (positions.length < 2) return null;
 
   return (
@@ -54,9 +53,9 @@ export function StradellaVoicingIntervals({
               {gap.semitones} {t(gap.semitones === 1 ? "ui.oneSemitone" : "ui.manySemitones")}
             </title>
             <line
-              x1={gap.fromX + metrics.circleRadius}
+              x1={gap.fromX}
               y1={metrics.trackY}
-              x2={gap.toX - metrics.circleRadius}
+              x2={gap.toX}
               y2={metrics.trackY}
               className={gap.semitones === 1
                 ? "voicing-interval-gap-tight"
@@ -83,9 +82,15 @@ export function StradellaVoicingIntervals({
               r={metrics.circleRadius}
               className={note.source === "bass" ? "voicing-interval-bass" : "voicing-interval-chord"}
             />
+            <line
+              x1={note.x} x2={note.x}
+              y1={metrics.topLabelY + note.lane * metrics.laneStep + 4}
+              y2={metrics.trackY - metrics.circleRadius - 3}
+              className="voicing-interval-leader"
+            />
             <text
               x={note.x}
-              y={note.index % 2 === 0 ? metrics.topLabelY : metrics.lowerLabelY}
+              y={metrics.topLabelY + note.lane * metrics.laneStep}
               textAnchor="middle"
               className="voicing-interval-note"
               style={{ fontSize: `${metrics.noteFontSize}px` }}

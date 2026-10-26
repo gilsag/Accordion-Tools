@@ -39,7 +39,8 @@ assert.match(all.lines[3], /Registral voicing: G2/);
 assert.doesNotMatch(all.lines[3], /Low to high:/);
 assert.doesNotMatch(all.lines[3], /not measured|Lowest modeled:/i);
 const chordOnly = getStradellaChordFinderResults(buttons, "C", "major13", "bass-and-chords", false, 4, 5.5)
-  .find((candidate) => candidate.playable && candidate.missingPitches.length === 1 && candidate.playbackButtons.every((button) => button.kind.startsWith("chord-")));
+  .find((candidate) => candidate.playable && candidate.missingPitches.length === 1 &&
+    candidate.missingPitches.includes("G") && candidate.playbackButtons.every((button) => button.kind.startsWith("chord-")));
 assert.ok(chordOnly, "Expect chord-button-only Cmaj13 approximation");
 const chordOnlyNote = realizationAnnotation("C", "major13", chordOnly, DEFAULT_STRADELLA_REGISTER_MODEL);
 assert.match(chordOnlyNote.lines[3], /^Registral voicing: [A-G]/);
@@ -73,7 +74,7 @@ const app = readFileSync("src/App.tsx", "utf8");
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
 const defaults = JSON.parse(readFileSync("public/default-settings.json", "utf8"));
 assert.deepEqual(defaults.stradellaNoteLevels, DEFAULT_STRADELLA_NOTE_LEVELS);
-assert.match(app, /stradellaNoteLevels,\r?\n\s+stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,\r?\n\s+diagramVerticalSpacing/);
+assert.match(app, /stradellaNoteLevels,\r?\n\s+stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,\r?\n\s+stradellaMinimumNominalGap,\r?\n\s+diagramVerticalSpacing/);
 assert.match(app, /normalizeStradellaNoteLevels\(settings.stradellaNoteLevels\)/);
 assert.match(app, /finderAnnotationDisplayLines\.map/);
 assert.match(app, /Boolean\(finderAnnotation\?\.lines.length\)/);

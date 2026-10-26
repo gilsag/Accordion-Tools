@@ -134,3 +134,13 @@ In **Bass + chord buttons** recommendations, chords of up to four distinct tones
 ## Chord symbol display
 
 Chord symbols shown in diagrams and explanations follow **Settings → Notation → Chord symbol style**. For example, a C minor seventh realization may appear as **Cm7/B♭** or **Cmin7/B♭**. The chord search, inversion constraints, and download filename identifiers are unaffected.
+
+### Proportional registral spacing and dense-voicing control
+
+The optional nominal-spacing diagram places distinct nominal MIDI pitches on a **strictly proportional horizontal semitone scale** (23 diagram units per semitone). Note names are staggered onto independent label rows and linked to their true pitch positions by leader lines; label collisions must not change pitch distances. These are configured Stradella register pitches, not measurements of acoustic reeds.
+
+The **Minimum nominal note gap** selector has three settings: **Allow all gaps** (default), **Exclude 1-semitone gaps**, and **Exclude 1- and 2-semitone gaps**. The test compares adjacent *distinct* nominal pitches after sorting them by MIDI note number and ignoring unison duplicates. It applies to all Stradella Chord Finder search modes before recommendations are assigned. This is a registral preference, not a judgement of harmonic chord correctness; a filtered chord may still be musically valid. Close one-semitone pairs also incur a stronger *ranking* penalty when the filter is off.
+
+**Download all diagrams (ZIP)** saves the playable candidate diagrams for the current chord and search settings, preserving the chosen **SVG/PNG** download format, explanation levels, diagram labels and configured registers. Each candidate is exported separately and the current selection is restored afterwards. The existing Download button saves only the displayed diagram.
+
+The top-bar **Reset** menu separates **Clear current work** (removes transient selections and playback without altering preferences) from **Restore current tool defaults** (resets the active Chord Finder's controls, not global sound or register settings). The second action is shown only for tools with a defined reset scope.

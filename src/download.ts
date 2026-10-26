@@ -1,3 +1,4 @@
+import { createZip } from "./tools/zipExport";
 /**
  * Downloads the current SVG, including readable CSS rules.
  */
@@ -31,7 +32,7 @@ function cloneSvgWithEmbeddedStyles(svgElement: SVGSVGElement) {
 }
 
 /** Serializes an SVG element into a complete SVG string. */
-function serializeSvg(svgElement: SVGSVGElement) {
+export function serializeSvg(svgElement: SVGSVGElement) {
   const clone = cloneSvgWithEmbeddedStyles(svgElement);
   return new XMLSerializer().serializeToString(clone);
 }
@@ -89,4 +90,37 @@ export function downloadPng(svgElement: SVGSVGElement, filename: string) {
 
   image.onerror = () => URL.revokeObjectURL(url);
   image.src = url;
+}
+
+/** Render an already-serialized diagram independently of the current React
+ * selection, so multi-diagram PNG conversion can happen after state restore. */
+export async function svgStringToPngBytes(svgString: string, width: number, height: number): Promise<Uint8Array> {
+  const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  try {
+    const image = new Image();
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error("SVG could not be rendered for PNG export."));
+      image.src = url;
+    });
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.ceil(width);
+    canvas.height = Math.ceil(height);
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("PNG canvas is not available.");
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const png = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) =>
+      value ? resolve(value) : reject(new Error("PNG encoding failed.")), "image/png"));
+    return new Uint8Array(await png.arrayBuffer());
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** Trigger one download containing all the selected diagrams. */
+export function downloadZip(entries: ReadonlyArray<{ name: string; data: Uint8Array }>, filename: string) {
+  downloadBlob(createZip(entries), filename);
 }

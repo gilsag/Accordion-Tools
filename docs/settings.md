@@ -307,3 +307,9 @@ For a direct comparison, select **Original mapping** (rather than **Configured r
 In **Settings → Notation**, choose one of three display formats: **C / Cm**, **CM / Cm**, or **Cmaj / Cmin**. Extended major and minor chord labels follow the same family convention. This setting applies to chord labels in diagrams, Harmony Explorer, progression lists, contextual titles and descriptive text.
 
 It does not modify pitch classes, audio, chord recognition, ABC/MIDI notation, or existing sanitized SVG/PNG filename conventions. The selection can be included in exported settings.
+
+### Stradella nominal-gap preference and Reset
+
+The Chord Finder's **Minimum nominal note gap** setting is saved as `stradellaMinimumNominalGap`: `0` permits all gaps (default), `2` excludes adjacent pitches 1 semitone apart, and `3` excludes pitches 1 or 2 semitones apart. Distinct nominal MIDI pitches are used; shared pitch classes and unison doublings are not automatically treated as clashes. Import/export of the settings JSON preserves this choice.
+
+The top-bar **Reset** menu offers separate actions for clearing transient work and, when supported, restoring the current tool's defaults. This does not reset the application's global Sound or Stradella register configuration.

@@ -21,6 +21,7 @@ import { permittedRequestedBasses } from "../../tools/stradellaChordFinder/harmo
 import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
 import { chordToneName, displayRoot, realizedChordName } from "../../tools/stradellaChordFinder/chordSpelling";
 import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
+import type { MinimumNominalGap } from "../../tools/stradellaChordFinder/voicingDensity";
 
 type StradellaChordFinderPanelProps = {
   isOpen: boolean;
@@ -52,6 +53,10 @@ type StradellaChordFinderPanelProps = {
   maxButtons: number;
   onMaxButtonsChange: (value: number) => void;
   spanColumns: number;
+  minimumNominalGap: MinimumNominalGap;
+  onMinimumNominalGapChange: (value: MinimumNominalGap) => void;
+  onDownloadAll: () => void;
+  batchExporting: boolean;
   onSpanColumnsChange: (value: number) => void;
   buttonCount: number;
   playbackButtonCount: number;
@@ -96,6 +101,10 @@ export function StradellaChordFinderPanel({
   maxButtons,
   onMaxButtonsChange,
   spanColumns,
+  minimumNominalGap,
+  onMinimumNominalGapChange,
+  onDownloadAll,
+  batchExporting,
   onSpanColumnsChange,
   buttonCount,
   playbackButtonCount,
@@ -208,6 +217,15 @@ export function StradellaChordFinderPanel({
           </>
         )}
 
+        <label>
+          <span className="label-line">{t("ui.nominalGapFilter")} <HelpTip text={t("ui.nominalGapFilterHelp")} /></span>
+          <select value={minimumNominalGap} onChange={(event) => onMinimumNominalGapChange(Number(event.target.value) as MinimumNominalGap)}>
+            <option value={0}>{t("ui.nominalGapAllowAll")}</option>
+            <option value={2}>{t("ui.nominalGapNoSemitone")}</option>
+            <option value={3}>{t("ui.nominalGapNoWholeTone")}</option>
+          </select>
+        </label>
+
         {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
           <label>
             <span className="label-line">{t("tools.realization")} <HelpTip text={t("ui.realizationHelp")} /></span>
@@ -230,6 +248,13 @@ export function StradellaChordFinderPanel({
               disabled={realizationIndex >= realizations.length - 1}
               onClick={() => onRealizationChange(Math.min(realizations.length - 1, realizationIndex + 1))}>→</button>
           </div>
+        )}
+
+        {isActive && realizations.some((candidate) => candidate.playable) && (
+          <button type="button" className="small-button finder-download-all" onClick={onDownloadAll}
+            disabled={batchExporting}>
+            {batchExporting ? t("ui.batchExportWorking") : t("ui.downloadAllRealizations")}
+          </button>
         )}
 
         <div className="result-card">

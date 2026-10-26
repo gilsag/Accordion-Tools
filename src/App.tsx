@@ -1,9 +1,10 @@
+import type { MinimumNominalGap } from "./tools/stradellaChordFinder/voicingDensity";
 import { familyName, scaleName, stradellaDiagramRowLabel } from "./i18n/musicTerms";
 import { accordionStatusText, diagramAutoTitle, harmonyRelatedDisplayName, harmonyStatusText, pianoRangeStatusLabel } from "./i18n/diagramLabels";
 import { DEFAULT_STRADELLA_NOTE_LEVELS, normalizeStradellaNoteLevels, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "./tools/contextualTitles";
 import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "./tools/chordDisplay";
-import { displayRoot, realizedChordName } from "./tools/stradellaChordFinder/chordSpelling";
+import { chordToneName, displayRoot, realizedChordName } from "./tools/stradellaChordFinder/chordSpelling";
 /*
   Application orchestration: React owns diagram/tool settings; src/tools/*
   supplies music algorithms, while src/sound.ts owns playback. Do not derive
@@ -20,6 +21,7 @@ import { displayRoot, realizedChordName } from "./tools/stradellaChordFinder/cho
 */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { renderAbc } from "abcjs";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import "./App.css";
@@ -101,7 +103,7 @@ import {
   PIANO_TREBLE_RANGE_PRESETS,
   pianoTrebleWhiteKeyCount,
 } from "./pianoTreble";
-import { downloadPng, downloadSvg } from "./download";
+import { downloadPng, downloadSvg, downloadZip, serializeSvg, svgStringToPngBytes } from "./download";
 import {
   getSequenceLabelsForButton,
   getSequenceStepsWithButtons,
@@ -150,7 +152,7 @@ import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
 import { realizationAnnotation, finderChordSymbol } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaOctaveGrouping, type StradellaRegisterModel, formatRegisterRange } from "./tools/stradellaChordFinder/registerModel";
-import { voicingIntervalLayout, voicingIntervalMetrics } from "./tools/stradellaChordFinder/voicingIntervalLayout";
+import { voicingIntervalLayout } from "./tools/stradellaChordFinder/voicingIntervalLayout";
 import { describeTrebleChord } from "./tools/trebleChordExplanation";
 import {
   playButtonArpeggioThenChord,
@@ -324,6 +326,7 @@ const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
 type DefaultSettingsFile = Partial<{
   stradellaNoteLevels: StradellaNoteLevels;
   stradellaShowNominalNoteSpacing: boolean;
+  stradellaMinimumNominalGap: MinimumNominalGap;
   side: Side;
   notation: NotationMode;
   accidental: AccidentalMode;
@@ -522,6 +525,25 @@ function fingeringY(
 function App() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
+  useEffect(() => {
+    function closeOnOutside(event: PointerEvent) {
+      if (resetMenuRef.current?.open && !resetMenuRef.current.contains(event.target as Node))
+        resetMenuRef.current.open = false;
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && resetMenuRef.current?.open) {
+        resetMenuRef.current.open = false;
+        resetMenuRef.current.querySelector("summary")?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
   const harmonySvgRef = useRef<SVGSVGElement | null>(null);
   const previousLayoutSignatureRef = useRef<string | null>(null);
   const abcPlaybackTimeoutsRef = useRef<number[]>([]);
@@ -831,6 +853,8 @@ function App() {
   }), [stradellaBassRegisterOctave, stradellaBassRegisterGrouping, stradellaChordRegisterOctave, stradellaChordRegisterGrouping]);
   const [finderMaxButtons, setFinderMaxButtons] = useState(3);
   const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
+  const [stradellaMinimumNominalGap, setStradellaMinimumNominalGap] = useState<MinimumNominalGap>(0);
+  const [batchExporting, setBatchExporting] = useState(false);
   // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
   const [mobileDiagramView, setMobileDiagramView] = useState<"readable" | "fit">("readable");
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
@@ -1445,6 +1469,8 @@ function App() {
   function applyExtendedDefaultSettings(settings: DefaultSettingsFile) {
     if (typeof settings.stradellaShowNominalNoteSpacing === "boolean")
       setShowStradellaVoicingIntervals(settings.stradellaShowNominalNoteSpacing);
+    if ([0, 2, 3].includes(Number(settings.stradellaMinimumNominalGap)))
+      setStradellaMinimumNominalGap(Number(settings.stradellaMinimumNominalGap) as MinimumNominalGap);
     if (typeof settings.buttonSize === "number")
       setButtonSize(Math.max(14, Math.min(44, Math.round(settings.buttonSize))));
     if (typeof settings.buttonSpacing === "number")
@@ -1719,6 +1745,8 @@ function App() {
       ] as const)
     )
       setStradellaChordFinderMode(settings.stradellaChordFinderMode);
+    if ([0, 2, 3].includes(Number(settings.stradellaMinimumNominalGap)))
+      setStradellaMinimumNominalGap(Number(settings.stradellaMinimumNominalGap) as MinimumNominalGap);
     if (typeof settings.stradellaChordFinderMarkRootBass === "boolean")
       setStradellaChordFinderMarkRootBass(
         settings.stradellaChordFinderMarkRootBass,
@@ -1844,6 +1872,7 @@ function App() {
       stradellaChordFinderMode,
       stradellaNoteLevels,
       stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,
+      stradellaMinimumNominalGap,
       diagramVerticalSpacing,
       pianoKeyWidthScale,
       pianoKeyHeightScale,
@@ -2645,6 +2674,7 @@ function App() {
       finderSpanColumns,
       stradellaChordFinderRequestedBass,
       stradellaRegisterModel,
+      stradellaMinimumNominalGap,
     );
   }, [
     buttons,
@@ -2658,6 +2688,7 @@ function App() {
     finderSpanColumns,
     stradellaChordFinderRequestedBass,
     stradellaRegisterModel,
+    stradellaMinimumNominalGap,
   ]);
 
   const stradellaChordFinderResult = useMemo(() => {
@@ -2669,7 +2700,7 @@ function App() {
 
   useEffect(() => {
     setStradellaChordFinderRealizationIndex(0);
-  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderRequestedBass, stradellaRegisterModel, finderMaxButtons, finderSpanColumns, side]);
+  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderRequestedBass, stradellaRegisterModel, finderMaxButtons, finderSpanColumns, stradellaMinimumNominalGap, side]);
 
   /* A progression choice must retain its original physical button identities;
      pitch-class-equivalent bass and counterbass positions are not substitutes. */
@@ -3899,6 +3930,43 @@ function App() {
     return compact.length > 34 ? `${compact.slice(0, 31)}...` : compact;
   }
 
+  /** Clear Harmony selection/recording without discarding user preferences. */
+  function clearHarmonyWork() {
+    setHarmonySelection(null);
+    setHarmonyFocusedReferenceRootPc(null);
+    setHarmonyProgressionRecording(false);
+    setHarmonyRecordedProgression([]);
+    setHarmonyRecordedNotationVisible(false);
+    setHarmonyProgressionPreviewIndex(null);
+    setHarmonyProgressionActiveButtonIds([]);
+    stopAllSound();
+  }
+
+  /** Reset only Stradella Chord Finder options. Register/sound/global settings remain untouched. */
+  function resetStradellaFinderDefaults() {
+    setStradellaChordFinderRoot("C");
+    setStradellaChordFinderPattern("major-triad");
+    setStradellaChordFinderMode("bass-and-chords");
+    setStradellaChordFinderRequestedBass(null);
+    setStradellaChordFinderRealizationIndex(0);
+    setFinderMaxButtons(3);
+    setFinderSpanColumns(4.3);
+    setStradellaMinimumNominalGap(0);
+    setStradellaChordFinderMarkRootBass(true);
+    setShowFinderRealizationNote(true);
+    setShowStradellaVoicingIntervals(true);
+    setStradellaNoteLevels({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
+    setFinderExplanationFontSize(26);
+  }
+
+  function resetCurrentToolDefaults() {
+    if (workspaceMode === "harmony") resetHarmonyExplorer();
+    else if (side === "stradella" && activeToolSection === "stradellaChordFinder") {
+      resetStradellaFinderDefaults();
+      resetDiagramWork();
+    }
+  }
+
   /** Clears selections, fingerings, sequences, annotations, and active tool modes. */
   function resetDiagramWork() {
     setOverlays({});
@@ -4060,6 +4128,65 @@ function App() {
   /** Toggles the requested left panel; clicking the active panel hides it. */
   function setPanel(mode: Exclude<LeftPanelMode, "hidden">) {
     setLeftPanelMode((current) => (current === mode ? "hidden" : mode));
+  }
+
+  /** Download every eligible realization with the current filter, labels,
+   * layout, register model, footer and SVG/PNG settings. Capture each live SVG
+   * synchronously, then restore selection before asynchronous PNG encoding. */
+  async function downloadAllStradellaRealizations() {
+    if (batchExporting || side !== "stradella" || !stradellaChordFinderActive) return;
+    const candidates = stradellaChordFinderRealizations
+      .map((candidate, index) => ({ candidate, index }))
+      .filter(({ candidate }) => candidate.playable);
+    if (!candidates.length || !svgRef.current) return;
+    setBatchExporting(true);
+    const initialIndex = stradellaChordFinderRealizationIndex;
+    const snapshots: Array<{ name: string; svg: string; width: number; height: number }> = [];
+    try {
+      try {
+        for (let index = 0; index < candidates.length; index++) {
+          const { candidate, index: originalIndex } = candidates[index];
+          flushSync(() => setStradellaChordFinderRealizationIndex(originalIndex));
+          const svg = svgRef.current;
+          if (!svg) throw new Error("Diagram SVG is unavailable.");
+          const annotation = realizationAnnotation(
+            stradellaChordFinderRoot, stradellaChordFinderPattern, candidate,
+            stradellaRegisterModel, stradellaChordFinderRequestedBass,
+            stradellaNoteLevels, chordDisplayStyle, language,
+          );
+          const safeName = (annotation?.filenameKey ?? `realization-${index + 1}`)
+            .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
+            .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+            .slice(0, 140);
+          const rect = svg.viewBox.baseVal;
+          snapshots.push({
+            name: `${String(index + 1).padStart(3, "0")}-${safeName || "stradella"}`,
+            svg: serializeSvg(svg),
+            width: Math.ceil(rect.width || svg.clientWidth || 1200),
+            height: Math.ceil(rect.height || svg.clientHeight || 800),
+          });
+        }
+      } finally {
+        flushSync(() => setStradellaChordFinderRealizationIndex(initialIndex));
+      }
+      const encoder = new TextEncoder();
+      const entries: Array<{ name: string; data: Uint8Array }> = [];
+      for (const snapshot of snapshots) {
+        const isPng = downloadFormat === "png";
+        entries.push({
+          name: `${snapshot.name}.${isPng ? "png" : "svg"}`,
+          data: isPng
+            ? await svgStringToPngBytes(snapshot.svg, snapshot.width, snapshot.height)
+            : encoder.encode(snapshot.svg),
+        });
+      }
+      downloadZip(entries, `stradella-${stradellaChordFinderRoot}-${stradellaChordFinderPattern}-${downloadFormat}-${entries.length}-realizations.zip`);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not export all diagrams.");
+    } finally {
+      setBatchExporting(false);
+    }
   }
 
   /** Downloads the currently rendered accordion or Harmony Explorer diagram. */
@@ -4261,7 +4388,10 @@ function App() {
       stradellaRegisterModel,
     )
     : null;
-  const finderVoicingLayout = finderVoicingAnalysis ? voicingIntervalLayout(finderVoicingAnalysis.notes) : null;
+  const finderVoicingLayout = finderVoicingAnalysis ? voicingIntervalLayout(finderVoicingAnalysis.notes, {
+    fontSize: finderExplanationFontSize,
+    displayLabel: (note, count) => `${chordToneName(stradellaChordFinderRoot, stradellaChordFinderPattern, note.pitchClass)}${note.octave}${count > 1 ? ` ×${count}` : ""}`,
+  }) : null;
   const finderVoicingChartVisible = Boolean(finderVoicingLayout && finderVoicingLayout.positions.length >= 2);
   // The note generator owns the stable ordering, independently of the chart toggle.
   const finderAnnotationDisplayLines = finderAnnotation?.lines ?? [];
@@ -4356,7 +4486,7 @@ function App() {
   );
   const finderAnnotationLabelWidth = Math.min(285, Math.max(190, finderExplanationFontSize * 10.8));
   const finderAnnotationContentWidth = Math.max(220, viewWidth - 64 - finderAnnotationLabelWidth - 18);
-  const finderVoicingChartHeight = finderVoicingChartVisible ? voicingIntervalMetrics(finderExplanationFontSize).height : 0;
+  const finderVoicingChartHeight = finderVoicingChartVisible ? finderVoicingLayout!.metrics.height : 0;
   const finderFooterHeight = (() => {
     let total = 16;
     for (const line of finderAnnotationDisplayLines) {
@@ -5881,6 +6011,10 @@ function App() {
                   maxButtons={finderMaxButtons}
                   onMaxButtonsChange={setFinderMaxButtons}
                   spanColumns={finderSpanColumns}
+                  minimumNominalGap={stradellaMinimumNominalGap}
+                  onMinimumNominalGapChange={setStradellaMinimumNominalGap}
+                  onDownloadAll={downloadAllStradellaRealizations}
+                  batchExporting={batchExporting}
                   onSpanColumnsChange={setFinderSpanColumns}
                   showRealizationNote={showFinderRealizationNote}
                   onShowRealizationNoteChange={setShowFinderRealizationNote}
@@ -7085,12 +7219,23 @@ function App() {
             {soundEnabled ? t("ui.soundOn") : t("ui.soundOff")}
           </button>
 
-          <button
-            className="topbar-button reset-button"
-            onClick={workspaceMode === "harmony" ? resetHarmonyExplorer : resetDiagramWork}
-          >
-            {t("ui.reset")}
-          </button>
+          <details ref={resetMenuRef} className="reset-menu">
+            <summary className="topbar-button reset-button" title={t("ui.resetScope")}>
+              {t("ui.reset")} <span aria-hidden="true">▾</span>
+            </summary>
+            <div className="reset-menu-options">
+              <button type="button" onClick={(event) => {
+                if (workspaceMode === "harmony") clearHarmonyWork(); else resetDiagramWork();
+                event.currentTarget.closest("details")?.removeAttribute("open");
+              }}>{t("ui.clearCurrentWork")}</button>
+              {(workspaceMode === "harmony" || (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
+                <button type="button" onClick={(event) => {
+                  resetCurrentToolDefaults();
+                  event.currentTarget.closest("details")?.removeAttribute("open");
+                }}>{t("ui.restoreToolDefaults")}</button>
+              )}
+            </div>
+          </details>
 
           <span className="topbar-after-reset-space" aria-hidden="true" />
 
