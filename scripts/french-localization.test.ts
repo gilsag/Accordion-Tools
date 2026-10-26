@@ -44,6 +44,6 @@ assert.match(explanation, /anneau intérieur/);
 assert.match(explanation, /masqué/);
 const app = readFileSync("src/App.tsx", "utf8");
 assert.match(app, /SUPPORTED_LANGUAGES\.map/);
-assert.match(readFileSync("README.md", "utf8"), /0\.15\.14/);
+assert.match(readFileSync("README.md", "utf8"), /\*\*Version:\*\* 0\.15\.15/);
 assert.match(readFileSync("docs/internal/adding-interface-languages.md", "utf8"), /SUPPORTED_LANGUAGES/);
 console.log("✓ French catalog, registry, chord and Harmony explanations, labels, and filename invariants passed");

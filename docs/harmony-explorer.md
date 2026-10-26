@@ -85,7 +85,7 @@ A selected relationship can also be sent to the separate **Progression Assistant
 
 See [`progression-assistant.md`](progression-assistant.md).
 
-The legend uses proportional text-width estimates and a heading column sized to its labels, keeping descriptions on one line when they fit while wrapping longer English or Spanish text within the exported SVG.
+The legend identifies the reference chord ring and, when enabled, the twelve-note inner pitch-class ring. The explanation box likewise describes the note ring only while it is visible. Legend descriptions wrap within the available export width.
 
 ## Export
 
@@ -103,9 +103,9 @@ Once at least one event has been recorded, **Show notation** appears in the top 
 
 Choose **Send to Progression Assistant** to transfer the recorded chord events to the Stradella-side assistant, where physical realizations and accompaniment patterns can be optimized. If the Harmony recording also contains single-note events, Accordion Tools shows a brief warning before transfer because those note events are not exported to the chord-oriented Progression Assistant.
 
-## Optional note ring
+## Inner note ring
 
-**Show inner note ring**, available both in **Harmony Explorer** and under **Settings → Harmony**, adds a small pitch-class ring inside the reference-family ring. The twelve notes follow the same circle-of-fifths orientation as the chord sectors. Clicking a note auditions that pitch using the current Harmony sound source. While Harmony recording is active, note-ring clicks are also captured as note events, appear in the recorded sequence, and are included in its staff notation. The option is off by default.
+**Show inner note ring**, available both in **Harmony Explorer** and under **Settings → Harmony**, adds a small pitch-class ring inside the reference-family ring. The twelve notes follow the same circle-of-fifths orientation as the chord sectors. Clicking a note auditions that pitch using the current Harmony sound source. While Harmony recording is active, note-ring clicks are also captured as note events, appear in the recorded sequence, and are included in its staff notation. The option is on by default; disabling it removes the note ring and its corresponding legend entry and explanation sentence. Explicit settings that disable the ring remain respected.
 
 
 Major triads in the Harmony circle use an uppercase **M** (for example, **CM** or **F♯M**) to distinguish chord labels from individual notes on the inner note ring. This does not change minor, seventh, other chord-family labels, or harmonic relationships.
