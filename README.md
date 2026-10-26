@@ -2,9 +2,9 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-**Version:** 0.15.16
+**Version:** 0.15.19
 
-**Stradella Chord Finder:** Nominal note-spacing diagrams use proportional semitone intervals; an optional minimum-gap filter excludes overly close nominal pitches. One ZIP can contain every playable realization for the selected chord and search settings in the chosen SVG or PNG format. The Reset menu separates clearing selections from restoring tool defaults.
+**Stradella Chord Finder:** Nominal note-spacing diagrams use proportional semitone intervals; an optional minimum-gap filter excludes overly close nominal pitches. One ZIP can contain every playable realization for the selected chord and search settings in the chosen SVG or PNG format. The Reset menu separates clearing selections from restoring tool defaults. Diagram footers align explanation labels, use compact preset-chord symbols (e.g., CM), and show nominal intervals with proportional pitch spacing and short leaders.
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
@@ -60,7 +60,7 @@ Scale visualization and fingering paths on a chromatic button accordion treble l
 
 ![Stradella Chord Finder](docs/images/stradella-chord-finder.png)
 
-The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. For three- and four-tone chords, the ranking favors completeness; for five-or-more-tone chords, it also weighs defining chord tones and nominal register density, so a clearer reduced voicing may rank above a crowded complete one. Up to three contrasting extended-chord realizations may be marked Recommended. The expanded **More explanation** describes each selected realization, including octave compression on Stradella and the effect of omitted tones. Exported diagrams can be labeled with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**. An optional **nominal note-spacing** view beneath the diagram shows consecutive sounding-note intervals in semitones, using the configured Stradella register model. It is off by default and is not included in SVG/PNG exports.
+The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. For three- and four-tone chords, the ranking favors completeness; for five-or-more-tone chords, it also weighs defining chord tones and nominal register density, so a clearer reduced voicing may rank above a crowded complete one. Up to three contrasting extended-chord realizations may be marked Recommended. The expanded **More explanation** describes each selected realization, including octave compression on Stradella and the effect of omitted tones. Exported diagrams can be labeled with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**. An optional **nominal note-spacing** view beneath the diagram shows consecutive sounding-note intervals in semitones, using the configured Stradella register model. It is on by default and is included in SVG/PNG exports.
 
 ### Harmony Explorer
 

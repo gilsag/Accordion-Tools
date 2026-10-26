@@ -35,7 +35,6 @@ type TrebleChordFinderPanelProps = {
   isActive: boolean;
   onToggleActive: () => void;
   onPlay: () => void;
-  onClear: () => void;
   showVoicingNote: boolean;
   onShowVoicingNoteChange: (show: boolean) => void;
 };
@@ -61,7 +60,6 @@ export function TrebleChordFinderPanel({
   isActive,
   onToggleActive,
   onPlay,
-  onClear,
   showVoicingNote,
   onShowVoicingNoteChange,
 }: TrebleChordFinderPanelProps) {
@@ -161,9 +159,6 @@ export function TrebleChordFinderPanel({
           </button>
           <button className="small-button" onClick={onPlay} disabled={buttonCount === 0}>
             {t("tools.playChord")}
-          </button>
-          <button className="small-button" onClick={onClear}>
-            {t("tools.clearChord")}
           </button>
         </div>
         <label className="checkbox-line">

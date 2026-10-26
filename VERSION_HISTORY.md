@@ -1,3 +1,26 @@
+## v0.15.19 — Stradella register settings layout
+
+- Organized Stradella nominal-register settings into matching Bass / counterbass and Preset chords groups, each with a starting octave, an octave grouping, and a visible configured range.
+- Added contextual guidance for the C–B and F–E octave partitions, and removed the redundant visible register-formation heading.
+- Standardized the panel typography and spacing in compact and comfortable modes, retaining all existing register defaults, saved keys, calculations and playback mapping.
+- Updated interface labels in all six supported languages and extended layout regressions and documentation.
+
+## v0.15.18 — Compact settings and Finder controls
+
+- Tightened spacing between slider labels and controls while keeping touch targets and density settings.
+- Removed the redundant Stradella row-label heading and aligned its action with other label toggles.
+- Moved Sound and Stradella register explanations into contextual help, retaining visible nominal ranges, mapping status, and La Melodiosa attribution in About and documentation.
+- Removed redundant Clear chord/scale actions from the four Finders; Show/Hide still controls highlighting without changing selections. Shortened the diagram-explanation control label across six languages.
+- Normalized colon punctuation and shortened the sample-mapping heading in all six supported languages.
+
+## v0.15.17 — Stradella annotation layout and 13th-chord ranking
+
+- Aligned the four Stradella diagram-footer levels using shared label and value columns and reduced the gap above the footer.
+- Shortened preset-chord button names in Physical realization to symbols such as `CM`, `Fm`, `G7` and `Bdim7`, without abbreviating bass or counterbass roles or changing chord identifiers and export filenames. Harmonic identity retains its concise chord symbol and slash-bass description.
+- Made the nominal-interval chart more compact: proportional pitch positions and connecting lines are preserved, with short marker leaders and semitone counts below the axis; label collision avoidance remains independent of pitch spacing.
+- Added a small omission-quality preference for retaining the ninth rather than the natural eleventh in major/dominant 13ths, with no new ordering heuristic, approximation policy, reach constraint or playback change.
+- Extended regression coverage and user/developer documentation. Browser SVG/PNG export review remains required before publication.
+
 ## v0.15.16 — Proportional registral spacing and bulk diagram export
 
 - The nominal-note chart places pitch markers at proportional semitone intervals, using separate label rows and leader lines where necessary.

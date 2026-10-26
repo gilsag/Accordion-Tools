@@ -1,7 +1,7 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.15.16",
+  "version": "0.15.19",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,7 +13,7 @@
     "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:controls && npm run test:audio && npm run test:display && npm run test:i18n",
     "test:abc": "tsx scripts/abc-ties.test.ts",
     "test:harmony": "tsx scripts/harmony-note-ring-ui.test.ts && tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts",
-    "test:controls": "tsx scripts/binary-controls.test.ts && npm run test:explanation-ui",
+    "test:controls": "tsx scripts/binary-controls.test.ts && node scripts/panel-control-layout.test.mjs && node scripts/stradella-register-panel.test.mjs && npm run test:explanation-ui",
     "test:inversions": "tsx scripts/stradella-requested-bass.test.ts",
     "test:notes": "tsx scripts/stradella-four-level-notes.test.ts && npm run test:titles && tsx scripts/stradella-inversion-spelling.test.ts",
     "test:titles": "tsx scripts/contextual-titles.test.ts",

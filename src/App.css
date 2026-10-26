@@ -154,7 +154,17 @@ body {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
+}
+
+/* Use tighter control-group rhythm without shrinking controls or touch targets. */
+.section-content label:has(> input[type="range"]),
+.tool-fieldset label:has(> input[type="range"]) {
+  gap: 4px;
+}
+.section-content input[type="range"],
+.tool-fieldset input[type="range"] {
+  margin-block: 1px 2px;
 }
 
 label {
@@ -811,7 +821,7 @@ input[type="range"] {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tool-fieldset:disabled {
@@ -970,11 +980,11 @@ input[type="range"] {
 
 .density-comfortable .section-content,
 .density-comfortable .tool-fieldset {
-  gap: 13px;
+  gap: 10px;
 }
 
 .density-comfortable label {
-  gap: 6px;
+  gap: 4px;
 }
 
 .density-comfortable label,
@@ -1000,7 +1010,8 @@ input[type="range"] {
   min-width: 0;
   max-width: 100%;
   line-height: 1.25;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .label-line .help-tip {
@@ -2073,6 +2084,12 @@ input[type="range"] {
   margin-top: 0.12rem;
 }
 
+/* Three independent appearance toggles use the same full-width alignment. */
+.appearance-label-toggle {
+  width: 100%;
+  text-align: center;
+}
+
 /* Compact binary controls: the button states the next action. */
 .binary-choice-control {
   display: flex;
@@ -2202,17 +2219,17 @@ input[type="range"] {
 /* Finder footers: use a consistent label/value grid so wrapped explanatory text
    remains readable, and let the Stradella nominal-spacing guide live inside
    the exported diagram beside Registral voicing. */
+/* One shared label column for every explanation level. Per-row grids gave
+   each label a different width, making shorter labels' values start too early. */
 .finder-annotation-block {
   display: grid;
-  gap: 0.34em;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 0.20em;
 }
 
 .finder-annotation-line {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  column-gap: 12px;
-  align-items: start;
-  margin-bottom: 0.08em;
+  display: contents;
 }
 
 .finder-annotation-label {
@@ -2224,8 +2241,9 @@ input[type="range"] {
   min-width: 0;
 }
 
-.finder-annotation-line-voicing {
-  align-items: center;
+.finder-annotation-line-voicing .finder-annotation-label,
+.finder-annotation-line-voicing .finder-annotation-value {
+  align-self: center;
 }
 
 .voicing-interval-chart {
@@ -2250,17 +2268,9 @@ input[type="range"] {
 .voicing-interval-distance { fill: #495567; font-weight: 800; }
 .voicing-interval-note { fill: #172033; font-weight: 800; }
 
-@media (max-width: 900px) {
-  .finder-annotation-line {
-    grid-template-columns: 1fr;
-    row-gap: 0.08em;
-  }
-
-  .finder-annotation-label {
-    white-space: normal;
-  }
-
-}
+/* Keep exported SVG footer geometry independent of the browser viewport.
+   Narrow screens can scroll the diagram; changing columns via a media query
+   would otherwise invalidate the viewBox's reserved footer height. */
 
 /* One Reset control with two explicit scopes; do not conflate clearing work
    with changing the current tool's options. */
@@ -2299,3 +2309,64 @@ input[type="range"] {
 
 /* Batch export is related to the realization list, not to playback controls. */
 .finder-download-all { width: 100%; margin: 6px 0 10px; text-align: center; }
+
+
+/* Stradella register model: mirrored groups, without changing nominal pitch semantics. */
+.stradella-register-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.stradella-register-intro-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  color: #526078;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.stradella-register-intro-help .help-tip { flex-shrink: 0; }
+.stradella-register-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.stradella-register-group + .stradella-register-group {
+  border-top: 1px solid #d9deea;
+  padding-top: 13px;
+}
+.stradella-register-group h3 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.stradella-register-group label,
+.stradella-register-group .segmented-choice-control {
+  gap: 5px;
+}
+.stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.density-compact .stradella-register-group > .segmented-choice-control > .label-line { font-size: 11px; }
+.density-comfortable .stradella-register-group > .segmented-choice-control > .label-line { font-size: 12.5px; }
+.stradella-register-range {
+  margin: 0;
+  color: #526078;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.density-compact .stradella-register-group { gap: 6px; }
+.density-compact .stradella-register-group + .stradella-register-group { padding-top: 10px; }
+.density-comfortable .stradella-register-group { gap: 9px; }
+.density-comfortable .stradella-register-group + .stradella-register-group { padding-top: 15px; }
+.density-compact .stradella-register-range { font-size: 11px; }
+.density-comfortable .stradella-register-range { font-size: 12.5px; }

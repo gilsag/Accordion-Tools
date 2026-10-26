@@ -5,18 +5,23 @@ import type { ModeledStradellaNote } from "./registerModel";
 export const VOICING_INTERVAL_SEMITONE_PIXELS = 23;
 export const VOICING_INTERVAL_SIDE_PADDING = 49;
 
-export function voicingIntervalMetrics(fontSize: number, laneCount = 2) {
+export function voicingIntervalMetrics(fontSize: number, laneCount = 1) {
   const noteFontSize = Math.max(14, Math.min(20, Math.round(fontSize * 0.60)));
   const distanceFontSize = Math.max(12, Math.min(16, Math.round(fontSize * 0.48)));
   const circleRadius = Math.max(6, Math.min(7, Math.round(fontSize * 0.19)));
-  const laneStep = noteFontSize + 7;
-  const topLabelY = noteFontSize + 3;
-  const trackY = topLabelY + (Math.max(1, laneCount) - 1) * laneStep + distanceFontSize + 23;
-  const distanceY = trackY - 8;
-  const lowerLabelY = trackY + noteFontSize + 11;
-  const height = lowerLabelY + 9;
+  const laneStep = noteFontSize + 6;
+  const topLabelY = noteFontSize + 2;
+  // Keep label collision avoidance vertical, but don't add a tall interval-label
+  // band above the pitch axis. Semitone counts sit below the axis instead.
+  const trackY = topLabelY + (Math.max(1, laneCount) - 1) * laneStep + 22;
+  const distanceY = trackY + circleRadius + distanceFontSize + 6;
+  const height = distanceY + 8;
+  // A short vertical tick at each marker, rather than a long connector spanning
+  // every label lane. Labels remain horizontally centered on the actual pitch.
+  const leaderTopY = trackY - circleRadius - 13;
+  const leaderBottomY = trackY - circleRadius - 3;
   return { noteFontSize, distanceFontSize, circleRadius, topLabelY, trackY,
-    distanceY, lowerLabelY, laneStep, height };
+    distanceY, laneStep, height, leaderTopY, leaderBottomY };
 }
 
 type IntervalLayoutOptions = {
@@ -59,7 +64,7 @@ export function voicingIntervalLayout(
     rightEdges[lane] = x + note.labelWidth / 2;
     return { ...note, x, lane };
   });
-  const metrics = voicingIntervalMetrics(options.fontSize ?? 18, Math.max(2, rightEdges.length));
+  const metrics = voicingIntervalMetrics(options.fontSize ?? 18, Math.max(1, rightEdges.length));
   const distances = positions.slice(1).map((note, i) => ({
     fromX: positions[i].x,
     toX: note.x,

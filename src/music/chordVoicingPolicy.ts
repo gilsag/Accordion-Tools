@@ -27,6 +27,11 @@ export function omissionPenalty(root: string, pattern: FinderChordPattern, missi
   return missing.reduce((score, pitch) => {
     const interval = intervalsForChordFinder(pattern).find((i) => transpose(root, i) === pitch);
     if (interval === 7) return score + 1;
+    // In a major/dominant thirteenth, retaining the ninth is normally more
+    // characteristic than retaining a natural eleventh against the major third.
+    // This is a soft preference, not a validity constraint or octave-order rule.
+    if ((pattern === "major13" || pattern === "dominant13") && interval === 14) return score + 2;
+    if ((pattern === "major13" || pattern === "dominant13") && interval === 17) return score + 0.75;
     if (interval === 14) return score + 1.5;
     if (interval === 17) return score + 2;
     if (interval === 4) return score + 5;
