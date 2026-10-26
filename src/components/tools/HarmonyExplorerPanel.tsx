@@ -164,7 +164,9 @@ export function HarmonyExplorerPanel({
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>{t("tools.diatonicRelationships")}</legend>
+        <legend><span className="label-line">{t("tools.diatonicRelationships")}
+          <HelpTip text={allFamiliesMode ? t("ui.allFamiliesDiatonicHint") : t("ui.diatonicContext")} />
+        </span></legend>
         <label className={`check-row${allFamiliesMode ? " disabled-row" : ""}`}>
           <input
             type="checkbox"
@@ -184,18 +186,12 @@ export function HarmonyExplorerPanel({
           />
           {t("tools.highlightDiatonic")}
         </label>
-        <p className="hint">
-          {allFamiliesMode
-            ? t("ui.allFamiliesDiatonicHint")
-            : t("ui.diatonicContext")}
-        </p>
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>{t("tools.progressionRecording")}</legend>
-        <p className="hint">
-          {t("ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents")}
-        </p>
+        <legend><span className="label-line">{t("tools.progressionRecording")}
+          <HelpTip text={t("ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents")} />
+        </span></legend>
         <div className="button-row">
           <button
             type="button"

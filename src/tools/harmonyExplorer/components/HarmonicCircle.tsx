@@ -318,7 +318,12 @@ export function HarmonicCircle({
   const legendNoteLineHeight = Math.max(14, legendNoteFont * 1.35);
   const referenceName = familyName(referenceFamilyId, referenceFamily.name, language);
   const legendRows = [
-    { heading: `${t("ui.innerRing")}:`, name: referenceName, details: "" },
+    ...(showNoteRing ? [{
+      heading: `${t("ui.noteRingLegendTitle")}:`,
+      name: t("ui.noteRingLegendDetail"),
+      details: "",
+    }] : []),
+    { heading: `${t(showNoteRing ? "ui.referenceChordRing" : "ui.innerRing")}:`, name: referenceName, details: "" },
     ...counts.map((count, index) => ({
       heading: language !== "en" ? `${t("ui.ringOrdinal", { count: index + 2 })}:` : `${ordinal(index + 2)} ring:`,
       name: harmonyLegendFamilyText(relatedFamilyName, language, diatonicOnly, allFamiliesMode),

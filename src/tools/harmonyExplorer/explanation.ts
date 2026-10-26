@@ -9,6 +9,7 @@ export type DiagramExplanationInput = {
   diatonicOnly: boolean;
   highlightDiatonic: boolean;
   allFamiliesMode: boolean;
+  showNoteRing?: boolean;
   counts: readonly number[];
   availableCounts: readonly number[];
   allCounts: readonly number[];
@@ -45,6 +46,7 @@ export function buildDiagramExplanation({
   diatonicOnly,
   highlightDiatonic,
   allFamiliesMode,
+  showNoteRing = false,
   counts,
   availableCounts,
   allCounts,
@@ -53,6 +55,7 @@ export function buildDiagramExplanation({
   const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
   if (language !== "en") {
     const parts = [t(allFamiliesMode ? "analysis.harmonyAll" : "analysis.harmonyInner", { reference: referenceFamilyName.toLowerCase(), related: relatedFamilyName.toLowerCase() })];
+    if (showNoteRing) parts.push(t("analysis.harmonyNoteRing"));
     const hidden = availableCounts.filter((count) => !counts.includes(count));
     if (allFamiliesMode) {
       parts.push(t("analysis.harmonyAllDiatonic", { scale: scaleName }));
@@ -69,9 +72,11 @@ export function buildDiagramExplanation({
   }
   const parts = [
     allFamiliesMode
-      ? `The inner ring shows ${referenceFamilyName.toLowerCase()} chords. Outer rings combine all supported chord families, with more shared pitch classes placed closer to the center.`
-      : `The inner ring shows ${referenceFamilyName.toLowerCase()} chords. Outer rings show ${relatedFamilyName.toLowerCase()} chords, with more shared pitch classes placed closer to the center.`,
+      ? `The inner ring of chords shows ${referenceFamilyName.toLowerCase()} chords. Outer rings combine all supported chord families, with more shared pitch classes placed closer to the center.`
+      : `The inner ring of chords shows ${referenceFamilyName.toLowerCase()} chords. Outer rings show ${relatedFamilyName.toLowerCase()} chords, with more shared pitch classes placed closer to the center.`,
   ];
+
+  if (showNoteRing) parts.push(t("analysis.harmonyNoteRing"));
 
   const hiddenCounts = availableCounts.filter((count) => !counts.includes(count));
 

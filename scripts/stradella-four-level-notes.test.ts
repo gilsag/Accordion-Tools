@@ -73,7 +73,7 @@ const app = readFileSync("src/App.tsx", "utf8");
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
 const defaults = JSON.parse(readFileSync("public/default-settings.json", "utf8"));
 assert.deepEqual(defaults.stradellaNoteLevels, DEFAULT_STRADELLA_NOTE_LEVELS);
-assert.match(app, /stradellaNoteLevels,\r?\n\s+diagramVerticalSpacing/);
+assert.match(app, /stradellaNoteLevels,\r?\n\s+stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,\r?\n\s+diagramVerticalSpacing/);
 assert.match(app, /normalizeStradellaNoteLevels\(settings.stradellaNoteLevels\)/);
 assert.match(app, /finderAnnotationDisplayLines\.map/);
 assert.match(app, /Boolean\(finderAnnotation\?\.lines.length\)/);

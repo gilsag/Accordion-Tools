@@ -2,7 +2,7 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-**Version:** 0.15.14
+**Version:** 0.15.15
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 

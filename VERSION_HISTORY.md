@@ -1,3 +1,11 @@
+## v0.15.15 — Harmony note ring and Chord Finder explanation controls
+
+- Shows the twelve-note inner pitch-class ring by default in Harmony Explorer and synchronizes its visibility with the legend and optional diagram explanation. Explicit saved settings that hide the ring remain respected.
+- Moves the diatonic-membership and recording instructions into accessible contextual help in the Harmony tool panel.
+- Enables nominal note spacing by default in Stradella Chord Finder; saves and restores the independent setting in JSON without changing musical analysis or audio.
+- Aligns the four explanation-level controls and visually nests the note-spacing checkbox beneath Registral voicing.
+- Updates all six interface catalogs, user guides, and version metadata.
+
 ## v0.15.14 — Portuguese, Italian and German interfaces
 
 - Adds **Português (Brasil)** (`pt`), **Italiano** (`it`) and **Deutsch** (`de`) with complete translations of the interface catalog, including accessible labels, context help and generated musical explanations.

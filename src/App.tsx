@@ -323,6 +323,7 @@ const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
 
 type DefaultSettingsFile = Partial<{
   stradellaNoteLevels: StradellaNoteLevels;
+  stradellaShowNominalNoteSpacing: boolean;
   side: Side;
   notation: NotationMode;
   accidental: AccidentalMode;
@@ -854,7 +855,7 @@ function App() {
   const [harmonyShowExplanation, setHarmonyShowExplanation] = useState(false);
   const [harmonyRingVisibility, setHarmonyRingVisibility] = useState<Record<number, boolean>>(() => ({ ...DEFAULT_RING_VISIBILITY }));
   const [harmonyShowToneTooltips, setHarmonyShowToneTooltips] = useState(true);
-  const [harmonyShowNoteRing, setHarmonyShowNoteRing] = useState(false);
+  const [harmonyShowNoteRing, setHarmonyShowNoteRing] = useState(true);
   const [harmonyColorByFamily, setHarmonyColorByFamily] = useState(false);
   const [harmonyDiameter, setHarmonyDiameter] = useState(900);
   const [harmonyFontSize, setHarmonyFontSize] = useState(18);
@@ -955,7 +956,7 @@ function App() {
   const [stradellaBassVoicing, setStradellaBassVoicing] =
     useState<StradellaBassVoicing>("single-low");
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
-  const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(false);
+  const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -1442,6 +1443,8 @@ function App() {
 
   /** Applies extended visual/tool defaults that are also user-editable in default-settings.json. */
   function applyExtendedDefaultSettings(settings: DefaultSettingsFile) {
+    if (typeof settings.stradellaShowNominalNoteSpacing === "boolean")
+      setShowStradellaVoicingIntervals(settings.stradellaShowNominalNoteSpacing);
     if (typeof settings.buttonSize === "number")
       setButtonSize(Math.max(14, Math.min(44, Math.round(settings.buttonSize))));
     if (typeof settings.buttonSpacing === "number")
@@ -1840,6 +1843,7 @@ function App() {
       stradellaChordFinderMarkRootBass,
       stradellaChordFinderMode,
       stradellaNoteLevels,
+      stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,
       diagramVerticalSpacing,
       pianoKeyWidthScale,
       pianoKeyHeightScale,
@@ -2935,6 +2939,7 @@ function App() {
       diatonicOnly: harmonyEffectiveDiatonicOnly,
       highlightDiatonic: harmonyEffectiveHighlightDiatonic,
       allFamiliesMode: harmonyAllFamiliesMode,
+      showNoteRing: harmonyShowNoteRing,
       counts: harmonyCounts,
       availableCounts: harmonyAvailableCounts,
       allCounts: harmonyAllCounts,
@@ -2947,6 +2952,7 @@ function App() {
       harmonyEffectiveDiatonicOnly,
       harmonyEffectiveHighlightDiatonic,
       harmonyAllFamiliesMode,
+      harmonyShowNoteRing,
       harmonyCounts,
       harmonyAvailableCounts,
       harmonyAllCounts,
@@ -3212,7 +3218,7 @@ function App() {
     setHarmonyShowExplanation(false);
     setHarmonyRingVisibility({ ...DEFAULT_RING_VISIBILITY });
     setHarmonyShowToneTooltips(true);
-    setHarmonyShowNoteRing(false);
+    setHarmonyShowNoteRing(true);
     setHarmonyColorByFamily(false);
     setHarmonyDiameter(900);
     setHarmonyFontSize(18);
