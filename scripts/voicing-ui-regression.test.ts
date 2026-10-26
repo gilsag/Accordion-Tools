@@ -15,10 +15,10 @@ const layout = voicingIntervalLayout(model);
 assert.deepEqual(layout.positions.map((n) => n.midi), [59, 60, 64, 69]);
 assert.deepEqual(layout.distances.map((g) => g.semitones), [1, 4, 5]);
 assert.equal(layout.positions[2].count, 2, "repeated nominal pitches collapse to one dot with count");
-assert.ok(layout.positions[1].x - layout.positions[0].x >= 23,
-  "adjacent notes are separated by at least the musical base distance");
-assert.ok(layout.positions[2].x - layout.positions[1].x >= 23,
-  "legibility adjustments preserve a strictly increasing note sequence");
+assert.equal(layout.positions[1].x - layout.positions[0].x, 23,
+  "one semitone is exactly the base spacing");
+assert.equal(layout.positions[2].x - layout.positions[1].x, 4 * 23,
+  "all note positions remain strictly proportional to pitch differences");
 assert.ok(layout.width >= layout.positions.at(-1)!.x + 49);
 assert.deepEqual(voicingIntervalLayout([]).distances, []);
 // Nominal spacing stays readable at every footer slider setting, including
@@ -35,18 +35,20 @@ for (const fontSize of [16, 20, 26, 32, 40]) {
   assert.ok(dense.distances.every((gap) => gap.semitones === 1));
   for (let i = 0; i < dense.positions.length; i += 1) {
     if (i > 0) {
-      assert.ok(dense.positions[i].x - dense.positions[i - 1].x > metrics.circleRadius * 2 + 10,
-        "adjacent dots and distance numerals must have room");
+      assert.ok(Math.abs(dense.positions[i].x - dense.positions[i - 1].x - 23) < 1e-8,
+        "notes must not be displaced horizontally to avoid text collisions");
     }
-    if (i > 1) {
-      const before = dense.positions[i - 2];
+    for (let j = 0; j < i; j += 1) {
+      const before = dense.positions[j];
       const current = dense.positions[i];
-      assert.ok(current.x - before.x >= (before.labelWidth + current.labelWidth) / 2 + 13,
-        `upper/lower lane note labels overlap at font ${fontSize}`);
+      if (before.lane !== current.lane) continue;
+      assert.ok(current.x - before.x >= (before.labelWidth + current.labelWidth) / 2 + 11,
+        `labels in the same lane overlap at font ${fontSize}`);
     }
   }
-  assert.ok(metrics.distanceY - metrics.topLabelY >= metrics.distanceFontSize + 8,
-    "top note labels and distance numbers occupy separate vertical bands");
+  assert.ok(dense.metrics.distanceY >= dense.metrics.topLabelY +
+    (Math.max(...dense.positions.map((n) => n.lane)) * dense.metrics.laneStep) + metrics.distanceFontSize,
+    "all label lanes remain above the interval numbers");
   assert.ok(metrics.lowerLabelY > metrics.trackY + metrics.noteFontSize,
     "lower note labels clear the marker line");
   assert.ok(dense.width >= dense.positions.at(-1)!.x + dense.positions.at(-1)!.labelWidth / 2,
@@ -59,7 +61,8 @@ assert.ok(metrics.height >= 60 && metrics.height - metrics.lowerLabelY >= 8,
   "compact chart reserves room for the lower note labels");
 assert.ok(metrics.noteFontSize <= 20, "chart font stays smaller than main footer text");
 assert.ok(voicingIntervalMetrics(40).noteFontSize <= 20, "maximum explanation size cannot inflate the chart");
-assert.ok(voicingIntervalMetrics(40).height < 100, "maximum explanation size keeps the chart on one compact footer row");
+assert.ok(voicingIntervalMetrics(40).height >= 100,
+  "chart reserves enough vertical space for separate label lanes instead of squeezing them");
 assert.equal(voicingIntervalLayout([note(60, "C", 3, "C"), note(64, "E", 3, "E"),
   note(67, "G", 3, "G")]).width, 300, "small triads use their intrinsic width, not a stretched 480px panel");
 
@@ -89,6 +92,8 @@ const intervalComponent = readFileSync(new URL("../src/components/tools/Stradell
 const css = readFileSync(new URL("../src/App.css", import.meta.url), "utf8");
 assert.match(intervalComponent, /voicing-interval-gap-tight/, "1-semitone gaps receive a dedicated red style");
 assert.match(intervalComponent, /width=\{width\}/, "SVG retains intrinsic chart width");
+assert.match(intervalComponent, /x1=\{gap.fromX\}[\s\S]*?x2=\{gap.toX\}/,
+  "colored interval lines use full proportional center-to-center distances");
 assert.match(intervalComponent, /width: `min\(100%, \$\{width\}px\)`/, "only shrink long charts, never upscale short ones");
 const panel = readFileSync(new URL("../src/components/tools/StradellaChordFinderPanel.tsx", import.meta.url), "utf8");
 assert.match(panel, /\{showRealizationNote && \(/, "spacing control belongs to the master diagram-note section");

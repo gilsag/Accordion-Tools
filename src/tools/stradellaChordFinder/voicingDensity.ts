@@ -1,7 +1,7 @@
 /** A cautious, register-aware density observation for the *nominal* Stradella model.
  * Close notes are often intentional (major sevenths, clusters, extensions), so
- * they are never invalidated; the recommendation adjustment is deliberately
- * smaller than the cost of one additional physical button. Unison doublings
+ * they remain valid unless an explicit user filter excludes them.
+ * Recommendation scoring is independent of harmonic correctness. Unison doublings
  * are not dissonant intervals and must be deduplicated before analysis.
  */
 import type { ModeledStradellaNote } from "./registerModel";
@@ -11,7 +11,7 @@ export type CloseVoicingObservation = {
   closestSemitone: [string, string] | null;
   /** Number of distinct notes in the largest group of whole-tone-or-closer neighbors. */
   clusterSize: number;
-  /** Positive, small cost for use in ranking; never a hard validity filter. */
+  /** Positive, register-aware cost for use in ranking; never a hard validity filter. */
   penalty: number;
   /** Concise educational description, or null when no notable clustering exists. */
   note: string | null;
@@ -37,9 +37,11 @@ export function analyzeVoicingDensity(notes: readonly ModeledStradellaNote[]): C
   const closest = semitones[0];
   const lowPairs = semitones.filter(([lower]) => lower.midi < 48).length; // Below C3
   const middlePairs = semitones.filter(([lower]) => lower.midi >= 48 && lower.midi < 60).length;
-  // Do not punish a conventional higher-register semitone by default.
-  const penalty = Math.min(1.1, lowPairs * 0.65 + middlePairs * 0.28 +
-    (clusterSize >= 4 ? 0.2 : clusterSize >= 3 ? 0.1 : 0));
+  // A semitone clash has a meaningful ranking cost but does not make a
+  // realization harmonically invalid. Keep physical ergonomics independent.
+  const highPairs = semitones.length - lowPairs - middlePairs;
+  const penalty = Math.min(8, lowPairs * 4 + middlePairs * 3 + highPairs * 1.75 +
+    (clusterSize >= 4 ? 0.35 : clusterSize >= 3 ? 0.2 : 0));
   const closestSemitone: [string,string] | null = closest
     ? [`${closest[0].pitchClass}${closest[0].octave}`, `${closest[1].pitchClass}${closest[1].octave}`] : null;
   const parts: string[] = [];
@@ -59,7 +61,7 @@ export function extendedVoicingDensityPenalty(notes: readonly ModeledStradellaNo
   for (let i = 1; i < pitches.length; i += 1) {
     const lower = pitches[i - 1];
     const interval = pitches[i] - lower;
-    if (interval === 1) cost += lower < 48 ? 5 : lower < 60 ? 3.3 : 1.5;
+    if (interval === 1) cost += lower < 48 ? 9 : lower < 60 ? 6.5 : 4.5;
     if (interval === 2) cost += lower < 48 ? 1.5 : lower < 60 ? 0.9 : 0.3;
     chain = interval <= 2 ? chain + 1 : 1;
     if (chain >= 3) cost += chain === 3 ? 0.8 : 1.25;
@@ -68,4 +70,17 @@ export function extendedVoicingDensityPenalty(notes: readonly ModeledStradellaNo
     if (pitches[i + 3] - pitches[i] <= 6) cost += pitches[i] < 60 ? 1.4 : 0.5;
   }
   return cost;
+}
+
+/** Minimum permitted distance between *distinct adjacent nominal MIDI notes*.
+ * 0 = no exclusion, 2 = exclude one-semitone gaps, 3 = exclude both 1 and 2.
+ * Unison contributions are collapsed and do not count as close intervals. */
+export type MinimumNominalGap = 0 | 2 | 3;
+
+export function passesNominalGapFilter(
+  notes: readonly ModeledStradellaNote[], minimumGap: MinimumNominalGap,
+): boolean {
+  if (minimumGap === 0) return true;
+  const pitches = [...new Set(notes.map((note) => note.midi))].sort((a, b) => a - b);
+  return pitches.every((midi, index) => index === 0 || midi - pitches[index - 1] >= minimumGap);
 }

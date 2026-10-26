@@ -15,7 +15,7 @@ import {
 } from "./utils";
 import { chordButtonRecipeResult } from "./searchChordButtonsOnly";
 import { registralPreferenceAdjustment } from "./registralPreference";
-import { analyzeVoicingDensity, extendedVoicingDensityPenalty } from "./voicingDensity";
+import { analyzeVoicingDensity, extendedVoicingDensityPenalty, passesNominalGapFilter, type MinimumNominalGap } from "./voicingDensity";
 import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "./registerModel";
 
 type RankedRealization = {
@@ -242,6 +242,7 @@ export function bassAndChordResults(
   spanColumns = 5.5,
   requestedBass: string | null = null,
   registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
+  minimumNominalGap: MinimumNominalGap = 0,
 ): StradellaChordFinderResult[] {
   const rootReference = chooseRootReference(buttons, root);
   const targetSet = new Set(targetPitches);
@@ -429,10 +430,11 @@ export function bassAndChordResults(
   /* Explicit slash bass is a modeled inversion constraint, not a cosmetic
      score bonus. Keep only candidates whose lowest nominal sounding pitch
      matches the requested bass. Do this BEFORE choosing Recommended items. */
-  const eligible = requestedBass === null ? validRanked : validRanked.filter((item) =>
-    analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel)
-      .lowestPitchClass === requestedBass,
-  );
+  const eligible = validRanked.filter((item) => {
+    const voicing = analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel);
+    return (requestedBass === null || voicing.lowestPitchClass === requestedBass) &&
+      passesNominalGapFilter(voicing.notes, minimumNominalGap);
+  });
 
   // Recommendation is a curated shortlist, not an exhaustive ranking label.
   // Distinct exact physical recipes remain eligible even when they produce the
@@ -553,10 +555,12 @@ export function bassAndChordResults(
     ? results
     : [notPlayableResult(
         targetPitches,
-        requestedBass ? `No realization for requested bass ${requestedBass}.` : "No practical bass-and-chord-button realization.",
-        requestedBass
-          ? `No valid realization places ${requestedBass} lowest under the configured nominal register ranges and current reach/button limits. Try a different register setting or increase the reach/button limit.`
-          : "No exact or close Stradella realization was found with the visible bass and chord rows.",
+        minimumNominalGap > 0 ? "No realization matches the nominal spacing filter." : requestedBass ? `No realization for requested bass ${requestedBass}.` : "No practical bass-and-chord-button realization.",
+        minimumNominalGap > 0
+          ? `All candidates contain neighboring nominal notes closer than ${minimumNominalGap} semitones, or fail the other selected constraints. Relax the spacing filter or adjust the register settings.`
+          : requestedBass
+            ? `No valid realization places ${requestedBass} lowest under the configured nominal register ranges and current reach/button limits. Try a different register setting or increase the reach/button limit.`
+            : "No exact or close Stradella realization was found with the visible bass and chord rows.",
       )];
 }
 

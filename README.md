@@ -2,7 +2,9 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-**Version:** 0.15.15
+**Version:** 0.15.16
+
+**Stradella Chord Finder:** Nominal note-spacing diagrams use proportional semitone intervals; an optional minimum-gap filter excludes overly close nominal pitches. One ZIP can contain every playable realization for the selected chord and search settings in the chosen SVG or PNG format. The Reset menu separates clearing selections from restoring tool defaults.
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 

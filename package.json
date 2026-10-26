@@ -1,7 +1,7 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.15.15",
+  "version": "0.15.16",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,7 +19,7 @@
     "test:titles": "tsx scripts/contextual-titles.test.ts",
     "test:configurations": "tsx scripts/stradella-configurations.test.ts",
     "test:audio": "tsx scripts/la-melodiosa-playback-mapping.test.ts",
-    "test:density": "tsx scripts/stradella-voicing-density.test.ts",
+    "test:density": "tsx scripts/stradella-voicing-density.test.ts && tsx scripts/nominal-gap-and-batch-export.test.ts",
     "test:explanation-ui": "tsx scripts/stradella-explanation-ui.test.ts",
     "test:responsive": "node scripts/responsive-layout.test.mjs",
     "test:display": "tsx scripts/chord-display.test.ts && tsx scripts/voicing-ui-regression.test.ts",

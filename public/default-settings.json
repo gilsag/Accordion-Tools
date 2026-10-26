@@ -114,6 +114,7 @@
   "progressionRhythmPattern": "block",
   "harmonyShowNoteRing": true,
   "stradellaShowNominalNoteSpacing": true,
+  "stradellaMinimumNominalGap": 0,
   "stradellaBassRegisterOctave": 2,
   "stradellaBassRegisterGrouping": "C-B",
   "stradellaChordRegisterOctave": 3,
