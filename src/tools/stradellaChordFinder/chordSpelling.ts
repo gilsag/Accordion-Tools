@@ -12,13 +12,14 @@ const NATURAL_SEMITONES = [0, 2, 4, 5, 7, 9, 11];
 
 function degreeIndex(interval: number, pattern: FinderChordPattern): number {
   if (interval === 0) return 0;
+  if (interval === 2) return 1; // suspended second
   if (interval === 3 || interval === 4) return 2; // third
   if (interval === 5) return 3; // suspended fourth
   if (interval >= 6 && interval <= 8) return 4; // fifth
   if (interval === 9) return pattern === "diminished7" ? 6 : 5; // dim seventh vs sixth
   if (interval === 10 || interval === 11) return 6; // seventh
-  if (interval === 13 || interval === 14) return 8; // ninth
-  if (interval === 17) return 10; // eleventh
+  if (interval === 13 || interval === 14 || interval === 15) return 8; // ninth
+  if (interval === 17 || interval === 18) return 10; // eleventh
   if (interval === 21) return 12; // thirteenth
   return 0;
 }
@@ -80,13 +81,13 @@ export function realizedInversionDescription(root: string, pattern: FinderChordP
   const intervals = intervalsForChordFinder(pattern);
   const bassIndex = intervals.findIndex((i) => transpose(root, i) === bass);
   if (bassIndex < 0) return null;
-  const simpleTriad = ["major-triad", "minor-triad", "diminished-triad", "augmented-triad"].includes(pattern);
-  const seventhChord = ["dominant7", "major7", "minor7", "minorMajor7", "diminished7", "minor7b5", "dominant7b5"].includes(pattern);
+  const simpleTriad = ["major-triad", "minor-triad", "diminished-triad", "augmented-triad", "sus2", "sus4"].includes(pattern);
+  const seventhChord = ["dominant7sus4", "dominant7sharp5", "dominant7", "major7", "minor7", "minorMajor7", "diminished7", "minor7b5", "dominant7b5"].includes(pattern);
   if ((simpleTriad || seventhChord) && bassIndex >= 1 && bassIndex <= 3) {
     return ["", "First inversion", "Second inversion", "Third inversion"][bassIndex];
   }
   const degree = degreeIndex(intervals[bassIndex], pattern);
-  const roles: Record<number, string> = { 2: "third", 3: "fourth", 4: "fifth", 5: "sixth", 6: "seventh", 8: "ninth", 10: "eleventh", 12: "thirteenth" };
+  const roles: Record<number, string> = { 1: "second", 2: "third", 3: "fourth", 4: "fifth", 5: "sixth", 6: "seventh", 8: "ninth", 10: "eleventh", 12: "thirteenth" };
   return `${roles[degree] ?? "Chord tone"} in bass`;
 }
 

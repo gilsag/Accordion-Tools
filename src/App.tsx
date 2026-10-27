@@ -1,6 +1,10 @@
+import type { MinimumNominalGap } from "./tools/stradellaChordFinder/voicingDensity";
+import { familyName, scaleName, stradellaDiagramRowLabel } from "./i18n/musicTerms";
+import { accordionStatusText, diagramAutoTitle, harmonyRelatedDisplayName, harmonyStatusText, pianoRangeStatusLabel } from "./i18n/diagramLabels";
 import { DEFAULT_STRADELLA_NOTE_LEVELS, normalizeStradellaNoteLevels, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "./tools/contextualTitles";
-import { displayRoot, realizedChordName } from "./tools/stradellaChordFinder/chordSpelling";
+import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "./tools/chordDisplay";
+import { chordToneName, displayRoot, realizedChordName } from "./tools/stradellaChordFinder/chordSpelling";
 /*
   Application orchestration: React owns diagram/tool settings; src/tools/*
   supplies music algorithms, while src/sound.ts owns playback. Do not derive
@@ -17,9 +21,22 @@ import { displayRoot, realizedChordName } from "./tools/stradellaChordFinder/cho
 */
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { renderAbc } from "abcjs";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import "./App.css";
+import {
+  browserLanguagePreferences,
+  detectBrowserLanguage,
+  isInterfaceLanguagePreference,
+  SUPPORTED_LANGUAGES,
+  resolveInterfaceLanguage,
+  translate, translateKnownLabel,
+  type InterfaceLanguagePreference,
+  type InterfaceLanguage,
+} from "./i18n/catalog";
+import { LanguageProvider } from "./i18n/context";
+import { abcExampleName, bassPatternName, progressionName } from "./i18n/optionLabels";
 
 import type {
   AbcStradellaMode,
@@ -62,7 +79,6 @@ import type {
 } from "./types";
 
 import {
-  chordSuffix,
   chordTones,
   fontClass,
   formatPitch,
@@ -87,7 +103,7 @@ import {
   PIANO_TREBLE_RANGE_PRESETS,
   pianoTrebleWhiteKeyCount,
 } from "./pianoTreble";
-import { downloadPng, downloadSvg } from "./download";
+import { downloadPng, downloadSvg, downloadZip, serializeSvg, svgStringToPngBytes } from "./download";
 import {
   getSequenceLabelsForButton,
   getSequenceStepsWithButtons,
@@ -135,7 +151,8 @@ import { getChordFinderTrebleButtons, type TrebleChordVoicingMode } from "./tool
 import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
 import { realizationAnnotation, finderChordSymbol } from "./tools/stradellaChordFinder/diagramAnnotations";
-import { DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaOctaveGrouping, type StradellaRegisterModel, formatRegisterRange } from "./tools/stradellaChordFinder/registerModel";
+import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaOctaveGrouping, type StradellaRegisterModel, formatRegisterRange } from "./tools/stradellaChordFinder/registerModel";
+import { voicingIntervalLayout } from "./tools/stradellaChordFinder/voicingIntervalLayout";
 import { describeTrebleChord } from "./tools/trebleChordExplanation";
 import {
   playButtonArpeggioThenChord,
@@ -153,6 +170,7 @@ import {
 import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
 import { StradellaChordFinderPanel } from "./components/tools/StradellaChordFinderPanel";
+import { StradellaVoicingIntervals } from "./components/tools/StradellaVoicingIntervals";
 import { HelpTip } from "./components/ui/HelpTip";
 import { BinaryChoiceButton } from "./components/ui/BinaryChoiceButton";
 import { SegmentedChoice } from "./components/ui/SegmentedChoice";
@@ -307,10 +325,14 @@ const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
 
 type DefaultSettingsFile = Partial<{
   stradellaNoteLevels: StradellaNoteLevels;
+  stradellaShowNominalNoteSpacing: boolean;
+  stradellaMinimumNominalGap: MinimumNominalGap;
   side: Side;
   notation: NotationMode;
   accidental: AccidentalMode;
   chordLabelMode: ChordLabelMode;
+  chordDisplayStyle: ChordDisplayStyle;
+  language: InterfaceLanguagePreference;
   basses: BassCount;
   trebleLayout: TrebleLayout;
   trebleRows: 3 | 4 | 5;
@@ -452,20 +474,6 @@ function finderLabelsForButton(buttons: DiagramButton[], buttonId: string) {
     .join(",");
 }
 
-function notationLabel(notation: NotationMode) {
-  if (notation === "english") return "English notation";
-  if (notation === "german") return "German notation";
-  if (notation === "solfege") return "Solfege";
-  if (notation === "intervals") return "Intervals";
-  return "Blank labels";
-}
-
-function trebleLayoutLabel(layout: TrebleLayout) {
-  if (layout === "c-system") return "C-system";
-  if (layout === "b-system") return "B-system / Bayan";
-  return "Piano";
-}
-
 function normalizeProgressionText(value: string) {
   return value
     .replace(/[♭𝄫]/g, "b")
@@ -477,17 +485,18 @@ function normalizeProgressionText(value: string) {
     .toLowerCase();
 }
 
-function formatProgressionOptionLabel(progression: ChordProgressionDefinition) {
+function formatProgressionOptionLabel(progression: ChordProgressionDefinition, language: InterfaceLanguage) {
+  const localizedName = progressionName(progression.id, progression.name, language);
   const chordList = chordProgressionSteps(progression)
     .map((step) => step.symbol)
     .join(" ");
-  if (!chordList) return progression.name;
+  if (!chordList) return localizedName;
 
   const normalizedName = normalizeProgressionText(progression.name);
   const normalizedChords = normalizeProgressionText(chordList);
-  if (normalizedName.includes(normalizedChords)) return `Progression — ${chordList}`;
+  if (normalizedName.includes(normalizedChords)) return `${translate(language, "ui.progression")} — ${chordList}`;
 
-  return `${progression.name} — ${chordList}`;
+  return `${localizedName} — ${chordList}`;
 }
 
 /** Calculates the y-coordinate for a sequence number relative to a button. */
@@ -516,6 +525,25 @@ function fingeringY(
 function App() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
+  useEffect(() => {
+    function closeOnOutside(event: PointerEvent) {
+      if (resetMenuRef.current?.open && !resetMenuRef.current.contains(event.target as Node))
+        resetMenuRef.current.open = false;
+    }
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && resetMenuRef.current?.open) {
+        resetMenuRef.current.open = false;
+        resetMenuRef.current.querySelector("summary")?.focus();
+      }
+    }
+    document.addEventListener("pointerdown", closeOnOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
   const harmonySvgRef = useRef<SVGSVGElement | null>(null);
   const previousLayoutSignatureRef = useRef<string | null>(null);
   const abcPlaybackTimeoutsRef = useRef<number[]>([]);
@@ -523,9 +551,41 @@ function App() {
   const abcPlaybackStartBeatRef = useRef(0);
 
   /* Core layout and notation state. */
+  const [languagePreference, setLanguagePreference] = useState<InterfaceLanguagePreference>(() => {
+    try {
+      const saved = window.localStorage.getItem('accordionTools.interfaceLanguage.v1');
+      return isInterfaceLanguagePreference(saved) ? saved : 'auto';
+    } catch {
+      return 'auto';
+    }
+  });
+  const [browserLanguage, setBrowserLanguage] = useState(() =>
+    detectBrowserLanguage(browserLanguagePreferences()),
+  );
+  const language = resolveInterfaceLanguage(languagePreference, [browserLanguage]);
+  const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) =>
+    translate(language, key, params);
+  function changeLanguage(next: InterfaceLanguagePreference) {
+    setLanguagePreference(next);
+    try {
+      window.localStorage.setItem('accordionTools.interfaceLanguage.v1', next);
+    } catch {
+      /* The setting remains active for this session when storage is unavailable. */
+    }
+  }
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+  useEffect(() => {
+    const refresh = () => setBrowserLanguage(detectBrowserLanguage(browserLanguagePreferences()));
+    window.addEventListener('languagechange', refresh);
+    return () => window.removeEventListener('languagechange', refresh);
+  }, []);
+
   const [side, setSide] = useState<Side>("stradella");
   const [notation, setNotation] = useState<NotationMode>("english");
   const [accidental, setAccidental] = useState<AccidentalMode>("natural");
+  const [chordDisplayStyle, setChordDisplayStyle] = useState<ChordDisplayStyle>(DEFAULT_CHORD_DISPLAY_STYLE);
   const [chordLabelMode, setChordLabelMode] =
     useState<ChordLabelMode>("chord-name");
   const [basses, setBasses] = useState<BassCount>("96");
@@ -793,6 +853,10 @@ function App() {
   }), [stradellaBassRegisterOctave, stradellaBassRegisterGrouping, stradellaChordRegisterOctave, stradellaChordRegisterGrouping]);
   const [finderMaxButtons, setFinderMaxButtons] = useState(3);
   const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
+  const [stradellaMinimumNominalGap, setStradellaMinimumNominalGap] = useState<MinimumNominalGap>(0);
+  const [batchExporting, setBatchExporting] = useState(false);
+  // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
+  const [mobileDiagramView, setMobileDiagramView] = useState<"readable" | "fit">("readable");
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
   const [stradellaNoteLevels, setStradellaNoteLevels] = useState<StradellaNoteLevels>({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
   const [finderExplanationFontSize, setFinderExplanationFontSize] = useState(26);
@@ -815,7 +879,7 @@ function App() {
   const [harmonyShowExplanation, setHarmonyShowExplanation] = useState(false);
   const [harmonyRingVisibility, setHarmonyRingVisibility] = useState<Record<number, boolean>>(() => ({ ...DEFAULT_RING_VISIBILITY }));
   const [harmonyShowToneTooltips, setHarmonyShowToneTooltips] = useState(true);
-  const [harmonyShowNoteRing, setHarmonyShowNoteRing] = useState(false);
+  const [harmonyShowNoteRing, setHarmonyShowNoteRing] = useState(true);
   const [harmonyColorByFamily, setHarmonyColorByFamily] = useState(false);
   const [harmonyDiameter, setHarmonyDiameter] = useState(900);
   const [harmonyFontSize, setHarmonyFontSize] = useState(18);
@@ -916,6 +980,7 @@ function App() {
   const [stradellaBassVoicing, setStradellaBassVoicing] =
     useState<StradellaBassVoicing>("single-low");
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
+  const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -979,6 +1044,15 @@ function App() {
 
         const defaults = (await response.json()) as DefaultSettingsFile;
         if (cancelled || !defaults || typeof defaults !== "object") return;
+        // The user's stored choice takes precedence over editable defaults.
+        try {
+          if (window.localStorage.getItem('accordionTools.interfaceLanguage.v1') === null && isInterfaceLanguagePreference(defaults.language)) {
+            setLanguagePreference(defaults.language);
+          }
+        } catch {
+          if (isInterfaceLanguagePreference(defaults.language)) setLanguagePreference(defaults.language);
+        }
+
 
         if (isOneOf(defaults.side, ["stradella", "treble"] as const)) {
           setSide(defaults.side);
@@ -998,6 +1072,9 @@ function App() {
           isOneOf(defaults.accidental, ["natural", "flats", "sharps", "enharmonic"] as const)
         ) {
           setAccidental(defaults.accidental);
+        }
+        if (isOneOf(defaults.chordDisplayStyle, ["compact", "letter", "words"] as const)) {
+          setChordDisplayStyle(defaults.chordDisplayStyle);
         }
         const defaultChordLabelMode = (defaults as { chordLabelMode?: unknown }).chordLabelMode;
         if (defaultChordLabelMode === "roman" || defaultChordLabelMode === "tonal-function") {
@@ -1390,6 +1467,10 @@ function App() {
 
   /** Applies extended visual/tool defaults that are also user-editable in default-settings.json. */
   function applyExtendedDefaultSettings(settings: DefaultSettingsFile) {
+    if (typeof settings.stradellaShowNominalNoteSpacing === "boolean")
+      setShowStradellaVoicingIntervals(settings.stradellaShowNominalNoteSpacing);
+    if ([0, 2, 3].includes(Number(settings.stradellaMinimumNominalGap)))
+      setStradellaMinimumNominalGap(Number(settings.stradellaMinimumNominalGap) as MinimumNominalGap);
     if (typeof settings.buttonSize === "number")
       setButtonSize(Math.max(14, Math.min(44, Math.round(settings.buttonSize))));
     if (typeof settings.buttonSpacing === "number")
@@ -1434,7 +1515,7 @@ function App() {
     if ([3, 4, 5].includes(Number(settings.scaleFinderRowLimit)))
       setScaleFinderRowLimit(Number(settings.scaleFinderRowLimit) as 3 | 4 | 5);
     if (typeof settings.chordFinderRoot === "string") setChordFinderRoot(settings.chordFinderRoot);
-    if (isOneOf(settings.chordFinderPattern, ["major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus4", "dominant7", "major6", "minor6", "dominant7b5", "dominant7b9", "dominant9", "dominant9sus4", "dominant11", "major11", "minor11", "dominant13", "major13", "minor13", "major7", "major9", "major7add9", "minor7", "minorMajor7", "minor7b5", "minor9", "minorMajor9", "diminished7"] as const))
+    if (isOneOf(settings.chordFinderPattern, ["major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus2", "sus4", "dominant7sus4", "majorAdd9", "minorAdd9", "major6add9", "minor6add9", "dominant7sharp5", "dominant7sharp9", "major7sharp11", "dominant7", "major6", "minor6", "dominant7b5", "dominant7b9", "dominant9", "dominant9sus4", "dominant11", "major11", "minor11", "dominant13", "major13", "minor13", "major7", "major9", "major7add9", "minor7", "minorMajor7", "minor7b5", "minor9", "minorMajor9", "diminished7"] as const))
       setChordFinderPattern(settings.chordFinderPattern);
     if (isOneOf(settings.chordFinderInversion, ["root", "first", "second", "third"] as const))
       setChordFinderInversion(settings.chordFinderInversion);
@@ -1516,6 +1597,7 @@ function App() {
   function applyImportedSettings(settings: DefaultSettingsFile) {
     if (!settings || typeof settings !== "object") return;
 
+    if (isInterfaceLanguagePreference(settings.language)) changeLanguage(settings.language);
     if (isOneOf(settings.side, ["stradella", "treble"] as const))
       setSide(settings.side);
     if (
@@ -1530,6 +1612,9 @@ function App() {
       setNotation(settings.notation);
     if (isOneOf(settings.accidental, ["natural", "flats", "sharps", "enharmonic"] as const))
       setAccidental(settings.accidental);
+    if (isOneOf(settings.chordDisplayStyle, ["compact", "letter", "words"] as const)) {
+      setChordDisplayStyle(settings.chordDisplayStyle);
+    }
     const importedChordLabelMode = (settings as { chordLabelMode?: unknown }).chordLabelMode;
     if (importedChordLabelMode === "roman" || importedChordLabelMode === "tonal-function") {
       setChordLabelMode("functional-reference");
@@ -1660,6 +1745,8 @@ function App() {
       ] as const)
     )
       setStradellaChordFinderMode(settings.stradellaChordFinderMode);
+    if ([0, 2, 3].includes(Number(settings.stradellaMinimumNominalGap)))
+      setStradellaMinimumNominalGap(Number(settings.stradellaMinimumNominalGap) as MinimumNominalGap);
     if (typeof settings.stradellaChordFinderMarkRootBass === "boolean")
       setStradellaChordFinderMarkRootBass(
         settings.stradellaChordFinderMarkRootBass,
@@ -1755,10 +1842,12 @@ function App() {
   /** Collects the current persistent settings in the same shape as public/default-settings.json. */
   function collectCurrentSettings(): DefaultSettingsFile {
     return {
+      language: languagePreference,
       side,
       notation,
       accidental,
       chordLabelMode,
+      chordDisplayStyle,
       basses,
       trebleLayout,
       trebleRows,
@@ -1782,6 +1871,8 @@ function App() {
       stradellaChordFinderMarkRootBass,
       stradellaChordFinderMode,
       stradellaNoteLevels,
+      stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,
+      stradellaMinimumNominalGap,
       diagramVerticalSpacing,
       pianoKeyWidthScale,
       pianoKeyHeightScale,
@@ -1898,7 +1989,7 @@ function App() {
       applyImportedSettings(settings);
     } catch {
       window.alert(
-        "Could not read this settings file. Please choose a valid Accordion-Tools settings JSON file.",
+        t("ui.invalidSettingsFile"),
       );
     }
   }
@@ -2583,6 +2674,7 @@ function App() {
       finderSpanColumns,
       stradellaChordFinderRequestedBass,
       stradellaRegisterModel,
+      stradellaMinimumNominalGap,
     );
   }, [
     buttons,
@@ -2596,6 +2688,7 @@ function App() {
     finderSpanColumns,
     stradellaChordFinderRequestedBass,
     stradellaRegisterModel,
+    stradellaMinimumNominalGap,
   ]);
 
   const stradellaChordFinderResult = useMemo(() => {
@@ -2607,7 +2700,7 @@ function App() {
 
   useEffect(() => {
     setStradellaChordFinderRealizationIndex(0);
-  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderRequestedBass, stradellaRegisterModel, finderMaxButtons, finderSpanColumns, side]);
+  }, [stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderMode, stradellaChordFinderRequestedBass, stradellaRegisterModel, finderMaxButtons, finderSpanColumns, stradellaMinimumNominalGap, side]);
 
   /* A progression choice must retain its original physical button identities;
      pitch-class-equivalent bass and counterbass positions are not substitutes. */
@@ -2871,15 +2964,17 @@ function App() {
   const harmonyScale = harmonyScaleDefinition(harmonyScaleId);
   const harmonyExplanation = useMemo(
     () => buildDiagramExplanation({
-      referenceFamilyName: harmonyReferenceFamily.name,
-      relatedFamilyName: harmonyRelatedName,
-      scaleName: harmonyScale.name,
+      referenceFamilyName: familyName(harmonyReferenceFamily.id, harmonyReferenceFamily.name, language),
+      relatedFamilyName: harmonyRelatedFamilyId === "all" ? t("ui.allDiatonicFamilies") : familyName(harmonyRelatedFamilyId, harmonyRelatedName, language),
+      scaleName: scaleName(harmonyScale.id, harmonyScale.name, language),
       diatonicOnly: harmonyEffectiveDiatonicOnly,
       highlightDiatonic: harmonyEffectiveHighlightDiatonic,
       allFamiliesMode: harmonyAllFamiliesMode,
+      showNoteRing: harmonyShowNoteRing,
       counts: harmonyCounts,
       availableCounts: harmonyAvailableCounts,
       allCounts: harmonyAllCounts,
+      language,
     }),
     [
       harmonyReferenceFamily.name,
@@ -2888,9 +2983,11 @@ function App() {
       harmonyEffectiveDiatonicOnly,
       harmonyEffectiveHighlightDiatonic,
       harmonyAllFamiliesMode,
+      harmonyShowNoteRing,
       harmonyCounts,
       harmonyAvailableCounts,
       harmonyAllCounts,
+      language,
     ],
   );
 
@@ -3010,7 +3107,7 @@ function App() {
     const recordedChords = harmonyRecordedProgression.filter(isHarmonyProgressionChord);
     if (recordedChords.length === 0) return;
     if (recordedChords.length < harmonyRecordedProgression.length) {
-      window.alert("Single notes are not exported to Progression Assistant; only chords will be transferred.");
+      window.alert(t("ui.onlyChordsTransferred"));
     }
     stopHarmonyRecordedProgressionPlayback();
     setHarmonyProgression(recordedChords.map((chord) => ({ ...chord, id: `harmony-progression-${harmonyProgressionIdRef.current++}` })));
@@ -3152,7 +3249,7 @@ function App() {
     setHarmonyShowExplanation(false);
     setHarmonyRingVisibility({ ...DEFAULT_RING_VISIBILITY });
     setHarmonyShowToneTooltips(true);
-    setHarmonyShowNoteRing(false);
+    setHarmonyShowNoteRing(true);
     setHarmonyColorByFamily(false);
     setHarmonyDiameter(900);
     setHarmonyFontSize(18);
@@ -3358,19 +3455,10 @@ function App() {
   }
 
   /** Clears the Scale Finder highlight without changing its selected root or pattern. */
-  function clearScaleFinder() {
-    setScaleFinderActive(false);
-  }
 
   /** Clears the Chord Finder highlight without changing its selected root or pattern. */
-  function clearChordFinder() {
-    setChordFinderActive(false);
-  }
 
   /** Clears the Stradella Chord Finder highlight without changing its selected options. */
-  function clearStradellaChordFinder() {
-    setStradellaChordFinderActive(false);
-  }
 
   /** Plays the currently highlighted Stradella Chord Finder result. */
   function playStradellaChordFinder() {
@@ -3551,7 +3639,7 @@ function App() {
       ) as BassPatternDefinition;
       return validateBassPatternLibrary({ version: 2, patterns: [candidate] });
     } catch (error) {
-      return [error instanceof Error ? error.message : "Invalid JSON."];
+      return [error instanceof Error ? error.message : t("ui.invalidJSON")];
     }
   }, [bassPatternEditorText]);
 
@@ -3565,7 +3653,7 @@ function App() {
         patterns: [candidate],
       });
       if (errors.length > 0) {
-        setBassPatternEditorMessage(`Cannot save: ${errors[0]}`);
+        setBassPatternEditorMessage(t("ui.cannotSave", { reason: errors[0] }));
         return;
       }
       const nextPatterns = [
@@ -3580,10 +3668,10 @@ function App() {
         JSON.stringify(nextPatterns),
       );
       setBassPatternId(candidate.id);
-      setBassPatternEditorMessage(`Saved custom pattern “${candidate.name}”.`);
+      setBassPatternEditorMessage(t("ui.savedCustomPattern", { name: candidate.name }));
     } catch (error) {
       setBassPatternEditorMessage(
-        error instanceof Error ? error.message : "Invalid JSON.",
+        error instanceof Error ? error.message : t("ui.invalidJSON"),
       );
     }
   }
@@ -3606,13 +3694,13 @@ function App() {
     setBassPatternId(
       (builtInBassPatternDefinitions[0] ?? nextPatterns[0])?.id ?? "",
     );
-    setBassPatternEditorMessage("Removed selected custom pattern.");
+    setBassPatternEditorMessage(t("ui.removedCustomPattern"));
   }
 
   function loadSelectedPatternIntoEditor() {
     if (!selectedBassPattern) return;
     setBassPatternEditorText(JSON.stringify(selectedBassPattern, null, 2));
-    setBassPatternEditorMessage("Loaded selected pattern into editor.");
+    setBassPatternEditorMessage(t("ui.loadedPatternIntoEditor"));
   }
 
   function downloadTextFile(
@@ -3833,6 +3921,43 @@ function App() {
     return compact.length > 34 ? `${compact.slice(0, 31)}...` : compact;
   }
 
+  /** Clear Harmony selection/recording without discarding user preferences. */
+  function clearHarmonyWork() {
+    setHarmonySelection(null);
+    setHarmonyFocusedReferenceRootPc(null);
+    setHarmonyProgressionRecording(false);
+    setHarmonyRecordedProgression([]);
+    setHarmonyRecordedNotationVisible(false);
+    setHarmonyProgressionPreviewIndex(null);
+    setHarmonyProgressionActiveButtonIds([]);
+    stopAllSound();
+  }
+
+  /** Reset only Stradella Chord Finder options. Register/sound/global settings remain untouched. */
+  function resetStradellaFinderDefaults() {
+    setStradellaChordFinderRoot("C");
+    setStradellaChordFinderPattern("major-triad");
+    setStradellaChordFinderMode("bass-and-chords");
+    setStradellaChordFinderRequestedBass(null);
+    setStradellaChordFinderRealizationIndex(0);
+    setFinderMaxButtons(3);
+    setFinderSpanColumns(4.3);
+    setStradellaMinimumNominalGap(0);
+    setStradellaChordFinderMarkRootBass(true);
+    setShowFinderRealizationNote(true);
+    setShowStradellaVoicingIntervals(true);
+    setStradellaNoteLevels({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
+    setFinderExplanationFontSize(26);
+  }
+
+  function resetCurrentToolDefaults() {
+    if (workspaceMode === "harmony") resetHarmonyExplorer();
+    else if (side === "stradella" && activeToolSection === "stradellaChordFinder") {
+      resetStradellaFinderDefaults();
+      resetDiagramWork();
+    }
+  }
+
   /** Clears selections, fingerings, sequences, annotations, and active tool modes. */
   function resetDiagramWork() {
     setOverlays({});
@@ -3895,7 +4020,7 @@ function App() {
         return functionalReferenceLabelForChord(button.kind, button.chordRoot ?? "C");
       }
 
-      return `${root}${chordSuffix(button.kind)}`;
+      return displayStradellaButtonChord(root, button.kind, chordDisplayStyle);
     }
 
     // Bass rows: interval mode shows key-independent interval name
@@ -3987,9 +4112,72 @@ function App() {
     return `${trebleLayout === "c-system" ? "C-system" : "B-system / Bayan"} Treble`;
   }
 
+  function localizedAutoTitle() {
+    return diagramAutoTitle(side, basses, trebleLayout, language);
+  }
+
   /** Toggles the requested left panel; clicking the active panel hides it. */
   function setPanel(mode: Exclude<LeftPanelMode, "hidden">) {
     setLeftPanelMode((current) => (current === mode ? "hidden" : mode));
+  }
+
+  /** Download every eligible realization with the current filter, labels,
+   * layout, register model, footer and SVG/PNG settings. Capture each live SVG
+   * synchronously, then restore selection before asynchronous PNG encoding. */
+  async function downloadAllStradellaRealizations() {
+    if (batchExporting || side !== "stradella" || !stradellaChordFinderActive) return;
+    const candidates = stradellaChordFinderRealizations
+      .map((candidate, index) => ({ candidate, index }))
+      .filter(({ candidate }) => candidate.playable);
+    if (!candidates.length || !svgRef.current) return;
+    setBatchExporting(true);
+    const initialIndex = stradellaChordFinderRealizationIndex;
+    const snapshots: Array<{ name: string; svg: string; width: number; height: number }> = [];
+    try {
+      try {
+        for (let index = 0; index < candidates.length; index++) {
+          const { candidate, index: originalIndex } = candidates[index];
+          flushSync(() => setStradellaChordFinderRealizationIndex(originalIndex));
+          const svg = svgRef.current;
+          if (!svg) throw new Error("Diagram SVG is unavailable.");
+          const annotation = realizationAnnotation(
+            stradellaChordFinderRoot, stradellaChordFinderPattern, candidate,
+            stradellaRegisterModel, stradellaChordFinderRequestedBass,
+            stradellaNoteLevels, chordDisplayStyle, language,
+          );
+          const safeName = (annotation?.filenameKey ?? `realization-${index + 1}`)
+            .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
+            .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+            .slice(0, 140);
+          const rect = svg.viewBox.baseVal;
+          snapshots.push({
+            name: `${String(index + 1).padStart(3, "0")}-${safeName || "stradella"}`,
+            svg: serializeSvg(svg, downloadFormat === "png"),
+            width: Math.ceil(rect.width || svg.clientWidth || 1200),
+            height: Math.ceil(rect.height || svg.clientHeight || 800),
+          });
+        }
+      } finally {
+        flushSync(() => setStradellaChordFinderRealizationIndex(initialIndex));
+      }
+      const encoder = new TextEncoder();
+      const entries: Array<{ name: string; data: Uint8Array }> = [];
+      for (const snapshot of snapshots) {
+        const isPng = downloadFormat === "png";
+        entries.push({
+          name: `${snapshot.name}.${isPng ? "png" : "svg"}`,
+          data: isPng
+            ? await svgStringToPngBytes(snapshot.svg, snapshot.width, snapshot.height)
+            : encoder.encode(snapshot.svg),
+        });
+      }
+      downloadZip(entries, `stradella-${stradellaChordFinderRoot}-${stradellaChordFinderPattern}-${downloadFormat}-${entries.length}-realizations.zip`);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Could not export all diagrams.");
+    } finally {
+      setBatchExporting(false);
+    }
   }
 
   /** Downloads the currently rendered accordion or Harmony Explorer diagram. */
@@ -4024,7 +4212,16 @@ function App() {
     // ASCII-only, Windows-safe filenames; identify individual Chord Finder recipes.
     const rawName = titleMode === "contextual" && finderAnnotationActive && finderAnnotation
       ? finderAnnotation.filenameKey
-      : displayedTitle;
+      : titleMode === "contextual" && side === "treble" && chordFinderActive
+        ? trebleContextualTitle({
+            root: chordFinderRoot, pattern: chordFinderPattern,
+            inversion: chordFinderInversion, hasButtons: chordFinderButtons.length > 0,
+            exact: trebleChordExplanation.exact, displayStyle: "words",
+          })
+        : (titleMode === "auto" ||
+           (titleMode === "contextual" && !stradellaChordFinderActive && !(side === "treble" && chordFinderActive) && !scaleFinderActive))
+          ? autoTitle()
+          : displayedTitle;
     const asciiName = rawName
       .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
       .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
@@ -4163,20 +4360,42 @@ function App() {
 
   /* Derived values used by rendering. */
   const finderAnnotation = stradellaChordFinderResult.playable
-    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult, stradellaRegisterModel, stradellaChordFinderRequestedBass, stradellaNoteLevels)
+    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult, stradellaRegisterModel, stradellaChordFinderRequestedBass, stradellaNoteLevels, chordDisplayStyle, language)
     : null;
   const finderAnnotationActive = side === "stradella" && stradellaChordFinderActive && finderAnnotation !== null;
   const finderFooterEnabled = finderAnnotationActive && showFinderRealizationNote && Boolean(finderAnnotation?.lines.length);
+  const finderLineLabels = {
+    identity: `${t("analysis.harmonicIdentity")}:`,
+    pitchClasses: `${t("analysis.pitchClassRealization")}:`,
+    voicing: `${t("analysis.registralVoicing")}:`,
+    physical: `${t("analysis.physicalRealization")}:`,
+  } satisfies Record<keyof StradellaNoteLevels, string>;
+  const annotationLevelForLine = (line: string): keyof StradellaNoteLevels | null =>
+    (Object.entries(finderLineLabels).find(([, prefix]) => line.startsWith(prefix))?.[0] as keyof StradellaNoteLevels | undefined) ?? null;
+  const finderVoicingAnalysis = finderAnnotationActive && showFinderRealizationNote && showStradellaVoicingIntervals && stradellaNoteLevels.voicing
+    ? analyzeConfiguredStradellaVoicing(
+      stradellaChordFinderResult.playbackButtons,
+      stradellaChordFinderRoot,
+      stradellaRegisterModel,
+    )
+    : null;
+  const finderVoicingLayout = finderVoicingAnalysis ? voicingIntervalLayout(finderVoicingAnalysis.notes, {
+    fontSize: finderExplanationFontSize,
+    displayLabel: (note, count) => `${chordToneName(stradellaChordFinderRoot, stradellaChordFinderPattern, note.pitchClass)}${note.octave}${count > 1 ? ` ×${count}` : ""}`,
+  }) : null;
+  const finderVoicingChartVisible = Boolean(finderVoicingLayout && finderVoicingLayout.positions.length >= 2);
+  // The note generator owns the stable ordering, independently of the chart toggle.
+  const finderAnnotationDisplayLines = finderAnnotation?.lines ?? [];
   // Report the actual highlighted buttons for every chord family.
   const trebleChordExplanation = describeTrebleChord(
-    chordFinderButtons, chordFinderRoot, chordFinderPattern, trebleChordVoicingMode,
+    chordFinderButtons, chordFinderRoot, chordFinderPattern, trebleChordVoicingMode, language,
   );
   const trebleVoicingNote = side === "treble" && chordFinderActive ? trebleChordExplanation.note : "";
   const trebleFooterEnabled = Boolean(showTrebleVoicingNote && trebleVoicingNote);
   const contextualTitle = (() => {
     if (side === "stradella" && stradellaChordFinderActive) {
-      return finderAnnotationActive ? finderAnnotation?.title ?? autoTitle()
-        : `${realizedChordName(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderRequestedBass, stradellaChordFinderRequestedBass, `${displayRoot(stradellaChordFinderRoot)}${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern).slice(stradellaChordFinderRoot.length)}`)} - No realization`;
+      return finderAnnotationActive ? finderAnnotation?.title ?? localizedAutoTitle()
+        : `${displayRealizedChord(stradellaChordFinderRoot, stradellaChordFinderPattern, realizedChordName(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderRequestedBass, stradellaChordFinderRequestedBass, `${displayRoot(stradellaChordFinderRoot)}${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern).slice(stradellaChordFinderRoot.length)}`), chordDisplayStyle)} - ${t("ui.titleNoRealization")}`;
     }
     if (side === "treble" && chordFinderActive) return trebleContextualTitle({
       root: chordFinderRoot,
@@ -4184,12 +4403,13 @@ function App() {
       inversion: chordFinderInversion,
       hasButtons: chordFinderButtons.length > 0,
       exact: trebleChordExplanation.exact,
+      displayStyle: chordDisplayStyle,
     });
-    if (scaleFinderActive) return `${scaleFinderRoot} ${SCALE_FINDER_OPTIONS.find((x) => x.value === scaleFinderPattern)?.label ?? "scale"}`;
-    return autoTitle();
+    if (scaleFinderActive) return `${scaleFinderRoot} ${translateKnownLabel(language, SCALE_FINDER_OPTIONS.find((x) => x.value === scaleFinderPattern)?.label ?? "scale")}`;
+    return localizedAutoTitle();
   })();
   const finalTitle =
-    titleMode === "auto" ? autoTitle()
+    titleMode === "auto" ? localizedAutoTitle()
       : titleMode === "contextual" ? contextualTitle
       : titleMode === "custom" ? customTitle : "";
 
@@ -4255,14 +4475,39 @@ function App() {
     80,
     Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
   );
-  // Count wrapping in each selected level independently; blank space for
-  // hidden levels must not remain in the exported SVG/PNG canvas.
-  const finderFooterLines = (finderAnnotation?.lines ?? []).reduce((sum, line) => sum +
-    Math.max(1, Math.ceil(line.length * finderExplanationFontSize * 0.6 / Math.max(1, viewWidth - 64))), 0);
-  const finderFooterHeight = Math.max(74, Math.ceil(finderFooterLines * finderExplanationFontSize * 1.45 + 22));
+  // Match the shared CSS label column using the longest enabled translated label.
+  const finderAnnotationLabelWidth = Math.max(150, ...finderAnnotationDisplayLines.map((line) =>
+    Math.ceil(Math.max(0, line.indexOf(":") + 1) * finderExplanationFontSize * 0.65)));
+  const finderAnnotationContentWidth = Math.max(220, viewWidth - 64 - finderAnnotationLabelWidth - 18);
+  const finderVoicingChartHeight = finderVoicingChartVisible ? finderVoicingLayout!.metrics.height : 0;
+  const finderFooterHeight = (() => {
+    let total = 16;
+    for (const line of finderAnnotationDisplayLines) {
+      const level = annotationLevelForLine(line);
+      if (level === "voicing" && finderVoicingChartVisible) {
+        total += finderVoicingChartHeight + 0.42 * finderExplanationFontSize;
+        continue;
+      }
+      const colon = line.indexOf(":");
+      const value = colon > 0 ? line.slice(colon + 1).trim() : line;
+      const wrappedLines = Math.max(1, Math.ceil(
+        value.length * finderExplanationFontSize * 0.59 / Math.max(1, finderAnnotationContentWidth),
+      ));
+      total += Math.max(finderExplanationFontSize * 1.3, wrappedLines * finderExplanationFontSize * 1.3) +
+        0.42 * finderExplanationFontSize;
+    }
+    return Math.max(82, Math.ceil(total));
+  })();
+  // Place the annotation closer to the lowest physical button, retaining a
+  // clearance for selection outlines and alternate Stradella row configurations.
+  const stradellaFinderFooterY = Math.max(
+    baseViewHeight - 90,
+    Math.max(0, ...buttons.map((button) => button.y + buttonSize * 0.58)) + 24,
+  );
   const viewHeight = trebleFooterEnabled && buttonTrebleFooter
     ? trebleFooterY + trebleFooterHeight + 8
-    : baseViewHeight + (trebleFooterEnabled ? 112 : finderFooterEnabled ? finderFooterHeight - 18 : 0);
+    : finderFooterEnabled ? stradellaFinderFooterY + finderFooterHeight + 12
+      : baseViewHeight + (trebleFooterEnabled ? 112 : 0);
 
   const sidebarWidth =
     interfaceDensity === "compact"
@@ -4309,62 +4554,78 @@ function App() {
     instrument. Keep the bellows guide aligned with the physical instrument
     ends rather than using one hard-coded left/right label pair for every side.
   */
-  const bellowsStartLabel = side === "stradella" ? "Bottom" : "Top";
-  const bellowsEndLabel = side === "stradella" ? "Top" : "Bottom";
+  const bellowsStartLabel = side === "stradella" ? t("ui.bottom") : t("ui.top");
+  const bellowsEndLabel = side === "stradella" ? t("ui.top") : t("ui.bottom");
 
   const activeToolLabel =
     side === "stradella"
       ? bassPatternPlaybackState === "playing"
-        ? "Bass Pattern Player"
+        ? t("ui.bassPatternPlayer")
         : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-          ? "ABC Player"
+          ? t("ui.abcDefault")
           : activeToolSection === "progressionAssistant"
-            ? "Progression Assistant"
+            ? t("ui.progressionAssistant")
             : scaleFinderActive
-              ? "Scale Finder"
+              ? t("ui.scaleFinder")
               : stradellaChordFinderActive
-                ? "Chord Finder"
+                ? t("tools.chordFinder")
                 : isRecordingSequence
-                ? "Sequence recording"
+                ? t("ui.sequenceRecording")
                 : isApplyingFingering
-                  ? "Fingering"
+                  ? t("ui.fingering")
                   : activeToolSection === "annotateDiagram"
-                    ? "Annotate Diagram"
+                    ? t("ui.annotateDiagram")
                     : selectionOnClick
-                      ? "Selection"
-                      : "No active tool"
+                      ? t("ui.selection")
+                      : t("ui.noActiveTool")
       : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-        ? "ABC Player"
+        ? t("ui.abcDefault")
         : scaleFinderActive
-          ? "Scale Finder"
+          ? t("ui.scaleFinder")
           : chordFinderActive
-            ? "Chord Finder"
+            ? t("tools.chordFinder")
             : isRecordingSequence
-              ? "Sequence recording"
+              ? t("ui.sequenceRecording")
               : isApplyingFingering
-                ? "Fingering"
+                ? t("ui.fingering")
                 : activeToolSection === "annotateDiagram"
-                  ? "Annotate Diagram"
+                  ? t("ui.annotateDiagram")
                   : selectionOnClick
-                    ? "Selection"
-                    : "No active tool";
+                    ? t("ui.selection")
+                    : t("ui.noActiveTool");
 
-  const statusBarText =
-    side === "stradella"
-      ? `Stradella · ${basses} bass · ${notationLabel(notation)} · Sound ${soundEnabled ? "on" : "off"} · ${activeToolLabel}`
-      : `Treble · ${trebleLayoutLabel(trebleLayout)} · ${trebleLayout === "piano" ? PIANO_TREBLE_RANGE_PRESETS[pianoTrebleRange].label : `${trebleRows} rows`} · ${notationLabel(notation)} · Sound ${soundEnabled ? "on" : "off"} · ${activeToolLabel}`;
+  const statusBarText = accordionStatusText({
+    side, basses, trebleLayout, pianoRange: pianoTrebleRange, trebleRows,
+    notation, soundEnabled, activeTool: activeToolLabel, language,
+  });
 
   return (
+    <LanguageProvider language={language}>
     <main
+      lang={language}
       className={`app density-${interfaceDensity}`}
       style={{ gridTemplateColumns: appGridColumns }}
     >
       {leftPanelMode !== "hidden" && (
         <aside className="left-panel">
-          <h1>{leftPanelMode === "settings" ? "Settings" : "Tools"}</h1>
+          <h1>{leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}</h1>
 
           {leftPanelMode === "settings" && (
             <>
+
+              <section className="control-section">
+                <div className="section-content">
+                  <label>
+                    {t("settings.language")}
+                    <select value={languagePreference} onChange={(event) => changeLanguage(event.target.value as InterfaceLanguagePreference)}>
+                      <option value="auto">{t("settings.languageAuto")}</option>
+                      {SUPPORTED_LANGUAGES.map(({ code, label }) => (
+                        <option key={code} value={code}>{label}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </section>
 
               {workspaceMode === "accordion" && (
               <section className="control-section">
@@ -4372,7 +4633,7 @@ function App() {
                                 className="section-title"
                                 onClick={() => toggleSettingsSection("layout")}
                               >
-                                Layout{" "}
+                                {t("settings.layout")}{" "}
                                 <span>{activeSettingsSection === "layout" ? "−" : "+"}</span>
                               </button>
               
@@ -4381,7 +4642,7 @@ function App() {
                                   {side === "stradella" && (
                                     <>
                                       <label>
-                                        Basses
+                                        {t("ui.basses")}
                                         <select
                                           value={basses}
                                           onChange={(event) =>
@@ -4390,14 +4651,14 @@ function App() {
                                         >
                                           {BASS_OPTIONS.map((option) => (
                                             <option key={option.value} value={option.value}>
-                                              {option.label}
+                                              {translateKnownLabel(language, option.label)}
                                             </option>
                                           ))}
                                         </select>
                                       </label>
               
                                       <label>
-                                        Chord labels
+                                        {t("ui.chordLabels")}
                                         <select
                                           value={chordLabelMode}
                                           onChange={(event) =>
@@ -4406,17 +4667,17 @@ function App() {
                                             )
                                           }
                                         >
-                                          <option value="none">None</option>
+                                          <option value="none">{t("common.none")}</option>
                                           <option value="chord-name">
-                                            Chord name: C, Cm, C7
+                                            {t("ui.chordNamesSelectedStyle")}
                                           </option>
-                                          <option value="root-only">Root only</option>
-                                          <option value="chord-tones">Chord tones</option>
+                                          <option value="root-only">{t("ui.rootOnly")}</option>
+                                          <option value="chord-tones">{t("ui.chordTones")}</option>
                                           <option value="row-function">
-                                            Row function: M, m, 7
+                                            {t("ui.rowFunctionMM7")}
                                           </option>
                                           <option value="functional-reference">
-                                            Functional reference: I, iv, V7
+                                            {t("ui.functionalReferenceIIvV7")}
                                           </option>
                                         </select>
                                       </label>
@@ -4426,7 +4687,7 @@ function App() {
                                   {side === "treble" && (
                                     <>
                                       <label>
-                                        Treble layout
+                                        {t("ui.trebleLayout")}
                                         <select
                                           value={trebleLayout}
                                           onChange={(event) =>
@@ -4436,19 +4697,19 @@ function App() {
                                           }
                                         >
                                           <option value="c-system">
-                                            C-system chromatic buttons
+                                            {t("ui.cSystemChromaticButtons")}
                                           </option>
                                           <option value="b-system">
-                                            B-system / Bayan chromatic buttons
+                                            {t("ui.bSystemBayanChromaticButtons")}
                                           </option>
-                                          <option value="piano">Piano keyboard</option>
+                                          <option value="piano">{t("ui.pianoKeyboard")}</option>
                                         </select>
                                       </label>
               
                                       {trebleLayout !== "piano" && (
                                         <>
                                           <label>
-                                            Rows
+                                            {t("ui.rows")}
                                             <select
                                               value={trebleRows}
                                               onChange={(event) =>
@@ -4457,14 +4718,14 @@ function App() {
                                                 )
                                               }
                                             >
-                                              <option value={3}>3 rows</option>
-                                              <option value={4}>4 rows</option>
-                                              <option value={5}>5 rows</option>
+                                              <option value={3}>{t("ui.rowsChoice", { count: 3 })}</option>
+                                              <option value={4}>{t("ui.rowsChoice", { count: 4 })}</option>
+                                              <option value={5}>{t("ui.rowsChoice", { count: 5 })}</option>
                                             </select>
                                           </label>
               
                                           <label>
-                                            Treble size
+                                            {t("ui.trebleSize")}
                                             <select
                                               value={trebleSize}
                                               onChange={(event) =>
@@ -4478,7 +4739,7 @@ function App() {
                                                   key={option.value}
                                                   value={option.value}
                                                 >
-                                                  {option.label}
+                                                  {translateKnownLabel(language, option.label)}
                                                 </option>
                                               ))}
                                             </select>
@@ -4488,7 +4749,7 @@ function App() {
               
                                       {trebleLayout === "piano" && (
                                         <label>
-                                          Piano range
+                                          {t("ui.pianoRange")}
                                           <select
                                             value={pianoTrebleRange}
                                             onChange={(event) =>
@@ -4499,14 +4760,14 @@ function App() {
                                           >
                                             {PIANO_TREBLE_RANGE_OPTIONS.map((option) => (
                                               <option key={option.value} value={option.value}>
-                                                {option.label}
+                                                {pianoRangeStatusLabel(option.value, language)}
                                               </option>
                                             ))}
                                           </select>
                                         </label>
                                       )}
               
-                                      <BinaryChoiceButton label={"Octave numbers"} enabled={showTrebleOctaves} onToggle={() => setShowTrebleOctaves((value) => !value)} whenEnabled="Hide octave numbers" whenDisabled="Show octave numbers" />
+                                      <BinaryChoiceButton label={t("ui.octaveNumbers")} enabled={showTrebleOctaves} onToggle={() => setShowTrebleOctaves((value) => !value)} whenEnabled={t("ui.hideOctaveNumbers")} whenDisabled={t("ui.showOctaveNumbers")} />
                                     </>
                                   )}
                                 </div>
@@ -4520,7 +4781,7 @@ function App() {
                                 className="section-title"
                                 onClick={() => toggleSettingsSection("notation")}
                               >
-                                Notation{" "}
+                                {t("settings.notation")}{" "}
                                 <span>
                                   {activeSettingsSection === "notation" ? "−" : "+"}
                                 </span>
@@ -4528,8 +4789,19 @@ function App() {
               
                               {activeSettingsSection === "notation" && (
                                 <div className="section-content">
+                                  <div className="chord-display-style-setting">
+                                    <label>
+                                      {t("settings.chordStyle")}
+                                      <select value={chordDisplayStyle} onChange={(event) => setChordDisplayStyle(event.target.value as ChordDisplayStyle)}>
+                                        <option value="compact">C, Cm, Cmaj7</option>
+                                        <option value="letter">CM, Cm, CM7</option>
+                                        <option value="words">Cmaj, Cmin, Cmaj7</option>
+                                      </select>
+                                    </label>
+                                  </div>
+
                                   <label>
-                                    Notation
+                                    {t("settings.pitchNotation")}
                                     <select
                                       value={notation}
                                       onChange={(event) =>
@@ -4539,23 +4811,23 @@ function App() {
                                       <option value="english">C D E F</option>
                                       <option value="german">C D E F G A H</option>
                                       <option value="solfege">Do Re Mi Fa</option>
-                                      <option value="intervals">Intervals</option>
-                                      <option value="blank">Blank</option>
+                                      <option value="intervals">{t("settings.intervals")}</option>
+                                      <option value="blank">{t("settings.blank")}</option>
                                     </select>
                                   </label>
               
                                   <label>
-                                    Treble accidentals
+                                    {t("settings.accidentals")}
                                     <select
                                       value={accidental}
                                       onChange={(event) =>
                                         setAccidental(event.target.value as AccidentalMode)
                                       }
                                     >
-                                      <option value="natural">Default spelling</option>
-                                      <option value="flats">Prefer flats</option>
-                                      <option value="sharps">Prefer sharps</option>
-                                      <option value="enharmonic">Show enharmonic pairs</option>
+                                      <option value="natural">{t("settings.defaultSpelling")}</option>
+                                      <option value="flats">{t("settings.preferFlats")}</option>
+                                      <option value="sharps">{t("settings.preferSharps")}</option>
+                                      <option value="enharmonic">{t("settings.enharmonicPairs")}</option>
                                     </select>
                                   </label>
                                 </div>
@@ -4569,7 +4841,7 @@ function App() {
                                 className="section-title"
                                 onClick={() => toggleSettingsSection("musicNotation")}
                               >
-                                Music notation{" "}
+                                {t("settings.musicNotation")}{" "}
                                 <span>
                                   {activeSettingsSection === "musicNotation" ? "−" : "+"}
                                 </span>
@@ -4585,7 +4857,7 @@ function App() {
                                         setMusicNotationIncludeTitle(event.target.checked)
                                       }
                                     />
-                                    <span>Include title</span>
+                                    <span>{t("ui.includeTitle")}</span>
                                   </label>
               
                                   <label className="checkbox-label">
@@ -4598,7 +4870,7 @@ function App() {
                                         )
                                       }
                                     />
-                                    <span>Include description</span>
+                                    <span>{t("ui.includeDescription")}</span>
                                   </label>
               
                                   <label className="checkbox-label">
@@ -4609,7 +4881,7 @@ function App() {
                                         setMusicNotationIncludeSummary(event.target.checked)
                                       }
                                     />
-                                    <span>Include summary note</span>
+                                    <span>{t("ui.includeSummaryNote")}</span>
                                   </label>
               
                                   <label className="checkbox-label">
@@ -4620,11 +4892,11 @@ function App() {
                                         setMusicNotationUseBarsPerLine(event.target.checked)
                                       }
                                     />
-                                    <span>Limit bars per line</span>
+                                    <span>{t("ui.limitBarsPerLine")}</span>
                                   </label>
               
                                   <label>
-                                    Bars per line: {musicNotationBarsPerLine}
+                                    {t("ui.barsPerLine")}: {musicNotationBarsPerLine}
                                     <input
                                       type="range"
                                       min={1}
@@ -4641,7 +4913,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Chord text size: {musicNotationChordFontSize}px
+                                    {t("ui.chordTextSize")}: {musicNotationChordFontSize}px
                                     <input
                                       type="range"
                                       min={8}
@@ -4657,7 +4929,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Notation scale: {musicNotationScale}%
+                                    {t("ui.notationScale")}: {musicNotationScale}%
                                     <input
                                       type="range"
                                       min={40}
@@ -4671,7 +4943,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Staff width: {musicNotationStaffWidth}px
+                                    {t("ui.staffWidth")}: {musicNotationStaffWidth}px
                                     <input
                                       type="range"
                                       min={320}
@@ -4685,7 +4957,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Staff spacing: {musicNotationStaffSeparator}
+                                    {t("ui.staffSpacing")}: {musicNotationStaffSeparator}
                                     <input
                                       type="range"
                                       min={8}
@@ -4701,9 +4973,7 @@ function App() {
                                   </label>
               
                                   <p className="hint">
-                                    These settings affect rendered notation panels. Exported
-                                    ABC, LilyPond, and MIDI files keep their own
-                                    format-specific defaults.
+                                    {t("ui.notesScope")}
                                   </p>
                                 </div>
                               )}
@@ -4716,7 +4986,7 @@ function App() {
                                 className="section-title"
                                 onClick={() => toggleSettingsSection("appearance")}
                               >
-                                Appearance{" "}
+                                {t("settings.appearance")}{" "}
                                 <span>
                                   {activeSettingsSection === "appearance" ? "−" : "+"}
                                 </span>
@@ -4724,7 +4994,7 @@ function App() {
               
                               {activeSettingsSection === "appearance" && (
                                 <div className="section-content">
-                                  <SegmentedChoice label={<>Interface density <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }]} />
+                                  <SegmentedChoice label={<>{t("ui.interfaceDensity")} <HelpTip text={t("ui.interfaceDensityHelp")} /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: t("ui.compact") }, { value: "comfortable", label: t("ui.comfortable") }]} />
               
                                   <label className="checkbox-label">
                                     <input
@@ -4735,15 +5005,15 @@ function App() {
                                       }
                                     />
                                     <span className="label-line">
-                                      Show status bar{" "}
-                                      <HelpTip text="Shows a one-line summary above the diagram. Turn it off if you want maximum space." />
+                                      {t("ui.statusBar")}{" "}
+                                      <HelpTip text={t("ui.statusBarHelp")} />
                                     </span>
                                   </label>
               
                                   <label>
                                     <span className="label-line">
-                                      Diagram scale: {diagramScale}%{" "}
-                                      <HelpTip text="Scales the visible diagram. Values above 100% may add scroll bars." />
+                                      {t("ui.diagramScale")}: {diagramScale}%{" "}
+                                      <HelpTip text={t("ui.diagramScaleHelp")} />
                                     </span>
                                     <input
                                       type="range"
@@ -4758,24 +5028,24 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Color theme
+                                    {t("ui.colorTheme")}
                                     <select
                                       value={colorTheme}
                                       onChange={(event) =>
                                         setColorTheme(event.target.value as ColorTheme)
                                       }
                                     >
-                                      <option value="default">Default blue</option>
-                                      <option value="classic">Classic ink</option>
-                                      <option value="pastel">Pastel</option>
-                                      <option value="warm">Warm cream</option>
-                                      <option value="contrast">High contrast</option>
-                                      <option value="print">Print / grayscale</option>
+                                      <option value="default">{t("ui.defaultBlue")}</option>
+                                      <option value="classic">{t("ui.classicInk")}</option>
+                                      <option value="pastel">{t("ui.pastel")}</option>
+                                      <option value="warm">{t("ui.warmCream")}</option>
+                                      <option value="contrast">{t("ui.highContrast")}</option>
+                                      <option value="print">{t("ui.printGrayscale")}</option>
                                     </select>
                                   </label>
               
                                   <label>
-                                    Accidental buttons
+                                    {t("ui.accidentalButtons")}
                                     <select
                                       value={accidentalStyle}
                                       onChange={(event) =>
@@ -4784,30 +5054,30 @@ function App() {
                                         )
                                       }
                                     >
-                                      <option value="grey">Grey</option>
-                                      <option value="dark">Dark</option>
-                                      <option value="outline">Outline only</option>
-                                      <option value="theme">Theme color</option>
+                                      <option value="grey">{t("ui.grey")}</option>
+                                      <option value="dark">{t("ui.dark")}</option>
+                                      <option value="outline">{t("ui.outlineOnly")}</option>
+                                      <option value="theme">{t("ui.themeColor")}</option>
                                     </select>
                                   </label>
               
                                   <label>
-                                    Label font
+                                    {t("ui.labelFont")}
                                     <select
                                       value={labelFont}
                                       onChange={(event) =>
                                         setLabelFont(event.target.value as FontFamily)
                                       }
                                     >
-                                      <option value="system">System</option>
-                                      <option value="serif">Serif</option>
-                                      <option value="mono">Mono</option>
-                                      <option value="rounded">Rounded</option>
+                                      <option value="system">{t("ui.system")}</option>
+                                      <option value="serif">{t("ui.serif")}</option>
+                                      <option value="mono">{t("ui.mono")}</option>
+                                      <option value="rounded">{t("ui.rounded")}</option>
                                     </select>
                                   </label>
               
                                   <label>
-                                    Label font size: {labelFontSize}px
+                                    {t("ui.labelFontSize")}: {labelFontSize}px
                                     <input
                                       type="range"
                                       min={8}
@@ -4821,30 +5091,37 @@ function App() {
               
                                   <button
                                     type="button"
-                                    className={`small-button ${showButtonLabels ? "active-tool" : ""}`}
+                                    className={`small-button appearance-label-toggle ${showButtonLabels ? "active-tool" : ""}`}
                                     onClick={() => setShowButtonLabels((current) => !current)}
                                   >
                                     {showButtonLabels
-                                      ? "Hide button labels"
-                                      : "Show button labels"}
+                                      ? t("ui.hideButtonLabels")
+                                      : t("ui.showButtonLabels")}
                                   </button>
               
                                   <button
                                     type="button"
-                                    className={`small-button ${showBellowsGuide ? "active-tool" : ""}`}
+                                    className={`small-button appearance-label-toggle ${showBellowsGuide ? "active-tool" : ""}`}
                                     onClick={() => setShowBellowsGuide((current) => !current)}
                                   >
                                     {showBellowsGuide
-                                      ? "Hide bellows guide"
-                                      : "Show bellows guide"}
+                                      ? t("ui.hideBellowsGuide")
+                                      : t("ui.showBellowsGuide")}
                                   </button>
               
                                   {side === "stradella" && (
-                                    <BinaryChoiceButton label={"Stradella row labels"} enabled={showStradellaRowLabels} onToggle={() => setShowStradellaRowLabels((value) => !value)} whenEnabled="Hide Stradella row labels" whenDisabled="Show Stradella row labels" />
+                                    <button
+                                      type="button"
+                                      className={`small-button appearance-label-toggle ${showStradellaRowLabels ? "active-tool" : ""}`}
+                                      aria-pressed={showStradellaRowLabels}
+                                      onClick={() => setShowStradellaRowLabels((value) => !value)}
+                                    >
+                                      {showStradellaRowLabels ? t("ui.hideStradellaRowLabels") : t("ui.showStradellaRowLabels")}
+                                    </button>
                                   )}
               
                                   <label>
-                                    Button size: {buttonSize}
+                                    {t("ui.buttonSize")}: {buttonSize}
                                     <input
                                       type="range"
                                       min={12}
@@ -4857,7 +5134,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Spacing: {spacing.toFixed(2)}
+                                    {t("ui.spacing")}: {spacing.toFixed(2)}
                                     <input
                                       type="range"
                                       min={1.7}
@@ -4872,8 +5149,8 @@ function App() {
               
                                   <label>
                                     <span className="label-line">
-                                      Vertical spacing: {diagramVerticalSpacing}px{" "}
-                                      <HelpTip text="Adds or removes vertical space between the title, bellows guide, and buttons." />
+                                      {t("ui.verticalSpacing")}: {diagramVerticalSpacing}px{" "}
+                                      <HelpTip text={t("ui.diagramVerticalHelp")} />
                                     </span>
                                     <input
                                       type="range"
@@ -4888,7 +5165,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Button line: {buttonStrokeWidth.toFixed(1)}
+                                    {t("ui.buttonLine")}: {buttonStrokeWidth.toFixed(1)}
                                     <input
                                       type="range"
                                       min={1}
@@ -4902,7 +5179,7 @@ function App() {
                                   </label>
               
                                   <label>
-                                    Reference line: {referenceStrokeWidth.toFixed(1)}
+                                    {t("ui.referenceLine")}: {referenceStrokeWidth.toFixed(1)}
                                     <input
                                       type="range"
                                       min={2}
@@ -4919,8 +5196,8 @@ function App() {
                                     <>
                                       <label>
                                         <span className="label-line">
-                                          Piano key width: {pianoKeyWidthScale.toFixed(2)}×{" "}
-                                          <HelpTip text="Makes white piano keys wider or narrower." />
+                                          {t("ui.pianoKeyWidth")}: {pianoKeyWidthScale.toFixed(2)}×{" "}
+                                          <HelpTip text={t("ui.whiteKeyWidthHelp")} />
                                         </span>
                                         <input
                                           type="range"
@@ -4936,8 +5213,8 @@ function App() {
               
                                       <label>
                                         <span className="label-line">
-                                          Piano key height: {pianoKeyHeightScale.toFixed(2)}×{" "}
-                                          <HelpTip text="Makes piano keys taller or shorter." />
+                                          {t("ui.pianoKeyHeight")}: {pianoKeyHeightScale.toFixed(2)}×{" "}
+                                          <HelpTip text={t("ui.pianoKeyHeightHelp")} />
                                         </span>
                                         <input
                                           type="range"
@@ -4953,9 +5230,9 @@ function App() {
               
                                       <label>
                                         <span className="label-line">
-                                          Black key width:{" "}
+                                          {t("ui.blackKeyWidth")}:{" "}
                                           {pianoBlackKeyWidthScale.toFixed(2)}×{" "}
-                                          <HelpTip text="Adjusts the width of accidentals on the piano keyboard." />
+                                          <HelpTip text={t("ui.blackKeyWidthHelp")} />
                                         </span>
                                         <input
                                           type="range"
@@ -4973,9 +5250,9 @@ function App() {
               
                                       <label>
                                         <span className="label-line">
-                                          Black key height:{" "}
+                                          {t("ui.blackKeyHeight")}:{" "}
                                           {pianoBlackKeyHeightScale.toFixed(2)}×{" "}
-                                          <HelpTip text="Adjusts how far black keys extend down the keyboard." />
+                                          <HelpTip text={t("ui.blackKeyHeightHelp")} />
                                         </span>
                                         <input
                                           type="range"
@@ -4995,7 +5272,7 @@ function App() {
               
                                   {side === "stradella" && (
                                     <label>
-                                      Chord fill: {chordFillStrength}%
+                                      {t("ui.chordFill")}: {chordFillStrength}%
                                       <input
                                         type="range"
                                         min={20}
@@ -5011,7 +5288,7 @@ function App() {
               
                                   {side === "treble" && trebleLayout !== "piano" && (
                                     <label>
-                                      Treble angle: {trebleAngle}°
+                                      {t("ui.trebleAngle")}: {trebleAngle}°
                                       <input
                                         type="range"
                                         min={-35}
@@ -5034,24 +5311,24 @@ function App() {
                   className="section-title"
                   onClick={() => toggleSettingsSection("appearance")}
                 >
-                  Appearance <span>{activeSettingsSection === "appearance" ? "−" : "+"}</span>
+                  {t("settings.appearance")} <span>{activeSettingsSection === "appearance" ? "−" : "+"}</span>
                 </button>
                 {activeSettingsSection === "appearance" && (
                   <div className="section-content">
-                    <SegmentedChoice label={<>Interface density <HelpTip text="Compact saves sidebar space; Comfortable gives controls more breathing room." /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: "Compact" }, { value: "comfortable", label: "Comfortable" }]} />
+                    <SegmentedChoice label={<>{t("ui.interfaceDensity")} <HelpTip text={t("ui.interfaceDensityHelp")} /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: t("ui.compact") }, { value: "comfortable", label: t("ui.comfortable") }]} />
                     <label className="checkbox-label">
                       <input type="checkbox" checked={showStatusBar} onChange={(event) => setShowStatusBar(event.target.checked)} />
-                      <span>Show status bar</span>
+                      <span>{t("ui.showStatusBar")}</span>
                     </label>
                     <label>
-                      Color theme
+                      {t("ui.colorTheme")}
                       <select value={colorTheme} onChange={(event) => setColorTheme(event.target.value as ColorTheme)}>
-                        <option value="default">Default blue</option>
-                        <option value="classic">Classic ink</option>
-                        <option value="pastel">Pastel</option>
-                        <option value="warm">Warm cream</option>
-                        <option value="contrast">High contrast</option>
-                        <option value="print">Print / grayscale</option>
+                        <option value="default">{t("ui.defaultBlue")}</option>
+                        <option value="classic">{t("ui.classicInk")}</option>
+                        <option value="pastel">{t("ui.pastel")}</option>
+                        <option value="warm">{t("ui.warmCream")}</option>
+                        <option value="contrast">{t("ui.highContrast")}</option>
+                        <option value="print">{t("ui.printGrayscale")}</option>
                       </select>
                     </label>
                   </div>
@@ -5062,30 +5339,38 @@ function App() {
               {workspaceMode === "accordion" && side === "stradella" && (
                 <section className="control-section">
                   <button type="button" className="section-title" onClick={() => toggleSettingsSection("stradellaRegisters")}>
-                    Stradella registers <span>{activeSettingsSection === "stradellaRegisters" ? "−" : "+"}</span>
+                    {t("settings.registers")} <span>{activeSettingsSection === "stradellaRegisters" ? "−" : "+"}</span>
                   </button>
                   {activeSettingsSection === "stradellaRegisters" && (
                     <div className="section-content">
-                    <fieldset className="tool-fieldset">
-                      <legend>Chord formation and register placement</legend>
-                      <p className="hint">Configure the nominal octave placement of bass/counterbass and preset-chord tones independently. This determines the Chord Finder’s ordered pitches and requested inversions; La Melodiosa can also follow these settings.</p>
-                        <label>
-                          Bass/counterbass starting octave
-                          <select value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
-                            {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>Octave {octave}</option>)}
-                          </select>
-                        </label>
-                        <SegmentedChoice label="Bass/counterbass grouping" value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
-                        <p className="hint">Selected bass range: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
-                        <label>
-                          Preset chord starting octave
-                          <select value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
-                            {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>Octave {octave}</option>)}
-                          </select>
-                        </label>
-                        <SegmentedChoice label="Preset chord grouping" value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
-                        <p className="hint">Selected chord range: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
-                    </fieldset>
+                      <div className="stradella-register-settings">
+                        <div className="stradella-register-intro-help">
+                          <span>{t("ui.registerNominalModel")}</span>
+                          <HelpTip text={t("ui.stradellaRegisterIntro")} />
+                        </div>
+                        <section className="stradella-register-group" aria-labelledby="stradella-bass-register-heading">
+                          <h3 id="stradella-bass-register-heading">{t("ui.registerBassGroup")}</h3>
+                          <label>
+                            {t("ui.registerStartingOctave")}
+                            <select aria-label={t("ui.bassCounterbassStartingOctave")} value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
+                              {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
+                            </select>
+                          </label>
+                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.bassCounterbassGrouping")} value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
+                        </section>
+                        <section className="stradella-register-group" aria-labelledby="stradella-chord-register-heading">
+                          <h3 id="stradella-chord-register-heading">{t("ui.registerChordGroup")}</h3>
+                          <label>
+                            {t("ui.registerStartingOctave")}
+                            <select aria-label={t("ui.presetChordStartingOctave")} value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
+                              {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
+                            </select>
+                          </label>
+                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.presetChordGrouping")} value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
+                        </section>
+                      </div>
                     </div>
                   )}
                 </section>
@@ -5096,27 +5381,19 @@ function App() {
                   className="section-title"
                   onClick={() => toggleSettingsSection("sound")}
                 >
-                  Sound{" "}
+                  {t("settings.sound")}{" "}
                   <span>{activeSettingsSection === "sound" ? "−" : "+"}</span>
                 </button>
 
                 {activeSettingsSection === "sound" && (
                   <div className="section-content">
-                    <p className="hint">
-                      Choose either the built-in synthesizer or the sampled
-                      La Melodiosa accordion. Use the top Sound button to turn
-                      playback on or off.
-                    </p>
-
-
-
-                    <SegmentedChoice label="Sound source" value={soundSource} onChange={setSoundSource} options={[{ value: "la-melodiosa", label: "La Melodiosa" }, { value: "synth", label: "Synthesizer" }]} />
+                    <SegmentedChoice label={<>{t("ui.soundSource")} <HelpTip text={`${t("ui.soundSourceHint")} ${t("ui.melodiosaCredit")}`} /></>} ariaLabel={t("ui.soundSource")} value={soundSource} onChange={setSoundSource} options={[{ value: "la-melodiosa", label: "La Melodiosa" }, { value: "synth", label: t("ui.synthesizer") }]} />
 
                     {soundSource === "la-melodiosa" && (
                       <>
                         {workspaceMode === "accordion" && side === "treble" && (
                           <label>
-                            Treble register
+                            {t("ui.trebleRegister")}
                             <select
                               value={laMelodiosaTrebleRegister}
                               onChange={(event) =>
@@ -5125,15 +5402,15 @@ function App() {
                                 )
                               }
                             >
-                              <option value="I">I · Upper register</option>
-                              <option value="II">II · Lower register</option>
-                              <option value="III">III · Both registers</option>
+                              <option value="I">{t("ui.iUpperRegister")}</option>
+                              <option value="II">{t("ui.iiLowerRegister")}</option>
+                              <option value="III">{t("ui.iiiBothRegisters")}</option>
                             </select>
                           </label>
                         )}
                         {(workspaceMode === "harmony" || side === "stradella") && (
                           <label>
-                            Bass register
+                            {t("ui.bassRegister")}
                             <select
                               value={laMelodiosaBassRegister}
                               onChange={(event) =>
@@ -5142,32 +5419,29 @@ function App() {
                                 )
                               }
                             >
-                              <option value="I">I · Upper register</option>
-                              <option value="II">II · Lower register</option>
-                              <option value="III">III · Both registers</option>
+                              <option value="I">{t("ui.iUpperRegister")}</option>
+                              <option value="II">{t("ui.iiLowerRegister")}</option>
+                              <option value="III">{t("ui.iiiBothRegisters")}</option>
                             </select>
                           </label>
                         )}
                         {(workspaceMode === "accordion" && side === "stradella") && (
                           <>
-                            <SegmentedChoice label="Stradella sample pitch mapping" value={laMelodiosaFollowStradellaRegisters ? "configured" : "original"} onChange={(next) => setLaMelodiosaFollowStradellaRegisters(next === "configured")} options={[{ value: "configured", label: "Configured registers" }, { value: "original", label: "Original mapping" }]} />
-                            <p className="hint">
+                            <SegmentedChoice label={<>{t("ui.samplePitchMapping")} <HelpTip text={laMelodiosaFollowStradellaRegisters ? t("ui.melodiosaConfigured") : t("ui.melodiosaOriginal")} /></>} ariaLabel={t("ui.samplePitchMapping")} value={laMelodiosaFollowStradellaRegisters ? "configured" : "original"} onChange={(next) => setLaMelodiosaFollowStradellaRegisters(next === "configured")} options={[{ value: "configured", label: t("ui.configuredRegisters") }, { value: "original", label: t("ui.originalMapping") }]} />
+                            <p className="hint sound-configuration-summary">
                               {laMelodiosaFollowStradellaRegisters
-                                ? "Playback follows the bass and preset-chord ranges under Stradella registers. Out-of-range notes use transposed La Melodiosa samples; no synthesizer fallback."
-                                : "Playback uses the original C2–B2 bass and C3–B3 chord mapping, independently of Stradella registers settings."}
+                                ? t("ui.melodiosaConfiguredShort")
+                                : t("ui.melodiosaOriginalShort")}
                             </p>
                           </>
                         )}
-                        <p className="hint">
-                          La Melodiosa was sampled and programmed by Petri Pohjanmies (2026), used under CC-BY.
-                        </p>
                       </>
                     )}
 
                     {soundSource === "synth" && (
                       <>
                         <label>
-                      Voice
+                      {t("ui.voice")}
                       <select
                         value={soundVoicePreset}
                         onChange={(event) =>
@@ -5176,19 +5450,19 @@ function App() {
                           )
                         }
                       >
-                        <option value="soft-reed">Soft reed</option>
-                        <option value="bright-reed">Bright reed</option>
-                        <option value="musette">Musette detuned reeds</option>
-                        <option value="organ">Organ-like</option>
-                        <option value="bass-reed">Bass reed</option>
-                        <option value="single">Single oscillator</option>
+                        <option value="soft-reed">{t("ui.softReed")}</option>
+                        <option value="bright-reed">{t("ui.brightReed")}</option>
+                        <option value="musette">{t("ui.musetteDetunedReeds")}</option>
+                        <option value="organ">{t("ui.organLike")}</option>
+                        <option value="bass-reed">{t("ui.bassReed")}</option>
+                        <option value="single">{t("ui.singleOscillator")}</option>
                       </select>
                     </label>
 
                     {(workspaceMode === "harmony" || side === "stradella") && (
                       <>
                         <label>
-                          Stradella bass voicing
+                          <span className="label-line">{t("ui.stradellaBassVoicing")} <HelpTip text={t("ui.soundBassVoicingHelp")} /></span>
                           <select
                             value={stradellaBassVoicing}
                             onChange={(event) =>
@@ -5197,28 +5471,22 @@ function App() {
                               )
                             }
                           >
-                            <option value="single-low">Single low reed</option>
+                            <option value="single-low">{t("ui.singleLowReed")}</option>
                             <option value="low-and-middle">
-                              Low + middle reeds
+                              {t("ui.lowMiddleReeds")}
                             </option>
                             <option value="single-middle">
-                              Single middle reed
+                              {t("ui.singleMiddleReed")}
                             </option>
                           </select>
                         </label>
 
-                        <p className="hint">
-                          This affects single Stradella bass buttons only.
-                          Different real accordions and registers use different
-                          bass voicings, so this is configurable instead of
-                          being hard-coded.
-                        </p>
                       </>
                     )}
 
                     {soundVoicePreset === "single" && (
                       <label>
-                        Waveform
+                        {t("ui.waveform")}
                         <select
                           value={soundWaveform}
                           onChange={(event) =>
@@ -5227,17 +5495,17 @@ function App() {
                             )
                           }
                         >
-                          <option value="sine">Sine</option>
-                          <option value="triangle">Triangle</option>
-                          <option value="sawtooth">Sawtooth</option>
-                          <option value="square">Square</option>
+                          <option value="sine">{t("ui.sine")}</option>
+                          <option value="triangle">{t("ui.triangle")}</option>
+                          <option value="sawtooth">{t("ui.sawtooth")}</option>
+                          <option value="square">{t("ui.square")}</option>
                         </select>
                       </label>
                     )}
 
                     {soundVoicePreset === "musette" && (
                       <label>
-                        Reed detune: {soundMusetteDetuneCents} cents
+                        {t("ui.reedDetune")}: {soundMusetteDetuneCents} cents
                         <input
                           type="range"
                           min={0}
@@ -5256,7 +5524,7 @@ function App() {
                     )}
 
                     <label>
-                      Volume: {Math.round(soundVolume * 100)}%
+                      {t("ui.volume")}: {Math.round(soundVolume * 100)}%
                       <input
                         type="range"
                         min={0}
@@ -5270,7 +5538,7 @@ function App() {
                     </label>
 
                     <label>
-                      Attack: {soundAttackMs} ms
+                      {t("ui.attack")}: {soundAttackMs} ms
                       <input
                         type="range"
                         min={1}
@@ -5284,7 +5552,7 @@ function App() {
                     </label>
 
                     <label>
-                      Release: {soundReleaseMs} ms
+                      {t("ui.release")}: {soundReleaseMs} ms
                       <input
                         type="range"
                         min={20}
@@ -5298,7 +5566,7 @@ function App() {
                     </label>
 
                     <label>
-                      Note duration: {soundNoteDurationMs} ms
+                      {t("ui.noteDuration")}: {soundNoteDurationMs} ms
                       <input
                         type="range"
                         min={80}
@@ -5312,7 +5580,7 @@ function App() {
                     </label>
 
                     <label>
-                      Sequence tempo: {soundSequenceTempoBpm} BPM
+                      {t("ui.sequenceTempo")}: {soundSequenceTempoBpm} BPM
                       <input
                         type="range"
                         min={40}
@@ -5334,30 +5602,30 @@ function App() {
                                 className="section-title"
                                 onClick={() => toggleSettingsSection("title")}
                               >
-                                Title{" "}
+                                {t("settings.title")}{" "}
                                 <span>{activeSettingsSection === "title" ? "−" : "+"}</span>
                               </button>
               
                               {activeSettingsSection === "title" && (
                                 <div className="section-content">
                                   <label>
-                                    Title
+                                    {t("ui.title")}
                                     <select
                                       value={titleMode}
                                       onChange={(event) =>
                                         setTitleMode(event.target.value as TitleMode)
                                       }
                                     >
-                                      <option value="auto">Auto (instrument/layout)</option>
-                                      <option value="contextual">Contextual (tool and selection)</option>
-                                      <option value="custom">Custom</option>
-                                      <option value="none">None</option>
+                                      <option value="auto">{t("ui.autoInstrumentLayout")}</option>
+                                      <option value="contextual">{t("ui.contextualToolAndSelection")}</option>
+                                      <option value="custom">{t("ui.custom")}</option>
+                                      <option value="none">{t("common.none")}</option>
                                     </select>
                                   </label>
               
                                   {titleMode === "custom" && (
                                     <label>
-                                      Custom title
+                                      {t("ui.customTitle")}
                                       <input
                                         value={customTitle}
                                         onChange={(event) =>
@@ -5370,22 +5638,22 @@ function App() {
                                   {titleMode !== "none" && (
                                     <>
                                       <label>
-                                        Title font
+                                        {t("ui.titleFont")}
                                         <select
                                           value={titleFont}
                                           onChange={(event) =>
                                             setTitleFont(event.target.value as FontFamily)
                                           }
                                         >
-                                          <option value="system">System</option>
-                                          <option value="serif">Serif</option>
-                                          <option value="mono">Mono</option>
-                                          <option value="rounded">Rounded</option>
+                                          <option value="system">{t("ui.system")}</option>
+                                          <option value="serif">{t("ui.serif")}</option>
+                                          <option value="mono">{t("ui.mono")}</option>
+                                          <option value="rounded">{t("ui.rounded")}</option>
                                         </select>
                                       </label>
               
                                       <label>
-                                        Title size: {titleSize}px
+                                        {t("ui.titleSize")}: {titleSize}px
                                         <input
                                           type="range"
                                           min={14}
@@ -5406,31 +5674,39 @@ function App() {
               {workspaceMode === "harmony" && (
                 <>
                   <p className="hint" style={{ marginBottom: 10 }}>
-                    Core harmonic choices are under Tools. Secondary diagram and playback preferences are kept here to leave Harmony Explorer uncluttered.
+                    {t("settings.harmonyIntro")}
                   </p>
                   <section className="control-section">
                     <button
                       className="section-title"
                       onClick={() => toggleSettingsSection("harmony")}
                     >
-                      Harmony <span>{activeSettingsSection === "harmony" ? "−" : "+"}</span>
+                      {t("nav.harmony")} <span>{activeSettingsSection === "harmony" ? "−" : "+"}</span>
                     </button>
                     {activeSettingsSection === "harmony" && (
                       <div className="section-content">
                         <fieldset className="tool-fieldset">
-                          <legend>Diagram</legend>
-                          <label className="check-row"><input type="checkbox" checked={harmonyShowSeparators} onChange={(event) => setHarmonyShowSeparators(event.target.checked)} /> Segment separator lines</label>
-                          <label className="check-row"><input type="checkbox" checked={harmonyShowLegend} onChange={(event) => setHarmonyShowLegend(event.target.checked)} /> Show legend</label>
-                          <label className="check-row"><input type="checkbox" checked={harmonyShowExplanation} onChange={(event) => setHarmonyShowExplanation(event.target.checked)} /> Show explanation box</label>
-                          <label className="check-row"><input type="checkbox" checked={harmonyShowEnharmonics} onChange={(event) => setHarmonyShowEnharmonics(event.target.checked)} /> Show enharmonic equivalents</label>
-                          <label className="check-row"><input type="checkbox" checked={harmonyShowToneTooltips} onChange={(event) => setHarmonyShowToneTooltips(event.target.checked)} /> Show chord-tone tooltips</label>
-                          <label className="check-row"><input type="checkbox" checked={harmonyShowNoteRing} onChange={(event) => setHarmonyShowNoteRing(event.target.checked)} /> Show inner note ring</label>
-                          <label className="check-row"><input type="checkbox" checked={harmonyColorByFamily} onChange={(event) => setHarmonyColorByFamily(event.target.checked)} /> Color labels by chord family</label>
+                          <legend>{t("settings.diagram")}</legend>
+                          <label>
+                            {t("settings.chordStyle")}
+                            <select value={chordDisplayStyle} onChange={(event) => setChordDisplayStyle(event.target.value as ChordDisplayStyle)}>
+                              <option value="compact">C, Cm, Cmaj7</option>
+                              <option value="letter">CM, Cm, CM7</option>
+                              <option value="words">Cmaj, Cmin, Cmaj7</option>
+                            </select>
+                          </label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowSeparators} onChange={(event) => setHarmonyShowSeparators(event.target.checked)} /> {t("settings.segmentLines")}</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowLegend} onChange={(event) => setHarmonyShowLegend(event.target.checked)} /> {t("settings.showLegend")}</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowExplanation} onChange={(event) => setHarmonyShowExplanation(event.target.checked)} /> {t("settings.showExplanation")}</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowEnharmonics} onChange={(event) => setHarmonyShowEnharmonics(event.target.checked)} /> {t("settings.showEnharmonics")}</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowToneTooltips} onChange={(event) => setHarmonyShowToneTooltips(event.target.checked)} /> {t("settings.chordToneTooltips")}</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyShowNoteRing} onChange={(event) => setHarmonyShowNoteRing(event.target.checked)} /> {t("settings.noteRing")}</label>
+                          <label className="check-row"><input type="checkbox" checked={harmonyColorByFamily} onChange={(event) => setHarmonyColorByFamily(event.target.checked)} /> {t("settings.colorByFamily")}</label>
 
                           <div className="ring-control-block">
-                            <strong>Outer rings</strong>
+                            <strong>{t("settings.outerRings")}</strong>
                             {harmonyAvailableCounts.length === 0 ? (
-                              <p className="hint">No relationship rings are available.</p>
+                              <p className="hint">{t("settings.noRings")}</p>
                             ) : (
                               harmonyAvailableCounts.map((count) => (
                                 <label className="check-row" key={`harmony-settings-ring-${count}`}>
@@ -5439,27 +5715,27 @@ function App() {
                                     checked={harmonyRingVisibility[count] ?? count !== 0}
                                     onChange={(event) => setHarmonyRingVisibility((current) => ({ ...current, [count]: event.target.checked }))}
                                   />
-                                  {`Show ${count}-shared-${count === 1 ? "note" : "notes"} ring`}
+                                  {count === 1 ? t("ui.ringSharedSingular") : t("ui.ringShared", { count })}
                                 </label>
                               ))
                             )}
                           </div>
 
                           <label>
-                            Circle diameter: {harmonyDiameter}px
+                            {t("ui.circleDiameter")}: {harmonyDiameter}px
                             <input type="range" min="600" max="1400" step="20" value={harmonyDiameter} onChange={(event) => setHarmonyDiameter(Number(event.target.value))} />
                           </label>
                           <label>
-                            Maximum font size: {harmonyFontSize}px
+                            {t("ui.maxFontSize")}: {harmonyFontSize}px
                             <input type="range" min="10" max="30" step="1" value={harmonyFontSize} onChange={(event) => setHarmonyFontSize(Number(event.target.value))} />
                           </label>
                         </fieldset>
 
                         <fieldset className="tool-fieldset">
-                          <legend>Playback</legend>
-                          <SegmentedChoice label="Chord playback" value={harmonyPlaybackStyle} onChange={setHarmonyPlaybackStyle} options={[{ value: "block", label: "Block" }, { value: "arpeggio", label: "Arpeggio" }]} />
-                          <SegmentedChoice label="Relationship playback" value={harmonyVoicingStyle} onChange={setHarmonyVoicingStyle} options={[{ value: "root", label: "Selected only" }, { value: "smooth", label: "Reference → related" }]} />
-                          <p className="hint">Harmony uses the current sound source and Stradella bass register from Sound settings.</p>
+                          <legend>{t("ui.playback")}</legend>
+                          <SegmentedChoice label={t("ui.chordPlayback")} value={harmonyPlaybackStyle} onChange={setHarmonyPlaybackStyle} options={[{ value: "block", label: t("ui.block") }, { value: "arpeggio", label: t("ui.arpeggio") }]} />
+                          <SegmentedChoice label={t("ui.relationshipPlayback")} value={harmonyVoicingStyle} onChange={setHarmonyVoicingStyle} options={[{ value: "root", label: t("ui.selectedOnly") }, { value: "smooth", label: t("ui.referenceRelated") }]} />
+                          <p className="hint">{t("ui.harmonySoundHint")}</p>
                         </fieldset>
                       </div>
                     )}
@@ -5475,10 +5751,10 @@ function App() {
                     className="small-button"
                     onClick={downloadCurrentSettings}
                   >
-                    Save settings JSON
+                    {t("settings.saveJson")}
                   </button>
                   <label className="small-button file-button">
-                    Load settings JSON
+                    {t("settings.loadJson")}
                     <input
                       type="file"
                       accept="application/json,.json"
@@ -5490,8 +5766,7 @@ function App() {
                   </label>
                 </div>
                 <p className="hint">
-                  These buttons save or load a separate settings file. They do
-                  not overwrite <code>public/default-settings.json</code>.
+                  {t("settings.jsonHint")} <code>public/default-settings.json</code>.
                 </p>
               </AboutPanel>
             </>
@@ -5501,6 +5776,7 @@ function App() {
             <>
               {workspaceMode === "harmony" ? (
                 <HarmonyExplorerPanel
+                  chordDisplayStyle={chordDisplayStyle}
                   isOpen={activeToolSection === "harmonyExplorer"}
                   onToggle={() => toggleToolSection("harmonyExplorer")}
                   referenceFamilyId={harmonyReferenceFamilyId}
@@ -5514,6 +5790,8 @@ function App() {
                   highlightDiatonic={harmonyHighlightDiatonic}
                   onHighlightDiatonicChange={setHarmonyHighlightDiatonic}
                   showEnharmonics={harmonyShowEnharmonics}
+                  showNoteRing={harmonyShowNoteRing}
+                  onShowNoteRingChange={setHarmonyShowNoteRing}
                   selected={harmonySelection}
                   onShowOnStradella={showHarmonySelectionOnStradella}
                   onAddSelectedRelationshipToProgression={addSelectedHarmonyRelationshipToProgression}
@@ -5535,7 +5813,7 @@ function App() {
                     className="section-title"
                     onClick={() => toggleToolSection("scaleFinder")}
                   >
-                    Scale Finder{" "}
+                    {t("ui.scaleFinder")}{" "}
                     <span>
                       {activeToolSection === "scaleFinder" ? "−" : "+"}
                     </span>
@@ -5545,13 +5823,13 @@ function App() {
                     <div className="section-content">
                       <p className="hint">
                         {side === "stradella"
-                          ? "Uses only Stradella bass and counterbass note buttons, choosing buttons close to the root when possible."
-                          : "Finds a single-octave scale path. On CBA layouts it can restrict the path to the first 3, 4, or 5 rows."}
+                          ? t("ui.scaleIntroBass")
+                          : t("ui.scaleIntroTreble")}
                       </p>
 
                       <fieldset className="tool-fieldset">
                         <label>
-                          Scale root
+                          {t("ui.scaleRoot")}
                           <select
                             value={scaleFinderRoot}
                             onChange={(event) =>
@@ -5560,14 +5838,14 @@ function App() {
                           >
                             {FINDER_ROOT_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {translateKnownLabel(language, option.label)}
                               </option>
                             ))}
                           </select>
                         </label>
 
                         <label>
-                          Scale type
+                          {t("ui.scaleType")}
                           <select
                             value={scaleFinderPattern}
                             onChange={(event) =>
@@ -5578,7 +5856,7 @@ function App() {
                           >
                             {SCALE_FINDER_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {translateKnownLabel(language, option.label)}
                               </option>
                             ))}
                           </select>
@@ -5586,8 +5864,8 @@ function App() {
 
                         <label>
                           <span className="label-line">
-                            Display{" "}
-                            <HelpTip text="Controls how Scale Finder marks the scale path. Numbers show step order; arrows show movement." />
+                            {t("ui.display")}{" "}
+                            <HelpTip text={t("ui.scaleDisplayHelp")} />
                           </span>
                           <select
                             value={scaleFinderDisplayMode}
@@ -5599,7 +5877,7 @@ function App() {
                           >
                             {SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => (
                               <option key={option.value} value={option.value}>
-                                {option.label}
+                                {translateKnownLabel(language, option.label)}
                               </option>
                             ))}
                           </select>
@@ -5607,7 +5885,7 @@ function App() {
 
                         {isTrebleLikeSide && (
                           <label>
-                            Rows used
+                            {t("ui.rowsUsed")}
                             <select
                               value={scaleFinderRowLimit}
                               onChange={(event) =>
@@ -5618,7 +5896,7 @@ function App() {
                             >
                               {SCALE_FINDER_ROW_LIMIT_OPTIONS.map((option) => (
                                 <option key={option.value} value={option.value}>
-                                  {option.label}
+                                  {translateKnownLabel(language, option.label)}
                                 </option>
                               ))}
                             </select>
@@ -5630,19 +5908,19 @@ function App() {
                             {side === "stradella" &&
                             scaleFinderActive &&
                             !stradellaScaleFinderResult.found
-                              ? "Not found"
-                              : `Scale buttons: ${scaleFinderButtons.length}`}
+                              ? t("common.notFound")
+                              : t("ui.scaleButtons", {count: scaleFinderButtons.length})}
                           </div>
                           {side === "stradella" && (
                             <p>
-                              Target notes:{" "}
+                              {t("ui.targetNotes")}: {" "}
                               {formatStradellaScaleFinderNames(
                                 stradellaScaleFinderResult.targetNames,
                                 stradellaScaleFinderResult.targetPitches,
                               )}
                               {stradellaScaleFinderResult.missingPitches
                                 .length > 0
-                                ? ` · Missing: ${formatStradellaScaleFinderNames(
+                                ? ` · ${t("ui.missingShort")}: ${formatStradellaScaleFinderNames(
                                     stradellaScaleFinderResult.missingNames,
                                     stradellaScaleFinderResult.missingPitches,
                                   )}`
@@ -5661,7 +5939,7 @@ function App() {
                               setStradellaChordFinderActive(false);
                             }}
                           >
-                            {scaleFinderActive ? "Hide scale" : "Show scale"}
+                            {scaleFinderActive ? t("ui.hideScale") : t("ui.showScale")}
                           </button>
 
                           <button
@@ -5669,15 +5947,9 @@ function App() {
                             onClick={playScaleFinder}
                             disabled={scaleFinderButtons.length === 0}
                           >
-                            Play scale
+                            {t("ui.playScale")}
                           </button>
 
-                          <button
-                            className="small-button"
-                            onClick={clearScaleFinder}
-                          >
-                            Clear scale
-                          </button>
                         </div>
                       </fieldset>
                     </div>
@@ -5701,7 +5973,7 @@ function App() {
                   buttonCount={chordFinderButtons.length}
                   voicingMode={trebleChordVoicingMode}
                   onVoicingModeChange={setTrebleChordVoicingMode}
-                  realizationStatus={chordFinderActive ? trebleChordExplanation.status : "Not shown"}
+                  realizationStatus={chordFinderActive ? trebleChordExplanation.status : t("ui.notShown")}
                   realizationExplanation={trebleChordExplanation.explanation}
                   isActive={chordFinderActive}
                   onToggleActive={() => {
@@ -5710,7 +5982,6 @@ function App() {
                     setStradellaChordFinderActive(false);
                   }}
                   onPlay={playChordFinder}
-                  onClear={clearChordFinder}
                   showVoicingNote={showTrebleVoicingNote}
                   onShowVoicingNoteChange={setShowTrebleVoicingNote}
                 />
@@ -5731,14 +6002,21 @@ function App() {
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
+                  chordDisplayStyle={chordDisplayStyle}
                   registerModel={stradellaRegisterModel}
                   maxButtons={finderMaxButtons}
                   onMaxButtonsChange={setFinderMaxButtons}
                   spanColumns={finderSpanColumns}
+                  minimumNominalGap={stradellaMinimumNominalGap}
+                  onMinimumNominalGapChange={setStradellaMinimumNominalGap}
+                  onDownloadAll={downloadAllStradellaRealizations}
+                  batchExporting={batchExporting}
                   onSpanColumnsChange={setFinderSpanColumns}
                   showRealizationNote={showFinderRealizationNote}
                   onShowRealizationNoteChange={setShowFinderRealizationNote}
                   noteLevels={stradellaNoteLevels}
+                  showVoicingIntervals={showStradellaVoicingIntervals}
+                  onShowVoicingIntervalsChange={setShowStradellaVoicingIntervals}
                   onNoteLevelChange={(level, enabled) => setStradellaNoteLevels((current) => ({ ...current, [level]: enabled }))}
                   explanationFontSize={finderExplanationFontSize}
                   onExplanationFontSizeChange={setFinderExplanationFontSize}
@@ -5756,7 +6034,6 @@ function App() {
                     setChordFinderActive(false);
                   }}
                   onPlay={playStradellaChordFinder}
-                  onClear={clearStradellaChordFinder}
                   canExploreHarmony={harmonyFamilyForFinderPattern(stradellaChordFinderPattern) !== null}
                   onExploreHarmony={exploreCurrentStradellaChordInHarmony}
                   formatPitches={formatStradellaFinderPitches}
@@ -5766,6 +6043,7 @@ function App() {
 
               {side === "stradella" && (
                 <ProgressionAssistantPanel
+                  chordDisplayStyle={chordDisplayStyle}
                   isOpen={activeToolSection === "progressionAssistant"}
                   onToggle={() => toggleToolSection("progressionAssistant")}
                   progression={harmonyProgression}
@@ -5802,14 +6080,14 @@ function App() {
                   className="section-title"
                   onClick={() => toggleToolSection("selection")}
                 >
-                  Selection{" "}
+                  {t("ui.selection")}{" "}
                   <span>{activeToolSection === "selection" ? "−" : "+"}</span>
                 </button>
 
                 {activeToolSection === "selection" && (
                   <div className="section-content">
                     <p className="hint">
-                      Selected buttons:{" "}
+                      {t("ui.selectedButtons")}: {" "}
                       <strong>{selectedButtons.length}</strong>
                     </p>
 
@@ -5819,8 +6097,8 @@ function App() {
                       onClick={() => setSelectionOnClick((current) => !current)}
                     >
                       {selectionOnClick
-                        ? "Selection on click"
-                        : "Selection off on click"}
+                        ? t("ui.selectionOnClick")
+                        : t("ui.selectionOffClick")}
                     </button>
 
                     <button
@@ -5829,24 +6107,24 @@ function App() {
                       onClick={playSelectedButtons}
                       disabled={selectedButtons.length === 0}
                     >
-                      Play selection
+                      {t("ui.playSelection")}
                     </button>
 
                     {selectedButtons.length > 0 ? (
                       <div className="selected-list">
                         {selectedButtons.map((button) => (
                           <div key={button.id} className="selected-item">
-                            <span>{getMainLabel(button) || "Blank"}</span>
+                            <span>{getMainLabel(button) || t("settings.blank")}</span>
                             <span className="selected-meta">
                               {side === "stradella"
-                                ? `${stradellaRowLabel(button.kind)}, col ${button.column + 1}`
-                                : `row ${button.row + 1}, col ${button.column + 1}`}
+                                ? `${translateKnownLabel(language, stradellaRowLabel(button.kind))}, ${t("ui.columnShort")} ${button.column + 1}`
+                                : `${t("ui.rowShort")} ${button.row + 1}, ${t("ui.columnShort")} ${button.column + 1}`}
                             </span>
                             <button
                               type="button"
                               className="selected-remove-button"
                               onClick={() => deselectButton(button.id)}
-                              aria-label={`Deselect ${getMainLabel(button) || "button"}`}
+                              aria-label={t("ui.deselectButton", { button: getMainLabel(button) || t("ui.buttonGeneric") })}
                             >
                               ×
                             </button>
@@ -5854,11 +6132,11 @@ function App() {
                         ))}
                       </div>
                     ) : (
-                      <p className="hint">No buttons selected.</p>
+                      <p className="hint">{t("ui.noButtonsSelected")}</p>
                     )}
 
                     <button className="small-button" onClick={clearSelection}>
-                      Clear selection
+                      {t("ui.clearSelection")}
                     </button>
                   </div>
                 )}
@@ -5869,20 +6147,18 @@ function App() {
                   className="section-title"
                   onClick={() => toggleToolSection("fingering")}
                 >
-                  Fingering{" "}
+                  {t("ui.fingering")}{" "}
                   <span>{activeToolSection === "fingering" ? "−" : "+"}</span>
                 </button>
 
                 {activeToolSection === "fingering" && (
                   <div className="section-content">
                     <p className="hint">
-                      Enter a finger number, then either apply it to selected
-                      buttons or turn on click-to-label mode and click buttons
-                      directly.
+                      {t("ui.fingeringIntro")}
                     </p>
 
                     <label>
-                      Fingering value
+                      {t("ui.fingeringValue")}
                       <input
                         placeholder="1-5"
                         maxLength={3}
@@ -5901,12 +6177,12 @@ function App() {
                       }
                     >
                       {isApplyingFingering
-                        ? "Stop click-to-label"
-                        : "Click buttons to label"}
+                        ? t("ui.stopClickLabel")
+                        : t("ui.startClickLabel")}
                     </button>
 
                     <label>
-                      Fingering position
+                      {t("ui.fingeringPosition")}
                       <select
                         value={fingeringPosition}
                         onChange={(event) =>
@@ -5915,9 +6191,9 @@ function App() {
                           )
                         }
                       >
-                        <option value="inside-bottom">Inside bottom</option>
-                        <option value="inside-top">Inside top</option>
-                        <option value="above">Above button</option>
+                        <option value="inside-bottom">{t("ui.insideBottom")}</option>
+                        <option value="inside-top">{t("ui.insideTop")}</option>
+                        <option value="above">{t("ui.aboveButton")}</option>
                       </select>
                     </label>
 
@@ -5926,19 +6202,19 @@ function App() {
                         className="small-button"
                         onClick={applyFingerToSelected}
                       >
-                        Apply to selected
+                        {t("ui.applyToSelected")}
                       </button>
                       <button
                         className="small-button"
                         onClick={clearFingerForSelected}
                       >
-                        Clear selected
+                        {t("ui.clearSelected")}
                       </button>
                       <button
                         className="small-button"
                         onClick={clearAllFingerings}
                       >
-                        Clear all
+                        {t("ui.clearAll")}
                       </button>
                     </div>
                   </div>
@@ -5950,19 +6226,18 @@ function App() {
                   className="section-title"
                   onClick={() => toggleToolSection("sequences")}
                 >
-                  Sequence{" "}
+                  {t("ui.sequence")}{" "}
                   <span>{activeToolSection === "sequences" ? "−" : "+"}</span>
                 </button>
 
                 {activeToolSection === "sequences" && (
                   <div className="section-content">
                     <p className="hint">
-                      Turn recording on, then click buttons in order. Repeated
-                      buttons are allowed.
+                      {t("ui.sequenceIntro")}
                     </p>
 
                     <label>
-                      Display
+                      {t("ui.display")}
                       <select
                         value={sequenceDisplayMode}
                         onChange={(event) =>
@@ -5973,14 +6248,14 @@ function App() {
                       >
                         {SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
-                            {option.label}
+                            {translateKnownLabel(language, option.label)}
                           </option>
                         ))}
                       </select>
                     </label>
 
                     <label>
-                      Arrow color
+                      {t("ui.arrowColor")}
                       <select
                         value={sequenceColorPreset}
                         onChange={(event) =>
@@ -5989,16 +6264,16 @@ function App() {
                           )
                         }
                       >
-                        <option value="red">Red</option>
-                        <option value="blue">Blue</option>
-                        <option value="black">Black</option>
-                        <option value="grey">Grey</option>
-                        <option value="theme">Theme accent</option>
+                        <option value="red">{t("ui.red")}</option>
+                        <option value="blue">{t("ui.blue")}</option>
+                        <option value="black">{t("ui.black")}</option>
+                        <option value="grey">{t("ui.grey")}</option>
+                        <option value="theme">{t("ui.themeAccent")}</option>
                       </select>
                     </label>
 
                     <label>
-                      Arrow thickness: {sequenceThickness.toFixed(1)}
+                      {t("ui.arrowThickness")}: {sequenceThickness.toFixed(1)}
                       <input
                         type="range"
                         min={1}
@@ -6012,7 +6287,7 @@ function App() {
                     </label>
 
                     <label>
-                      Arrowhead size: {sequenceArrowheadSize.toFixed(1)}
+                      {t("ui.arrowheadSize")}: {sequenceArrowheadSize.toFixed(1)}
                       <input
                         type="range"
                         min={2}
@@ -6026,7 +6301,7 @@ function App() {
                     </label>
 
                     <label>
-                      Number color
+                      {t("ui.numberColor")}
                       <select
                         value={sequenceNumberColorPreset}
                         onChange={(event) =>
@@ -6035,16 +6310,16 @@ function App() {
                           )
                         }
                       >
-                        <option value="red">Red</option>
-                        <option value="blue">Blue</option>
-                        <option value="black">Black</option>
-                        <option value="grey">Grey</option>
-                        <option value="theme">Theme accent</option>
+                        <option value="red">{t("ui.red")}</option>
+                        <option value="blue">{t("ui.blue")}</option>
+                        <option value="black">{t("ui.black")}</option>
+                        <option value="grey">{t("ui.grey")}</option>
+                        <option value="theme">{t("ui.themeAccent")}</option>
                       </select>
                     </label>
 
                     <label>
-                      Number position
+                      {t("ui.numberPosition")}
                       <select
                         value={sequenceNumberPosition}
                         onChange={(event) =>
@@ -6053,15 +6328,15 @@ function App() {
                           )
                         }
                       >
-                        <option value="above">Above button</option>
-                        <option value="inside-top">Inside top</option>
-                        <option value="inside-bottom">Inside bottom</option>
-                        <option value="none">No numbers</option>
+                        <option value="above">{t("ui.aboveButton")}</option>
+                        <option value="inside-top">{t("ui.insideTop")}</option>
+                        <option value="inside-bottom">{t("ui.insideBottom")}</option>
+                        <option value="none">{t("ui.noNumbers")}</option>
                       </select>
                     </label>
 
                     <label>
-                      Number font size: {sequenceNumberFontSize}px
+                      {t("ui.numberFontSize")}: {sequenceNumberFontSize}px
                       <input
                         type="range"
                         min={7}
@@ -6080,12 +6355,12 @@ function App() {
                       }
                     >
                       {isRecordingSequence
-                        ? "Stop recording"
-                        : "Record sequence"}
+                        ? t("tools.stopRecording")
+                        : t("ui.recordSequence")}
                     </button>
 
                     <p className="hint">
-                      Sequence length: <strong>{sequenceSteps.length}</strong>
+                      {t("ui.sequenceLength")} <strong>{sequenceSteps.length}</strong>
                     </p>
 
                     <div className="button-row">
@@ -6094,26 +6369,23 @@ function App() {
                         onClick={playRecordedSequence}
                         disabled={sequenceSteps.length === 0}
                       >
-                        Play sequence
+                        {t("ui.playSequence")}
                       </button>
                       <button
                         className="small-button"
                         onClick={stopSoundPlayback}
                       >
-                        Stop
+                        {t("ui.stop")}
                       </button>
                       <button className="small-button" onClick={clearSequence}>
-                        Clear sequence
+                        {t("ui.clearSequence")}
                       </button>
                     </div>
 
                     <details className="compact-help-details">
-                      <summary>Notation help</summary>
+                      <summary>{t("ui.notationHelp")}</summary>
                       <p>
-                        Show notation renders the recorded sequence below the
-                        diagram. In Stradella mode, bass and chord buttons use
-                        the same staff-placement rules as the Bass Pattern
-                        Player.
+                        {t("ui.sequenceNotationHint")}
                       </p>
                     </details>
                   </div>
@@ -6125,20 +6397,18 @@ function App() {
                   className="section-title"
                   onClick={() => toggleToolSection("annotateDiagram")}
                 >
-                  Annotate Diagram{" "}
+                  {t("ui.annotateDiagram")}{" "}
                   <span>{activeToolSection === "annotateDiagram" ? "−" : "+"}</span>
                 </button>
 
                 {activeToolSection === "annotateDiagram" && (
                   <div className="section-content">
                     <p className="hint">
-                      Click a button or any empty diagram location, then type
-                      the annotation directly on the diagram. Press Enter to
-                      save, Shift+Enter for a new line, or Esc to cancel.
+                      {t("ui.annotateHintDetailed")}
                     </p>
 
                     <label>
-                      Button position
+                      {t("ui.buttonPosition")}
                       <select
                         value={annotationButtonAnchor}
                         onChange={(event) =>
@@ -6147,20 +6417,20 @@ function App() {
                           )
                         }
                       >
-                        <option value="center">Center</option>
-                        <option value="top">Top</option>
-                        <option value="bottom">Bottom</option>
-                        <option value="left">Left</option>
-                        <option value="right">Right</option>
-                        <option value="topLeft">Top left</option>
-                        <option value="topRight">Top right</option>
-                        <option value="bottomLeft">Bottom left</option>
-                        <option value="bottomRight">Bottom right</option>
+                        <option value="center">{t("ui.center")}</option>
+                        <option value="top">{t("ui.top")}</option>
+                        <option value="bottom">{t("ui.bottom")}</option>
+                        <option value="left">{t("ui.left")}</option>
+                        <option value="right">{t("ui.right")}</option>
+                        <option value="topLeft">{t("ui.topLeft")}</option>
+                        <option value="topRight">{t("ui.topRight")}</option>
+                        <option value="bottomLeft">{t("ui.bottomLeft")}</option>
+                        <option value="bottomRight">{t("ui.bottomRight")}</option>
                       </select>
                     </label>
 
                     <label>
-                      Text size: {textNoteFontSize}px
+                      {t("ui.annotateTextSize")}: {textNoteFontSize}px
                       <input
                         type="range"
                         min={8}
@@ -6173,7 +6443,7 @@ function App() {
                     </label>
 
                     <label>
-                      Distance from center: {annotationOffsetPercent}%
+                      {t("ui.distanceFromCenter")}: {annotationOffsetPercent}%
                       <input
                         type="range"
                         min={0}
@@ -6185,13 +6455,13 @@ function App() {
                       />
                     </label>
 
-                    <div className="annotation-style-toggles" aria-label="Annotation text style">
+                    <div className="annotation-style-toggles" aria-label={t("ui.annotationStyle")}>
                       <button
                         type="button"
                         className={annotationBold ? "style-toggle active" : "style-toggle"}
                         onClick={() => setAnnotationBold((current) => !current)}
                         aria-pressed={annotationBold}
-                        title="Bold"
+                        title={t("ui.bold")}
                       >
                         B
                       </button>
@@ -6200,14 +6470,14 @@ function App() {
                         className={annotationItalic ? "style-toggle active" : "style-toggle"}
                         onClick={() => setAnnotationItalic((current) => !current)}
                         aria-pressed={annotationItalic}
-                        title="Italic"
+                        title={t("ui.italic")}
                       >
                         <em>I</em>
                       </button>
                     </div>
 
                     <label>
-                      Text color
+                      {t("ui.textColor")}
                       <input
                         type="color"
                         value={textNoteColor}
@@ -6216,29 +6486,29 @@ function App() {
                     </label>
 
                     <label>
-                      Font
+                      {t("ui.font")}
                       <select
                         value={textNoteFont}
                         onChange={(event) =>
                           setTextNoteFont(event.target.value as FontFamily)
                         }
                       >
-                        <option value="system">System</option>
-                        <option value="serif">Serif</option>
-                        <option value="mono">Mono</option>
-                        <option value="rounded">Rounded</option>
+                        <option value="system">{t("ui.system")}</option>
+                        <option value="serif">{t("ui.serif")}</option>
+                        <option value="mono">{t("ui.mono")}</option>
+                        <option value="rounded">{t("ui.rounded")}</option>
                       </select>
                     </label>
 
                     <div className="annotation-list-block">
                       <div className="annotation-list-header">
-                        <span>Annotations</span>
+                        <span>{t("ui.annotations")}</span>
                         <strong>{textNotes.length}</strong>
                       </div>
 
                       {textNotes.length === 0 ? (
                         <p className="hint">
-                          No annotations yet. Click the diagram to add one.
+                          {t("ui.noAnnotationsYetClickTheDiagramToAddOne")}
                         </p>
                       ) : (
                         <ul className="annotation-list">
@@ -6252,8 +6522,8 @@ function App() {
                                 type="button"
                                 className="annotation-delete-button"
                                 onClick={() => deleteTextNote(note.id)}
-                                aria-label={`Delete annotation ${index + 1}`}
-                                title="Delete annotation"
+                                aria-label={t("ui.deleteAnnotation", { count: index + 1 })}
+                                title={t("ui.deleteAnnotationTooltip")}
                               >
                                 ×
                               </button>
@@ -6268,7 +6538,7 @@ function App() {
                       onClick={clearTextNotes}
                       disabled={textNotes.length === 0}
                     >
-                      Clear annotations
+                      {t("ui.clearAnnotations")}
                     </button>
                   </div>
                 )}
@@ -6281,7 +6551,7 @@ function App() {
                     className="section-title"
                     onClick={() => toggleToolSection("bassPatternPlayer")}
                   >
-                    Bass Pattern Player{" "}
+                    {t("ui.bassPatternPlayer")}{" "}
                     <span>
                       {activeToolSection === "bassPatternPlayer" ? "−" : "+"}
                     </span>
@@ -6290,11 +6560,11 @@ function App() {
                   {activeToolSection === "bassPatternPlayer" && (
                     <div className="section-content">
                       <p className="hint">
-                        Plays Stradella bass patterns over a chord progression.
+                        {t("ui.playsStradellaBassPatternsOverAChordProgression")}
                       </p>
 
                       <label>
-                        Progression
+                        {t("ui.progression")}
                         <select
                           value={chordProgressionId}
                           onChange={(event) => {
@@ -6304,14 +6574,14 @@ function App() {
                         >
                           {chordProgressionDefinitions.map((progression) => (
                             <option key={progression.id} value={progression.id}>
-                              {formatProgressionOptionLabel(progression)}
+                              {formatProgressionOptionLabel(progression, language)}
                             </option>
                           ))}
                         </select>
                       </label>
 
                       <label>
-                        Root
+                        {t("ui.root")}
                         <select
                           value={bassPatternRoot}
                           onChange={(event) => {
@@ -6321,14 +6591,14 @@ function App() {
                         >
                           {FINDER_ROOT_OPTIONS.map((option) => (
                             <option key={option.value} value={option.value}>
-                              {option.label}
+                              {translateKnownLabel(language, option.label)}
                             </option>
                           ))}
                         </select>
                       </label>
 
                       <label>
-                        Rhythm
+                        {t("ui.rhythm")}
                         <select
                           value={bassPatternId}
                           onChange={(event) => {
@@ -6338,17 +6608,17 @@ function App() {
                         >
                           {bassPatternDefinitions.map((pattern) => (
                             <option key={pattern.id} value={pattern.id}>
-                              {pattern.name}
+                              {bassPatternName(pattern.id, pattern.name, language)}
                             </option>
                           ))}
                         </select>
                       </label>
 
-                      <SegmentedChoice label={<>Chord voicing <HelpTip text="Simple uses one practical Stradella chord button. Full uses the fuller Chord Finder recipe when available." /></>} value={bassPatternChordVoicing} onChange={(next) => { stopBassPatternPlayback(); setBassPatternChordVoicing(next); }} options={[{ value: "simple", label: "Simple" }, { value: "full", label: "Full" }]} />
+                      <SegmentedChoice label={<>{t("ui.chordVoicing")} <HelpTip text={t("ui.simpleFullVoicingHelp")} /></>} value={bassPatternChordVoicing} onChange={(next) => { stopBassPatternPlayback(); setBassPatternChordVoicing(next); }} options={[{ value: "simple", label: t("ui.simple") }, { value: "full", label: t("ui.full") }]} />
 
                       <div className="compact-control-grid">
                         <label>
-                          Repeats per chord: {bassPatternBarsPerChord}
+                          {t("ui.repeatsPerChord")}: {bassPatternBarsPerChord}
                           <input
                             type="range"
                             min={1}
@@ -6365,7 +6635,7 @@ function App() {
                         </label>
 
                         <label>
-                          Tempo: {bassPatternTempoBpm} units/min
+                          {t("ui.tempo")}: {bassPatternTempoBpm} {t("ui.tempoUnits")}
                           <input
                             type="range"
                             min={50}
@@ -6381,42 +6651,41 @@ function App() {
 
                       <div className="compact-control-grid">
                         <label>
-                          Playback repeat
+                          {t("ui.playbackRepeat")}
                           <select
                             value={bassPatternRepeatSelection}
                             onChange={(event) =>
                               setBassPatternRepeatSelection(event.target.value)
                             }
                           >
-                            <option value="1">1 time</option>
-                            <option value="2">2 times</option>
-                            <option value="4">4 times</option>
-                            <option value="loop">Loop until stopped</option>
+                            <option value="1">{t("ui.firstTime")}</option>
+                            <option value="2">{t("ui.twoTimes")}</option>
+                            <option value="4">{t("ui.fourTimes")}</option>
+                            <option value="loop">{t("ui.loopUntilStopped")}</option>
                           </select>
                         </label>
                       </div>
 
                       <div className="result-card">
                         <div className="result-card-title">
-                          {selectedBassPattern?.name ?? "No pattern loaded"}
+                          {selectedBassPattern ? bassPatternName(selectedBassPattern.id, selectedBassPattern.name, language) : t("ui.noPattern")}
                         </div>
                         <p>
-                          {selectedChordProgression?.name ??
-                            "No progression loaded"}{" "}
-                          · Pattern bars:{" "}
+                          {selectedChordProgression ? progressionName(selectedChordProgression.id, selectedChordProgression.name, language) :
+                            t("ui.noProgression")}{" "}
+                          · {t("ui.patternBars")}:{" "}
                           {selectedBassPattern
                             ? patternBarCount(selectedBassPattern)
                             : 1}{" "}
-                          · {bassPatternBarsPerChord} repeat
-                          {bassPatternBarsPerChord === 1 ? "" : "s"} per chord ·
-                          Length: {bassPatternTotalBeats.toFixed(1)} meter units
+                          · {bassPatternBarsPerChord} {t("ui.repeatPerChord")} ·
+                          {t("ui.length")}: {bassPatternTotalBeats.toFixed(1)} {t("ui.meterUnits")}
                           {bassPatternMissingText
-                            ? ` · Missing: ${bassPatternMissingText}`
+                            ? ` · ${t("ui.missingShort")}: ${bassPatternMissingText}`
                             : ""}
                         </p>
                         {bassPatternValidationErrors.length > 0 && (
                           <div className="bass-pattern-errors" role="alert">
-                            <strong>Pattern format errors:</strong>
+                            <strong>{t("ui.patternErrors")}</strong>
                             <ul>
                               {bassPatternValidationErrors
                                 .slice(0, 6)
@@ -6426,8 +6695,7 @@ function App() {
                             </ul>
                             {bassPatternValidationErrors.length > 6 && (
                               <p>
-                                …and {bassPatternValidationErrors.length - 6}{" "}
-                                more.
+                                {t("ui.andMore", { count: bassPatternValidationErrors.length - 6 })}
                               </p>
                             )}
                           </div>
@@ -6435,19 +6703,15 @@ function App() {
                         {selectedBassPattern?.tags &&
                           selectedBassPattern.tags.length > 0 && (
                             <p className="hint">
-                              Tags: {selectedBassPattern.tags.join(", ")}
+                              {t("ui.tags")}: {selectedBassPattern.tags.join(", ")}
                             </p>
                           )}
                       </div>
 
                       <details className="compact-help-details">
-                        <summary>Notation help</summary>
+                        <summary>{t("ui.notationHelp")}</summary>
                         <p>
-                          Bass and counterbass notes are written at the first
-                          matching note position at or below the bass-clef
-                          middle line D. Chord buttons use the first matching
-                          position above the middle line; M, m, 7, or d above
-                          the note indicates the chord quality.
+                          {t("ui.bassPatternNotationHelp")}
                         </p>
                       </details>
 
@@ -6458,17 +6722,17 @@ function App() {
                           onClick={scheduleBassPatternPlayback}
                           disabled={bassPatternEvents.length === 0}
                         >
-                          Play pattern
+                          {t("ui.playPattern")}
                         </button>
                         <button
                           type="button"
                           className="small-button"
                           onClick={stopBassPatternPlayback}
                         >
-                          Stop
+                          {t("ui.stop")}
                         </button>
                         <div className="compact-export-row">
-                          <span>Export</span>
+                          <span>{t("ui.export")}</span>
                           <select
                             value={bassPatternExportFormat}
                             onChange={(event) =>
@@ -6479,7 +6743,7 @@ function App() {
                                   | "lilypond",
                               )
                             }
-                            aria-label="Bass pattern export format"
+                            aria-label={t("ui.stradellaExportFormat")}
                           >
                             <option value="abc">ABC</option>
                             <option value="midi">MIDI</option>
@@ -6491,7 +6755,7 @@ function App() {
                             onClick={exportSelectedBassPattern}
                             disabled={bassPatternEvents.length === 0}
                           >
-                            Download
+                            {t("ui.download")}
                           </button>
                         </div>
                       </div>
@@ -6506,15 +6770,13 @@ function App() {
                             setBassPatternEditorExpanded((current) => !current)
                           }
                         >
-                          <span>Custom pattern editor</span>
+                          <span>{t("ui.customPatternEditor")}</span>
                           <span>{bassPatternEditorExpanded ? "−" : "+"}</span>
                         </button>
                         {bassPatternEditorExpanded && (
                           <>
                             <p className="hint">
-                              Edit one pattern object, validate it live, and
-                              save it to this browser's local custom pattern
-                              library.
+                              {t("ui.patternEditorIntro")}
                             </p>
                             <textarea
                               value={bassPatternEditorText}
@@ -6526,7 +6788,7 @@ function App() {
                             />
                             {bassPatternEditorErrors.length > 0 ? (
                               <div className="bass-pattern-errors" role="alert">
-                                <strong>Editor validation:</strong>
+                                <strong>{t("ui.editorValidation")}</strong>
                                 <ul>
                                   {bassPatternEditorErrors
                                     .slice(0, 4)
@@ -6536,7 +6798,7 @@ function App() {
                                 </ul>
                               </div>
                             ) : (
-                              <p className="hint">Editor validation: OK.</p>
+                              <p className="hint">{t("ui.editorValidationOK")}</p>
                             )}
                             {bassPatternEditorMessage && (
                               <p className="hint">{bassPatternEditorMessage}</p>
@@ -6547,7 +6809,7 @@ function App() {
                                 className="small-button"
                                 onClick={loadSelectedPatternIntoEditor}
                               >
-                                Load selected
+                                {t("ui.loadSelected")}
                               </button>
                               <button
                                 type="button"
@@ -6555,7 +6817,7 @@ function App() {
                                 onClick={saveCustomBassPattern}
                                 disabled={bassPatternEditorErrors.length > 0}
                               >
-                                Save custom
+                                {t("ui.saveCustom")}
                               </button>
                               <button
                                 type="button"
@@ -6567,7 +6829,7 @@ function App() {
                                   )
                                 }
                               >
-                                Remove custom
+                                {t("ui.removeCustom")}
                               </button>
                             </div>
                           </>
@@ -6584,7 +6846,7 @@ function App() {
                     className="section-title"
                     onClick={() => toggleToolSection("abcPlayer")}
                   >
-                    ABC Player{" "}
+                    {t("ui.abcDefault")}{" "}
                     <span>{activeToolSection === "abcPlayer" ? "−" : "+"}</span>
                   </button>
 
@@ -6592,15 +6854,15 @@ function App() {
                     <div className="section-content abc-player-panel">
                       <p className="hint">
                         {side === "stradella"
-                          ? "Loads a simple ABC tune. It can highlight bass notes, quoted ABC chord symbols, or both. Bracketed note chords can also play together."
-                          : "Loads a simple single-voice ABC tune and highlights matching treble notes while it plays. Bracketed dyads/chords can play together."}
+                          ? t("ui.abcIntroStradella")
+                          : t("ui.abcIntroTreble")}
                       </p>
 
                       {side === "stradella" && (
                         <label>
                           <span className="label-line">
-                            Stradella mapping{" "}
-                            <HelpTip text='Bass notes use written ABC pitches. Chord symbols use quoted ABC harmony labels such as "C", "G7", or "Am".' />
+                            {t("ui.abcStradellaMapping")}{" "}
+                            <HelpTip text={t("ui.abcStradellaMappingHelp")} />
                           </span>
                           <select
                             value={abcStradellaMode}
@@ -6613,24 +6875,24 @@ function App() {
                             }}
                           >
                             <option value="bass-notes-only">
-                              Bass notes only
+                              {t("ui.bassNotesOnly")}
                             </option>
                             <option value="chord-symbols-only">
-                              Chord symbols only
+                              {t("ui.chordSymbolsOnly")}
                             </option>
                             <option value="bass-notes-and-chord-symbols">
-                              Bass notes + chord symbols
+                              {t("ui.bassNotesChordSymbols")}
                             </option>
                           </select>
                         </label>
                       )}
 
                       {isTrebleLikeSide && (
-                        <SegmentedChoice label={<>Chord symbols <HelpTip text='Quoted ABC chord symbols such as "C" or "G7" can be ignored or played as treble block chords.' /></>} value={abcTrebleChordSymbolsMode} onChange={(next) => { pauseAbcPlayback(); setAbcActiveButtonIds([]); setAbcTrebleChordSymbolsMode(next); }} options={[{ value: "ignore", label: "Ignore" }, { value: "play", label: "Play" }]} />
+                        <SegmentedChoice label={<>{t("ui.chordSymbols")} <HelpTip text={t("ui.abcTrebleSymbolsHelp")} /></>} value={abcTrebleChordSymbolsMode} onChange={(next) => { pauseAbcPlayback(); setAbcActiveButtonIds([]); setAbcTrebleChordSymbolsMode(next); }} options={[{ value: "ignore", label: t("ui.ignore") }, { value: "play", label: t("tools.play") }]} />
                       )}
 
                       <label>
-                        Example tune
+                        {t("ui.exampleTune")}
                         <select
                           value={abcExampleValue}
                           onChange={(event) =>
@@ -6642,7 +6904,7 @@ function App() {
                               key={option.value || "empty"}
                               value={option.value}
                             >
-                              {option.label}
+                              {option.value === "" ? t("ui.chooseExample") : abcExampleName(option.value, option.label, language)}
                             </option>
                           ))}
                         </select>
@@ -6650,7 +6912,7 @@ function App() {
 
                       <div className="button-row">
                         <label className="small-button file-button">
-                          Load .abc file
+                          {t("ui.loadAbcFile")}
                           <input
                             type="file"
                             accept=".abc,text/plain"
@@ -6679,16 +6941,16 @@ function App() {
                             stopAbcPlayback();
                           }}
                         >
-                          Clear ABC
+                          {t("ui.clearABC")}
                         </button>
                       </div>
 
                       {abcFileName && (
-                        <p className="hint">File: {abcFileName}</p>
+                        <p className="hint">{t("ui.file")}: {abcFileName}</p>
                       )}
 
                       <label>
-                        Tempo: {abcTempoBpm} BPM
+                        {t("ui.tempo")}: {abcTempoBpm} BPM
                         <input
                           type="range"
                           min={40}
@@ -6702,7 +6964,7 @@ function App() {
                       </label>
 
                       <label>
-                        Position
+                        {t("ui.position")}
                         <input
                           type="range"
                           min={0}
@@ -6722,20 +6984,20 @@ function App() {
                         <div className="result-card-title">
                           {abcText.trim()
                             ? abcParseResult.title
-                            : "No ABC loaded"}
+                            : t("ui.noAbcLoaded")}
                         </div>
                         {abcParseResult.errors.length > 0 ? (
                           <p>{abcParseResult.errors.join(" ")}</p>
                         ) : (
                           <p>
-                            Events: {abcMappedEvents.length} · Key:{" "}
+                            {t("ui.events")}: {abcMappedEvents.length} · {t("ui.key")}: {" "}
                             {abcParseResult.key}
                             {abcParseResult.voiceIds.length > 1
-                              ? ` · Voice: ${side === "stradella" ? "2" : "1"}`
-                              : ""} · Length:{" "}
-                            {abcTotalBeats.toFixed(1)} beats
+                              ? ` · ${t("ui.voice")}: ${side === "stradella" ? "2" : "1"}`
+                              : ""} · {t("ui.length")}: {" "}
+                            {abcTotalBeats.toFixed(1)} {t("ui.beats")}
                             {abcMissingPitchText
-                              ? ` · ${side === "stradella" ? "Unavailable notes" : "Missing"}: ${abcMissingPitchText}`
+                              ? ` · ${side === "stradella" ? t("ui.unavailableNotes") : t("ui.missingShort")}: ${abcMissingPitchText}`
                               : ""}
                           </p>
                         )}
@@ -6748,7 +7010,7 @@ function App() {
                           onClick={() => scheduleAbcPlayback(abcPositionBeat)}
                           disabled={abcMappedEvents.length === 0}
                         >
-                          {abcPlaybackState === "paused" ? "Continue" : "Play"}
+                          {abcPlaybackState === "paused" ? t("ui.continue") : t("tools.play")}
                         </button>
                         <button
                           className="small-button"
@@ -6756,7 +7018,7 @@ function App() {
                           onClick={pauseAbcPlayback}
                           disabled={abcPlaybackState !== "playing"}
                         >
-                          Pause
+                          {t("ui.pause")}
                         </button>
                         <button
                           className="small-button"
@@ -6767,17 +7029,14 @@ function App() {
                             abcPositionBeat === 0
                           }
                         >
-                          Stop
+                          {t("ui.stop")}
                         </button>
                       </div>
 
                       <details className="compact-help-details">
-                        <summary>Notation help</summary>
+                        <summary>{t("ui.notationHelp")}</summary>
                         <p>
-                          Use Show notation to render the ABC as staff notation
-                          below the diagram. If the ABC text is invalid, the
-                          notation panel shows an error instead of interrupting
-                          the interface.
+                          {t("ui.abcNotationInstructions")}
                         </p>
                       </details>
 
@@ -6791,12 +7050,12 @@ function App() {
                             setAbcEditorExpanded((current) => !current)
                           }
                         >
-                          <span>ABC editor</span>
+                          <span>{t("ui.abcEditor")}</span>
                           <span>{abcEditorExpanded ? "−" : "+"}</span>
                         </button>
                         {abcEditorExpanded && (
                           <label>
-                            ABC text
+                            {t("ui.abcText")}
                             <textarea
                               className="abc-textarea"
                               value={abcText}
@@ -6836,7 +7095,7 @@ function App() {
               stopAbcPlayback();
             }}
           >
-            Stradella
+            {t("nav.stradella")}
           </button>
 
           <button
@@ -6847,7 +7106,7 @@ function App() {
               stopAbcPlayback();
             }}
           >
-            Treble
+            {t("nav.treble")}
           </button>
 
           <button
@@ -6861,7 +7120,7 @@ function App() {
               stopAllSound();
             }}
           >
-            Harmony
+            {t("nav.harmony")}
           </button>
 
           <span className="topbar-separator" />
@@ -6870,14 +7129,14 @@ function App() {
             className={`topbar-button ${leftPanelMode === "settings" ? "active" : ""}`}
             onClick={() => setPanel("settings")}
           >
-            Settings
+            {t("nav.settings")}
           </button>
 
           <button
             className={`topbar-button ${leftPanelMode === "tools" ? "active" : ""}`}
             onClick={() => setPanel("tools")}
           >
-            Tools
+            {t("nav.tools")}
           </button>
 
           <button
@@ -6887,9 +7146,9 @@ function App() {
                 current === "hidden" ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden",
               )
             }
-            title="Hide the sidebar to give the diagram more horizontal room."
+            title={t("nav.focusHint")}
           >
-            {leftPanelMode === "hidden" ? "Show controls" : "Focus diagram"}
+            {leftPanelMode === "hidden" ? t("nav.showControls") : t("nav.focusDiagram")}
           </button>
 
           {workspaceMode === "accordion" &&
@@ -6901,9 +7160,7 @@ function App() {
                   className={`topbar-button ${bassPatternRenderedNotationVisible ? "active" : ""}`}
                   onClick={toggleBassPatternNotation}
                 >
-                  {bassPatternRenderedNotationVisible
-                    ? "Hide notation"
-                    : "Show notation"}
+                  {bassPatternRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
                 </button>
               </>
             )}
@@ -6913,7 +7170,7 @@ function App() {
               className={`topbar-button ${harmonyRecordedNotationVisible ? "active" : ""}`}
               onClick={toggleHarmonyRecordedNotation}
             >
-              {harmonyRecordedNotationVisible ? "Hide notation" : "Show notation"}
+              {harmonyRecordedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
             </button>
           )}
 
@@ -6925,7 +7182,7 @@ function App() {
                 className={`topbar-button ${harmonyProgressionNotationVisible ? "active" : ""}`}
                 onClick={toggleHarmonyProgressionNotation}
               >
-                {harmonyProgressionNotationVisible ? "Hide notation" : "Show notation"}
+                {harmonyProgressionNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
               </button>
             )}
 
@@ -6934,7 +7191,7 @@ function App() {
               className={`topbar-button ${abcRenderedNotationVisible ? "active" : ""}`}
               onClick={toggleAbcNotation}
             >
-              {abcRenderedNotationVisible ? "Hide notation" : "Show notation"}
+              {abcRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
             </button>
           )}
 
@@ -6944,9 +7201,7 @@ function App() {
                 className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
                 onClick={toggleSequenceNotation}
               >
-                {sequenceRenderedNotationVisible
-                  ? "Hide notation"
-                  : "Show notation"}
+                {sequenceRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
               </button>
             )}
 
@@ -6956,18 +7211,31 @@ function App() {
             className={`topbar-button ${soundEnabled ? "active" : ""}`}
             onClick={() => setSoundEnabled((current) => !current)}
           >
-            {soundEnabled ? "Sound on" : "Sound off"}
+            {soundEnabled ? t("ui.soundOn") : t("ui.soundOff")}
           </button>
 
-          <button
-            className="topbar-button reset-button"
-            onClick={workspaceMode === "harmony" ? resetHarmonyExplorer : resetDiagramWork}
-          >
-            Reset
-          </button>
+          <details ref={resetMenuRef} className="reset-menu">
+            <summary className="topbar-button reset-button" title={t("ui.resetScope")}>
+              {t("ui.reset")} <span aria-hidden="true">▾</span>
+            </summary>
+            <div className="reset-menu-options">
+              <button type="button" onClick={(event) => {
+                if (workspaceMode === "harmony") clearHarmonyWork(); else resetDiagramWork();
+                event.currentTarget.closest("details")?.removeAttribute("open");
+              }}>{t("ui.clearCurrentWork")}</button>
+              {(workspaceMode === "harmony" || (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
+                <button type="button" onClick={(event) => {
+                  resetCurrentToolDefaults();
+                  event.currentTarget.closest("details")?.removeAttribute("open");
+                }}>{t("ui.restoreToolDefaults")}</button>
+              )}
+            </div>
+          </details>
+
+          <span className="topbar-after-reset-space" aria-hidden="true" />
 
           <div className="topbar-format-choice">
-            <SegmentedChoice label="Download format" value={downloadFormat} onChange={setDownloadFormat}
+            <SegmentedChoice label={t("ui.downloadFormat")} value={downloadFormat} onChange={setDownloadFormat}
               options={[{ value: "svg", label: "SVG" }, { value: "png", label: "PNG" }]} />
           </div>
 
@@ -6975,7 +7243,7 @@ function App() {
             className="topbar-button download-button"
             onClick={downloadCurrentDiagram}
           >
-            Download {downloadFormat.toUpperCase()}
+            {t("ui.downloadKind", { kind: downloadFormat.toUpperCase() })}
           </button>
         </div>
 
@@ -6986,7 +7254,29 @@ function App() {
         )}
         {showStatusBar && workspaceMode === "harmony" && (
           <div className="status-bar">
-            {`Harmony · ${harmonyReferenceFamily.name} → ${harmonyAllFamiliesMode ? "All diatonic families" : harmonyRelatedName} · ${harmonyScale.name} · Sound ${soundEnabled ? "on" : "off"}`}
+            {harmonyStatusText({
+              referenceFamilyId: harmonyReferenceFamily.id,
+              referenceFamilyEnglishName: harmonyReferenceFamily.name,
+              relatedFamilyId: harmonyRelatedFamilyId,
+              relatedFamilyEnglishName: harmonyRelatedName,
+              scaleId: harmonyScale.id,
+              scaleEnglishName: harmonyScale.name,
+              soundEnabled, language,
+            })}
+          </div>
+        )}
+
+        {workspaceMode === "accordion" && (
+          <div className="mobile-diagram-view-control">
+            <SegmentedChoice
+              label={t("ui.mobileDiagram")}
+              value={mobileDiagramView}
+              onChange={setMobileDiagramView}
+              options={[
+                { value: "readable", label: t("ui.readableScroll") },
+                { value: "fit", label: t("ui.fitDiagram") },
+              ]}
+            />
           </div>
         )}
 
@@ -6994,12 +7284,12 @@ function App() {
           <>
             {harmonyAvailableCounts.length === 0 && (
               <div className="harmony-empty-result">
-                No chord relationships satisfy the current harmonic filter.
+                {t("ui.noChordRelationshipsSatisfyTheCurrentHarmonicFilter")}
               </div>
             )}
             {harmonyAvailableCounts.length > 0 && harmonyCounts.length === 0 && (
               <div className="harmony-empty-result">
-                All available outer rings are hidden. Re-enable at least one ring in Harmony Explorer.
+                {t("ui.allAvailableOuterRingsAreHiddenReEnableAtLeastOneRingInHarmonyExplorer")}
               </div>
             )}
             <div className="canvas-wrap harmony-canvas-wrap">
@@ -7010,10 +7300,11 @@ function App() {
                 }}
               >
                 <HarmonicCircle
+                  chordDisplayStyle={chordDisplayStyle}
                   sectors={harmonySectors}
                   counts={harmonyCounts}
                   referenceFamilyId={harmonyReferenceFamilyId}
-                  relatedFamilyName={harmonyRelatedName}
+                  relatedFamilyName={harmonyRelatedDisplayName(harmonyRelatedFamilyId, harmonyRelatedName, language)}
                   allFamiliesMode={harmonyAllFamiliesMode}
                   scaleId={harmonyScaleId}
                   diatonicOnly={harmonyEffectiveDiatonicOnly}
@@ -7042,7 +7333,10 @@ function App() {
             </div>
           </>
         ) : (
-        <div className="canvas-wrap">
+        <div
+          className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
+          style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
+        >
           <svg
             ref={svgRef}
             preserveAspectRatio="xMinYMin meet"
@@ -7096,7 +7390,7 @@ function App() {
             {(finderFooterEnabled || trebleFooterEnabled) && (
               <foreignObject
                 x={32}
-                y={trebleFooterEnabled ? trebleFooterY : baseViewHeight - 21}
+                y={trebleFooterEnabled ? trebleFooterY : stradellaFinderFooterY}
                 width={viewWidth - 64}
                 height={trebleFooterEnabled && buttonTrebleFooter ? trebleFooterHeight : trebleFooterEnabled ? 128 : finderFooterHeight}
               >
@@ -7109,12 +7403,39 @@ function App() {
                   overflowWrap: "anywhere", color: "#20252a",
                 }}>
                   {finderFooterEnabled
-                    ? finderAnnotation?.lines.map((line, index) => {
-                      const colon = line.indexOf(":");
-                      return <div key={index} style={{ marginBottom: "0.25em" }}>
-                        {colon > 0 ? <><strong>{line.slice(0, colon + 1)}</strong>{line.slice(colon + 1)}</> : line}
-                      </div>;
-                    })
+                    ? (
+                      <div className="finder-annotation-block">
+                        {finderAnnotationDisplayLines.map((line, index) => {
+                          const level = annotationLevelForLine(line);
+                          const colon = line.indexOf(":");
+                          const label = colon > 0 ? line.slice(0, colon + 1) : "";
+                          const value = colon > 0 ? line.slice(colon + 1).trim() : line;
+                          const showVoicingChart = level === "voicing" && finderVoicingChartVisible && finderVoicingAnalysis;
+                          return (
+                            <div
+                              key={`${level ?? "line"}-${index}`}
+                              className={`finder-annotation-line${showVoicingChart ? " finder-annotation-line-voicing" : ""}`}
+                            >
+                              {label && (
+                                <div className="finder-annotation-label">
+                                  <strong>{label}</strong>
+                                </div>
+                              )}
+                              <div className="finder-annotation-value">
+                                {showVoicingChart ? (
+                                  <StradellaVoicingIntervals
+                                    notes={finderVoicingAnalysis.notes}
+                                    root={stradellaChordFinderRoot}
+                                    pattern={stradellaChordFinderPattern}
+                                    fontSize={finderExplanationFontSize}
+                                  />
+                                ) : value}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )
                     : trebleVoicingNote}
                 </div>
               </foreignObject>
@@ -7137,7 +7458,7 @@ function App() {
                   textAnchor="middle"
                   className="bellows-label"
                 >
-                  Bellows
+                  {t("ui.bellows")}
                 </text>
 
                 <text
@@ -7178,7 +7499,7 @@ function App() {
                     textAnchor="end"
                     className="stradella-row-label"
                   >
-                    {stradellaRowLabel(kind)}
+                    {stradellaDiagramRowLabel(kind, stradellaRowLabel(kind), language)}
                   </text>
                 );
               })}
@@ -7519,7 +7840,7 @@ function App() {
                     <textarea
                       ref={annotationEditorRef}
                       value={inlineAnnotationEditor.text}
-                      placeholder="Type annotation"
+                      placeholder={t("ui.annotationPlaceholder")}
                       style={{
                         fontSize: inlineAnnotationEditor.fontSize,
                         color: inlineAnnotationEditor.color,
@@ -7556,10 +7877,10 @@ function App() {
           harmonyRecordedNotationVisible && (
             <div
               className="rendered-notation-panel"
-              aria-label="Recorded Harmony progression notation"
+              aria-label={t("ui.recordedHarmonyAria")}
             >
               <div className="rendered-notation-header">
-                <div className="rendered-notation-title">Recorded Harmony progression</div>
+                <div className="rendered-notation-title">{t("ui.recordedHarmonyProgression")}</div>
                 <button
                   type="button"
                   className="small-button notation-download-button"
@@ -7570,7 +7891,7 @@ function App() {
                     )
                   }
                 >
-                  Download SVG
+                  {t("ui.downloadSVG")}
                 </button>
               </div>
               <div ref={harmonyRecordedNotationRef} className="rendered-abc" />
@@ -7583,12 +7904,12 @@ function App() {
           bassPatternRenderedNotationVisible && (
             <div
               className="rendered-notation-panel"
-              aria-label="Rendered Stradella staff notation"
+              aria-label={t("ui.renderedStradellaAria")}
             >
               <div className="rendered-notation-header">
                 <div className="rendered-notation-title">
-                  {selectedBassPattern?.name ?? "Bass pattern"} over{" "}
-                  {selectedChordProgression?.name ?? "progression"}
+                  {selectedBassPattern ? bassPatternName(selectedBassPattern.id, selectedBassPattern.name, language) : t("ui.bassPatternPlayer")} {t("ui.over")}{" "}
+                  {selectedChordProgression ? progressionName(selectedChordProgression.id, selectedChordProgression.name, language) : t("ui.progression")}
                 </div>
                 <button
                   type="button"
@@ -7600,7 +7921,7 @@ function App() {
                     )
                   }
                 >
-                  Download SVG
+                  {t("ui.downloadSVG")}
                 </button>
               </div>
               <div ref={bassPatternNotationRef} className="rendered-abc" />
@@ -7613,11 +7934,11 @@ function App() {
           harmonyProgressionNotationVisible && (
             <div
               className="rendered-notation-panel"
-              aria-label="Rendered progression assistant notation"
+              aria-label={t("ui.renderedProgressionAria")}
             >
               <div className="rendered-notation-header">
                 <div className="rendered-notation-title">
-                  Optimized Stradella progression
+                  {t("ui.optimizedStradellaProgression")}
                 </div>
                 <button
                   type="button"
@@ -7629,7 +7950,7 @@ function App() {
                     )
                   }
                 >
-                  Download SVG
+                  {t("ui.downloadSVG")}
                 </button>
               </div>
               <div ref={harmonyProgressionNotationRef} className="rendered-abc" />
@@ -7641,7 +7962,7 @@ function App() {
           abcRenderedNotationVisible && (
             <div
               className="rendered-notation-panel"
-              aria-label="Rendered ABC notation"
+              aria-label={t("ui.renderedABCAria")}
             >
               <div className="rendered-notation-header">
                 <div className="rendered-notation-title">
@@ -7657,7 +7978,7 @@ function App() {
                     )
                   }
                 >
-                  Download SVG
+                  {t("ui.downloadSVG")}
                 </button>
               </div>
               <div ref={abcNotationRef} className="rendered-abc" />
@@ -7669,10 +7990,10 @@ function App() {
           sequenceRenderedNotationVisible && (
             <div
               className="rendered-notation-panel"
-              aria-label="Rendered sequence notation"
+              aria-label={t("ui.renderedSequenceAria")}
             >
               <div className="rendered-notation-header">
-                <div className="rendered-notation-title">Sequence notation</div>
+                <div className="rendered-notation-title">{t("ui.sequenceNotation")}</div>
                 <button
                   type="button"
                   className="small-button notation-download-button"
@@ -7683,7 +8004,7 @@ function App() {
                     )
                   }
                 >
-                  Download SVG
+                  {t("ui.downloadSVG")}
                 </button>
               </div>
               <div ref={sequenceNotationRef} className="rendered-abc" />
@@ -7691,6 +8012,7 @@ function App() {
           )}
       </section>
     </main>
+    </LanguageProvider>
   );
 }
 

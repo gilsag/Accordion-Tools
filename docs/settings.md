@@ -8,6 +8,21 @@ Accordion-Tools has two kinds of settings:
 The app also lets you save and load a separate settings JSON file from the About panel. Loading a settings file changes the current session; it does not rewrite `public/default-settings.json`.
 
 
+## Mobile diagram viewing (not a saved setting)
+
+When the viewport is at most **860 CSS px**, the diagram viewer offers **Readable · scroll** and **Fit entire diagram**.
+
+- **Readable · scroll** is the initial mobile/tablet view. The on-screen diagram is larger and scrolls horizontally to keep button targets readable.
+- **Fit entire diagram** displays the whole keyboard at once, with smaller button targets.
+
+These choices affect the **browser viewer only**. They do not modify `diagramScale`, musical geometry, SVG/PNG exports, audio, or the saved settings JSON. On narrow phones the left tool panel scrolls separately, help tips can be tapped, and the documentation viewer uses a horizontal topic list.
+
+## Interface language
+
+Choose **Auto (browser)**, **English**, **Español**, **Français**, **Português (Brasil)**, **Italiano**, or **Deutsch** in Settings → Language. Auto uses the first supported language preference from the browser, including regional locale tags such as `es-CL`, `fr-CA`, `pt-BR`, `it-IT`, and `de-DE`; unsupported preferences fall back to English. The `pt` language uses Brazilian Portuguese for all Portuguese regional variants, including `pt-PT`. The explicit selection persists independently of music notation settings and is compatible with existing imported/exported settings JSON.
+
+Interface translations cover controls, tooltips, status summaries, Harmony legends, and major generated chord explanations. The bundled Markdown help articles remain in English, as do some third-party parser diagnostics and user-authored text. Changing interface language does not alter musical IDs, chords, pitch spelling settings, playback, or export filenames. The developer instructions are in [`internal/adding-interface-languages.md`](internal/adding-interface-languages.md).
+
 ## Workspace-specific settings
 
 The Settings sidebar is filtered by the active workspace so controls that cannot affect the current diagram are not shown.
@@ -125,7 +140,7 @@ Commands that show or hide content (e.g., **Show/Hide Stradella row labels**, **
 
 ## Stradella analytical registers
 
-Under **Settings → Stradella registers** (a separate section from Sound), specify two independent twelve-pitch ranges:
+Under **Settings → Stradella registers** (separate from Sound), two compact groups—**Bass / counterbass** and **Preset chords**—provide independent **Starting octave** and **Grouping** controls, followed by their **Configured range**. The C–B/F–E grouping tooltip explains the octave boundary. The section help explains that these are nominal model pitches rather than measured reed frequencies. Configure the two twelve-pitch ranges independently:
 
 | Setting | Default | Choices |
 |---|---|---|
@@ -140,7 +155,9 @@ Under **Settings → Stradella registers** (a separate section from Sound), spec
 
 ## Stradella Chord Finder diagram notes
 
-The **Show realization explanation below diagram** master checkbox controls four subordinate options: **Harmonic identity**, **Pitch-class realization**, **Registral voicing**, and **Physical realization**. These controls appear only while the master option is enabled; turning it off keeps the previous selections. The lines appear below the diagram and in SVG/PNG exports, with left-aligned text and bold level labels. Registral voicing directly shows an ascending list of nominal pitches and their octaves (including unison multipliers such as `C3 ×2`), rather than a single lowest-note label. Chord-button-only construction is stated in Physical realization, not Registral voicing. A help tooltip explains the difference between these concise notes and **More explanation**. When all four choices are disabled, the footer is omitted, including its otherwise reserved diagram space. These controls do not alter **More explanation**, the recommendation algorithm, playback, or file names.
+**Show diagram explanation** controls the four optional footer levels: **Harmonic identity**, **Pitch-class realization**, **Physical realization**, and **Registral voicing**. They appear in that order in the settings menu and in exported SVG/PNG diagrams. The level checkboxes appear when the master option is enabled; disabling it preserves their selections. All four levels are enabled by default, and hiding all four removes the footer and its reserved space.
+
+**Registral voicing** lists nominal modeled pitches and octaves (including `×2` for duplicated unisons) from the configured Stradella bass and chord registers. These values do not represent measured acoustic frequencies. The nested **Show nominal note spacing** option, on by default, substitutes an interval chart for the pitch list. It displays semitone differences between adjacent nominal pitches, marks one-semitone gaps red, and includes the chart in SVG/PNG exports. The diagram text-size control affects the chart within bounded font sizes. Its pitch-marker positions and connecting interval lines remain strictly proportional to semitones; note labels use separate rows for collision avoidance, short marker ticks, and interval counts below the axis. Hiding Registral voicing disables the nested control without changing its stored value. The checkbox value is stored in settings JSON as `stradellaShowNominalNoteSpacing`; older settings without that field use the default. The diagram footer uses one shared label column across all four explanation levels. Preset chord-button symbols are compact while bass/counterbass roles remain unabbreviated; only the subordinate spacing option is indented in the settings panel. Neither option alters chord generation, harmonic interpretation, ranking, audio, or filenames.
 
 The import/export setting `stradellaNoteLevels` is an object with boolean fields `identity`, `pitchClasses`, `voicing`, and `physical`, all `true` by default. Older settings files omit this object and continue to show all four lines. A partially specified object defaults only its missing/invalid fields to `true`. The default settings file in `public/default-settings.json` contains the same keys.
 
@@ -164,6 +181,11 @@ The import/export setting `stradellaNoteLevels` is an object with boolean fields
 
 The sound engine uses the browser Web Audio API. The built-in synthesizer is an explicit alternative for reference and practice. La Melodiosa plays recorded WAV samples using its SFZ region mappings; outside the mapped range it transposes the nearest available recording rather than falling back to synthesis. If no usable sample loads, that note is silent and a warning is logged.
 
+
+### Compact settings controls
+
+The Appearance sliders display each translated label, its current value and a range control in a compact vertical group. The Stradella row-label action is a full-width Show/Hide toggle alongside the button-label and bellows-guide actions. Sound has contextual help for the source and pitch-mapping controls; the visible mapping summary identifies the currently selected behavior. Stradella registers use two mirrored groups for bass/counterbass and preset chords. Each shows its configured nominal range and a grouping tooltip; the section help distinguishes configured pitches from measured accordion voicing. La Melodiosa attribution and transposition limitations remain in About and this guide.
+
 ### La Melodiosa attribution
 
 The **La Melodiosa** sample set was sampled, edited, and programmed by **Petri Pohjanmies (Finland), 2026**, and is distributed under the **Creative Commons Attribution (CC-BY)** license. Accordion-Tools preserves the supplied SFZ mapping details, including separate bass/treble registers, tuning offsets, relative levels, and treble sample alternation. The original README and preset files are retained in `public/samples/la-melodiosa/` together with an `ATTRIBUTION.txt` file.
@@ -180,6 +202,7 @@ Secondary Harmony Explorer preferences are stored in Settings so the main Harmon
 | `harmonyShowExplanation` | Shows the optional explanation box. |
 | `harmonyRingVisibility` | Controls visibility of each shared-note ring. The `0` ring is off by default. |
 | `harmonyShowToneTooltips` | Shows rich chord-tone tooltips. |
+| `harmonyShowNoteRing` | Shows the twelve-note pitch-class ring by default; the legend and explanation follow its visibility. |
 | `harmonyColorByFamily` | Colors chord labels by family. |
 | `harmonyDiameter` | Circle diameter in pixels. |
 | `harmonyFontSize` | Maximum chord-label font size. |
@@ -205,7 +228,7 @@ Secondary Harmony Explorer preferences are stored in Settings so the main Harmon
 | `stradellaChordFinderMode` | Default search mode for Stradella Chord Finder. |
 | `stradellaChordFinderMarkRootBass` | Marks the root bass as a visual reference in chord-button results. |
 
-The Stradella Chord Finder has a master **Show realization explanation below diagram** checkbox with dependent level controls and tooltip guidance; its chord/realization title is controlled centrally by **Title** settings. The root bass location reference in **Chord buttons only** is now controlled by a Show/Hide button. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
+The Stradella Chord Finder has a master **Show diagram explanation** checkbox with dependent level controls and tooltip guidance; its chord/realization title is controlled centrally by **Title** settings. The root bass location reference in **Chord buttons only** is now controlled by a Show/Hide button. SVG/PNG downloads use the displayed diagram title as their sanitized filename (or a layout-based fallback).
 | `chordFinderRoot` | Default Chord Finder root. |
 | `chordFinderPattern` | Default Chord Finder pattern. |
 | `chordFinderInversion` | Default Chord Finder inversion. |
@@ -283,3 +306,15 @@ The preferred sound source is **La Melodiosa**. With **Follow configured Stradel
 **No automatic synthetic fallback.** When La Melodiosa is selected, missing or invalid sample mappings produce a warning and silence for the affected note rather than silently substituting an oscillator. The synthesizer remains available only if the user explicitly selects it as the sound source. No missing sample recordings are fabricated.
 
 For a direct comparison, select **Original mapping** (rather than **Configured registers**) in the sampled playback mapping control to leave sampled note requests at the original C2–B2 bass and C3–B3 chord ranges. Analytical descriptions continue to use the separately configured ranges in this legacy playback mode, so their computed lowest notes may not match what is requested from the sampler. Settings files from older versions are supported: the new mode defaults to `true` if the key is absent.
+
+## Chord symbol style
+
+In **Settings → Notation**, choose one of three display formats: **C / Cm**, **CM / Cm**, or **Cmaj / Cmin**. Extended major and minor chord labels follow the same family convention. This setting applies to chord labels in diagrams, Harmony Explorer, progression lists, contextual titles and descriptive text.
+
+It does not modify pitch classes, audio, chord recognition, ABC/MIDI notation, or existing sanitized SVG/PNG filename conventions. The selection can be included in exported settings.
+
+### Stradella nominal-gap preference and Reset
+
+The Chord Finder's **Minimum nominal note gap** setting is saved as `stradellaMinimumNominalGap`: `0` permits all gaps (default), `2` excludes adjacent pitches 1 semitone apart, and `3` excludes pitches 1 or 2 semitones apart. Distinct nominal MIDI pitches are used; shared pitch classes and unison doublings are not automatically treated as clashes. Import/export of the settings JSON preserves this choice.
+
+The top-bar **Reset** menu offers separate actions for clearing transient work and, when supported, restoring the current tool's defaults. This does not reset the application's global Sound or Stradella register configuration.

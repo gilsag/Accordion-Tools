@@ -3,8 +3,11 @@
    This formatting is intentionally independent of diagram note visibility and
    export filename recipe keys. */
 import type { FinderChordInversion, FinderChordPattern } from "../types";
+import { displayFinderChord, displayRealizedChord, type ChordDisplayStyle } from "./chordDisplay";
 import { finderChordSymbol } from "./stradellaChordFinder/chordSymbol";
 import { displayRoot, realizedChordName } from "./stradellaChordFinder/chordSpelling";
+
+const LEGACY_CHORD_DISPLAY_STYLE: ChordDisplayStyle = "words";
 
 type StradellaTitleInput = {
   root: string;
@@ -15,6 +18,7 @@ type StradellaTitleInput = {
   bassOnly: boolean;
   /** A nominal model prediction, not an observed acoustic bass note. */
   modeledLowest: string | null;
+  displayStyle?: ChordDisplayStyle;
 };
 
 export function stradellaContextualTitle(input: StradellaTitleInput): string {
@@ -24,7 +28,7 @@ export function stradellaContextualTitle(input: StradellaTitleInput): string {
   const countLabel = `${buttonCount} ${bassOnly ? "bass " : ""}${buttonCount === 1 ? "button" : "buttons"}`;
   // Keep the selected harmonic root/quality. When there is no explicitly
   // requested bass, the slash describes the nominal inversion of this result.
-  return `${identity} - ${exact ? "Exact" : "Approximate"} - ${countLabel}`;
+  return `${displayRealizedChord(root, pattern, identity, input.displayStyle ?? LEGACY_CHORD_DISPLAY_STYLE)} - ${exact ? "Exact" : "Approximate"} - ${countLabel}`;
 }
 
 const selectedInversion: Record<FinderChordInversion, string> = {
@@ -40,10 +44,11 @@ type TrebleTitleInput = {
   inversion: FinderChordInversion;
   hasButtons: boolean;
   exact: boolean;
+  displayStyle?: ChordDisplayStyle;
 };
 
 export function trebleContextualTitle(input: TrebleTitleInput): string {
-  const identity = finderChordSymbol(input.root, input.pattern);
+  const identity = displayFinderChord(input.root, input.pattern, input.displayStyle ?? LEGACY_CHORD_DISPLAY_STYLE);
   const inversion = selectedInversion[input.inversion];
   // "Selected" describes the UI request; missing buttons may prevent that
   // inversion from being fully represented on a compact treble keyboard.

@@ -56,6 +56,15 @@ export function fixedStradellaRecipe(root: string, pattern: FinderChordPattern):
     return { steps: [{ kind: "chord-minor", rootOffset: 0, primary: true }, { kind: "chord-diminished7", rootOffset: 0 }], shortDescription: "Minor 6: minor triad plus sixth.", explanation: `Use ${root} minor plus ${root} diminished.` };
   }
 
+  if (pattern === "dominant7sharp9") {
+    return {
+      steps: [{ kind: "chord-dominant7", rootOffset: 0, primary: true },
+        { kind: "chord-minor", rootOffset: 0 }],
+      shortDescription: "Dominant seventh with a sharp ninth.",
+      explanation: `Use ${root}7 plus ${root} minor. The minor preset chord adds the pitch class of the sharp ninth, enharmonically equivalent to the minor third.`,
+    };
+  }
+
   if (pattern === "dominant7b5") {
     return undefined;
   }

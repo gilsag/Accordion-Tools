@@ -18,7 +18,8 @@ The compact Tools panel contains the choices that change the harmonic question i
 - **Related chord family (outer rings)**, including **All families (diatonic only)**;
 - **Parent scale / mode**;
 - diatonic-only filtering or diatonic highlighting;
-- quick presets for m7, maj7, dominant 7, and diminished 7 relationships.
+- quick presets for m7, maj7, dominant 7, and diminished 7 relationships;
+- **Show inner note ring**, synchronized with the option under Settings → Harmony.
 
 The **All families** mode is intentionally diatonic-only to keep aggregate diagrams readable.
 
@@ -84,6 +85,8 @@ A selected relationship can also be sent to the separate **Progression Assistant
 
 See [`progression-assistant.md`](progression-assistant.md).
 
+The legend identifies the reference chord ring and, when enabled, the twelve-note inner pitch-class ring. The explanation box likewise describes the note ring only while it is visible. Legend descriptions wrap within the available export width.
+
 ## Export
 
 The top-bar SVG/PNG download control exports the active Harmony Explorer diagram when the Harmony workspace is selected. Temporary tooltips, selection marks, and navigation highlights are excluded from exported diagrams.
@@ -100,6 +103,13 @@ Once at least one event has been recorded, **Show notation** appears in the top 
 
 Choose **Send to Progression Assistant** to transfer the recorded chord events to the Stradella-side assistant, where physical realizations and accompaniment patterns can be optimized. If the Harmony recording also contains single-note events, Accordion Tools shows a brief warning before transfer because those note events are not exported to the chord-oriented Progression Assistant.
 
-## Optional note ring
+## Inner note ring
 
-**Settings → Harmony → Show inner note ring** adds a small pitch-class ring inside the reference-family ring. The twelve notes follow the same circle-of-fifths orientation as the chord sectors. Clicking a note auditions that pitch using the current Harmony sound source. While Harmony recording is active, note-ring clicks are also captured as note events, appear in the recorded sequence, and are included in its staff notation. The option is off by default.
+**Show inner note ring**, available both in **Harmony Explorer** and under **Settings → Harmony**, adds a small pitch-class ring inside the reference-family ring. The twelve notes follow the same circle-of-fifths orientation as the chord sectors. Clicking a note auditions that pitch using the current Harmony sound source. While Harmony recording is active, note-ring clicks are also captured as note events, appear in the recorded sequence, and are included in its staff notation. The option is on by default; disabling it removes the note ring and its corresponding legend entry and explanation sentence. Explicit settings that disable the ring remain respected.
+
+
+Major triads in the Harmony circle use an uppercase **M** (for example, **CM** or **F♯M**) to distinguish chord labels from individual notes on the inner note ring. This does not change minor, seventh, other chord-family labels, or harmonic relationships.
+
+## Chord symbols
+
+The Harmonic Circle, selected relationships, and recorded chord labels use the selected chord notation style. The optional inner note ring continues to display pitch names without chord-quality suffixes.

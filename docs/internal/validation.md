@@ -70,3 +70,7 @@ npm run dev
 ```
 
 In the browser, inspect at least the 8-, 48- (both layouts), 72-, 96- and 120-bass configurations, and switch both analytical register groupings independently. Confirm that requested slash-bass filters, contextual titles, four explanatory note toggles, and Previous/Next update together. Confirm SVG and PNG exports and both sound engines by listening; switching the **Follow configured Stradella registers** setting changes nominal La Melodiosa sample playback, but does not alter harmonic validity or the search rankings.
+
+### Settings-panel visual acceptance
+
+In both Compact and Comfortable densities, inspect the Appearance slider label/value gaps, punctuation, and label-toggle widths. Review the Sound source and sample-mapping help, original/configured mapping summary, and modeled bass/chord ranges in Stradella Registers; check attribution in About. Confirm all four Finders preserve selections when hidden and the independent Clear actions in recording/editing remain functional. Check English, Spanish, French, Brazilian Portuguese, Italian, and German at narrow/wide widths; confirm keyboard and touch access to contextual help.

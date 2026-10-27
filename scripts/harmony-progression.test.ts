@@ -52,12 +52,22 @@ const independentPhysical = independent.slice(1).reduce((sum, result, index) =>
   ), 0);
 assert.ok(plan.totalPhysicalMovement < independentPhysical);
 
-const noApprox = optimizeStradellaProgression(buttons, [chord("aug7", 0, "augmented7")], {
+// Augmented dominant sevenths now have an exact Finder mapping (7#5).
+const supportedAug7 = optimizeStradellaProgression(buttons, [chord("aug7", 0, "augmented7")], {
   allowApproximations: false,
   handMovementWeight: 0.65,
 });
-assert.equal(noApprox.playable, false, "unsupported Harmony family should be reported, not guessed");
-assert.deepEqual(noApprox.unsupportedLabels, ["C+7"]);
+assert.equal(supportedAug7.playable, true, "augmented dominant sevenths should be supported exactly");
+assert.equal(supportedAug7.approximateCount, 0);
+assert.deepEqual(supportedAug7.unsupportedLabels, []);
+
+// Augmented major sevenths remain unmapped: never guess a different family.
+const unsupportedAugMaj7 = optimizeStradellaProgression(buttons, [chord("augMaj7", 0, "augmentedMajor7")], {
+  allowApproximations: false,
+  handMovementWeight: 0.65,
+});
+assert.equal(unsupportedAugMaj7.playable, false, "unsupported Harmony family should be reported, not guessed");
+assert.deepEqual(unsupportedAugMaj7.unsupportedLabels, ["C+maj7"]);
 
 
 // Rhythmic accompaniment must preserve the bass/counterbass button chosen by

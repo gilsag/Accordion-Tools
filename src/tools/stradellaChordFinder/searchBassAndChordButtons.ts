@@ -15,7 +15,7 @@ import {
 } from "./utils";
 import { chordButtonRecipeResult } from "./searchChordButtonsOnly";
 import { registralPreferenceAdjustment } from "./registralPreference";
-import { analyzeVoicingDensity } from "./voicingDensity";
+import { analyzeVoicingDensity, extendedVoicingDensityPenalty, passesNominalGapFilter, type MinimumNominalGap } from "./voicingDensity";
 import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "./registerModel";
 
 type RankedRealization = {
@@ -242,6 +242,7 @@ export function bassAndChordResults(
   spanColumns = 5.5,
   requestedBass: string | null = null,
   registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
+  minimumNominalGap: MinimumNominalGap = 0,
 ): StradellaChordFinderResult[] {
   const rootReference = chooseRootReference(buttons, root);
   const targetSet = new Set(targetPitches);
@@ -429,10 +430,11 @@ export function bassAndChordResults(
   /* Explicit slash bass is a modeled inversion constraint, not a cosmetic
      score bonus. Keep only candidates whose lowest nominal sounding pitch
      matches the requested bass. Do this BEFORE choosing Recommended items. */
-  const eligible = requestedBass === null ? validRanked : validRanked.filter((item) =>
-    analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel)
-      .lowestPitchClass === requestedBass,
-  );
+  const eligible = validRanked.filter((item) => {
+    const voicing = analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel);
+    return (requestedBass === null || voicing.lowestPitchClass === requestedBass) &&
+      passesNominalGapFilter(voicing.notes, minimumNominalGap);
+  });
 
   // Recommendation is a curated shortlist, not an exhaustive ranking label.
   // Distinct exact physical recipes remain eligible even when they produce the
@@ -450,26 +452,20 @@ export function bassAndChordResults(
       item.result.registral.bassPitchClasses[0] === requestedBass &&
       item.result.registral.chordButtonCount > 0 ? -1 : 0;
   };
+  const extended = isExtendedChord(pattern);
   const preferenceScore = (item: RankedRealization) => {
-    // A button carries more ergonomic cost than a modest change in spacing.
-    // An omitted ordinary fifth is inexpensive, while losing the 3rd in an
-    // eleventh remains a clearly labeled suspended-style choice.
+    // Three/four tones retain completeness-first evaluation; extended chords
+    // can prefer a clearer permitted reduction to a crowded exact voicing.
     const cost = item.buttonCount * 3 + item.compactness * COMPACTNESS_WEIGHT_PER_COLUMN +
-      item.approximationPenalty * 0.9 + (item.exact ? -1 : 0);
-    // Density is based on actual nominal pitch spacing, not just the presence
-    // of a theoretically dissonant interval in the chord pitch classes.
-    const densityCost = analyzeVoicingDensity(
-      analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel).notes,
-    ).penalty;
-    // Prefer a one-tone omission to a two-tone omission when ergonomic costs
-    // are comparable. Standard 1-3-7-13 shells are a separate strategy.
-    const reductionCost = item.exact || isConventionalShell(item) ? 0 : item.result.missingPitches.length * 1.25;
-    // A useful thirteenth shell gets a small preference, never an automatic
-    // eight-point victory over a more compact near-complete realization.
-    // Explicit root-bass support receives a small advantage over otherwise
-    // comparable realizations. Non-root bass (e.g., Cmaj7/B), chord-only,
-    // and ambiguous multiple-bass voicings incur no blanket penalty.
-    return cost + densityCost + reductionCost - (isConventionalShell(item) ? 1.25 : 0) +
+      item.approximationPenalty * 0.9 + (!extended && item.exact ? -1 : 0);
+    const modeledNotes = analyzeConfiguredStradellaVoicing(
+      item.result.playbackButtons, root, registerModel,
+    ).notes;
+    const densityCost = extended ? extendedVoicingDensityPenalty(modeledNotes)
+      : analyzeVoicingDensity(modeledNotes).penalty;
+    const reductionCost = item.exact || isConventionalShell(item) ? 0 :
+      item.result.missingPitches.length * (extended ? 0.45 : 1.25);
+    return cost + densityCost + reductionCost - (isConventionalShell(item) ? 0.75 : 0) +
       registralAdjustment(item);
   };
   const key = (item: RankedRealization) => realizationKey(item.result);
@@ -515,9 +511,9 @@ export function bassAndChordResults(
       const span = "compact physical grouping";
       const kind = strategy(item);
       item.result.recommendationReason = kind === "complete"
-        ? `It contains all required pitch classes with ${count} buttons and a ${span}. It is a compact example of a complete voicing, although all extended tones occupy the Stradella's limited registers.`
+        ? `It retains every chord tone using ${count} buttons; nominal pitch spacing and physical reach also inform its ranking.`
         : kind === "minimally-reduced"
-          ? `It omits only ${item.result.missingPitches.length} permitted ${item.result.missingPitches.length === 1 ? "tone" : "tones"} and uses ${count} buttons. This balances relatively complete harmony with a compact physical arrangement.`
+          ? `It omits ${item.result.missingPitches.length} permitted ${item.result.missingPitches.length === 1 ? "tone" : "tones"} and uses ${count} buttons. Nominal register spacing and reach inform its ranking.`
           : kind === "functional-shell"
             ? `It preserves root, third, seventh, and thirteenth in ${count} buttons, avoiding the extra density of fifth, ninth, and eleventh.`
             : `It offers another useful physical combination with ${count} buttons and a ${span}; its button recipe is distinct from the other recommended examples.`;
@@ -532,6 +528,7 @@ export function bassAndChordResults(
   distinct.sort((a, b) => {
     if (Boolean(a.recommended) !== Boolean(b.recommended)) return a.recommended ? -1 : 1;
     if (a.recommended && b.recommended) return comparePreference(a, b);
+    if (extended) return comparePreference(a, b);
     if (a.exact !== b.exact) return a.exact ? -1 : 1;
     if (a.approximationPenalty !== b.approximationPenalty) return a.approximationPenalty - b.approximationPenalty;
     if (a.buttonCount !== b.buttonCount) return a.buttonCount - b.buttonCount;
@@ -558,10 +555,12 @@ export function bassAndChordResults(
     ? results
     : [notPlayableResult(
         targetPitches,
-        requestedBass ? `No realization for requested bass ${requestedBass}.` : "No practical bass-and-chord-button realization.",
-        requestedBass
-          ? `No valid realization places ${requestedBass} lowest under the configured nominal register ranges and current reach/button limits. Try a different register setting or increase the reach/button limit.`
-          : "No exact or close Stradella realization was found with the visible bass and chord rows.",
+        minimumNominalGap > 0 ? "No realization matches the nominal spacing filter." : requestedBass ? `No realization for requested bass ${requestedBass}.` : "No practical bass-and-chord-button realization.",
+        minimumNominalGap > 0
+          ? `All candidates contain neighboring nominal notes closer than ${minimumNominalGap} semitones, or fail the other selected constraints. Relax the spacing filter or adjust the register settings.`
+          : requestedBass
+            ? `No valid realization places ${requestedBass} lowest under the configured nominal register ranges and current reach/button limits. Try a different register setting or increase the reach/button limit.`
+            : "No exact or close Stradella realization was found with the visible bass and chord rows.",
       )];
 }
 

@@ -110,3 +110,9 @@ The analytical register state remains stored under the existing `stradellaBassRe
 The 100 browser-safe WAV files in `public/samples/la-melodiosa/audio/` are the canonical media. Top-level WAV duplicates were SHA-256-identical and were deleted; retain CC-BY attribution, original README/SFZ/preset reference files and `FILE_MAP.txt`. The original instrument mappings refer to unnormalized sibling WAV filenames, so standalone reuse requires restoring paths (audio data remains unchanged).
 
 Persistent two-way choices use `SegmentedChoice` (`aria-pressed` on both visible options); hide/show commands continue to use `BinaryChoiceButton`. Keep original state setters to preserve existing import/export settings.
+
+## PNG export of diagram explanations
+
+`src/download.ts` embeds CSS when serializing diagrams. SVG downloads keep the HTML `foreignObject` footer, but drawing that SVG into a browser canvas may mark the canvas as tainted and prevent PNG encoding. PNG export therefore calls `makeSvgCanvasSafe` (`src/svgRasterExport.ts`) while the original diagram is mounted: it converts visible HTML footer text and nested interval-chart SVG elements to native SVG primitives using measured browser positions. Both single-diagram and batch exports use this conversion; the displayed diagram and SVG format are unchanged.
+
+When editing footer content, ensure the conversion includes its visible text and SVG graphics, not merely that `canvas.toBlob` succeeds. Check basic and dense Chord Finder realizations, Treble notes, diagrams with no footer, and ZIP exports in a browser; font wrapping and `foreignObject` behavior vary by browser.

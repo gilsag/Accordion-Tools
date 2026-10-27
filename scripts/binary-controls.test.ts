@@ -9,14 +9,15 @@ const app = source("src/App.tsx");
 const panel = source("src/components/tools/StradellaChordFinderPanel.tsx");
 const component = source("src/components/ui/BinaryChoiceButton.tsx");
 
-assert.match(app, /whenEnabled="Hide Stradella row labels" whenDisabled="Show Stradella row labels"/);
-assert.match(panel, /whenEnabled="Hide root bass reference"/);
-assert.match(panel, /whenDisabled="Show root bass reference"/);
+assert.match(app, /showStradellaRowLabels \? t\("ui\.hideStradellaRowLabels"\) : t\("ui\.showStradellaRowLabels"\)/);
+assert.match(app, /aria-pressed=\{showStradellaRowLabels\}/);
+assert.match(panel, /whenEnabled=\{t\("ui\.hideRootBass"\)\}/);
+assert.match(panel, /whenDisabled=\{t\("ui\.showRootBass"\)\}/);
 assert.match(component, /aria-pressed=\{enabled\}/, "Binary buttons should expose their selected state");
 assert.match(component, /onClick=\{onToggle\}/, "Binary buttons should invoke the shared state callback");
-assert.match(app, /<SegmentedChoice label="Download format"/);
-for (const label of ["Bass/counterbass grouping", "Preset chord grouping", "Sound source", "Stradella sample pitch mapping", "Interface density"]) {
-  assert.ok(app.includes(`<SegmentedChoice label="${label}"`) || app.includes(`<SegmentedChoice label={<>${label} `), `Missing persistent choice: ${label}`);
+assert.match(app, /<SegmentedChoice label=\{t\("ui\.downloadFormat"\)\}/);
+for (const key of ["ui.bassCounterbassGrouping", "ui.presetChordGrouping", "ui.soundSource", "ui.samplePitchMapping", "ui.interfaceDensity"]) {
+  assert.ok(app.includes(`t("${key}")`), `Missing persistent translated choice: ${key}`);
 }
 const segmented = source("src/components/ui/SegmentedChoice.tsx");
 assert.match(segmented, /aria-pressed=\{value === option.value\}/);

@@ -1,3 +1,5 @@
+import { translate, type InterfaceLanguage } from "../i18n/catalog";
+import { chordRole } from "../i18n/musicTerms";
 import type { DiagramButton, FinderChordPattern } from "../types";
 import { transpose } from "../music";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
@@ -18,7 +20,9 @@ export function describeTrebleChord(
   root: string,
   pattern: FinderChordPattern,
   mode: TrebleChordVoicingMode,
+  language: InterfaceLanguage = "en",
 ): TrebleChordExplanation {
+  const t = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => translate(language, key, params);
   const full = intervalsForChordFinder(pattern);
   const played = new Set(buttons.map((button) => button.pitchClass));
   const sounding = full.filter((interval) => played.has(transpose(root, interval)))
@@ -26,7 +30,7 @@ export function describeTrebleChord(
   const missing = full.filter((interval) => !played.has(transpose(root, interval)));
   const omissions = missing.map((interval) => {
     const role = interval === 9 ? (pattern === "diminished7" ? "diminished seventh" : "sixth") : intervalRole(interval);
-    return `${transpose(root, interval)} (${role})`;
+    return `${transpose(root, interval)} (${chordRole(role, language)})`;
   });
   const exact = buttons.length > 0 && missing.length === 0;
   const fullRequested = mode === "full";
@@ -38,11 +42,28 @@ export function describeTrebleChord(
 
   if (buttons.length === 0) {
     return {
-      status: "No matching buttons",
-      note: "No chord buttons are available in the selected keyboard range.",
-      explanation: "No chord tones were found at this root octave. Try another octave or a larger keyboard layout.",
+      status: t("analysis.trebleUnavailable"),
+      note: t("analysis.trebleNoButtons"),
+      explanation: t("analysis.trebleNoRoot"),
       exact: false,
     };
+  }
+
+  // English output is kept byte-for-byte compatible with earlier regression fixtures.
+  if (language !== "en") {
+    const notes = sounding.join("–");
+    const status = t("analysis.trebleStatus", {
+      status: exact ? t("analysis.exact") : t("analysis.approximate"),
+      played: sounding.length, total: full.length,
+    });
+    const note = `${exact ? t("analysis.exact") : t("analysis.approx")} · ${notes}` +
+      (omissions.length ? ` · ${t("analysis.trebleOmitted", { list: omissions.join(", ") })}` : ` · ${t("analysis.trebleAll")}`) +
+      (manyButtons ? ` · ${t("analysis.trebleHands")}` : "") +
+      (suspended ? ` · ${t("analysis.trebleSuspended")}` : "");
+    const explanation = exact
+      ? t(manyButtons ? "analysis.trebleCompleteTheoretical" : "analysis.trebleComplete", { notes, count: buttons.length })
+      : t(unavailable.length ? "analysis.trebleReducedUnavailable" : "analysis.trebleReduced", { notes, omissions: omissions.join(", ") });
+    return { status, note, explanation: explanation + (suspended ? ` ${t("analysis.trebleSuspendedAppend")}` : ""), exact };
   }
 
   const status = `${exact ? "Exact" : "Approximate"} (${sounding.length}/${full.length} tones)`;

@@ -1,3 +1,123 @@
+## v0.15.20 — PNG diagram export
+
+- PNG downloads work with Stradella and Treble explanation footers and the nominal interval chart. Export converts HTML-based footer content into native SVG text and graphics before canvas rasterization; SVG downloads retain their existing structure.
+- Single-diagram and batch PNG exports use the same conversion. Export failures now show an error instead of failing silently.
+- Added export regressions and documented the browser-specific SVG/canvas constraint. No musical calculations, settings or audio behavior changed.
+
+## v0.15.19 — Stradella register settings layout
+
+- Organized Stradella nominal-register settings into matching Bass / counterbass and Preset chords groups, each with a starting octave, an octave grouping, and a visible configured range.
+- Added contextual guidance for the C–B and F–E octave partitions, and removed the redundant visible register-formation heading.
+- Standardized the panel typography and spacing in compact and comfortable modes, retaining all existing register defaults, saved keys, calculations and playback mapping.
+- Updated interface labels in all six supported languages and extended layout regressions and documentation.
+
+## v0.15.18 — Compact settings and Finder controls
+
+- Tightened spacing between slider labels and controls while keeping touch targets and density settings.
+- Removed the redundant Stradella row-label heading and aligned its action with other label toggles.
+- Moved Sound and Stradella register explanations into contextual help, retaining visible nominal ranges, mapping status, and La Melodiosa attribution in About and documentation.
+- Removed redundant Clear chord/scale actions from the four Finders; Show/Hide still controls highlighting without changing selections. Shortened the diagram-explanation control label across six languages.
+- Normalized colon punctuation and shortened the sample-mapping heading in all six supported languages.
+
+## v0.15.17 — Stradella annotation layout and 13th-chord ranking
+
+- Aligned the four Stradella diagram-footer levels using shared label and value columns and reduced the gap above the footer.
+- Shortened preset-chord button names in Physical realization to symbols such as `CM`, `Fm`, `G7` and `Bdim7`, without abbreviating bass or counterbass roles or changing chord identifiers and export filenames. Harmonic identity retains its concise chord symbol and slash-bass description.
+- Made the nominal-interval chart more compact: proportional pitch positions and connecting lines are preserved, with short marker leaders and semitone counts below the axis; label collision avoidance remains independent of pitch spacing.
+- Added a small omission-quality preference for retaining the ninth rather than the natural eleventh in major/dominant 13ths, with no new ordering heuristic, approximation policy, reach constraint or playback change.
+- Extended regression coverage and user/developer documentation. Browser SVG/PNG export review remains required before publication.
+
+## v0.15.16 — Proportional registral spacing and bulk diagram export
+
+- The nominal-note chart places pitch markers at proportional semitone intervals, using separate label rows and leader lines where necessary.
+- The Stradella Chord Finder can exclude candidates with adjacent distinct nominal notes separated by one semitone, or by one or two semitones. The default allows all distances. The filter acts before recommended candidates are selected and leaves harmonic validity unchanged.
+- Increased ranking penalties for close one-semitone nominal pitches; unison doubling does not count as a collision.
+- A single button downloads all playable realizations under the current settings as a ZIP containing SVG or PNG diagrams, as selected in the main toolbar.
+- The Reset control offers separate clear-current-work and restore-current-tool-defaults actions in one menu. Tooltip placement accounts for measured content height to reduce clipping.
+- Shortened the diagram-explanation checkbox and updated translations, settings documentation and version metadata.
+
+## v0.15.15 — Harmony note ring and Chord Finder explanation controls
+
+- Shows the twelve-note inner pitch-class ring by default in Harmony Explorer and synchronizes its visibility with the legend and optional diagram explanation. Explicit saved settings that hide the ring remain respected.
+- Moves the diatonic-membership and recording instructions into accessible contextual help in the Harmony tool panel.
+- Enables nominal note spacing by default in Stradella Chord Finder; saves and restores the independent setting in JSON without changing musical analysis or audio.
+- Aligns the four explanation-level controls and visually nests the note-spacing checkbox beneath Registral voicing.
+- Updates all six interface catalogs, user guides, and version metadata.
+
+## v0.15.14 — Portuguese, Italian and German interfaces
+
+- Adds **Português (Brasil)** (`pt`), **Italiano** (`it`) and **Deutsch** (`de`) with complete translations of the interface catalog, including accessible labels, context help and generated musical explanations.
+- Extends chord-family, scale, chord-tone and Stradella-row terminology, plus bundled progression, bass-pattern and ABC example names, without changing stable musical identifiers or user-authored content.
+- Automatically recognizes `pt-*`, `it-*` and `de-*` browser locales; manual language preferences and existing settings remain compatible. Portuguese uses the Brazilian translation for all `pt` regional variants.
+- Preserves the nominal-versus-measured register distinction, harmonic calculations, audio behavior and language-independent export filenames.
+- Expands localization regression coverage and developer guidance. Bundled Markdown help articles remain in English.
+
+## v0.15.13 — Scalable interface localization and French
+
+- Separates English, Spanish and French translation catalogs into `src/i18n/en.ts`, `es.ts` and `fr.ts`; `catalog.ts` provides typed locale registration, lookup and English fallback.
+- Adds **Français** to the language selector and recognizes French browser locales, including regional variants, while retaining manual preferences and existing settings JSON compatibility.
+- Localizes interface controls, generated Stradella and Treble explanations, Harmony descriptions, musical terminology and built-in pattern/example labels. Keeps musical calculations, notation choices, audio, and export filenames independent of interface language.
+- Includes the language-extension developer guide at `docs/internal/adding-interface-languages.md`; bundled user-guide articles remain in English.
+- Validates catalog-key and placeholder coverage, language detection, representative explanations, notation/filename invariants and existing localization tests.
+- Keeps segmented settings controls type-safe under strict TypeScript compilation without changing their behavior.
+
+## v0.15.12 — Harmony legend and Stradella realization notes (release candidate)
+
+- Aligns Harmony Explorer legend descriptions and headings with available horizontal space and supports multiline English/Spanish text.
+- Displays Stradella realization levels in the same order in the settings menu and diagram: Harmonic identity, Pitch-class realization, Physical realization, Registral voicing. Setting labels have no numerical prefixes.
+- Provides optional nominal chord-note spacing alongside Registral voicing, with SVG/PNG export support, text sizing limits, separation for accidentals and adjacent notes, and red indicators for one-semitone gaps. The labeled semitone distances remain exact even when segments expand to prevent collisions.
+- Preserves the distinction between configured nominal pitches and measured audio. Chord generation, ergonomic ranking, playback and existing settings remain unchanged.
+
+## v0.15.11 — Toolbar, Harmony legend, and voicing-interval display (release candidate)
+
+- Wraps Harmony legend descriptions within their allocated SVG box; row and footer heights expand to accommodate longer labels, including Spanish translations.
+- Removes the visible Download format heading above SVG/PNG buttons (retained for accessibility) and shifts Sound/Reset slightly left.
+- Adds selected tooltip help for Stradella hand span/button count, Harmony scale/diatonic filtering, and Progression Assistant approximate realizations.
+- Adds an optional, default-off Stradella Chord Finder interval strip beneath the main diagram. It plots nominal sounding pitches on a semitone-proportional axis, combines unison duplicates, and labels distances between consecutive notes; mobile layouts can scroll horizontally.
+- Note-spacing presentation is derived from the user-configured nominal register model, not measured reed voicings. It is outside exported SVG/PNG and cannot affect harmonic rankings or playback.
+- Adds a focused regression for interval calculations and bilingual Harmony legend wrapping; full native npm build and test suite require local validation.
+
+## v0.15.10 — English/Spanish interface localization (release candidate)
+
+- Extended interface translation to Settings, navigation, Stradella and Treble chord finders, Harmony Explorer, Progression Assistant, patterns, ABC, sequences, annotation controls, accessible labels, and context help.
+- Translated display-side chord-family and scale descriptions without altering harmonic IDs or chord-symbol conventions.
+- Added localized four-level Stradella diagram notes, detailed Spanish realization summaries, Treble chord feedback, and Harmony relationship explanations. Existing English explanations remain the default for old APIs.
+- Preserved deterministic download filenames across language settings, including translated diagram notes.
+- Added translation parity and music-display regression tests; updated static UI tests for translation bindings.
+- Continued to support Auto (browser), English fallback, and explicit persisted language preference; documentation stays in English.
+
+## v0.15.9 — Interface localization foundation (release candidate)
+
+- Added a typed English/Spanish interface catalog and English fallback for untranslated keys.
+- Added **Settings → Language** with **Auto (browser)**, **English**, and **Español**. Autodetection uses browser language preferences (including regional Spanish locales), falls back to English, and does not override a manual choice.
+- Saves the language preference locally and in imported/exported settings JSON; respects existing explicit preferences from older settings files and refreshes the document language for accessibility.
+- Localized the main navigation, prominent settings, About panel, and key Stradella, Treble and Harmony tool controls. Additional tool strings remain English pending later passes.
+- Kept user guides and the README English-only. Music algorithms, chord identities, displayed pitch notation choices, filenames, audio and exported music data were not changed.
+- Added `test:i18n` for locale detection, preference precedence, translation fallback and interpolation. Native npm build and full regression suite still require verification.
+
+## v0.15.8 — Chord family expansion and extended-voicing ranking (release candidate)
+
+- Added nine Finder chord types: sus2, 7sus4, major/minor add9, major/minor 6/9, 7♯5, 7♯9, and major7♯11.
+- Introduced chord-tone roles to protect suspensions, specified alterations and explicitly added tones from approximation omissions; preserved strict no-extra-tone rules.
+- Linked existing Harmony Explorer sus2 and augmented-dominant-7 families to their new exact Finder equivalents, without expanding the Harmony circle's selectable families.
+- Added a C7 + Cm chord-buttons-only recipe for C7♯9, with correct enharmonic spelling.
+- Kept completeness-first ranking for chords up to four tones. Five-plus-tone chords now incur stronger nominal, register-dependent semitone/cluster penalties; valid alternatives remain available.
+- Preserved existing chord IDs, audio mappings, physical diagram geometry, display-style preferences and existing download filename conventions. Added focused regressions.
+- Requires native `npm run test:all` and `npm run build` verification on the user's computer before release.
+
+## v0.15.7 — Responsive interface release candidate (2026-10-23)
+
+- Added **Show inner note ring** directly to the Harmony Explorer tool panel while keeping the Settings → Harmony control synchronized.
+- Display major triads in the Harmony circle using an uppercase **M** (e.g., CM, F♯M/G♭M) to distinguish chords from individual notes. Other chord-family labels and harmonic relationships are unchanged.
+- Updated the Harmony Explorer guide and chord-label regressions.
+- Added Readable/scrollable and Fit diagram viewer modes on phone/tablet widths up to 860 CSS pixels. Viewer sizing is scoped to the **parent container**, leaving SVG viewBox geometry and exports untouched.
+- Allowed the desktop toolbar to wrap to available workspace width, removing the fixed canvas-height assumption.
+- Reduced the height of long tool panels on phones; increased common touch targets; made HelpTips explicitly clickable and keyboard accessible without activating parent labels.
+- Reflowed the documentation viewer into a one-column article with a horizontally scrollable topic strip on phones.
+- Added a dependency-free responsive-layout source regression check (`npm run test:responsive`) and documented controlled Chromium viewport fixture results.
+- **Validation limitation:** CSS was evaluated in headless Chromium at seven viewports using representative application DOM, not a running Vite/React build. Native npm build, real-device interaction/audio/export checks remain outstanding. This is a release candidate, not a fully device-verified release.
+- No changes to chord logic, physical button generation, harmonic ranking, voicing, audio mappings, sample assets, settings persistence, or SVG/PNG export modules.
+
 ## v0.15.6 — Conservative legacy cleanup (2026-10-22)
 
 ### Removed
@@ -487,3 +607,9 @@ Major 3rd row: D#  A#   F    C    G    D
 
 - 
 ```
+
+### Display notation and documentation maintenance (v0.15.7)
+
+- Added three global visual chord-notation styles, available in Settings → Notation, across chord diagrams, Harmony Explorer and textual explanations. Internal harmonic identifiers, playback and download filenames are unchanged.
+- Simplified the Harmony Explorer inner-note-ring tooltip, and consolidated README feature descriptions; release-by-release details remain in this version history.
+- Added an implementation plan for future interface localization in `docs/internal/localization-plan.md`; English remains the only implemented UI language.
