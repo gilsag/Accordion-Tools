@@ -1,7 +1,10 @@
+import { familyName, scaleName } from "../../i18n/musicTerms";
+import type { ChordDisplayStyle } from "../../tools/chordDisplay";
 /* Harmony Explorer controls. The React panel adjusts filters and recording
    actions; music-theory relationships are computed in the tools layer. */
 
 import { CollapsibleSection } from "../ui/CollapsibleSection";
+import { useI18n } from "../../i18n/context";
 import { HelpTip } from "../ui/HelpTip";
 import type { HarmonySelection } from "../../tools/harmonyExplorer/types";
 import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "../../tools/harmonyExplorer/music";
@@ -9,8 +12,7 @@ import {
   CHORD_FAMILIES,
   SCALES,
   chordFamily,
-  chordLabel,
-  relatedFamilyName,
+  circleChordLabel,
   pitchName,
 } from "../../tools/harmonyExplorer/music";
 import { finderPatternForHarmonyFamily } from "../../tools/harmonyExplorer/integration";
@@ -18,6 +20,7 @@ import type { HarmonyRecordedEvent } from "../../tools/harmonyExplorer/progressi
 
 type HarmonyExplorerPanelProps = {
   isOpen: boolean;
+  chordDisplayStyle: ChordDisplayStyle;
   onToggle: () => void;
   referenceFamilyId: ChordFamilyId;
   onReferenceFamilyChange: (value: ChordFamilyId) => void;
@@ -30,6 +33,8 @@ type HarmonyExplorerPanelProps = {
   highlightDiatonic: boolean;
   onHighlightDiatonicChange: (value: boolean) => void;
   showEnharmonics: boolean;
+  showNoteRing: boolean;
+  onShowNoteRingChange: (value: boolean) => void;
   selected: HarmonySelection | null;
   onShowOnStradella: () => void;
   onAddSelectedRelationshipToProgression: () => void;
@@ -46,6 +51,7 @@ type HarmonyExplorerPanelProps = {
 
 export function HarmonyExplorerPanel({
   isOpen,
+  chordDisplayStyle,
   onToggle,
   referenceFamilyId,
   onReferenceFamilyChange,
@@ -58,6 +64,8 @@ export function HarmonyExplorerPanel({
   highlightDiatonic,
   onHighlightDiatonicChange,
   showEnharmonics,
+  showNoteRing,
+  onShowNoteRingChange,
   selected,
   onShowOnStradella,
   onAddSelectedRelationshipToProgression,
@@ -72,6 +80,7 @@ export function HarmonyExplorerPanel({
   onReset,
 }: HarmonyExplorerPanelProps) {
   const allFamiliesMode = relatedFamilyId === "all";
+  const { t, language } = useI18n();
   const effectiveDiatonicOnly = diatonicOnly || allFamiliesMode;
   const effectiveHighlightDiatonic = !effectiveDiatonicOnly && highlightDiatonic;
   const selectedFinderPattern = selected
@@ -81,11 +90,12 @@ export function HarmonyExplorerPanel({
     ? finderPatternForHarmonyFamily(selected.referenceFamilyId)
     : null;
   const selectedLabel = selected
-    ? chordLabel(
+    ? circleChordLabel(
         selected.candidate.rootPc,
         selected.candidate.familyId,
         selected.sectorIndex,
         showEnharmonics,
+        chordDisplayStyle,
       )
     : null;
 
@@ -95,43 +105,43 @@ export function HarmonyExplorerPanel({
   };
 
   return (
-    <CollapsibleSection title="Harmony Explorer" isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("tools.harmonyExplorer")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
-        Explore common-tone relationships. Display, ring, tooltip, and playback preferences are under Settings → Harmony.
+        {t("tools.harmonyIntro")}
       </p>
 
       <fieldset className="tool-fieldset">
-        <legend>Harmony</legend>
+        <legend>{t("ui.harmony")}</legend>
         <label>
           <span className="label-line">
-            Reference family (inner ring)
-            <HelpTip text="The chord family placed in the innermost ring around the circle of fifths." />
+            {t("tools.referenceFamily")}
+            <HelpTip text={t("tools.referenceFamilyHelp")} />
           </span>
           <select value={referenceFamilyId} onChange={(event) => onReferenceFamilyChange(event.target.value as ChordFamilyId)}>
             {CHORD_FAMILIES.map((family) => (
-              <option key={family.id} value={family.id}>{family.name}</option>
+              <option key={family.id} value={family.id}>{familyName(family.id, family.name, language)}</option>
             ))}
           </select>
         </label>
 
         <label>
           <span className="label-line">
-            Related chord family (outer rings)
-            <HelpTip text="Choose one chord family or aggregate all supported diatonic chord families." />
+            {t("tools.relatedFamily")}
+            <HelpTip text={t("tools.relatedFamilyHelp")} />
           </span>
           <select value={relatedFamilyId} onChange={(event) => onRelatedFamilyChange(event.target.value as RelatedFamilyId)}>
-            <option value="all">All families (diatonic only)</option>
+            <option value="all">{t("tools.allFamilies")}</option>
             {CHORD_FAMILIES.map((family) => (
-              <option key={family.id} value={family.id}>{family.name}</option>
+              <option key={family.id} value={family.id}>{familyName(family.id, family.name, language)}</option>
             ))}
           </select>
         </label>
 
         <label>
-          Parent scale / mode
+          <span className="label-line">{t("tools.parentScale")} <HelpTip text={t("ui.parentScaleHelp")} /></span>
           <select value={scaleId} onChange={(event) => onScaleChange(event.target.value as ScaleId)}>
             {SCALES.map((scale) => (
-              <option key={scale.id} value={scale.id}>{scale.name}</option>
+              <option key={scale.id} value={scale.id}>{scaleName(scale.id, scale.name, language)}</option>
             ))}
           </select>
         </label>
@@ -142,10 +152,21 @@ export function HarmonyExplorerPanel({
           <button className="small-button" type="button" onClick={() => chooseSeventhPreset("dominant7")}>7</button>
           <button className="small-button" type="button" onClick={() => chooseSeventhPreset("diminished7")}>°7</button>
         </div>
+        <label className="check-row">
+          <input
+            type="checkbox"
+            checked={showNoteRing}
+            onChange={(event) => onShowNoteRingChange(event.target.checked)}
+          />
+          {t("settings.noteRing")}
+          <HelpTip text={t("tools.noteRingHelp")} />
+        </label>
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>Diatonic relationships</legend>
+        <legend><span className="label-line">{t("tools.diatonicRelationships")}
+          <HelpTip text={allFamiliesMode ? t("ui.allFamiliesDiatonicHint") : t("ui.diatonicContext")} />
+        </span></legend>
         <label className={`check-row${allFamiliesMode ? " disabled-row" : ""}`}>
           <input
             type="checkbox"
@@ -153,7 +174,8 @@ export function HarmonyExplorerPanel({
             disabled={allFamiliesMode}
             onChange={(event) => onDiatonicOnlyChange(event.target.checked)}
           />
-          Show only diatonic chords
+          {t("tools.diatonicOnly")}
+          <HelpTip text={t("ui.diatonicOnlyHelp")} />
         </label>
         <label className={`check-row${effectiveDiatonicOnly ? " disabled-row" : ""}`}>
           <input
@@ -162,27 +184,21 @@ export function HarmonyExplorerPanel({
             disabled={effectiveDiatonicOnly}
             onChange={(event) => onHighlightDiatonicChange(event.target.checked)}
           />
-          Highlight diatonic chords when showing all
+          {t("tools.highlightDiatonic")}
         </label>
-        <p className="hint">
-          {allFamiliesMode
-            ? "All families mode stays diatonic-only to avoid overcrowding."
-            : `Diatonic membership is relative to ${relatedFamilyName(relatedFamilyId) === "All chord families" ? "the selected mode" : "the selected parent scale/mode"} in each sector.`}
-        </p>
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>Progression recording</legend>
-        <p className="hint">
-          Record a sequence by clicking chords or notes in the diagram. Repeated clicks are kept as repeated events.
-        </p>
+        <legend><span className="label-line">{t("tools.progressionRecording")}
+          <HelpTip text={t("ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents")} />
+        </span></legend>
         <div className="button-row">
           <button
             type="button"
             className={`small-button${isRecordingProgression ? " active-tool" : ""}`}
             onClick={onToggleProgressionRecording}
           >
-            {isRecordingProgression ? "Stop recording" : "Start recording"}
+            {isRecordingProgression ? t("tools.stopRecording") : t("tools.startRecording")}
           </button>
           <button
             type="button"
@@ -190,7 +206,7 @@ export function HarmonyExplorerPanel({
             disabled={recordedProgression.length === 0}
             onClick={onClearRecordedProgression}
           >
-            Clear
+            {t("tools.clear")}
           </button>
           <button
             type="button"
@@ -198,7 +214,7 @@ export function HarmonyExplorerPanel({
             disabled={recordedProgression.length === 0}
             onClick={isRecordedProgressionPlaying ? onStopRecordedProgression : onPlayRecordedProgression}
           >
-            {isRecordedProgressionPlaying ? "Stop" : "Play recording"}
+            {isRecordedProgressionPlaying ? t("tools.stop") : t("tools.playRecording")}
           </button>
           <button
             type="button"
@@ -206,40 +222,40 @@ export function HarmonyExplorerPanel({
             disabled={!recordedProgression.some((event) => event.kind !== "note")}
             onClick={onSendRecordedProgressionToAssistant}
           >
-            Send to Progression Assistant
+            {t("tools.sendAssistant")}
           </button>
         </div>
         {isRecordingProgression && (
           <p className="hint harmony-recording-indicator">
-            <span className="harmony-recording-dot" aria-hidden="true" /> Recording progression
+            <span className="harmony-recording-dot" aria-hidden="true" /> {t("tools.recording")}
           </p>
         )}
         {recordedProgression.length > 0 ? (
-          <div className="harmony-recorded-progression" aria-label="Recorded harmony sequence">
+          <div className="harmony-recorded-progression" aria-label={t("ui.recordedHarmonySequence")}>
             {recordedProgression.map((event, index) => (
               <span className="harmony-recorded-chord" key={event.id}>
                 {event.kind === "note"
-                  ? `${index + 1}. Note ${pitchName(event.pitchClass, event.sectorIndex, showEnharmonics)}`
-                  : `${index + 1}. ${chordLabel(event.rootPc, event.familyId, event.sectorIndex, showEnharmonics)}`}
+                  ? `${index + 1}. ${t("ui.note")} ${pitchName(event.pitchClass, event.sectorIndex, showEnharmonics)}`
+                  : `${index + 1}. ${circleChordLabel(event.rootPc, event.familyId, event.sectorIndex, showEnharmonics, chordDisplayStyle)}`}
               </span>
             ))}
           </div>
         ) : (
-          <p className="hint">No progression recorded yet.</p>
+          <p className="hint">{t("tools.noRecording")}</p>
         )}
         {recordedProgression.some((event) => event.kind === "note") && (
           <p className="hint">
-            Note-ring events are kept in the Harmony recording and notation. Progression Assistant transfers chord events only.
+            {t("ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly")}
           </p>
         )}
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend>Selected relationship</legend>
+        <legend>{t("tools.selectedRelationship")}</legend>
         {selected ? (
           <>
             <p className="hint">
-              Selected: <strong>{selectedLabel}</strong> · {chordFamily(selected.candidate.familyId).name}
+              {t("tools.selected")}: <strong>{selectedLabel}</strong> · {familyName(selected.candidate.familyId, chordFamily(selected.candidate.familyId).name, language)}
             </p>
             <div className="button-row">
               <button
@@ -248,7 +264,7 @@ export function HarmonyExplorerPanel({
                 disabled={!selectedFinderPattern}
                 onClick={onShowOnStradella}
               >
-                Show on Stradella
+                {t("tools.showStradella")}
               </button>
               <button
                 type="button"
@@ -256,24 +272,24 @@ export function HarmonyExplorerPanel({
                 disabled={!selectedFinderPattern || !selectedReferenceFinderPattern}
                 onClick={onAddSelectedRelationshipToProgression}
               >
-                Add relationship to Progression
+                {t("tools.addProgression")}
               </button>
             </div>
             {!selectedFinderPattern && (
-              <p className="hint">The selected related chord family is not yet supported by the Stradella Chord Finder.</p>
+              <p className="hint">{t("ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder")}</p>
             )}
             {selectedFinderPattern && !selectedReferenceFinderPattern && (
-              <p className="hint">The reference chord family is not yet supported by the Stradella Progression Assistant.</p>
+              <p className="hint">{t("ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant")}</p>
             )}
           </>
         ) : (
-          <p className="hint">Click an outer-ring chord to select it, hear it, and enable Stradella actions.</p>
+          <p className="hint">{t("tools.noSelection")}</p>
         )}
       </fieldset>
 
       <div className="button-row">
         <button type="button" className="small-button" onClick={onReset}>
-          Reset Harmony Explorer
+          {t("tools.resetHarmony")}
         </button>
       </div>
     </CollapsibleSection>

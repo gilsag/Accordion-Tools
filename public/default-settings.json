@@ -1,4 +1,5 @@
 {
+  "chordDisplayStyle": "letter",
   "side": "stradella",
   "notation": "english",
   "accidental": "natural",
@@ -111,7 +112,9 @@
   "progressionAllowApproximations": true,
   "progressionHandMovementWeight": 0.65,
   "progressionRhythmPattern": "block",
-  "harmonyShowNoteRing": false,
+  "harmonyShowNoteRing": true,
+  "stradellaShowNominalNoteSpacing": true,
+  "stradellaMinimumNominalGap": 0,
   "stradellaBassRegisterOctave": 2,
   "stradellaBassRegisterGrouping": "C-B",
   "stradellaChordRegisterOctave": 3,

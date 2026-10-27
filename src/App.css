@@ -67,6 +67,10 @@ body {
 
 .topbar {
   min-height: 48px;
+  flex-wrap: wrap;
+  row-gap: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
   border-bottom: 1px solid #d9deea;
   background: #ffffff;
   display: flex;
@@ -138,6 +142,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  text-align: left;
 }
 
 .section-title span {
@@ -149,7 +154,17 @@ body {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
+}
+
+/* Use tighter control-group rhythm without shrinking controls or touch targets. */
+.section-content label:has(> input[type="range"]),
+.tool-fieldset label:has(> input[type="range"]) {
+  gap: 4px;
+}
+.section-content input[type="range"],
+.tool-fieldset input[type="range"] {
+  margin-block: 1px 2px;
 }
 
 label {
@@ -722,11 +737,7 @@ input[type="range"] {
   }
 }
 
-@media (min-width: 861px) {
-  .canvas-wrap {
-    height: calc(100dvh - 49px);
-  }
-}
+/* Canvas flex sizing accounts for toolbars that wrap to multiple lines. */
 
 .selected-remove-button {
   border: 0;
@@ -810,7 +821,7 @@ input[type="range"] {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .tool-fieldset:disabled {
@@ -969,11 +980,11 @@ input[type="range"] {
 
 .density-comfortable .section-content,
 .density-comfortable .tool-fieldset {
-  gap: 13px;
+  gap: 10px;
 }
 
 .density-comfortable label {
-  gap: 6px;
+  gap: 4px;
 }
 
 .density-comfortable label,
@@ -999,7 +1010,8 @@ input[type="range"] {
   min-width: 0;
   max-width: 100%;
   line-height: 1.25;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .label-line .help-tip {
@@ -1008,6 +1020,11 @@ input[type="range"] {
 }
 
 .help-tip {
+  appearance: none;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+  flex: 0 0 auto;
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1030,22 +1047,24 @@ input[type="range"] {
   outline-offset: 2px;
 }
 
-.help-tip:hover::after,
-.help-tip:focus::after {
-  content: attr(aria-label);
-  position: absolute;
-  z-index: 20;
+.help-tip-popup {
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
   width: max-content;
-  max-width: 220px;
-  transform: translate(8px, -2px);
-  padding: 6px 8px;
+  max-width: min(340px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  padding: 9px 11px;
   border: 1px solid #c9d1e3;
   border-radius: 8px;
   background: #172033;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1.3;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
   box-shadow: 0 8px 20px rgba(25, 35, 60, 0.18);
 }
 
@@ -2065,6 +2084,12 @@ input[type="range"] {
   margin-top: 0.12rem;
 }
 
+/* Three independent appearance toggles use the same full-width alignment. */
+.appearance-label-toggle {
+  width: 100%;
+  text-align: center;
+}
+
 /* Compact binary controls: the button states the next action. */
 .binary-choice-control {
   display: flex;
@@ -2098,7 +2123,18 @@ input[type="range"] {
   flex-direction: column;
   align-items: stretch;
   gap: 0.4rem;
-  padding-left: 1.4rem;
+  padding-left: 0;
+}
+.finder-note-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+.finder-voicing-spacing-option {
+  margin-left: 1.45rem;
+  padding-left: 0.48rem;
+  border-left: 2px solid #d4dced;
+  font-size: 0.92em;
 }
 
 /* Persistent two-way settings show the active choice rather than the next action. */
@@ -2112,5 +2148,225 @@ input[type="range"] {
 /* The toolbar format selector is deliberately compact beside Download. */
 .topbar-format-choice { flex: 0 0 auto; width: 126px; }
 .topbar-format-choice .segmented-choice-control { gap: 2px; }
-.topbar-format-choice .label-line { font-size: 10px; }
+.topbar-format-choice .label-line {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.topbar-after-reset-space { flex: 0 0 20px; }
+@media (max-width: 860px) {
+  .topbar-after-reset-space { display: none; }
+}
 .topbar-format-choice .segmented-choice-button { padding: 5px 3px; }
+
+/* Responsive UI: presentation-only. No standalone exported SVG can match
+   rules requiring the .canvas-wrap ancestor. */
+.mobile-diagram-view-control { display: none; }
+
+@media (max-width: 860px) {
+  .mobile-diagram-view-control {
+    display: block;
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    background: #f5f7fb;
+    border-bottom: 1px solid #d9deea;
+  }
+  .mobile-diagram-view-control .segmented-choice-control { gap: 4px; }
+  .mobile-diagram-view-control .segmented-choice { max-width: 100%; }
+  .mobile-diagram-view-control .segmented-choice-button { min-height: 40px; }
+  .canvas-wrap.diagram-readable > .diagram {
+    width: 100%;
+    min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
+  }
+  .canvas-wrap.diagram-fit > .diagram { width: 100%; min-width: 0; }
+}
+
+@media (max-width: 620px) {
+  .app { overflow-x: hidden; overflow-y: auto; min-width: 0; }
+  /* An expanded tool form should not push the entire diagram below the phone.
+     The controls remain scrollable inside their own panel. */
+  .left-panel {
+    max-height: min(34dvh, 290px);
+    min-height: 100px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .workspace { min-height: 60dvh; }
+  .canvas-wrap { min-height: 38dvh; }
+  .topbar { gap: 6px; padding: 7px 9px; }
+  .topbar-spacer, .topbar-separator { display: none; }
+  .topbar-button { min-height: 40px; padding: 7px 10px; }
+  .small-button, .tiny-button, .style-toggle,
+  .realization-navigation .small-button, .segmented-choice-button { min-height: 40px; }
+  .tiny-button { min-width: 40px; }
+  .style-toggle { min-width: 40px; }
+  .realization-navigation .small-button { min-width: 44px; }
+  .help-tip { min-width: 40px; min-height: 40px; width: 40px; height: 40px; }
+  .label-line { white-space: normal; align-items: center; }
+  .help-tip::after { max-width: min(220px, 65vw); }
+}
+@media (max-width: 860px) and (pointer: coarse) {
+  .small-button, .topbar-button, .segmented-choice-button,
+  .tiny-button, .style-toggle { min-height: 40px; }
+  .help-tip { min-width: 40px; min-height: 40px; }
+}
+
+/* Finder footers: use a consistent label/value grid so wrapped explanatory text
+   remains readable, and let the Stradella nominal-spacing guide live inside
+   the exported diagram beside Registral voicing. */
+/* One shared label column for every explanation level. Per-row grids gave
+   each label a different width, making shorter labels' values start too early. */
+.finder-annotation-block {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 0.20em;
+}
+
+.finder-annotation-line {
+  display: contents;
+}
+
+.finder-annotation-label {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.finder-annotation-value {
+  min-width: 0;
+}
+
+.finder-annotation-line-voicing .finder-annotation-label,
+.finder-annotation-line-voicing .finder-annotation-value {
+  align-self: center;
+}
+
+.voicing-interval-chart {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.voicing-interval-svg {
+  display: block;
+  /* An intrinsic chart width prevents SVG viewBox magnification. */
+  max-width: 100%;
+  overflow: visible;
+}
+
+.voicing-interval-leader { stroke: #a8b3c3; stroke-width: 1; stroke-dasharray: 2 2; }
+.voicing-interval-track { stroke: #bdc6d4; stroke-width: 2.4; }
+.voicing-interval-gap-tight { stroke: #c43f35; stroke-width: 4.5; }
+.voicing-interval-close { stroke: #c77736; stroke-width: 4; }
+.voicing-interval-open { stroke: #509c8a; stroke-width: 3.5; }
+.voicing-interval-bass { fill: #3266aa; stroke: #fff; stroke-width: 1.8; }
+.voicing-interval-chord { fill: #426c5d; stroke: #fff; stroke-width: 1.8; }
+.voicing-interval-distance { fill: #495567; font-weight: 800; }
+.voicing-interval-note { fill: #172033; font-weight: 800; }
+
+/* Keep exported SVG footer geometry independent of the browser viewport.
+   Narrow screens can scroll the diagram; changing columns via a media query
+   would otherwise invalidate the viewBox's reserved footer height. */
+
+/* One Reset control with two explicit scopes; do not conflate clearing work
+   with changing the current tool's options. */
+.reset-menu { position: relative; flex: 0 0 auto; }
+.reset-menu > summary { list-style: none; user-select: none; }
+.reset-menu > summary::-webkit-details-marker { display: none; }
+.reset-menu-options {
+  position: absolute;
+  z-index: 400;
+  top: calc(100% + 5px);
+  right: 0;
+  min-width: min(245px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  padding: 5px;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(25, 35, 60, .18);
+}
+.reset-menu-options button {
+  display: block;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #172033;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.reset-menu-options button:hover, .reset-menu-options button:focus-visible {
+  background: #eef3ff;
+}
+
+/* Batch export is related to the realization list, not to playback controls. */
+.finder-download-all { width: 100%; margin: 6px 0 10px; text-align: center; }
+
+
+/* Stradella register model: mirrored groups, without changing nominal pitch semantics. */
+.stradella-register-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.stradella-register-intro-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  color: #526078;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.stradella-register-intro-help .help-tip { flex-shrink: 0; }
+.stradella-register-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.stradella-register-group + .stradella-register-group {
+  border-top: 1px solid #d9deea;
+  padding-top: 13px;
+}
+.stradella-register-group h3 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.stradella-register-group label,
+.stradella-register-group .segmented-choice-control {
+  gap: 5px;
+}
+.stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.density-compact .stradella-register-group > .segmented-choice-control > .label-line { font-size: 11px; }
+.density-comfortable .stradella-register-group > .segmented-choice-control > .label-line { font-size: 12.5px; }
+.stradella-register-range {
+  margin: 0;
+  color: #526078;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.density-compact .stradella-register-group { gap: 6px; }
+.density-compact .stradella-register-group + .stradella-register-group { padding-top: 10px; }
+.density-comfortable .stradella-register-group { gap: 9px; }
+.density-comfortable .stradella-register-group + .stradella-register-group { padding-top: 15px; }
+.density-compact .stradella-register-range { font-size: 11px; }
+.density-comfortable .stradella-register-range { font-size: 12.5px; }

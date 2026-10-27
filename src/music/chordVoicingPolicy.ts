@@ -1,23 +1,16 @@
 import type { FinderChordPattern } from "../types";
 import { transpose } from "../music";
 import { intervalsForChordFinder } from "./chordDefinitions";
+import { chordToneFunctions } from "./chordToneRoles";
 
 export function isExtendedChord(pattern: FinderChordPattern) {
-  return ["dominant9", "major9", "minor9", "minorMajor9", "dominant9sus4", "dominant11", "major11", "minor11", "dominant13", "major13", "minor13", "dominant7b9"].includes(pattern);
+  // Preserve completeness-first treatment of chords with three/four tones.
+  return intervalsForChordFinder(pattern).length >= 5;
 }
 
-/** Notes allowed to disappear in a reduced chord, NOT permission for added tones. */
+/** Only non-defining tones may be omitted; altered and added tones are protected. */
 export function permittedOmissionIntervals(pattern: FinderChordPattern): number[] {
-  const intervals = intervalsForChordFinder(pattern);
-  if (intervals.length < 4) return [];
-  const allowed: number[] = [];
-  if (intervals.includes(7)) allowed.push(7); // unaltered perfect fifth
-  if (["dominant11", "major11", "minor11", "dominant13", "major13", "minor13"].includes(pattern)) allowed.push(14);
-  if (["dominant13", "major13", "minor13"].includes(pattern)) allowed.push(17);
-  // The major third may be omitted in dominant/major 11 to avoid the 3rd/11th clash,
-  // but such realizations should be identified as suspended-style.
-  if (pattern === "dominant11" || pattern === "major11") allowed.push(4);
-  return allowed;
+  return chordToneFunctions(pattern).filter((tone) => !tone.defining).map((tone) => tone.interval);
 }
 
 export function permittedMissingTones(root: string, pattern: FinderChordPattern, missing: string[]) {
@@ -34,6 +27,11 @@ export function omissionPenalty(root: string, pattern: FinderChordPattern, missi
   return missing.reduce((score, pitch) => {
     const interval = intervalsForChordFinder(pattern).find((i) => transpose(root, i) === pitch);
     if (interval === 7) return score + 1;
+    // In a major/dominant thirteenth, retaining the ninth is normally more
+    // characteristic than retaining a natural eleventh against the major third.
+    // This is a soft preference, not a validity constraint or octave-order rule.
+    if ((pattern === "major13" || pattern === "dominant13") && interval === 14) return score + 2;
+    if ((pattern === "major13" || pattern === "dominant13") && interval === 17) return score + 0.75;
     if (interval === 14) return score + 1.5;
     if (interval === 17) return score + 2;
     if (interval === 4) return score + 5;

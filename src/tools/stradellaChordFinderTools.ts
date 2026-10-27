@@ -18,6 +18,7 @@ import { chordButtonRecipeResult } from "./stradellaChordFinder/searchChordButto
 import { bassAndChordResult, bassAndChordResults } from "./stradellaChordFinder/searchBassAndChordButtons";
 import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "./stradellaChordFinder/registerModel";
 import { validRequestedBass } from "./stradellaChordFinder/harmonicIdentity";
+import { passesNominalGapFilter, type MinimumNominalGap } from "./stradellaChordFinder/voicingDensity";
 
 export const STRADELLA_CHORD_FINDER_MODE_OPTIONS: Array<{
   value: StradellaChordFinderMode;
@@ -70,6 +71,7 @@ export function getStradellaChordFinderResults(
   spanColumns = 5.5,
   requestedBass: string | null = null,
   registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
+  minimumNominalGap: MinimumNominalGap = 0,
 ): StradellaChordFinderResult[] {
   const targetPitches = orderedTargetPitches(root, pattern);
   if (targetPitches.length === 0) {
@@ -78,6 +80,11 @@ export function getStradellaChordFinderResults(
   if (!validRequestedBass(root, pattern, requestedBass)) {
     return [notPlayableResult(targetPitches, "Invalid requested bass.", "The requested bass must be a chord tone.")];
   }
-  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern, maxButtons, spanColumns, requestedBass, registerModel);
-  return [getStradellaChordFinderResult(buttons, root, pattern, mode, markRootBass, requestedBass, registerModel)];
+  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern, maxButtons, spanColumns, requestedBass, registerModel, minimumNominalGap);
+  const result = getStradellaChordFinderResult(buttons, root, pattern, mode, markRootBass, requestedBass, registerModel);
+  if (!result.playable || passesNominalGapFilter(
+    analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel).notes, minimumNominalGap,
+  )) return [result];
+  return [notPlayableResult(targetPitches, "No realization matches the nominal spacing filter.",
+    `This realization contains adjacent nominal notes closer than ${minimumNominalGap} semitones.`)];
 }

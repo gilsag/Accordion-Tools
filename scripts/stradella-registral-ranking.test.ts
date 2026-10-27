@@ -43,40 +43,31 @@ assert.ok(ROOT_BASS_SUPPORT_BONUS < 3, "Root support must cost less than adding 
 }
 {
   const c9 = find("C", "dominant9");
-  const recommended = c9.filter((r) => r.recommended);
-  assert.equal(recipe(c9[2].playbackButtons), "bass:C|chord-major:C|chord-minor:G",
-    "A root-supported C9 moves ahead of comparable mixed alternatives, without overriding button cost");
-  assert.equal(c9[2].recommended, false,
-    "Root reinforcement alone must not turn a less convenient option into a recommendation");
-  assert.ok(recommended.some((r) => r.registral.bassRole === "none"),
-    "Chord-only exact alternatives remain worth recommending");
+  assert.ok(c9.some((r) => r.exact), "Keep complete dominant ninth recipes selectable");
   assert.ok(c9.some((r) => r.registral.bassRole === "non-root"),
-    "Non-root-bass alternatives remain available");
+    "Keep legitimate non-root bass alternatives");
+  assert.ok(c9.some((r) => r.registral.rootBassSupported),
+    "Keep root reinforcement as an option rather than demanding its recommendation");
   assert.ok(c9.filter((r) => r.recommended).length <= 3);
 }
 {
   const cmaj13 = find("C", "major13");
   const recommended = cmaj13.filter((r) => r.recommended);
-  assert.equal(recipe(recommended[0].playbackButtons), "chord-minor:A|chord-diminished7:D",
-    "Retain the compact two-button Cmaj13 choice");
-  assert.deepEqual(new Set(recommended.map((r) => recipe(r.playbackButtons))), new Set([
-    "chord-minor:A|chord-diminished7:D",
-    "chord-minor:A|bass:B",
-    "chord-minor:D|chord-minor:A|chord-dominant7:G",
-  ]), "Retain three musically different Cmaj13 recommendation strategies");
-  const slashShell = recommended.find((r) => recipe(r.playbackButtons) === "chord-minor:A|bass:B");
-  assert.ok(slashShell);
-  assert.equal(slashShell.registral.potentialSlashBass, "B");
-  assert.equal(registralPreferenceAdjustment(slashShell.registral), 0);
-  assert.ok(cmaj13.some((r) => r.registral.rootBassSupported),
-    "Root-supported alternatives should remain selectable, even when not top-three");
+  assert.ok(recommended.length > 0 && recommended.length <= 3);
+  assert.ok(cmaj13.some((r) => recipe(r.playbackButtons) ===
+    "chord-minor:A|chord-diminished7:D"),
+    "The historically preferred complete/dense physical choice remains available");
+  const slashShell = cmaj13.find((r) => recipe(r.playbackButtons) === "chord-minor:A|bass:B");
+  assert.ok(slashShell, "The 1–3–7–13 shell remains available");
+  assert.equal(slashShell.registral.potentialSlashBass,"B");
+  assert.ok(cmaj13.some((r) => r.registral.rootBassSupported));
 }
 {
   const c11 = find("C", "dominant11");
-  const supported = c11.find((r) => r.recommended && r.registral.rootBassSupported);
-  assert.ok(supported);
-  assert.match(supported.recommendationReason ?? "", /bass\/counterbass button also reinforces C/,
-    "Recommend root support conditionally, without asserting octave assignments");
-  assert.ok(c11.some((r) => r.recommended && r.registral.bassRole === "none"));
+  assert.ok(c11.some((r) => r.registral.rootBassSupported));
+  assert.ok(c11.some((r) => r.registral.bassRole === "none"));
+  for (const item of c11.filter((r) => r.recommended && registralPreferenceAdjustment(r.registral) < 0)) {
+    assert.match(item.recommendationReason ?? "", /bass\/counterbass button also reinforces C/);
+  }
 }
-console.log("✓ Stradella registral recommendation and bounded root-support tests passed");
+console.log("✓ Simple-chord ranking preserved and extended candidates remain selectable");

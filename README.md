@@ -2,11 +2,37 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-Current version: **0.15.6**
+**Version:** 0.15.20
 
-Historical validation: [Stradella configuration matrix](docs/internal/validation.md) (offline test evidence and limitations; not a verified production build).
+**Stradella Chord Finder:** Nominal note-spacing diagrams use proportional semitone intervals; an optional minimum-gap filter excludes overly close nominal pitches. One ZIP can contain every playable realization for the selected chord and search settings in the chosen SVG or PNG format. The Reset menu separates clearing selections from restoring tool defaults. Diagram footers align explanation labels, use compact preset-chord symbols (e.g., CM), and show nominal intervals with proportional pitch spacing and short leaders.
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
+
+## Interface languages
+
+Use **Settings → Language** to select **Auto (browser)**, **English**, **Español**, **Français**, **Português (Brasil)**, **Italiano**, or **Deutsch**. The initial choice is Auto: supported Spanish (`es-*`), French (`fr-*`), Portuguese (`pt-*`), Italian (`it-*`), and German (`de-*`) browser preferences select their respective languages; unsupported locales use English. A manual choice takes precedence and is retained in local preferences and settings JSON.
+
+The application's navigation, settings, tools, tooltips, and major generated chord/Harmony explanations support English, Spanish, French, Brazilian Portuguese, Italian and German. The interface language is separate from pitch notation and chord symbol style; it does not change pitches, chord calculations, audio, file formats, or **download filenames**. User-edited pattern names and imported music data are displayed as supplied, and some low-level parser or pattern-validation messages may remain in English.
+
+**Español:** En **Configuración → Idioma** puede elegir **Automático (navegador)**, **English**, **Español**, **Français**, **Português (Brasil)**, **Italiano** o **Deutsch**. La detección automática utiliza las preferencias del navegador; la selección manual tiene prioridad. El idioma de la interfaz es independiente de la notación musical y no modifica los nombres de los archivos exportados.
+
+**Français :** Dans **Paramètres → Langue**, choisissez **Automatique (navigateur)** ou une langue explicite. La langue de l’interface ne change ni les calculs musicaux, ni les échantillons audio, ni les noms des fichiers exportés.
+
+**Português (Brasil):** Em **Configurações → Idioma**, escolha **Automático (navegador)** ou outro idioma. A tradução não altera os cálculos musicais nem os nomes dos arquivos exportados.
+
+**Italiano:** In **Impostazioni → Lingua**, scegli **Automatico (browser)** o una lingua. La traduzione non modifica i calcoli musicali né i nomi dei file esportati.
+
+**Deutsch:** Unter **Einstellungen → Sprache** wählen Sie **Automatisch (Browser)** oder eine Sprache. Die Übersetzung ändert weder musikalische Berechnungen noch Exportdateinamen.
+
+Portuguese currently uses Brazilian Portuguese for all `pt` browser locales. The bundled Markdown help articles and the remainder of this README are in English. For the localization architecture and how to add languages, see the [Adding Interface Languages guide](docs/internal/adding-interface-languages.md).
+
+## Responsive viewing
+
+At phone/tablet widths up to 860 CSS pixels, use **Diagram on small screens** to select **Readable · scroll** (default, a larger and horizontally scrollable diagram) or **Fit entire diagram** (complete overview). This is a viewing-only choice, not a saved diagram setting; it never changes SVG/PNG export geometry, selected buttons, musical calculations or playback.
+
+On phones, the tool panel has its own short scrolling area so the diagram is easier to reach. Toolbar buttons wrap, help tips can be opened by tapping, and documentation topics scroll horizontally above the article.
+
+See the [Responsive validation report](docs/internal/responsive-validation.md) for viewport checks and device-testing guidance.
 
 ## Highlights
 
@@ -19,7 +45,7 @@ Historical validation: [Stradella configuration matrix](docs/internal/validation
 - Sequence, Fingering, Selection, and diagram-annotation tools.
 - Stradella Bass Pattern Player with notation and accompaniment patterns.
 - ABC playback and diagram highlighting.
-- Synthesized sound plus optional **La Melodiosa** sampled accordion playback.
+- **La Melodiosa** sampled accordion playback, with an optional synthesizer.
 - Music notation and SVG/PNG export.
 
 ## Screenshots
@@ -34,7 +60,7 @@ Scale visualization and fingering paths on a chromatic button accordion treble l
 
 ![Stradella Chord Finder](docs/images/stradella-chord-finder.png)
 
-The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. It ranks realizations by button count, geometric compactness, and harmonic omissions, and highlights up to three contrasting recommended voicings for extended chords. The expanded **More explanation** describes each selected realization, including octave compression on Stradella and the effect of omitted tones. Exported diagrams can be labeled with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**.
+The Chord Finder compares practical exact and approximate Stradella realizations using chord buttons, bass/counterbass notes, or both. For three- and four-tone chords, the ranking favors completeness; for five-or-more-tone chords, it also weighs defining chord tones and nominal register density, so a clearer reduced voicing may rank above a crowded complete one. Up to three contrasting extended-chord realizations may be marked Recommended. The expanded **More explanation** describes each selected realization, including octave compression on Stradella and the effect of omitted tones. Exported diagrams can be labeled with the chord, realization type, sounding tones, and any omissions. The screenshot shows **Em7** realized as **E counterbass + G major**. An optional **nominal note-spacing** view beneath the diagram shows consecutive sounding-note intervals in semitones, using the configured Stradella register model. It is on by default and is included in SVG/PNG exports.
 
 ### Harmony Explorer
 
@@ -79,7 +105,7 @@ Treble diagrams support:
 - 3-, 4-, and 5-row layouts.
 - Piano keyboard layouts.
 
-Scale and chord tools share the same configurable notation and diagram system.
+Scale and chord tools share configurable notation and diagram settings.
 
 ### Harmony
 
@@ -143,6 +169,10 @@ npm run build
 npm run preview
 ```
 
+## Chord notation
+
+Select the chord symbol style under **Settings → Notation**: **C/Cm**, **CM/Cm**, or **Cmaj/Cmin**. The choice changes labels and explanatory text in the Stradella, Treble, Harmony Explorer, and Progression Assistant workspaces. Musical calculations, exported ABC/MIDI data, and sanitized download filenames use their existing canonical representation.
+
 ## Export
 
 Diagrams can be exported as **SVG** or **PNG**. Several tools also provide dedicated notation or music-data exports.
@@ -156,38 +186,3 @@ Thanks also to **Petri Pohjanmies** for making the La Melodiosa sample set avail
 ## License
 
 See [`LICENSE`](LICENSE) for the license applying to Accordion-Tools. Third-party assets, including La Melodiosa, retain their own licensing and attribution terms.
-
-
-### Reading the documentation in the app
-
-Choose **Settings → About → Open documentation** to browse the bundled guides with topic navigation and search, without leaving the application. The GitHub README remains available through the existing link.
-
-### Contextual chord and scale diagrams
-
-**Settings → Title → Contextual** (the default) uses the selected chord or scale in diagram titles, including Stradella realization status and relevant nominal non-root lowest tones, and the selected inversion and realization status on Treble. Major and minor chords use explicit names (`Cmaj`, `Cmin`, `Cmaj7`, `Cmin7`) so exported files are unambiguous. Extended chords now include dominant, major, and minor ninths, elevenths, and thirteenths, with recommended practical Stradella voicings and concise omission explanations. Chromatic-button treble diagrams offer one- and two-octave compact sizes alongside every existing preset; the view expands as needed to keep selected buttons visible. See [Chord Finder](docs/chord-finder.md) and [Settings](docs/settings.md).
-
-### Stradella Chord Finder diagram notes
-
-The brief notes under a selected Stradella chord diagram and in SVG/PNG exports can display any combination of **Harmonic identity**, **Pitch-class realization**, **Registral voicing**, and **Physical realization**. Use the four checkboxes beneath **Show realization explanation below diagram** in the Chord Finder. The expanded **More explanation** remains available independently. These preferences can be exported/imported with Settings; see [Chord Finder](docs/chord-finder.md) and [Settings](docs/settings.md).
-
-
-### La Melodiosa register-following playback
-
-Stradella sound can now follow the configurable nominal bass/counterbass and preset-chord octave ranges using La Melodiosa WAV samples. Notes outside the mapped C2–B3 bass range are pitch-transposed from the nearest available sample region (no automatic synthesizer fallback). The original sample octave mapping remains selectable; the physical register I/II/III selection is independent of the nominal pitch range. See [Settings](docs/settings.md) for details, caveats about reed doublings and transposition, and configuration options.
-
-### Stradella register interpretation and concise notes (v0.15.2)
-
-The nominal octave/grouping settings for bass/counterbass and preset-chord buttons are located under their own **Settings → Stradella registers** section, independent from the sound-source/reed settings. In the Chord Finder, the four optional explanation lines can be selected only when **Show realization explanation below diagram** is enabled. Registral notes list the modeled pitches from low to high, including octave numbers and any repeated unisons; all diagram/export explanations are left-aligned. Help tooltips replace explanatory paragraphs. Adjacent ← / → buttons browse realizations without triggering playback. The register model is an assumption about sounding notes, not a measurement of an instrument's reeds.
-
-### v0.15.5 highlights
-
-- Contextual titles and the Harmonic identity note identify the selected Stradella realization with familiar slash-chord notation, e.g., **Cmin7/B♭ — Exact — 2 buttons**, instead of a technical "modeled lowest" suffix. Root-position chords need no slash.
-- Four-level notes and **More explanation** use chord-aware spellings (**C–E♭–G–B♭** for Cmin7) and identify conventional triad/seventh inversions. Nominal octave numbers stay in the registral line. Harmonic root/quality remains the user's selection.
-- SVG/PNG download filenames are sanitized independently: `Cmin7-over-Bflat-Exact-2buttons-Bflat-bass-C-minor.svg`, with no slash, accidental symbols, or other filesystem-sensitive characters.
-- This is a presentation-only revision. Chord generation, sampled audio, register settings, and ranking are unchanged.
-
-### v0.15.4 highlights
-
-- Clear selected-state controls for two-way Stradella register, sound and playback choices.
-- Optional, register-aware short descriptions of close voicings; modest preference adjustment without excluding valid chord combinations.
-- Only one deployed copy of each La Melodiosa WAV recording, preserving sample attribution and original mapping information.

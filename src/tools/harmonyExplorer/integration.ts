@@ -14,6 +14,7 @@ const FAMILY_TO_FINDER: Partial<Record<ChordFamilyId, FinderChordPattern>> = {
   minor: "minor-triad",
   diminished: "diminished-triad",
   augmented: "augmented-triad",
+  sus2: "sus2",
   sus4: "sus4",
   sixth: "major6",
   minor6: "minor6",
@@ -23,6 +24,7 @@ const FAMILY_TO_FINDER: Partial<Record<ChordFamilyId, FinderChordPattern>> = {
   minorMajor7: "minorMajor7",
   halfDiminished7: "minor7b5",
   diminished7: "diminished7",
+  augmented7: "dominant7sharp5",
 };
 
 const FINDER_TO_FAMILY = Object.fromEntries(

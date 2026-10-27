@@ -2,6 +2,8 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
+**Localization:** `src/i18n/catalog.ts` registers `en`, `es`, `fr`, `pt` (Brazilian Portuguese), `it` and `de`. Separate typed catalogs define interface text; `musicTerms.ts`, `optionLabels.ts` and localized explanation templates provide musical terminology and generated descriptions. See [Adding Interface Languages](adding-interface-languages.md) for key and placeholder parity, saved preferences, and export invariants.
+
 ## Code ownership and data flow
 
 | Layer | Main files | Responsibility |
@@ -54,7 +56,7 @@ When changing scoring, preserve tests for diagram-size invariance, stable tie-br
 
 ### Configured nominal Stradella register model
 
-`src/tools/stradellaChordFinder/registerModel.ts` maps actual `playbackButtons` into a *hypothetical* pitch set using independent bass/counterbass and preset-chord ranges. The ranges are a starting MIDI octave and grouping (`C-B` or `F-E`); for `F-E`, C through E lie in the octave **above** the starting F. The calculation returns a lowest *modeled* pitch, retaining its played-button source, and **must not** be treated as measured reed voicing. Real-world registers may produce multi-octave ranks. This model is not passed into harmonic candidate search or ergonomic scoring. When sampled playback is configured to follow the register model, the sound engine uses its nominal MIDI mapping, as documented below. The app stores four independent setting fields, and the explanatory UI explicitly labels the result as a model prediction.
+`src/tools/stradellaChordFinder/registerModel.ts` maps actual `playbackButtons` into a *hypothetical* pitch set using independent bass/counterbass and preset-chord ranges. The ranges are a starting MIDI octave and grouping (`C-B` or `F-E`); for `F-E`, C through E lie in the octave **above** the starting F. The calculation returns a lowest *modeled* pitch, retaining its played-button source, and **must not** be treated as measured reed voicing. Real-world registers may produce multi-octave ranks. This model is not passed into harmonic candidate search or ergonomic scoring. When sampled playback is configured to follow the register model, the sound engine uses its nominal MIDI mapping, as documented below. The app stores four independent setting fields, and the explanatory UI explicitly labels the result as a model prediction. The Stradella registers panel mirrors bass/counterbass and preset-chord groups with independent starting-octave and grouping controls; the displayed configured ranges must be computed from the same register model as the Chord Finder and sample mapping. The C–B/F–E help is a presentation concern, not a change to the underlying octave assignments.
 
 ## Other key invariants
 
@@ -88,7 +90,7 @@ Use comments to record *why* a constraint exists, the units and coordinate orien
 
 `src/tools/stradellaChordFinder/diagramAnnotations.ts` produces four independent, labeled concise strings (`lines`) from the selected played-button result and the optional nominal register model. `StradellaNoteLevels` toggles only these export/diagram strings. Never derive a new chord identity from a pitch-class collection, and never claim the nominal `lowestPitch` is a measured acoustic note. `App.tsx` owns the selected level switches; `StradellaChordFinderPanel.tsx` provides four checkboxes beneath the master diagram-note toggle. The rendered SVG `foreignObject` uses the same filtered `lines` for both the screen and SVG/PNG downloads; height estimation must account for wrapping independently on each line. With no enabled lines, remove the entire footer.
 
-The expanded `explainStradellaRealization` remains independent of these toggles. The default settings loader and exported/imported settings must remain backward compatible with older files lacking `stradellaNoteLevels`. Unit tests live in `scripts/stradella-four-level-notes.test.ts`.
+The inline note-spacing option defaults on and is represented by the optional settings JSON field `stradellaShowNominalNoteSpacing`; absent values retain the default. The Harmony `showNoteRing` state flows through the SVG legend and `buildDiagramExplanation`, with the on/off state controlling their text. The expanded `explainStradellaRealization` remains independent of these toggles. The default settings loader and exported/imported settings must remain backward compatible with older files lacking `stradellaNoteLevels`. Unit tests live in `scripts/stradella-four-level-notes.test.ts`.
 
 
 ## Stradella sampled playback and register alignment
@@ -125,3 +127,27 @@ Persistent two-way choices use `SegmentedChoice` (`aria-pressed` on both visible
 - Avoid removing saved-settings migration fields or the ABC legacy parser without versioned compatibility tests.
 - Preserve La Melodiosa SFZ source metadata, sample attribution, and unmapped recordings until a separate sample-archive decision.
 - An unused export is not necessarily disposable: verify external consumers and run the native build before deleting it.
+
+## Interface localization
+
+The English, Spanish and French string catalogs are stored in `src/i18n/en.ts`, `es.ts` and `fr.ts`. The typed locale registry and fallback in `src/i18n/catalog.ts` are the public API. UI option labels, generated descriptions, musical terminology and example names use separate presentation helpers without modifying harmonic IDs, sounding pitches or filename recipes. The Settings language menu derives its options from the registry. See [Adding Interface Languages](adding-interface-languages.md) for adding locales and the corresponding validation requirements.
+
+### Nominal spacing and batch export regression coverage
+
+Keep nominal registral MIDI positions strictly proportional; stack/offset note labels vertically rather than displacing pitch marks. The user-selected minimum adjacent gap must filter candidates before recommendation selection; do not reclassify filtered musical chord tones as harmonically invalid. Confirm the same settings in single SVG/PNG and ZIP exports. Check dense pitch labels at 16, 26 and 40 px, ZIP contents and filename uniqueness, reset scopes, and tooltips near every viewport edge in browser-rendered UI; source tests alone cannot establish visual or exported fidelity.
+
+### Registral interval chart and footer alignment
+
+The Stradella diagram footer shares one CSS grid across its four independently
+selectable label/value rows. The inner voicing chart is part of the exported
+SVG `foreignObject`; verify both SVG and PNG exports in a browser. Its
+`voicingIntervalLayout` positions are fixed by nominal MIDI differences, never
+shifted for label collisions. Independent label lanes, short marker ticks, and
+semitone counts below the axis keep pitch geometry distinct from typography.
+Do not infer physical reed pitches from this nominal model. Compact chord-button
+notation in Physical realization is a presentation choice; filenames, harmony,
+register analysis and sound samples retain their existing rules.
+
+### Left-panel control layout
+
+Keep slider label/value text adjacent to the range control, using density-aware group spacing without reducing input targets. Translation labels used with appended dynamic values should omit trailing punctuation to avoid doubled separators. Use full-width action buttons for Appearance's button-label, bellows-guide and Stradella row-label visibility toggles. The Finders' Show/Hide actions retain parameters; do not add Clear buttons that duplicate them. Preserve distinct Clear actions in recorders and sequence editors. Keep sound-source attribution visible in About and full technical information in contextual help and guides, while nominal bass/chord register ranges remain visible in Settings. Check six languages and narrow screens for clipped labels and tooltip accessibility.
