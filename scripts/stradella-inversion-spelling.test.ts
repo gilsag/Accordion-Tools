@@ -25,7 +25,7 @@ assert.equal(note.title, "Cmin7/B♭ - Exact - 2 buttons");
 assert.match(note.lines[0], /^Harmonic identity: Cmin7\/B♭ · Third inversion$/);
 assert.match(note.lines[1], /C–E♭–G–B♭ · Exact \(complete\)/);
 assert.match(note.lines[3], /B♭2 – C3 – E♭3 – G3/);
-assert.match(note.lines[2], /B♭ bass \+ C minor · 2 played buttons/);
+assert.match(note.lines[2], /B♭ bass \+ Cm · 2 played buttons/);
 assert.doesNotMatch(note.detail, /bass unspecified|modeled lowest|D#|A#/i);
 assert.match(note.filenameKey, /^Cmin7-over-Bflat-Exact-2buttons-Bflat-bass-C-minor$/);
 assert.match(note.filenameKey, /^[A-Za-z0-9-]+$/);
