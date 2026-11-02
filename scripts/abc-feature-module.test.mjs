@@ -77,7 +77,7 @@ const context = {
 context.exports = context.module.exports;
 context.require = (name) => {
   if (name === "react") return mockReact;
-  if (name === "../../tools/abcPlayerTools") return tools;
+  if (name === "./abcEngineLoader") return { loadAbcEngine: async () => tools };
   throw new Error(`Unexpected dependency: ${name}`);
 };
 // Vite injects import.meta.env.BASE_URL. Supply the equivalent root URL
@@ -129,6 +129,7 @@ assert.equal(stateRender().abcExampleValue, "", "Empty option does not load a fi
 
 function results(input) {
   effects.length = 0; calls.length = 0;
+  index = 100; // Keep the dynamically loaded engine in the same hook slot across renders.
   return useAbcPlayerResults({
     abcText: downloaded, abcPlaybackState: "stopped", setAbcTempoBpm: (value) => calls.push(["tempo", value]),
     abcActiveButtonIds: ["bass-D", "chord-A"],
@@ -136,6 +137,12 @@ function results(input) {
     side: "stradella", isTrebleLikeSide: false, buttons: [{ id: "bass-D" }], ...input,
   });
 }
+const beforeLoad = results();
+assert.equal(beforeLoad.abcPlayableEvents.length, 0, "No eager parser is requested during initial render");
+assert.equal(calls.length, 0);
+assert.equal(effects.length, 2, "Deferred loader and historical tempo synchronization effects");
+effects[0](); // Start the single engine import after nonempty ABC text.
+await new Promise(resolve => setImmediate(resolve));
 const initial = results();
 assert.equal(initial.abcParseResult, score);
 assert.equal(initial.abcPlayableEvents, scoreEvents);
@@ -145,12 +152,12 @@ assert.equal(initial.abcMissingPitchText, "F#, C#");
 assert.deepEqual([...initial.abcActiveButtonIdSet], ["bass-D", "chord-A"]);
 assert.equal(calls.filter(([name]) => name === "stradellaMap").length, 1);
 assert.equal(calls.find(([name]) => name === "stradellaMap")[1][3], "bass-notes-and-chord-symbols");
-assert.equal(effects.length, 1);
-effects[0]();
+assert.equal(effects.length, 2);
+effects[1]();
 assert.deepEqual(calls.at(-1), ["tempo", 92], "Score tempo sync while stopped");
 
 results({ abcPlaybackState: "playing" });
-effects[0]();
+effects[1]();
 assert.equal(calls.some(([name]) => name === "tempo"), false, "Tempo never replaced mid-playback");
 results({ side: "treble", isTrebleLikeSide: true, abcTrebleChordSymbolsMode: "play" });
 assert.equal(calls.filter(([name]) => name === "trebleMap").length, 1);

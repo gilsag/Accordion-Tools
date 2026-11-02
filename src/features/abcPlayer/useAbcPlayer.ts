@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { AbcStradellaMode, AbcTrebleChordSymbolsMode, DiagramButton, Side } from "../../types";
-import {
-  abcEventsForStradellaSide, abcEventsForTrebleSide, abcMissingNotes,
-  mapAbcEventsToStradellaButtons, mapAbcEventsToTrebleButtons,
-  parseAbc, totalAbcBeats, type MappedAbcEvent,
-} from "../../tools/abcPlayerTools";
+import type { AbcParseResult, MappedAbcEvent } from "../../tools/abcPlayerTools";
+import { loadAbcEngine } from "./abcEngineLoader";
+
+/** Exact parsed result of an empty ABC editor in the established abcjs engine.
+ * The lightweight initial result avoids importing the parser on app startup. */
+const EMPTY_ABC_RESULT: AbcParseResult = {
+  events: [], voiceIds: ["1"], title: "Untitled ABC tune", tempoBpm: 180,
+  key: "C", keyTonicPitchClass: "C",
+  errors: ["No playable notes or chord symbols were found in this ABC text."],
+};
 
 type AbcExampleOption = {
   value: string;
@@ -143,15 +148,34 @@ export type AbcPlayerResultInput = {
   buttons: DiagramButton[];
 };
 
-/** Score parsing and physical-button mapping preserve the existing two-voice
- * routing, result ordering, missing-note reporting and exact DiagramButton IDs.
- * abcjs intentionally remains eager until the shared notation service is moved.
- */
+/** The app loads the existing synchronous parser and mapping functions on the
+ * first nonempty score. The canonical tools/abcPlayerTools public API is not
+ * changed: existing direct callers and musical tests remain synchronous. */
 export function useAbcPlayerResults({
   abcText, abcPlaybackState, setAbcTempoBpm, abcActiveButtonIds,
   abcStradellaMode, abcTrebleChordSymbolsMode, side, isTrebleLikeSide, buttons,
 }: AbcPlayerResultInput) {
-  const abcParseResult = useMemo(() => parseAbc(abcText), [abcText]);
+  const [engine, setEngine] = useState<Awaited<ReturnType<typeof loadAbcEngine>> | null>(null);
+  const [engineError, setEngineError] = useState<string | null>(null);
+  useEffect(() => {
+    if (!abcText.trim() || engine) return;
+    let active = true;
+    void loadAbcEngine().then(module => {
+      if (active) { setEngine(module); setEngineError(null); }
+    }).catch(error => {
+      if (active) setEngineError(error instanceof Error ? error.message : String(error));
+    });
+    return () => { active = false; };
+  }, [abcText, engine]);
+
+  const abcParseResult = useMemo(() => {
+    if (!abcText.trim()) return EMPTY_ABC_RESULT;
+    if (!engine) return {
+      ...EMPTY_ABC_RESULT,
+      errors: engineError ? [`Could not load ABC parser: ${engineError}`] : [],
+    };
+    return engine.parseAbc(abcText);
+  }, [abcText, engine, engineError]);
 
   useEffect(() => {
     if (abcPlaybackState !== "playing") {
@@ -162,18 +186,18 @@ export function useAbcPlayerResults({
   const abcPlayableEvents = useMemo(() => {
     if (!abcText.trim()) return [];
     if (side === "stradella") {
-      return abcEventsForStradellaSide(abcParseResult.events);
+      return engine ? engine.abcEventsForStradellaSide(abcParseResult.events) : [];
     }
     if (isTrebleLikeSide) {
-      return abcEventsForTrebleSide(abcParseResult.events);
+      return engine ? engine.abcEventsForTrebleSide(abcParseResult.events) : [];
     }
     return [];
-  }, [abcParseResult.events, abcText, isTrebleLikeSide, side]);
+  }, [abcParseResult.events, abcText, engine, isTrebleLikeSide, side]);
 
   const abcMappedEvents = useMemo<MappedAbcEvent[]>(() => {
     if (abcPlayableEvents.length === 0) return [];
     if (side === "stradella") {
-      return mapAbcEventsToStradellaButtons(
+      return engine!.mapAbcEventsToStradellaButtons(
         buttons,
         abcPlayableEvents,
         abcParseResult.keyTonicPitchClass,
@@ -181,7 +205,7 @@ export function useAbcPlayerResults({
       );
     }
     if (isTrebleLikeSide) {
-      return mapAbcEventsToTrebleButtons(
+      return engine!.mapAbcEventsToTrebleButtons(
         buttons,
         abcPlayableEvents,
         abcTrebleChordSymbolsMode === "play",
@@ -190,6 +214,7 @@ export function useAbcPlayerResults({
     return [];
   }, [
     abcPlayableEvents,
+    engine,
     abcParseResult.keyTonicPitchClass,
     abcStradellaMode,
     abcTrebleChordSymbolsMode,
@@ -199,12 +224,12 @@ export function useAbcPlayerResults({
   ]);
 
   const abcTotalBeats = useMemo(
-    () => totalAbcBeats(abcPlayableEvents),
-    [abcPlayableEvents],
+    () => engine ? engine.totalAbcBeats(abcPlayableEvents) : 0,
+    [abcPlayableEvents, engine],
   );
   const abcMissingPitchText = useMemo(
-    () => abcMissingNotes(abcMappedEvents).join(", "),
-    [abcMappedEvents],
+    () => engine ? engine.abcMissingNotes(abcMappedEvents).join(", ") : "",
+    [abcMappedEvents, engine],
   );
 
   const abcActiveButtonIdSet = useMemo(

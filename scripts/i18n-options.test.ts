@@ -40,6 +40,8 @@ for (const row of ["bass-counterbass", "bass-root", "chord-major", "chord-minor"
 }
 
 const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
+const controllerOptions = readFileSync("src/app/controllerOptions.ts", "utf8");
+const toolsView = readFileSync("src/app/views/ToolsView.tsx", "utf8");
 const finder = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
 const assistant = readFileSync("src/components/tools/ProgressionAssistantPanel.tsx", "utf8");
 const css = readFileSync("src/App.css", "utf8");
@@ -51,7 +53,10 @@ assert.match(finder, /option\.value\s*===\s*"chord-buttons-only"\s*\?\s*"tools\.
 assert.match(finder, /:\s*"tools\.searchBassAndChordButtons"\s*\)\}/);
 assert.match(assistant, /familyName\(family.id, family.name, language\)/);
 assert.match(app, /abcExampleName\(option.value, option.label, language\)/);
-assert.match(app, /progressionName\(progression.id, progression.name, language\)/);
+// The progression-option label was extracted from App into controllerOptions in Phase 7.
+// Verify both the localized helper and its binding in the tools UI.
+assert.match(controllerOptions, /const localizedName = progressionName\(progression.id, progression.name, language\)/);
+assert.match(toolsView, /formatProgressionOptionLabel\(progression, language\)/);
 assert.match(app, /stradellaDiagramRowLabel\(kind, stradellaRowLabel\(kind\), language\)/);
 assert.match(app, /const bellowsStartLabel = side === "stradella" \? t\("ui.bottom"\) : t\("ui.top"\)/);
 assert.match(app, /const bellowsEndLabel = side === "stradella" \? t\("ui.top"\) : t\("ui.bottom"\)/);

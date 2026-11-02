@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 
 import { stradellaDiagramRowLabel } from "../../i18n/musicTerms";
 import { harmonyRelatedDisplayName, harmonyStatusText } from "../../i18n/diagramLabels";
@@ -14,7 +15,7 @@ import { stradellaRowLabel } from "../../stradella";
 import { stopAllSound } from "../../sound";
 import { StradellaVoicingIntervals } from "../../components/tools/StradellaVoicingIntervals";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import { HarmonicCircle } from "../../tools/harmonyExplorer/components/HarmonicCircle";
+const HarmonicCircle = lazy(() => import("../../tools/harmonyExplorer/components/HarmonicCircle").then(module => ({ default: module.HarmonicCircle })));
 import type { AppControllerModel } from "../useAppController";
 
 /** View-only component: all state and commands originate in the controller. */
@@ -135,7 +136,7 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
                   width: `${harmonyDiameter + (harmonyShowLegend || harmonyShowExplanation ? Math.max(460, harmonyDiameter * 0.65) : 0)}px`,
                 }}
               >
-                <HarmonicCircle
+                <Suspense fallback={<div className="harmony-empty-result" aria-busy="true" />}><HarmonicCircle
                   chordDisplayStyle={chordDisplayStyle}
                   sectors={harmonySectors}
                   counts={harmonyCounts}
@@ -164,7 +165,7 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
                   onChordActivated={handleHarmonyChordActivated}
                   onPlayRelationship={playHarmonyChordRelationship}
                   onSelectionChange={setHarmonySelection}
-                />
+                /></Suspense>
               </div>
             </div>
           </>

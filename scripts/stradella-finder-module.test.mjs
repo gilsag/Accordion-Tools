@@ -14,7 +14,10 @@ assert.match(app, /useStradellaChordFinderResults\(\{/);
 assert.doesNotMatch(app, /\[stradellaChordFinderActive,\s*setStradellaChordFinderActive\]\s*=\s*useState/);
 assert.doesNotMatch(app, /getStradellaChordFinderResults\(/);
 assert.match(app, /playButtonCombination\(stradellaChordFinderPlaybackButtons, soundOptions\)/);
-assert.match(app, /flushSync\(\(\) => setStradellaChordFinderRealizationIndex\(initialIndex\)\)/);
+// Capture lives in the diagram module; the controller still selects synchronously.
+const batchCapture = readFileSync(new URL("../src/diagram/stradellaBatchCapture.ts", import.meta.url), "utf8");
+assert.match(app, /selectIndex: \(index\) => flushSync\(\(\) => setStradellaChordFinderRealizationIndex\(index\)\)/);
+assert.match(batchCapture, /finally \{\s*selectIndex\(originalIndex\)/);
 
 const effects = [];
 const calls = [];
