@@ -2,7 +2,7 @@
 
 **Reference audit:** 22 October 2026
 
-**Note:** Earlier results are historical evidence. The v0.15.6 offline cleanup checks below are not a native build or browser/audio acceptance.
+**Note:** All results below are historical evidence. The v0.15.6 offline cleanup checks are not a native build or browser/audio acceptance. They are **not** current v0.15.28 release verification; run the current checklist in [Developer Guide](developer-guide.md) separately.
 
 **Baseline:** v0.15.0 configuration matrix; unchanged search/regression scope in v0.15.3.
 
@@ -46,11 +46,11 @@ The following suites passed individually using the offline harness:
 
 The broader `chord-logic.test.ts` exhaustive suite **did not finish within the execution window**. It is not listed as passing in this audit.
 
-## Current release limitations
+## Limitations documented at the time of the earlier audits
 
 The original configuration matrix and focused regressions were run through the offline TypeScript harness, not a browser or an installed Vite build. Later release increments also added sampled register-following playback and four-level explanations; those features have focused tests, but this matrix is not evidence of a successful production build or acoustic validation.
 
-## Remaining verification gates
+## Verification that remained outstanding at the time
 
 - `npm ci --offline` failed because a required dependency archive was not cached (`ENOTCACHED`, for `zod-validation-error`).
 - Consequently, `npm run build` could not complete: type definitions `vite/client` and `node` were unavailable. This is a dependency/environment limitation, **not** proof of a successful compile. Run the actual project toolchain with installed dependencies before release/deployment.

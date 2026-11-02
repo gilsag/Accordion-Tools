@@ -4,7 +4,7 @@ import type { ChordDisplayStyle } from "../../tools/chordDisplay";
    actions; music-theory relationships are computed in the tools layer. */
 
 import { CollapsibleSection } from "../ui/CollapsibleSection";
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 import { HelpTip } from "../ui/HelpTip";
 import type { HarmonySelection } from "../../tools/harmonyExplorer/types";
 import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "../../tools/harmonyExplorer/music";

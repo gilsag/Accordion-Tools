@@ -22,24 +22,25 @@ src/i18n/
   pt.ts                # Brazilian Portuguese strings
   it.ts                # Italian strings
   de.ts                # German strings
-  context.tsx          # React LanguageProvider and useI18n()
+  context.tsx          # React LanguageProvider component
+  useI18n.ts           # LanguageContext, useI18n() hook and translation binding
   musicTerms.ts        # Chord-family, scale, role and row terminology
   optionLabels.ts      # Names of bundled progressions, patterns and ABC examples
   diagramLabels.ts     # Localized diagram and status presentation
 ```
 
-The locale files hold ordinary interface strings; specialized helpers remain responsible for translating musical terminology and presentation derived from musical data. New languages should normally require a new locale file and additions to language-specific terminology/explanation mappings, **not changes to the musical engines**.
+The locale files hold ordinary interface strings; specialized helpers remain responsible for translating musical terminology and presentation derived from musical data. `LanguageProvider` in `context.tsx` uses the shared `LanguageContext` exported by `useI18n.ts`; components import `useI18n()` from `src/i18n/useI18n.ts`. Keep this separation to satisfy the React Fast Refresh component-export rule. New languages should normally require a new locale file and additions to language-specific terminology/explanation mappings, **not changes to the musical engines**.
 
 ### Catalog contract
 
 - `en.ts` defines the authoritative translation keys and English default strings.
 - Each supported locale implements the same keys, preserving interpolation parameters such as `{count}`, `{name}`, and `{family}`.
-- `catalog.ts` exports the public API currently used by the application: `EN`, `ES` where compatibility requires them, `TranslationKey`, `InterfaceLanguage`, `InterfaceLanguagePreference`, `translate()`, `translateKnownLabel()`, browser-language detection and preference validators.
+- `catalog.ts` exports the public API currently used by the application: `EN`, `ES` and other locale catalogs, `TranslationKey`, `InterfaceLanguage`, `InterfaceLanguagePreference`, `translate()`, `translateKnownLabel()`, browser-language detection and preference validators.
 - The language registry should supply user-facing language names (e.g., `English`, `Español`, `Français`, `Português (Brasil)`, `Italiano`, `Deutsch`) and a stable locale code. **Generate the Settings selector from this registry**, avoiding a growing list of hard-coded options in `App.tsx`.
 - An absent translation falls back to English. **Supported locales require complete key coverage**; fallback remains a safeguard, not a substitute for translation review.
 - Keep translation keys stable. A new string belongs in the English source first, then in every supported locale. Do not use translated wording as a data identifier.
 
-Illustrative pattern consistent with the implementation:
+Illustrative example (not a copy of the current module implementations; the current `catalog.ts` uses a typed `SUPPORTED_LANGUAGES` registry and a `Record<InterfaceLanguage, Readonly<Partial<Record<TranslationKey, string>>>>` catalog map):
 
 ```ts
 // en.ts
@@ -63,7 +64,7 @@ const catalogs = { en: EN, es: ES, fr: FR, pt: PT, it: IT, de: DE };
 export type InterfaceLanguage = keyof typeof catalogs;
 ```
 
-The actual migration must preserve existing import paths and exports. Before extracting the catalogs, check tests and consumers of `EN`, `ES`, `TranslationKey`, and `translate()`; avoid circular runtime imports between the catalog and locale modules.
+The catalogs have already been extracted. When adding a language or reorganizing imports, preserve existing public exports and check tests and consumers of `EN`, `ES`, `TranslationKey`, `translate()`, `LanguageProvider` and `useI18n()`. Avoid circular runtime imports between catalog, locale, and context modules.
 
 ## Adding a language
 
@@ -113,6 +114,6 @@ Report automated results, browser checks, export checks, and tests not performed
 
 ## Related documentation
 
-- [`localization-plan.md`](localization-plan.md) — current localization scope and historical implementation notes.
+- [`localization-plan.md`](localization-plan.md) — historical v0.15.14 localization implementation and follow-up scope.
 - [`developer-guide.md`](developer-guide.md) — architecture, musical invariants, validation, and contribution practices.
 - [`../settings.md`](../settings.md) — user-facing language and settings behavior.

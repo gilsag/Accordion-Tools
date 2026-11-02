@@ -1,4 +1,6 @@
-# Responsive UI validation — v0.15.7 release candidate
+# Historical responsive UI validation — v0.15.7 release candidate
+
+**Historical record:** This document describes a v0.15.7 layout fixture and the verification not completed at that time. It does **not** certify the current v0.15.28 running application or mobile devices.
 
 **Baseline:** v0.15.6 uploaded source. **Scope:** interface-only changes in App.tsx, App.css, DocumentationViewer.css, and HelpTip.tsx.
 
@@ -6,7 +8,7 @@
 
 - The live GitHub Pages site was unavailable from this container (DNS blocked).
 - `npm ci` could not complete because required dependency tarballs were not cached and the registry was unreachable. Thus the running Vite app, native `tsc -b`, lint, and the full test suite were **not** verified.
-- A controlled **Chromium  headless fixture** was built with the application's baseline/current CSS and representative DOM structure (toolbar, sidebar, 96-bass-size SVG viewBox, diagram wrapper, help targets and documentation dialog). This is a layout proxy, **not** actual Accordion Tools execution.
+- A controlled **Chromium headless fixture** was built with the application's baseline/current CSS and representative DOM structure (toolbar, sidebar, 96-bass-size SVG viewBox, diagram wrapper, help targets and documentation dialog). This is a layout proxy, **not** actual Accordion Tools execution.
 - Chromium layouts were compared at widths **360, 390, 430, 768, 1024, 1280, 1440 CSS px**. No page-wide horizontal overflow was observed in this fixture.
 
 ## Representative fixture measurements
@@ -29,7 +31,7 @@ On a 390 px fixture, selecting **Fit entire diagram** returned the SVG width to 
 - The default Readable/Fit preference is transient React state, deliberately **not serialized** with musical or diagram settings.
 - Touch help uses a focusable span with button semantics, not a nested `<button>` inside `<label>`.
 
-## Local release gates (still necessary)
+## Original release gates (recheck on the current build)
 
 1. `npm ci && npm run test:all && npm run test:responsive && npm run lint && npm run build`.
 2. Chrome Android and real iPhone Safari: portrait/landscape, tool-panel scrolling, readable horizontal SVG panning, Fit mode, tappable notes, and tooltips. Check touch scrolling does not accidentally select a button.

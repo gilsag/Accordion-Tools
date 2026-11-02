@@ -1,3 +1,10 @@
+## v0.15.28 — Documentation maintenance
+
+- Removed the obsolete Text Notes guide: the current diagram-text workflow is documented under **Annotate Diagram**. Removed the duplicate, outdated `docs/validation.md` from user documentation; earlier validation evidence remains in `docs/internal/validation.md`.
+- Updated the interface-language extension guide for the existing `LanguageProvider` / `useI18n` file split and clarified which code snippets are illustrative rather than the current implementation.
+- Distinguished historical localization and responsive-layout reports from current documentation, refreshed the instrument-profile proposal status, and clarified the developer's current validation checklist versus historical evidence.
+- Updated README and release metadata to 0.15.28. This release changes documentation and version identifiers only: no musical algorithms, application features, settings schema, sound, exports, or tests were modified.
+
 ## v0.15.27 — ABC examples: Easy Polka and Happy Birthday accompaniment
 
 - Adds Jean-Michel Bencetti’s Easy Polka as a two-voice ABC example, including the printed repeats, first/second endings, and alternating single bass and preset major-chord buttons. The source tempo is half-note = 80, represented by quarter-note = 160 for the ABC Player.

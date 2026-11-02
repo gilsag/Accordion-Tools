@@ -2,7 +2,7 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-**Version:** 0.15.27
+**Version:** 0.15.28
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
@@ -30,7 +30,7 @@ At phone/tablet widths up to 860 CSS pixels, use **Diagram on small screens** to
 
 On phones, the tool panel has its own short scrolling area so the diagram is easier to reach. Toolbar buttons wrap, help tips can be opened by tapping, and documentation topics scroll horizontally above the article.
 
-See the [Responsive validation report](docs/internal/responsive-validation.md) for viewport checks and device-testing guidance.
+The [historical v0.15.7 responsive validation report](docs/internal/responsive-validation.md) records fixture-based viewport checks and device-testing guidance; it is not a v0.15.28 browser certification.
 
 ## Highlights
 
@@ -131,7 +131,7 @@ Accordion-Tools includes a lightweight synthesized sound engine and optional pla
 
 ## Documentation
 
-Detailed documentation is available in the [`docs/`](docs/) folder, including guides for:
+Current user documentation is available in [`docs/`](docs/). Historical validation reports, architecture proposals, and maintainer guidance are kept in [`docs/internal/`](docs/internal/) and should not be read as current test results. The user guides include:
 
 - [Settings](docs/settings.md)
 - [Scale Finder](docs/scale-finder.md)

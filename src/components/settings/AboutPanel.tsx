@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { DocumentationViewer } from "./DocumentationViewer";
 import { APP_INFO } from "../../config/appInfo";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 
 type AboutPanelProps = {
   isOpen: boolean;

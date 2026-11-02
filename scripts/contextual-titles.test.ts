@@ -49,7 +49,7 @@ assert.ok(cmaj13, "Expect a Cmaj13 alternative with B in the bass");
 const shell = realizationAnnotation("C", "major13", cmaj13, DEFAULT_STRADELLA_REGISTER_MODEL);
 assert.match(shell.title, /^Cmaj13\/B - (Exact|Approximate) - \d+ buttons$/);
 assert.ok(shell.filenameKey.startsWith("Cmaj13-over-B-"));
-assert.doesNotMatch(shell.filenameKey, /[\/#♯♭\s]/, "Export filename keys must contain no unsafe characters");
+assert.doesNotMatch(shell.filenameKey, /[/#♯♭\s]/, "Export filename keys must contain no unsafe characters");
 
 assert.deepEqual(Object.values(DEFAULT_STRADELLA_NOTE_LEVELS), [true, true, true, true]);
 

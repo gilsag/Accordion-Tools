@@ -1,6 +1,6 @@
 # Instrument profiles — architecture proposal
 
-**Status: design proposal, not implemented in v0.15.24.** The application groups instrument-related UI controls under Settings → Instrument, but still stores treble and Stradella layout choices and nominal bass/chord registers using their existing independent state/settings keys. Chord-button pitch-class formulas remain fixed in the music engine. This document defines a safe migration target, not a new supported import format.
+**Status: design proposal, not implemented as of the v0.15.28 documentation audit.** The application groups instrument-related UI controls under Settings → Instrument, but still stores treble and Stradella layout choices and nominal bass/chord registers using their existing independent state/settings keys. Chord-button pitch-class formulas remain fixed in the music engine. This document defines a safe migration target, not a new supported import format.
 
 ## Goals
 
@@ -74,6 +74,6 @@ This sketch is intentionally incomplete: real instrument reed ranks, chord varia
 - Changing profiles never changes the theoretical target chord, import notation, or chord filename conventions without explicit user action.
 - Source tests, live diagram rendering, exported SVG/PNG, and audio comparisons are reviewed independently.
 
-## Separate tempo issue
+## Separate tempo issue (design consideration)
 
-The Bass Pattern Player currently schedules events using the denominator-defined pattern unit (in 6/8, one eighth note) but ABC/MIDI exports use quarter-note tempo marks. Relabeling the control `BPM` alone does not establish consistent playback/export timing. Define the user-facing beat unit for simple and compound meters, then update scheduling and all exports together, with regressions for 4/4 and 6/8.
+The Bass Pattern Player uses the denominator-defined pattern unit (in 6/8, one eighth note) for pattern timing, whereas ABC/MIDI exports use quarter-note tempo marks. Relabeling the control `BPM` alone does not establish consistent playback/export timing. Define the user-facing beat unit for simple and compound meters, then update scheduling and all exports together, with regressions for 4/4 and 6/8.
