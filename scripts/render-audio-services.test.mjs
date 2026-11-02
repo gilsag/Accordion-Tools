@@ -73,7 +73,7 @@ const cls = new Set(["rendered-abc-error"]);
 const target = { innerHTML: "old", textContent: "old", classList: {
   remove: (c) => cls.delete(c), add: (c) => cls.add(c),
 } };
-notation.renderNotationInto(target, "X:1\nK:C\nC|", 110, 690);
+await notation.renderNotationInto(target, "X:1\nK:C\nC|", 110, 690);
 assert.equal(target.innerHTML, "");
 assert.equal(cls.has("rendered-abc-error"), false);
 assert.equal(renderCalls[0][2].scale, 1.1);
@@ -81,13 +81,23 @@ assert.equal(renderCalls[0][2].staffwidth, 690);
 assert.equal(renderCalls[0][2].responsive, "resize");
 assert.equal(renderCalls[0][2].add_classes, true);
 assert.equal(renderCalls[0][2].paddingtop, 0);
-notation.renderNotationInto(target, "  ", 100, 500);
-assert.equal(renderCalls.length, 1);
+// Two requests for one target can overlap while the shared abcjs chunk loads.
+// Only the latest score may be painted, including when options differ.
+const priorRenderCount = renderCalls.length;
+const stale = notation.renderNotationInto(target, "X:2\nK:C\nD|", 80, 420);
+const newest = notation.renderNotationInto(target, "X:3\nK:C\nE|", 75, 480);
+await Promise.all([stale, newest]);
+assert.equal(renderCalls.length, priorRenderCount + 1, "Superseded render never paints stale notes");
+assert.equal(renderCalls.at(-1)[1], "X:3\nK:C\nE|");
+assert.equal(renderCalls.at(-1)[2].staffwidth, 480);
+
+await notation.renderNotationInto(target, "  ", 100, 500);
+assert.equal(renderCalls.length, 2);
 const noteSvg = new TestSvg();
 notation.downloadRenderedNotationSvg({ querySelector: () => noteSvg }, " C♯ - notation ");
 assert.deepEqual(renderCalls.at(-1), ["download", "c-notation.svg"]);
 notation.downloadRenderedNotationSvg({ querySelector: () => null }, "missing");
-assert.equal(renderCalls.length, 2);
+assert.equal(renderCalls.length, 3);
 
 // Timer cancellation remains per-feature and ABC/bass event scheduling is unchanged.
 const timeouts = new Map(); let nextTimer = 1;

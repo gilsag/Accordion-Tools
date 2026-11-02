@@ -1,10 +1,11 @@
 
 import { accordionStatusText, diagramAutoTitle } from "../i18n/diagramLabels";
-import { DEFAULT_STRADELLA_NOTE_LEVELS, type StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
+import { type StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "../tools/contextualTitles";
 import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "../tools/chordDisplay";
 import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } from "../tools/stradellaChordFinder/chordSpelling";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BASS_OPTIONS, TREBLE_SIZE_OPTIONS, PIANO_TREBLE_RANGE_OPTIONS, TREBLE_SIZE_VIEW_WIDTH, COLOR_PRESETS, SEQUENCE_DISPLAY_MODE_OPTIONS, formatProgressionOptionLabel } from "./controllerOptions";
 import type { DefaultSettingsFile } from "../settings/settingsSchema";
 import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "../settings/settingsController";
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "../settings/settingsPersistence";
@@ -28,21 +29,25 @@ import { useTrebleChordFinderState, useTrebleChordFinderButtons } from "../featu
 import { flushSync } from "react-dom";
 import { useSoundSettings } from "../audio/useSoundSettings";
 import { playbackClockMs, clearPlaybackTimers } from "../audio/playbackTransport";
+import { stopAbcTransport, pauseAbcTransport, stopBassPatternTransport } from "../audio/playbackLifecycle";
 import { scheduleAbcMappedPlayback, scheduleBassPatternEvents } from "../audio/playbackScheduling";
 import { renderNotationInto as renderSharedNotation } from "../notation/notationService";
+import { useNotationSettings } from "../notation/useNotationSettings";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
-import { translate, translateKnownLabel, type InterfaceLanguage } from "../i18n/catalog";
-import { progressionName } from "../i18n/optionLabels";
-import type { AccidentalMode, BassCount, ButtonKind, ChordLabelMode, DiagramButton, DownloadFormat, InterfaceDensity, NotationMode, PianoTrebleRange, SequenceColorPreset, SequenceDisplayMode, TrebleLayout, TrebleSizePreset } from "../types";
+import { translateKnownLabel } from "../i18n/catalog";
+import type { AccidentalMode, ButtonKind, ChordLabelMode, DiagramButton, DownloadFormat, InterfaceDensity, NotationMode, PianoTrebleRange, TrebleLayout, TrebleSizePreset } from "../types";
 import { chordTones, formatPitch, INDEX_TO_PITCH, INTERVALS_FROM_C, isChordKind, rowFunction } from "../music";
 import { generateStradella, stradellaVisibleRoots, stradellaVisibleRows } from "../stradella";
 import { generateTreble } from "../treble";
-import { generatePianoTreble, PIANO_TREBLE_RANGE_PRESETS, pianoTrebleWhiteKeyCount } from "../pianoTreble";
-import { serializeSvg } from "../download";
+import { generatePianoTreble, pianoTrebleWhiteKeyCount } from "../pianoTreble";
+
 import { accordionDiagramFilename, harmonyDiagramFilename, downloadDiagram, downloadDiagramBatch, svgPointFromClient } from "../diagram/diagramExport";
+import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
+import { resetStradellaFinder, resetDiagramWorkState } from "./resetCommands";
+import { activeToolStatusLabel, workspaceGridColumns } from "./workspacePresentation";
 import { sequenceArrowStyleFromMode, sequenceModeShowsArrows, sequenceModeShowsNumbers } from "../tools/sequenceTools";
 import { SCALE_FINDER_OPTIONS, getScaleFinderTrebleButtons } from "../tools/scaleFinderTools";
-import { bassPatternEventsToAbc, chordProgressionSteps, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond, bassPatternEventsToStradellaNotationAbc, type ChordProgressionDefinition, type StradellaNotationAbcOptions } from "../tools/bassPatternPlayerTools";
+import { bassPatternEventsToAbc, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond, bassPatternEventsToStradellaNotationAbc, type StradellaNotationAbcOptions } from "../tools/bassPatternPlayerTools";
 import { getChordFinderTrebleButtons } from "../tools/chordFinderTools";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
 import { realizationAnnotation, finderChordSymbol } from "../tools/stradellaChordFinder/diagramAnnotations";
@@ -57,105 +62,6 @@ import type { HarmonyProgressionChord } from "../tools/harmonyExplorer/progressi
 import { isHarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
 import { progressionBassPulseButtons } from "../tools/harmonyExplorer/progression";
 import { finderPatternForHarmonyFamily, harmonyFamilyForFinderPattern, pitchClassNameFromNumber, pitchClassNumberFromName } from "../tools/harmonyExplorer/integration";
-
-/** Dropdown options for the supported Stradella bass presets. */
-const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
-  { value: "8", label: "8" },
-  { value: "12", label: "12" },
-  { value: "24", label: "24" },
-  { value: "32", label: "32" },
-  { value: "40", label: "40" },
-  { value: "48-8x6", label: "48, 8×6" },
-  { value: "48-12x4", label: "48, 12×4" },
-  { value: "60", label: "60" },
-  { value: "72", label: "72" },
-  { value: "80", label: "80" },
-  { value: "96", label: "96" },
-  { value: "100", label: "100" },
-  { value: "120", label: "120" },
-];
-
-/** Dropdown options for treble instrument range presets. */
-const TREBLE_SIZE_OPTIONS: Array<{ value: TrebleSizePreset; label: string }> = [
-  { value: "one-octave", label: "1 octave (auto-expand if needed)" },
-  { value: "two-octave", label: "2 octaves (auto-expand if needed)" },
-  { value: "small", label: "Small CBA, about 3 octaves" },
-  { value: "full", label: "Full-size CBA, about 3¾–4 octaves" },
-  { value: "large", label: "Large CBA, about 5+ octaves" },
-];
-
-/** Dropdown options for piano treble keyboard ranges. */
-const PIANO_TREBLE_RANGE_OPTIONS: Array<{
-  value: PianoTrebleRange;
-  label: string;
-}> = [
-  {
-    value: "two-octave",
-    label: PIANO_TREBLE_RANGE_PRESETS["two-octave"].label,
-  },
-  {
-    value: "three-octave",
-    label: PIANO_TREBLE_RANGE_PRESETS["three-octave"].label,
-  },
-  {
-    value: "four-octave",
-    label: PIANO_TREBLE_RANGE_PRESETS["four-octave"].label,
-  },
-];
-
-/** SVG viewBox widths chosen so each treble size has enough horizontal space. */
-const TREBLE_SIZE_VIEW_WIDTH: Record<TrebleSizePreset, number> = {
-  "one-octave": 500,
-  "two-octave": 650,
-  small: 1080,
-  full: 1220,
-  large: 1460,
-};
-
-/** Named colors used by sequence arrows and sequence numbers. */
-const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
-  red: "#d4553f",
-  blue: "#1746d0",
-  black: "#111111",
-  grey: "#666666",
-  theme: "#1746d0",
-};
-
-const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{
-  value: SequenceDisplayMode;
-  label: string;
-}> = [
-  { value: "numbers", label: "Numbers only" },
-  { value: "straight-arrows", label: "Straight arrows" },
-  { value: "curved-arrows", label: "Curved arrows" },
-  { value: "numbers-and-straight-arrows", label: "Numbers + straight arrows" },
-  { value: "numbers-and-curved-arrows", label: "Numbers + curved arrows" },
-];
-
-function normalizeProgressionText(value: string) {
-  return value
-    .replace(/[♭𝄫]/gu, "b")
-    .replace(/[♯𝄪]/gu, "#")
-    .replace(/[–—-]/g, " ")
-    .replace(/[^A-Za-z0-9#b°+]+/g, " ")
-    .trim()
-    .replace(/\s+/g, " ")
-    .toLowerCase();
-}
-
-function formatProgressionOptionLabel(progression: ChordProgressionDefinition, language: InterfaceLanguage) {
-  const localizedName = progressionName(progression.id, progression.name, language);
-  const chordList = chordProgressionSteps(progression)
-    .map((step) => step.symbol)
-    .join(" ");
-  if (!chordList) return localizedName;
-
-  const normalizedName = normalizeProgressionText(progression.name);
-  const normalizedChords = normalizeProgressionText(chordList);
-  if (normalizedName.includes(normalizedChords)) return `${translate(language, "ui.progression")} — ${chordList}`;
-
-  return `${localizedName} — ${chordList}`;
-}
 
 /** Renders the full accordion diagram generator application. */
 export function useAppController() {
@@ -300,21 +206,17 @@ export function useAppController() {
     bassPatternEditorErrors, saveCustomBassPattern, removeSelectedCustomBassPattern,
     loadSelectedPatternIntoEditor,
   } = useBassPatternState(t);
-  const [musicNotationIncludeTitle, setMusicNotationIncludeTitle] =
-    useState(true);
-  const [musicNotationIncludeDescription, setMusicNotationIncludeDescription] =
-    useState(false);
-  const [musicNotationIncludeSummary, setMusicNotationIncludeSummary] =
-    useState(false);
-  const [musicNotationUseBarsPerLine, setMusicNotationUseBarsPerLine] =
-    useState(true);
-  const [musicNotationBarsPerLine, setMusicNotationBarsPerLine] = useState(4);
-  const [musicNotationChordFontSize, setMusicNotationChordFontSize] =
-    useState(11);
-  const [musicNotationScale, setMusicNotationScale] = useState(54);
-  const [musicNotationStaffWidth, setMusicNotationStaffWidth] = useState(520);
-  const [musicNotationStaffSeparator, setMusicNotationStaffSeparator] =
-    useState(14);
+  const {
+    musicNotationIncludeTitle, setMusicNotationIncludeTitle,
+    musicNotationIncludeDescription, setMusicNotationIncludeDescription,
+    musicNotationIncludeSummary, setMusicNotationIncludeSummary,
+    musicNotationUseBarsPerLine, setMusicNotationUseBarsPerLine,
+    musicNotationBarsPerLine, setMusicNotationBarsPerLine,
+    musicNotationChordFontSize, setMusicNotationChordFontSize,
+    musicNotationScale, setMusicNotationScale,
+    musicNotationStaffWidth, setMusicNotationStaffWidth,
+    musicNotationStaffSeparator, setMusicNotationStaffSeparator,
+  } = useNotationSettings();
 
   function toggleBassPatternNotation() {
     setBassPatternRenderedNotationVisible((current) => !current);
@@ -1761,29 +1663,25 @@ export function useAppController() {
   }
 
   function stopAbcPlayback() {
-    clearAbcTimers();
-    setAbcPlaybackState("stopped");
-    setAbcPositionBeat(0);
-    setAbcActiveButtonIds([]);
-    abcPlaybackStartedAtRef.current = null;
-    stopAllSound();
+    stopAbcTransport({
+      clearTimers: clearAbcTimers, setState: setAbcPlaybackState,
+      setPosition: setAbcPositionBeat, setActiveButtons: setAbcActiveButtonIds,
+      startedAtRef: abcPlaybackStartedAtRef, stopSound: stopAllSound,
+    });
   }
 
   function pauseAbcPlayback() {
-    if (abcPlaybackState !== "playing") return;
-    const startedAt = abcPlaybackStartedAtRef.current;
-    const startBeat = abcPlaybackStartBeatRef.current;
-    const elapsedBeats =
-      startedAt === null
-        ? 0
-        : ((playbackClockMs() - startedAt) / 1000) * (abcTempoBpm / 60);
-    setAbcPositionBeat(Math.min(abcTotalBeats, startBeat + elapsedBeats));
-    setAbcPlaybackState("paused");
-    setAbcActiveButtonIds([]);
-    clearAbcTimers();
-    stopBassPatternPlayback();
-    stopAllSound();
-    setHarmonyProgressionActiveButtonIds([]);
+    pauseAbcTransport({
+      playbackState: abcPlaybackState,
+      startedAt: abcPlaybackStartedAtRef.current,
+      startingBeat: abcPlaybackStartBeatRef.current,
+      tempoBpm: abcTempoBpm, totalBeats: abcTotalBeats,
+      nowMs: playbackClockMs, setPosition: setAbcPositionBeat,
+      setState: setAbcPlaybackState, setActiveButtons: setAbcActiveButtonIds,
+      clearTimers: clearAbcTimers, stopBassPattern: stopBassPatternPlayback,
+      stopSound: stopAllSound,
+      clearProgressionButtons: () => setHarmonyProgressionActiveButtonIds([]),
+    });
   }
 
   function scheduleAbcPlayback(startBeat = abcPositionBeat) {
@@ -1811,11 +1709,11 @@ export function useAppController() {
   }
 
   function stopBassPatternPlayback() {
-    bassPatternPlaybackRunRef.current += 1;
-    clearBassPatternTimers();
-    setBassPatternPlaybackState("stopped");
-    setBassPatternActiveButtonIds([]);
-    stopAllSound();
+    stopBassPatternTransport({
+      runRef: bassPatternPlaybackRunRef, clearTimers: clearBassPatternTimers,
+      setState: setBassPatternPlaybackState,
+      setActiveButtons: setBassPatternActiveButtonIds, stopSound: stopAllSound,
+    });
   }
 
   function downloadTextFile(
@@ -1933,21 +1831,22 @@ export function useAppController() {
     stopAllSound();
   }
 
-  /** Reset only Stradella Chord Finder options. Register/sound/global settings remain untouched. */
+  /** Reset Finder-local preferences, without altering instrument or sound state. */
   function resetStradellaFinderDefaults() {
-    setStradellaChordFinderRoot("C");
-    setStradellaChordFinderPattern("major-triad");
-    setStradellaChordFinderMode("bass-and-chords");
-    setStradellaChordFinderRequestedBass(null);
-    setStradellaChordFinderRealizationIndex(0);
-    setFinderMaxButtons(3);
-    setFinderSpanColumns(4.3);
-    setStradellaMinimumNominalGap(0);
-    setStradellaChordFinderMarkRootBass(true);
-    setShowFinderRealizationNote(true);
-    setShowStradellaVoicingIntervals(true);
-    setStradellaNoteLevels({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
-    setFinderExplanationFontSize(26);
+    resetStradellaFinder({
+      setRoot: setStradellaChordFinderRoot,
+      setPattern: setStradellaChordFinderPattern,
+      setMode: setStradellaChordFinderMode,
+      setRequestedBass: setStradellaChordFinderRequestedBass,
+      setRealizationIndex: setStradellaChordFinderRealizationIndex,
+      setMaxButtons: setFinderMaxButtons, setSpanColumns: setFinderSpanColumns,
+      setMinimumNominalGap: setStradellaMinimumNominalGap,
+      setMarkRootBass: setStradellaChordFinderMarkRootBass,
+      setShowRealizationNote: setShowFinderRealizationNote,
+      setShowVoicingIntervals: setShowStradellaVoicingIntervals,
+      setNoteLevels: setStradellaNoteLevels,
+      setExplanationFontSize: setFinderExplanationFontSize,
+    });
   }
 
   function resetCurrentToolDefaults() {
@@ -1958,21 +1857,18 @@ export function useAppController() {
     }
   }
 
-  /** Clears selections, fingerings, sequences, annotations, and active tool modes. */
+  /** Work reset deliberately leaves preferences (including sample settings) alone. */
   function resetDiagramWork() {
-    setOverlays({});
-    setSequenceSteps([]);
-    setIsRecordingSequence(false);
-    setIsApplyingFingering(false);
-    setTextNotes([]);
-    setScaleFinderActive(false);
-    setChordFinderActive(false);
-    setStradellaChordFinderActive(false);
-    setHarmonyProgressionPreviewIndex(null);
-    stopAbcPlayback();
-    stopBassPatternPlayback();
-    stopAllSound();
-    setHarmonyProgressionActiveButtonIds([]);
+    resetDiagramWorkState({
+      setOverlays, setSequenceSteps, setRecording: setIsRecordingSequence,
+      setApplyingFingering: setIsApplyingFingering,
+      setTextNotes, setScaleFinderActive, setChordFinderActive,
+      setStradellaChordFinderActive,
+      setProgressionPreview: setHarmonyProgressionPreviewIndex,
+      stopAbc: stopAbcPlayback, stopBassPattern: stopBassPatternPlayback,
+      stopSound: stopAllSound,
+      setProgressionActiveButtons: setHarmonyProgressionActiveButtonIds,
+    });
   }
 
   /** Semitones of a pitch class above C (0–11), used for key-independent functional-reference labels. */
@@ -2111,36 +2007,18 @@ export function useAppController() {
       .filter(({ candidate }) => candidate.playable);
     if (!candidates.length || !svgRef.current) return;
     setBatchExporting(true);
-    const initialIndex = stradellaChordFinderRealizationIndex;
-    const snapshots: Array<{ name: string; svg: string; width: number; height: number }> = [];
     try {
-      try {
-        for (let index = 0; index < candidates.length; index++) {
-          const { candidate, index: originalIndex } = candidates[index];
-          flushSync(() => setStradellaChordFinderRealizationIndex(originalIndex));
-          const svg = svgRef.current;
-          if (!svg) throw new Error("Diagram SVG is unavailable.");
-          const annotation = realizationAnnotation(
-            stradellaChordFinderRoot, stradellaChordFinderPattern, candidate,
-            stradellaRegisterModel, stradellaChordFinderRequestedBass,
-            stradellaNoteLevels, chordDisplayStyle, language,
-          );
-          const safeName = (annotation?.filenameKey ?? `realization-${index + 1}`)
-            .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
-            .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-            .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")
-            .slice(0, 140);
-          const rect = svg.viewBox.baseVal;
-          snapshots.push({
-            name: `${String(index + 1).padStart(3, "0")}-${safeName || "stradella"}`,
-            svg: serializeSvg(svg, downloadFormat === "png"),
-            width: Math.ceil(rect.width || svg.clientWidth || 1200),
-            height: Math.ceil(rect.height || svg.clientHeight || 800),
-          });
-        }
-      } finally {
-        flushSync(() => setStradellaChordFinderRealizationIndex(initialIndex));
-      }
+      const snapshots = captureStradellaBatch({
+        candidates, originalIndex: stradellaChordFinderRealizationIndex,
+        selectIndex: (index) => flushSync(() => setStradellaChordFinderRealizationIndex(index)),
+        currentSvg: () => svgRef.current,
+        filenameKey: (candidate) => realizationAnnotation(
+          stradellaChordFinderRoot, stradellaChordFinderPattern, candidate,
+          stradellaRegisterModel, stradellaChordFinderRequestedBass,
+          stradellaNoteLevels, chordDisplayStyle, language,
+        )?.filenameKey,
+        format: downloadFormat,
+      });
       await downloadDiagramBatch(snapshots, downloadFormat, `stradella-${stradellaChordFinderRoot}-${stradellaChordFinderPattern}-${downloadFormat}-${snapshots.length}-realizations.zip`);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : "Could not export all diagrams.");
@@ -2346,11 +2224,7 @@ export function useAppController() {
     : finderFooterEnabled ? stradellaFinderFooterY + finderFooterHeight + 12
       : baseViewHeight + (trebleFooterEnabled ? 112 : 0);
 
-  const sidebarWidth =
-    interfaceDensity === "compact"
-      ? "clamp(230px, 15vw, 270px)"
-      : "clamp(300px, 20vw, 380px)";
-  const appGridColumns = `${leftPanelMode === "hidden" ? "" : `${sidebarWidth} `}minmax(0, 1fr)`;
+  const appGridColumns = workspaceGridColumns(interfaceDensity, leftPanelMode);
 
   const showSequenceNumbers =
     sequenceNumberPosition !== "none" &&
@@ -2394,50 +2268,11 @@ export function useAppController() {
   const bellowsStartLabel = side === "stradella" ? t("ui.bottom") : t("ui.top");
   const bellowsEndLabel = side === "stradella" ? t("ui.top") : t("ui.bottom");
 
-  const activeToolLabel =
-    side === "stradella"
-      ? bassPatternPlaybackState === "playing"
-        ? t("ui.bassPatternPlayer")
-        : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-          ? t("ui.abcDefault")
-          : activeToolSection === "progressionAssistant"
-            ? t("ui.progressionAssistant")
-            : scaleFinderActive
-              ? t("ui.scaleFinder")
-              : stradellaChordFinderActive
-                ? t("tools.chordFinder")
-                : isRecordingSequence
-                ? t("ui.sequenceRecording")
-                : isApplyingFingering
-                  ? t("ui.fingering")
-                  : activeToolSection === "annotateDiagram"
-                    ? t("ui.annotateDiagram")
-                    : selectionOnClick
-                      ? t("ui.selection")
-                      : activeToolSection === "stradellaChordFinder"
-                        ? t("tools.chordFinder")
-                        : activeToolSection === "scaleFinder"
-                          ? t("ui.scaleFinder")
-                          : t("ui.noActiveTool")
-      : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-        ? t("ui.abcDefault")
-        : scaleFinderActive
-          ? t("ui.scaleFinder")
-          : chordFinderActive
-            ? t("tools.chordFinder")
-            : isRecordingSequence
-              ? t("ui.sequenceRecording")
-              : isApplyingFingering
-                ? t("ui.fingering")
-                : activeToolSection === "annotateDiagram"
-                  ? t("ui.annotateDiagram")
-                  : selectionOnClick
-                    ? t("ui.selection")
-                    : activeToolSection === "chordFinder"
-                      ? t("tools.chordFinder")
-                      : activeToolSection === "scaleFinder"
-                        ? t("ui.scaleFinder")
-                        : t("ui.noActiveTool");
+  const activeToolLabel = activeToolStatusLabel({
+    side, bassPatternPlaybackState, abcPlaybackState, activeToolSection,
+    scaleFinderActive, stradellaChordFinderActive, chordFinderActive,
+    isRecordingSequence, isApplyingFingering, selectionOnClick, t,
+  });
 
   const statusBarText = accordionStatusText({
     side, basses, trebleLayout, pianoRange: pianoTrebleRange, trebleRows,

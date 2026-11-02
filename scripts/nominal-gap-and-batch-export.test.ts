@@ -46,6 +46,9 @@ assert.match(app,/function clearHarmonyWork\(/);
 assert.match(app,/function resetStradellaFinderDefaults\(/);
 const toolbar=readFileSync(new URL("../src/app/components/WorkspaceToolbar.tsx",import.meta.url),"utf8");
 assert.match(toolbar,/className="reset-menu"/);
-assert.match(app,/flushSync\(\(\) => setStradellaChordFinderRealizationIndex\(initialIndex\)\)/);
+// Capture lives in the diagram module; the controller still selects synchronously.
+const batchCapture = readFileSync(new URL("../src/diagram/stradellaBatchCapture.ts", import.meta.url), "utf8");
+assert.match(app, /selectIndex: \(index\) => flushSync\(\(\) => setStradellaChordFinderRealizationIndex\(index\)\)/);
+assert.match(batchCapture, /finally \{\s*selectIndex\(originalIndex\)/);
 assert.match(app,/stradellaMinimumNominalGap,/);
 console.log("✓ Proportional layout, adjacent-gap filter, ZIP metadata and reset scope checks passed");

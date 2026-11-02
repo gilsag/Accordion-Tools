@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 
 import { translateKnownLabel } from "../../i18n/catalog";
 import { abcExampleName, bassPatternName, progressionName } from "../../i18n/optionLabels";
@@ -5,12 +6,16 @@ import type { AbcStradellaMode, DiagramAnnotationAnchor, FinderScalePattern, Fon
 import { stradellaRowLabel } from "../../stradella";
 import { FINDER_ROOT_OPTIONS, SCALE_FINDER_OPTIONS, SCALE_FINDER_ROW_LIMIT_OPTIONS } from "../../tools/scaleFinderTools";
 import { patternBarCount } from "../../tools/bassPatternPlayerTools";
-import { TrebleChordFinderPanel } from "../../components/tools/TrebleChordFinderPanel";
-import { StradellaChordFinderPanel } from "../../components/tools/StradellaChordFinderPanel";
+// The panel is fetched on first render; its state stays in its feature hook.
+const TrebleChordFinderPanel = lazy(() => import("../../components/tools/TrebleChordFinderPanel").then(module => ({ default: module.TrebleChordFinderPanel })));
+// The panel is fetched on first render; its state stays in its feature hook.
+const StradellaChordFinderPanel = lazy(() => import("../../components/tools/StradellaChordFinderPanel").then(module => ({ default: module.StradellaChordFinderPanel })));
 import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import { HarmonyExplorerPanel } from "../../components/tools/HarmonyExplorerPanel";
-import { ProgressionAssistantPanel } from "../../components/tools/ProgressionAssistantPanel";
+// The panel is fetched on first render; its state stays in its feature hook.
+const HarmonyExplorerPanel = lazy(() => import("../../components/tools/HarmonyExplorerPanel").then(module => ({ default: module.HarmonyExplorerPanel })));
+// The panel is fetched on first render; its state stays in its feature hook.
+const ProgressionAssistantPanel = lazy(() => import("../../components/tools/ProgressionAssistantPanel").then(module => ({ default: module.ProgressionAssistantPanel })));
 import { harmonyFamilyForFinderPattern } from "../../tools/harmonyExplorer/integration";
 import type { AppControllerModel } from "../useAppController";
 
@@ -63,7 +68,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
   return (
     <>
               {workspaceMode === "harmony" ? (
-                <HarmonyExplorerPanel
+                <Suspense fallback={<div className="section-content" aria-busy="true" />}><HarmonyExplorerPanel
                   chordDisplayStyle={chordDisplayStyle}
                   isOpen={activeToolSection === "harmonyExplorer"}
                   onToggle={() => toggleToolSection("harmonyExplorer")}
@@ -92,7 +97,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onPlayRecordedProgression={playHarmonyRecordedProgression}
                   onStopRecordedProgression={stopHarmonyRecordedProgressionPlayback}
                   onReset={resetHarmonyExplorer}
-                />
+                /></Suspense>
               ) : (
                 <>
               {(isTrebleLikeSide || side === "stradella") && (
@@ -246,7 +251,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
               )}
 
               {isTrebleLikeSide && (
-                <TrebleChordFinderPanel
+                <Suspense fallback={<div className="section-content" aria-busy="true" />}><TrebleChordFinderPanel
                   isOpen={activeToolSection === "chordFinder"}
                   onToggle={() => toggleToolSection("chordFinder")}
                   targetToneText={formatTrebleChordFinderPitches()}
@@ -272,11 +277,11 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onPlay={playChordFinder}
                   showVoicingNote={showTrebleVoicingNote}
                   onShowVoicingNoteChange={setShowTrebleVoicingNote}
-                />
+                /></Suspense>
               )}
 
               {side === "stradella" && (
-                <StradellaChordFinderPanel
+                <Suspense fallback={<div className="section-content" aria-busy="true" />}><StradellaChordFinderPanel
                   isOpen={activeToolSection === "stradellaChordFinder"}
                   onToggle={() => toggleToolSection("stradellaChordFinder")}
                   root={stradellaChordFinderRoot}
@@ -326,11 +331,11 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onExploreHarmony={exploreCurrentStradellaChordInHarmony}
                   formatPitches={formatStradellaFinderPitches}
                   formatText={formatStradellaFinderText}
-                />
+                /></Suspense>
               )}
 
               {side === "stradella" && (
-                <ProgressionAssistantPanel
+                <Suspense fallback={<div className="section-content" aria-busy="true" />}><ProgressionAssistantPanel
                   chordDisplayStyle={chordDisplayStyle}
                   isOpen={activeToolSection === "progressionAssistant"}
                   onToggle={() => toggleToolSection("progressionAssistant")}
@@ -360,7 +365,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onOpenStepInChordFinder={openHarmonyProgressionStepInChordFinder}
                   onPlay={playOptimizedHarmonyProgression}
                   onStop={stopSoundPlayback}
-                />
+                /></Suspense>
               )}
 
               <section className="control-section">
