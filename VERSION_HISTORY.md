@@ -1,10 +1,12 @@
-## Unreleased — Architecture migration, Phases 1–3a (toward v0.16.0)
+## Unreleased — Architecture migration, Phases 1–3b (toward v0.16.0)
 
 - Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
 - Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.
 - Extracted settings startup/import validation and ordered JSON export projection into `src/settings/settingsController.ts` with a typed adapter to existing React setters. Preserved user-language precedence, legacy keys, numeric clamping, and partial JSON behavior.
 - Extended `npm run test:modules` with seven golden settings call-order fixtures recorded from the pre-extraction implementation, plus all 118 original exported JSON keys in order.
 - Extracted the Scale Finder and Treble Chord Finder state into separate feature hooks, including memoized selection adapters that delegate to the unchanged musical algorithms. Preserved default requests, exact selected button identities and ordering, existing settings setters, and inactive-tool semantics.
+- Extracted Stradella Chord Finder request, search-control and explanation-display state, memoized candidate/result selectors, realization reset, and physical-button-based progression handoff into `src/features/stradellaChordFinder/useStradellaChordFinder.ts`. The original chord-search/ranking engines and `playbackButtons` identity contract are unchanged; instrument register modeling and audio remain separate.
+- Added `scripts/stradella-finder-module.test.mjs` for default state, exact engine arguments, candidate selection/clamping, visual versus sounded button identities, and progression handoff. Extended `test:modules` without changing settings/exports or UI behavior.
 - Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Other tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
 - No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
 
