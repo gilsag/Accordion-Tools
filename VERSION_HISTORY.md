@@ -1,4 +1,4 @@
-## Unreleased — Architecture migration, Phases 1–3c (toward v0.16.0)
+## Unreleased — Architecture migration, Phases 1–3d (toward v0.16.0)
 
 - Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
 - Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.
@@ -9,7 +9,10 @@
 - Added `scripts/stradella-finder-module.test.mjs` for default state, exact engine arguments, candidate selection/clamping, visual versus sounded button identities, and progression handoff. Extended `test:modules` without changing settings/exports or UI behavior.
 - Extracted ABC Player editor, loaded-file/example state, score tempo, transport state, voice-mapping preferences, notation visibility, and manifest/example loading into `src/features/abcPlayer/useAbcPlayer.ts`. Its result hook delegates unchanged two-voice parsing and physical button mapping to `src/tools/abcPlayerTools.ts`, preserving playback events, missing-note reporting and original IDs. Shared playback timers, audio actions and notation rendering remain in App pending separate stages.
 - Added `scripts/abc-feature-module.test.mjs` to verify original defaults, stable settings setters, manifest filtering, example import, parsing branches, playback tempo synchronization and actual button IDs. Extended `test:modules`.
-- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Remaining tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
+- **Combined Phase 3d (patterns and sequences):** Extracted Bass Pattern Player state, bundled library and progression loading, custom pattern JSON editing, historical localStorage persistence, and Stradella-only derived accompaniment events into `src/features/bassPatternPlayer/useBassPatternPlayer.ts`. Retained original validation behavior, fallback selection, per-field settings setters, exact engine input order, musical/notation/export formats and playback button references.
+- Extracted Sequence/Recording state, append-order step numbering, visual path preferences, notation visibility, and current physical-button reconnection into `src/features/sequences/useSequenceState.ts`; shared audio/notation rendering and file downloads remain in `App.tsx` pending service extraction.
+- Added `scripts/pattern-sequence-feature-modules.test.mjs` to verify original feature defaults, pattern persistence and editor operations, bundled loading, derived event/button identity, and recorded step order. Registered it in `test:modules`. No public behavior or version changes.
+- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Harmony/Progression and annotation tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
 - No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
 
 ## v0.15.28 — Documentation maintenance
