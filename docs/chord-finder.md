@@ -6,7 +6,7 @@ Accordion Tools provides two chord finders, one for C-system/B-system/piano treb
 The **Show diagram explanation** checkbox controls the concise four-level annotation displayed with the Stradella diagram and included in SVG/PNG exports. Each Chord or Scale Finder has a Show/Hide action; hiding the result preserves the selected chord or scale and its settings. Playback remains independently available when notes/buttons are available. Use the application Reset menu when you want to clear the current work or restore a tool's supported defaults.
 
 
-## Additional chord families (v0.15.8)
+## Chord families and extensions
 
 Both Finders include **Csus2, C7sus4, Cadd9, Cm(add9), C6/9,
 Cm6/9, C7♯5, C7♯9, and Cmaj7♯11**. Altered fifths, altered ninths,
@@ -107,7 +107,7 @@ The **Show chord realization note below diagram** checkbox now works with **all 
 
 ## Configurable register interpretation and navigation
 
-In **Settings → Stradella registers**, independently from Sound, the bass/counterbass and preset-chord ranges let you select a starting octave plus either `C–B` or `F–E` grouping. The result and concise explanation now show the **nominal pitches from low to high**, with octave numbers. More explanation retains the model-specific inversion discussion and caveats. For example, a B bass with a C major chord can yield B2 as the nominal lowest note with the defaults (bass C2–B2, chords C3–B3), but a high bass-register setting may place a C chord tone below B.
+In **Settings → Instrument → Stradella registers**, independently from Sound, the bass/counterbass and preset-chord ranges let you select a starting octave plus either `C–B` or `F–E` grouping. The result and concise explanation now show the **nominal pitches from low to high**, with octave numbers. More explanation retains the model-specific inversion discussion and caveats. For example, a B bass with a C major chord can yield B2 as the nominal lowest note with the defaults (bass C2–B2, chords C3–B3), but a high bass-register setting may place a C chord tone below B.
 
 This calculation does **not** establish a physical accordion's true acoustic inversion. When **Follow configured Stradella registers** is enabled in La Melodiosa playback, its nominal MIDI pitches also drive the sampler (with transposition as needed); when disabled, sample playback retains the historical C2–B2 and C3–B3 mappings. It is based on one nominal pitch per chord tone and played button, not on visual reference markers or measured reed spectra. Structural labels (root support and possible slash-bass character) remain separate from the configured register model.
 
@@ -129,7 +129,7 @@ SVG and PNG filenames use ASCII letters, numbers, and ordinary hyphens. Musical 
 
 The Harmony Explorer can send supported chord families to the Stradella finder, and the Stradella finder can open related chords in Harmony Explorer. The Progression Assistant can preview its selected chord realization in the finder. See [Harmony Explorer](harmony-explorer.md), [Progression Assistant](progression-assistant.md), and [Settings](settings.md).
 
-### Register-dependent voicing density (v0.15.4)
+### Register-dependent voicing density
 
 When the nominal register model predicts adjacent semitones in the bass or chord registers, concise **Registral voicing** notes may identify a close pair (for example, `close E3–F3 semitone`) or a cluster of four or more neighboring pitches. **More explanation** discusses why these intervals can be intentional but might sound congested in the lower register. The observation depends on distinct modeled MIDI pitches; a unison doubled by two buttons is not counted as dissonance.
 

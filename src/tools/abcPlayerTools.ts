@@ -31,6 +31,9 @@ export type AbcEvent = {
   chordSymbols: AbcChordSymbol[];
   source: string;
   tieToNext?: boolean;
+  /** In an explicitly annotated accordion bass staff, this written pitch
+   * denotes a preset chord button rather than an independently sounded note. */
+  stradellaChordMarker?: boolean;
 };
 
 export type AbcParseResult = {
@@ -710,8 +713,12 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
   const sequencedVoices = abcjs.synth.sequence(tune, {}) as unknown as AbcJsSequenceElement[][];
   const voiceIds = sequencedVoices.map((_, index) => String(index + 1));
   const events: AbcEvent[] = [];
+  // abcjs expands repeats but preserves written-score timestamps. Reconstruct
+  // the elapsed time of each pass to prevent overlapping repeated events.
+  const hasWrittenRepeats = /\|:|:\||\[\s*[12]\.?/.test(abcText);
 
   sequencedVoices.forEach((voice, voiceIndex) => {
+    let unfoldedPosition = 0;
     const voiceId = String(voiceIndex + 1);
     let keyAccidentals = keySignatureAccidentals(key);
     let measureAccidentals: Record<string, number> = {};
@@ -731,7 +738,10 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
       if (element.el_type !== "note" || typeof element.duration !== "number") return;
 
       const durationBeats = element.duration * 4;
-      const startBeat = typeof element.timing === "number" ? element.timing * 4 : 0;
+      const startBeat = hasWrittenRepeats
+        ? unfoldedPosition * 4
+        : typeof element.timing === "number" ? element.timing * 4 : 0;
+      unfoldedPosition += element.duration;
       const rawPitches = element.pitches ?? [];
       const notes = rawPitches.map((pitch) =>
         abcjsPitchToNote(pitch, keyAccidentals, measureAccidentals),
@@ -792,20 +802,48 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
   };
 }
 
+/** Interpret conventional accordion bass-staff shorthand only when the
+ * ABC file opts into it. A higher-positioned written note represents a
+ * preset chord button; the current chord label supplies its quality.
+ * Ordinary ABC files retain their literal-pitch behavior. */
+function interpretAccordionBassStaff(result: AbcParseResult, abcText: string): AbcParseResult {
+  if (!/^% accordion-tools-stradella-bass-chord\s*$/m.test(abcText)) return result;
+
+  let currentChord: AbcChordSymbol | undefined;
+  const events = result.events.map((event) => {
+    if (event.voiceId !== "2") return event;
+    if (event.chordSymbols.length > 0) currentChord = event.chordSymbols[0];
+    if (event.notes.length !== 1) return event;
+
+    const note = event.notes[0];
+    const midi = (note.octave + 1) * 12 + pitchIndexForClass(note.pitchClass);
+    // D3 is the middle line of the bass staff. The printed chord-button
+    // markers are on or above that line, whereas bass notes lie below it.
+    if (midi < 50) return event;
+
+    return {
+      ...event,
+      stradellaChordMarker: true,
+      chordSymbols: currentChord ? [currentChord] : [],
+    };
+  });
+  return { ...result, events };
+}
+
 /** Primary ABC entry point. A parser failure remains visible in `errors`
  * even if the legacy parser can recover a subset of the notation. */
 export function parseAbc(abcText: string): AbcParseResult {
   try {
-    return parseAbcWithAbcjs(abcText);
+    return interpretAccordionBassStaff(parseAbcWithAbcjs(abcText), abcText);
   } catch (error) {
     const legacy = parseAbcLegacy(abcText);
-    return {
+    return interpretAccordionBassStaff({
       ...legacy,
       errors: [
         ...legacy.errors,
         `abcjs parsing failed; used legacy parser fallback. ${error instanceof Error ? error.message : ""}`.trim(),
       ],
-    };
+    }, abcText);
   }
 }
 
@@ -995,6 +1033,9 @@ export function mapAbcEventsToStradellaBassButtons(
     const missingNotes: string[] = [];
     const usedIds = new Set<string>();
 
+    // Accordion bass-staff chord markers are not single bass/counterbass notes.
+    if (event.stradellaChordMarker) return { ...event, buttons: [], missingNotes };
+
     event.notes.forEach((note) => {
       const candidates = bassButtons.filter((button) => button.pitchClass === note.pitchClass);
       const selected = chooseStradellaBassButton(candidates, rootReference, previous, usedIds);
@@ -1021,6 +1062,23 @@ export function mapAbcEventsToStradellaBassButtons(
 
 function chordFinderModeForAbc(mode: AbcStradellaMappingMode): StradellaChordFinderMode {
   return mode === "chord-symbols-only" ? "chord-buttons-only" : "bass-and-chords";
+}
+
+/** Accordion bass-staff chord markers represent a single preset chord button,
+ * even when that button intentionally omits the fifth of a seventh chord.
+ * Finder recipes are not appropriate for this notation: they may use more
+ * than one physical button to build the full theoretical chord. */
+function chordButtonForBassStaffMarker(
+  buttons: DiagramButton[],
+  symbol: AbcChordSymbol,
+): DiagramButton | undefined {
+  const kind = symbol.pattern === "major-triad" ? "chord-major"
+    : symbol.pattern === "minor-triad" ? "chord-minor"
+    : symbol.pattern === "dominant7" ? "chord-dominant7"
+    : symbol.pattern === "diminished7" ? "chord-diminished7"
+    : null;
+  if (!kind) return undefined;
+  return buttons.find((button) => button.kind === kind && button.chordRoot === symbol.root);
 }
 
 function uniqueButtons(buttons: DiagramButton[]) {
@@ -1052,8 +1110,18 @@ export function mapAbcEventsToStradellaButtons(
     const eventButtons: DiagramButton[] = bassMapped?.[eventIndex]?.buttons ? [...bassMapped[eventIndex].buttons] : [];
     const missingNotes: string[] = bassMapped?.[eventIndex]?.missingNotes ? [...bassMapped[eventIndex].missingNotes] : [];
     const finderMode = chordFinderModeForAbc(mode);
+    if (event.stradellaChordMarker && event.chordSymbols.length === 0) {
+      missingNotes.push(`chord button for ${event.notes[0]?.label ?? "unlabeled note"}`);
+    }
 
     event.chordSymbols.forEach((symbol) => {
+      if (event.stradellaChordMarker) {
+        const button = chordButtonForBassStaffMarker(buttons, symbol);
+        if (button) eventButtons.push(button);
+        else missingNotes.push(`preset chord button ${symbol.raw}`);
+        return;
+      }
+
       const result = getStradellaChordFinderResult(
         buttons,
         symbol.root,

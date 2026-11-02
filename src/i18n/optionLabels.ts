@@ -72,6 +72,11 @@ const BUNDLED_ABC_EXAMPLES: Record<string, LocalizedName> = {
   "twinkle-little-star": ["Twinkle Little Star", "Estrellita", "Ah ! vous dirai-je, maman"],
   "dyads-and-chords": ["Dyads and chords", "Díadas y acordes", "Dyades et accords"],
   "stradella-chord-symbols": ["Stradella chord symbols", "Símbolos de acordes Stradella", "Symboles d’accord Stradella"],
+  "cueca-floreo-1-c": ["Cueca floreo 1", "Cueca floreo 1", "Cueca floreo 1"],
+  "cueca-floreo-2-g": ["Cueca floreo 2", "Cueca floreo 2", "Cueca floreo 2"],
+  "cueca-floreo-2-am": ["Cueca floreo 3", "Cueca floreo 3", "Cueca floreo 3"],
+  "cueca-floreo-3-c": ["Cueca floreo 4", "Cueca floreo 4", "Cueca floreo 4"],
+  "cueca-floreo-3-em": ["Cueca floreo 5", "Cueca floreo 5", "Cueca floreo 5"],
 };
 
 type AdditionalLanguage = "pt" | "it" | "de";
@@ -137,6 +142,11 @@ const ADDITIONAL_BUILTIN_NAMES: Record<string, Record<AdditionalLanguage, string
   "twinkle-little-star": { pt: "Brilha, brilha, estrelinha", it: "Brilla, brilla, stellina", de: "Funkel, funkel, kleiner Stern" },
   "dyads-and-chords": { pt: "Díades e acordes", it: "Diadi e accordi", de: "Zweiklänge und Akkorde" },
   "stradella-chord-symbols": { pt: "Símbolos de acordes Stradella", it: "Simboli degli accordi Stradella", de: "Stradella-Akkordsymbole" },
+  "cueca-floreo-1-c": { pt: "Cueca floreo 1", it: "Cueca floreo 1", de: "Cueca floreo 1" },
+  "cueca-floreo-2-g": { pt: "Cueca floreo 2", it: "Cueca floreo 2", de: "Cueca floreo 2" },
+  "cueca-floreo-2-am": { pt: "Cueca floreo 3", it: "Cueca floreo 3", de: "Cueca floreo 3" },
+  "cueca-floreo-3-c": { pt: "Cueca floreo 4", it: "Cueca floreo 4", de: "Cueca floreo 4" },
+  "cueca-floreo-3-em": { pt: "Cueca floreo 5", it: "Cueca floreo 5", de: "Cueca floreo 5" },
 };
 
 function localizeBuiltIn(id: string, originalLabel: string, language: InterfaceLanguage, names: Record<string, LocalizedName>): string {

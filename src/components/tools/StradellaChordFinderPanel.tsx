@@ -119,7 +119,7 @@ export function StradellaChordFinderPanel({
   const modeledVoicing = analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel);
   const spell = (pc: string) => chordToneName(root, pattern, pc);
   const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
-  const statusText = isActive && !result.playable ? t("common.notFound") : result.exact ? t("common.exactReady") : t("common.approxReady");
+  const statusText = !result.playable ? t("common.notFound") : result.exact ? t("common.exactReady") : t("common.approxReady");
   const noteLevelOptions = [
     ["identity", t("tools.harmonicIdentity")],
     ["pitchClasses", t("tools.pitchClassRealization")],
@@ -211,7 +211,7 @@ export function StradellaChordFinderPanel({
                 <option value={5.5}>{t("tools.extended")}</option>
               </select>
             </label>
-            <p className="hint">{t("ui.recFirst")} {t("ui.approxCount", { exact: realizations.filter((item) => item.playable && item.exact).length, approx: realizations.filter((item) => item.playable && !item.exact).length })}</p>
+            {isActive && <p className="hint">{t("ui.recFirst")} {t("ui.approxCount", { exact: realizations.filter((item) => item.playable && item.exact).length, approx: realizations.filter((item) => item.playable && !item.exact).length })}</p>}
           </>
         )}
 
@@ -255,7 +255,7 @@ export function StradellaChordFinderPanel({
           </button>
         )}
 
-        <div className="result-card">
+        {isActive && <div className="result-card">
           <div className="result-card-title">{t("tools.stradellaResult")}</div>
           <p>{t("tools.requestedChord")}: <strong>{displayRealizedChord(root, pattern, realizedChordName(root, pattern, requestedBass, requestedBass, requestedSymbol), chordDisplayStyle)}</strong></p>
           <p>{t("tools.status")}: <strong>{statusText}</strong></p>
@@ -270,7 +270,7 @@ export function StradellaChordFinderPanel({
               {result.extraPitches.length > 0 && <p>{t("tools.extra")}: {formatPitches(result.extraPitches)}</p>}
             </>
           )}
-        </div>
+        </div>}
 
         {isActive && (
           <details className="tool-details">

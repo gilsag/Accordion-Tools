@@ -1,7 +1,7 @@
 {
   "name": "accordion-diagram-generator",
   "private": true,
-  "version": "0.15.20",
+  "version": "0.15.27",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,9 +11,9 @@
     "test:chords": "tsx scripts/chord-family-expansion.test.ts && tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts",
     "test:notation": "tsx scripts/notation.test.ts",
     "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:controls && npm run test:audio && npm run test:display && npm run test:i18n",
-    "test:abc": "tsx scripts/abc-ties.test.ts",
+    "test:abc": "tsx scripts/abc-ties.test.ts && tsx scripts/katyusha-accordion-bass.test.ts && tsx scripts/easy-polka-happy-birthday.test.ts && node scripts/cueca-abc-examples.test.mjs && node scripts/abc-example-catalog.test.mjs",
     "test:harmony": "tsx scripts/harmony-note-ring-ui.test.ts && tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts",
-    "test:controls": "tsx scripts/binary-controls.test.ts && node scripts/panel-control-layout.test.mjs && node scripts/stradella-register-panel.test.mjs && npm run test:explanation-ui",
+    "test:controls": "tsx scripts/binary-controls.test.ts && node scripts/panel-control-layout.test.mjs && node scripts/stradella-register-panel.test.mjs && node scripts/instrument-settings-consolidation.test.mjs && node scripts/stradella-finder-state-help.test.mjs && npm run test:explanation-ui",
     "test:inversions": "tsx scripts/stradella-requested-bass.test.ts",
     "test:notes": "tsx scripts/stradella-four-level-notes.test.ts && npm run test:titles && tsx scripts/stradella-inversion-spelling.test.ts",
     "test:titles": "tsx scripts/contextual-titles.test.ts",

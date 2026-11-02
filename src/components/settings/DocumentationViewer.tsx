@@ -27,17 +27,16 @@ const labels: Record<string, string> = {
   "selection-tool.md": "Selection Tool",
   "fingering-tool.md": "Fingering Tool",
   "annotate-diagram-tool.md": "Annotate Diagram",
-  "text-notes-tool.md": "Text Notes",
   "bass-pattern-player.md": "Bass Pattern Player",
   "bass-pattern-format.md": "Bass Pattern Format",
   "abc-player.md": "ABC Player",
   "settings.md": "Settings",
 };
-const preferredOrder = ["README.md", "chord-finder.md", "scale-finder.md", "harmony-explorer.md", "progression-assistant.md", "bass-pattern-player.md", "sequence-tool.md", "selection-tool.md", "fingering-tool.md", "annotate-diagram-tool.md", "text-notes-tool.md", "abc-player.md", "bass-pattern-format.md", "settings.md", "VERSION_HISTORY.md"];
+const preferredOrder = ["README.md", "chord-finder.md", "scale-finder.md", "harmony-explorer.md", "progression-assistant.md", "bass-pattern-player.md", "sequence-tool.md", "selection-tool.md", "fingering-tool.md", "annotate-diagram-tool.md", "abc-player.md", "bass-pattern-format.md", "settings.md", "VERSION_HISTORY.md"];
 const documents = Object.entries({ ...guideFiles, ...rootFiles }).map(([path, content]) => {
   const filename = path.split("/").pop() ?? path;
   return { filename, title: labels[filename] ?? filename.replace(/\.md$/, "").replace(/-/g, " "), content };
-}).sort((a, b) => {
+}).filter(({ filename }) => !["text-notes-tool.md", "developer-guide.md"].includes(filename)).sort((a, b) => {
   const ai = preferredOrder.indexOf(a.filename);
   const bi = preferredOrder.indexOf(b.filename);
   return (ai < 0 ? 100 : ai) - (bi < 0 ? 100 : bi);

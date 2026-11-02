@@ -3,8 +3,8 @@
  * by diatonic scale degree, not by a global sharps/flats display setting.
  * For example Cmin7 = C–E♭–G–B♭, while C♯maj7 uses E♯ rather than F.
  */
-import type { FinderChordPattern } from "../../types";
-import { PITCH_INDEX, transpose } from "../../music";
+import type { AccidentalMode, FinderChordPattern, NotationMode } from "../../types";
+import { PITCH_INDEX, transpose, formatPitch } from "../../music";
 import { intervalsForChordFinder } from "../../music/chordDefinitions";
 
 const LETTERS = ["C", "D", "E", "F", "G", "A", "B"] as const;
@@ -58,6 +58,12 @@ export function chordToneSpellings(root: string, pattern: FinderChordPattern): M
 /** Chord-contextual note spelling; do not reinterpret the chord's identity. */
 export function chordToneName(root: string, pattern: FinderChordPattern, pitchClass: string): string {
   return chordToneSpellings(root, pattern).get(pitchClass) ?? displayRoot(pitchClass);
+}
+
+/** Finder labels describe harmony, not a possibly enharmonic physical button name.
+ * Other notation modes remain governed by the selected notation preference. */
+export function formatChordFinderTone(root: string, pattern: FinderChordPattern, pitch: string, notation: NotationMode, accidental: AccidentalMode): string {
+  return notation === "english" ? chordToneName(root, pattern, pitch) : formatPitch(pitch, notation, accidental);
 }
 
 /** The name of a played chord, which may have an inferred inversion. */

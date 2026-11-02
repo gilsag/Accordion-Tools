@@ -2,9 +2,7 @@
 
 **Accordion-Tools** is a browser-based collection of interactive tools for accordion players, students, and teachers. It combines configurable Stradella and treble diagrams with scale and chord exploration, harmonic analysis, fingering and sequence tools, accompaniment patterns, audio playback, music notation, and SVG/PNG export.
 
-**Version:** 0.15.20
-
-**Stradella Chord Finder:** Nominal note-spacing diagrams use proportional semitone intervals; an optional minimum-gap filter excludes overly close nominal pitches. One ZIP can contain every playable realization for the selected chord and search settings in the chosen SVG or PNG format. The Reset menu separates clearing selections from restoring tool defaults. Diagram footers align explanation labels, use compact preset-chord symbols (e.g., CM), and show nominal intervals with proportional pitch spacing and short leaders.
+**Version:** 0.15.27
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
@@ -44,7 +42,8 @@ See the [Responsive validation report](docs/internal/responsive-validation.md) f
 - Stradella Progression Assistant for optimizing chord realizations across a complete progression.
 - Sequence, Fingering, Selection, and diagram-annotation tools.
 - Stradella Bass Pattern Player with notation and accompaniment patterns.
-- ABC playback and diagram highlighting.
+- ABC playback and diagram highlighting, with automatic discovery of built-in `.abc` files during Vite development/builds.
+- Five cueca floreos and a Katyusha arrangement among the built-in ABC Player examples; the example index is generated from the `.abc` files.
 - **La Melodiosa** sampled accordion playback, with an optional synthesizer.
 - Music notation and SVG/PNG export.
 

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { generateStradella } from "../src/stradella";
 import { getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools";
 import { realizationAnnotation } from "../src/tools/stradellaChordFinder/diagramAnnotations";
-import { chordToneName, realizedInversionDescription, safeChordFilenameKey } from "../src/tools/stradellaChordFinder/chordSpelling";
+import { chordToneName, realizedInversionDescription, safeChordFilenameKey, formatChordFinderTone } from "../src/tools/stradellaChordFinder/chordSpelling";
 import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../src/tools/stradellaChordFinder/registerModel";
 import { explainStradellaRealization } from "../src/tools/stradellaChordFinder/explainRealization";
 
@@ -10,6 +10,12 @@ assert.deepEqual(["C", "D#", "G", "A#"].map((pc) => chordToneName("C", "minor7",
 assert.deepEqual(["C#", "F", "G#", "C"].map((pc) => chordToneName("C#", "major7", pc)), ["C♯", "E♯", "G♯", "B♯"]);
 assert.equal(chordToneName("C", "diminished7", "A"), "B𝄫");
 assert.equal(chordToneName("C", "dominant7b9", "C#"), "D♭");
+// A 96-bass layout may label an enharmonic button C♭. Chord tones must
+// never inherit that physical label, including for B and B♭.
+assert.equal(formatChordFinderTone("E", "minor7", "B", "english", "natural"), "B");
+assert.equal(formatChordFinderTone("C", "dominant13", "A#", "english", "natural"), "B♭");
+assert.equal(formatChordFinderTone("C", "major7", "B", "english", "flats"), "B");
+
 assert.equal(realizedInversionDescription("C", "minor7", "A#"), "Third inversion");
 assert.equal(realizedInversionDescription("C", "major-triad", "E"), "First inversion");
 assert.equal(realizedInversionDescription("C", "major13", "B"), "seventh in bass");

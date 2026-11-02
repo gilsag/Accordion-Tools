@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
+const app = readFileSync("src/App.tsx", "utf8");
+const viewer = readFileSync("src/components/settings/DocumentationViewer.tsx", "utf8");
+assert.match(panel, /\{isActive && <div className="result-card">/);
+assert.match(panel, /\{isActive && <p className="hint">\{t\("ui\.recFirst"\)/);
+assert.match(app, /activeToolSection === "stradellaChordFinder"/);
+assert.doesNotMatch(app, /matchingBassButton/);
+assert.match(viewer, /\.filter\(\(\{ filename \}\) => !\["text-notes-tool\.md", "developer-guide\.md"\]/);
+assert.ok(existsSync("docs/internal/developer-guide.md"));
+assert.ok(!existsSync("docs/developer-guide.md"));
+console.log("Finder empty state, spelling source, and help topic scope passed.");
