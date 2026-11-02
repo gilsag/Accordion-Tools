@@ -2,7 +2,7 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **first two extraction stages**; `App.tsx` is not yet just a layout shell.
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **first two extraction stages and the initial Finder-state extraction**; `App.tsx` is not yet just a layout shell.
 
 ## Code ownership and data flow
 
@@ -19,6 +19,8 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 | Settings schema and I/O | `src/settings/settingsSchema.ts`, `src/settings/settingsPersistence.ts` | Existing partial JSON contract, editable defaults fetch, import parsing, and download serialization |
 | Settings validation and export projection | `src/settings/settingsController.ts` | Distinct startup/import validation, old aliases, typed state-owner callbacks, and ordered export serialization |
 | Language preference | `src/settings/useLanguageSettings.ts` | Persisted language preference, browser-language changes, document language, and translation callback |
+| Scale Finder feature | `src/features/scaleFinder/useScaleFinder.ts` | Root/pattern, row limit, path display, active state, and treble/Stradella button-selection memoization (original engines retained) |
+| Treble Chord Finder feature | `src/features/trebleChordFinder/useTrebleChordFinder.ts` | Root/chord type, inversion, octave, voicing preferences, active state, and unchanged treble button-selection delegation |
 | UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns remaining tool state, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
 | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
 
@@ -27,6 +29,12 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 Maintain three distinct settings operations: `applyStartupSettings` (editable defaults, with the stored-language precedence check), `applyImportedSettings` (valid fields from a partial user file, including explicit language persistence), and `collectCurrentSettings` (exact JSON key order). They intentionally differ. Old `roman` / `tonal-function` chord-label aliases and `bassPatternBarsPerChord` must continue to work; omitted fields must leave the current state unchanged. The separate `SettingsSetters` adapter must reference **stable React state setters** so the initial async defaults effect is not restarted by unrelated renders. Avoid reading snapshot values in asynchronous callbacks when a freshly collected export is required.
 
 The source-of-truth regression is `scripts/settings-controller-compatibility.test.mjs`: fixture traces were captured from the original inline validation logic before extraction and cover seven startup/import scenarios. `scripts/settings-export-keys.json` pins all 118 exported field names and their insertion order; a change to this ordering can affect byte-for-byte JSON exports. Run `npm run test:modules` before merging refactor branches. Do not refactor these historically different paths into one generic setter table without proving identical results.
+
+### Finder feature boundaries
+
+`useScaleFinderState()` and `useTrebleChordFinderState()` expose the existing individual React setters so `settingsController.ts` continues to route imports without a schema change. Their corresponding result hooks receive the **current** diagram `buttons` and manual/visibility inputs; never rebuild `DiagramButton` identities or sort finder output in these adapters. The Scale Finder supports Stradella as well as treble; Treble Chord Finder is intentionally disabled on non-treble manuals. While the migration is in progress, `App.tsx` still coordinates mutual exclusivity and layout-change clearing; do not duplicate it inside the feature hooks.
+
+The hook modules contain explanatory comments for these non-obvious contracts. `scripts/finder-feature-modules.test.mjs` verifies defaults and routing without requiring esbuild; the existing musical tests verify candidate selection and ordering. The feature files are **not** lazy-loaded yet, and importing these hooks does not imply the UI panels have been extracted.
 
 **Important separation:** harmonic validity uses pitch classes; ergonomics uses physical button coordinates; sounding pitches/octaves belong to playback; registral explanation describes button roles and may express a *conditional* inversion character. Do not derive one of these directly from a different layer unless the conversion is explicit and reliable.
 

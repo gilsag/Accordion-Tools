@@ -29,6 +29,8 @@ import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, ty
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
 import { useLanguageSettings } from "./settings/useLanguageSettings";
 import { useInstrumentState } from "./instrument/useInstrumentState";
+import { useScaleFinderState, useScaleFinderResults } from "./features/scaleFinder/useScaleFinder";
+import { useTrebleChordFinderState, useTrebleChordFinderButtons } from "./features/trebleChordFinder/useTrebleChordFinder";
 import { flushSync } from "react-dom";
 import { renderAbc } from "abcjs";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
@@ -55,8 +57,6 @@ import type {
   DiagramAnnotationAnchor,
   DiagramButton,
   DownloadFormat,
-  FinderChordInversion,
-  FinderChordOctave,
   FinderChordPattern,
   FinderScalePattern,
   FontFamily,
@@ -122,7 +122,6 @@ import {
   SCALE_FINDER_ROW_LIMIT_OPTIONS,
   getScaleFinderTrebleButtons,
 } from "./tools/scaleFinderTools";
-import { getStradellaScaleFinderResult } from "./tools/stradellaScaleFinderTools";
 import {
   abcEventsForStradellaSide,
   abcEventsForTrebleSide,
@@ -150,7 +149,7 @@ import {
   type ChordProgressionDefinition,
   type StradellaNotationAbcOptions,
 } from "./tools/bassPatternPlayerTools";
-import { getChordFinderTrebleButtons, type TrebleChordVoicingMode } from "./tools/chordFinderTools";
+import { getChordFinderTrebleButtons } from "./tools/chordFinderTools";
 import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
 import { realizationAnnotation, finderChordSymbol } from "./tools/stradellaChordFinder/diagramAnnotations";
@@ -509,26 +508,24 @@ function App() {
   const [isApplyingFingering, setIsApplyingFingering] = useState(false);
   const [selectionOnClick, setSelectionOnClick] = useState(false);
 
-  /* Scale Finder state for temporary treble-only scale highlights. */
-  const [scaleFinderActive, setScaleFinderActive] = useState(false);
-  const [scaleFinderRoot, setScaleFinderRoot] = useState("C");
-  const [scaleFinderPattern, setScaleFinderPattern] =
-    useState<FinderScalePattern>("major-scale");
-  const [scaleFinderRowLimit, setScaleFinderRowLimit] = useState<3 | 4 | 5>(5);
-  const [scaleFinderDisplayMode, setScaleFinderDisplayMode] =
-    useState<SequenceDisplayMode>("numbers-and-straight-arrows");
-
-  /* Chord Finder state for temporary treble-only chord highlights. */
-  const [chordFinderActive, setChordFinderActive] = useState(false);
-  const [showTrebleVoicingNote, setShowTrebleVoicingNote] = useState(true);
-  const [trebleChordVoicingMode, setTrebleChordVoicingMode] = useState<TrebleChordVoicingMode>("auto");
-  const [chordFinderRoot, setChordFinderRoot] = useState("C");
-  const [chordFinderPattern, setChordFinderPattern] =
-    useState<FinderChordPattern>("major-triad");
-  const [chordFinderInversion, setChordFinderInversion] =
-    useState<FinderChordInversion>("root");
-  const [chordFinderOctave, setChordFinderOctave] =
-    useState<FinderChordOctave>(4);
+  /* Finder requests are independent feature state. App coordinates only which
+   * tool is shown; the tools own their preferences, selections, and results. */
+  const {
+    scaleFinderActive, setScaleFinderActive,
+    scaleFinderRoot, setScaleFinderRoot,
+    scaleFinderPattern, setScaleFinderPattern,
+    scaleFinderRowLimit, setScaleFinderRowLimit,
+    scaleFinderDisplayMode, setScaleFinderDisplayMode,
+  } = useScaleFinderState();
+  const {
+    chordFinderActive, setChordFinderActive,
+    showTrebleVoicingNote, setShowTrebleVoicingNote,
+    trebleChordVoicingMode, setTrebleChordVoicingMode,
+    chordFinderRoot, setChordFinderRoot,
+    chordFinderPattern, setChordFinderPattern,
+    chordFinderInversion, setChordFinderInversion,
+    chordFinderOctave, setChordFinderOctave,
+  } = useTrebleChordFinderState();
 
   /* ABC Player state for file/paste playback and diagram highlighting. */
   const [abcText, setAbcText] = useState("");
@@ -1409,7 +1406,7 @@ function App() {
       setStradellaChordFinderActive(false);
       previousLayoutSignatureRef.current = layoutSignature;
     }
-  }, [layoutSignature]);
+  }, [layoutSignature, setScaleFinderActive, setChordFinderActive]);
 
   /* Button IDs currently selected through the selection/fingering tool. */
   const selectedButtonIds = Object.entries(overlays)
@@ -1426,74 +1423,17 @@ function App() {
     buttons,
   );
 
-  /* Exact buttons currently highlighted by the Scale Finder tool. */
-  const stradellaScaleFinderResult = useMemo(() => {
-    if (side !== "stradella") {
-      return {
-        buttons: [],
-        targetPitches: [],
-        targetNames: [],
-        missingPitches: [],
-        missingNames: [],
-        found: false,
-      };
-    }
-
-    return getStradellaScaleFinderResult(
-      buttons,
-      scaleFinderRoot,
-      scaleFinderPattern,
-    );
-  }, [buttons, scaleFinderRoot, scaleFinderPattern, side]);
-
-  const scaleFinderButtons = useMemo(() => {
-    if (!scaleFinderActive) return [];
-
-    if (side === "stradella") {
-      return stradellaScaleFinderResult.buttons;
-    }
-
-    if (!isTrebleLikeSide) return [];
-
-    return getScaleFinderTrebleButtons(
-      buttons,
-      scaleFinderRoot,
-      scaleFinderPattern,
-      scaleFinderRowLimit,
-    );
-  }, [
-    buttons,
-    isTrebleLikeSide,
-    scaleFinderActive,
-    scaleFinderRoot,
-    scaleFinderPattern,
-    scaleFinderRowLimit,
-    side,
-    stradellaScaleFinderResult.buttons,
-  ]);
-
-  /* Exact treble buttons currently highlighted by the Chord Finder tool. */
-  const chordFinderButtons = useMemo(() => {
-    if (!chordFinderActive || !isTrebleLikeSide) return [];
-
-    return getChordFinderTrebleButtons(
-      buttons,
-      chordFinderRoot,
-      chordFinderPattern,
-      chordFinderInversion,
-      chordFinderOctave,
-      trebleChordVoicingMode,
-    );
-  }, [
-    buttons,
-    chordFinderActive,
-    chordFinderRoot,
-    chordFinderPattern,
-    chordFinderOctave,
-    chordFinderInversion,
-    trebleChordVoicingMode,
-    isTrebleLikeSide,
-  ]);
+  /* Finder result selectors use the *existing diagram buttons*, retaining exact
+   * button identity, ordering, octave/row choices, and playback/export semantics. */
+  const { stradellaScaleFinderResult, scaleFinderButtons } = useScaleFinderResults({
+    buttons, side, isTrebleLikeSide,
+    scaleFinderActive, scaleFinderRoot, scaleFinderPattern, scaleFinderRowLimit,
+  });
+  const chordFinderButtons = useTrebleChordFinderButtons({
+    buttons, isTrebleLikeSide,
+    chordFinderActive, chordFinderRoot, chordFinderPattern,
+    chordFinderInversion, chordFinderOctave, trebleChordVoicingMode,
+  });
 
   const abcParseResult = useMemo(() => parseAbc(abcText), [abcText]);
 
