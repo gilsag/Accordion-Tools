@@ -1,3 +1,47 @@
+## v0.15.27 — ABC examples: Easy Polka and Happy Birthday accompaniment
+
+- Adds Jean-Michel Bencetti’s Easy Polka as a two-voice ABC example, including the printed repeats, first/second endings, and alternating single bass and preset major-chord buttons. The source tempo is half-note = 80, represented by quarter-note = 160 for the ABC Player.
+- Replaces Happy Birthday’s melody-only example with the supplied F-major accordion arrangement, including alternating bass/chord accompaniment, F7 and B-flat major buttons, and a final combined F bass and F-major chord. No fingering is included.
+- Retains the opt-in accordion bass-staff notation semantics. Treble and Stradella voices remain independently selected for playback.
+
+## v0.15.26 — Katyusha accordion bass notation
+
+- Corrects Katyusha's ABC second voice to alternate single bass buttons and preset chord buttons, following the supplied accordion bass-staff conventions. Chord markers sound their configured preset chord, not a second bass pitch.
+- Adds an opt-in ABC comment convention for written chord-button markers in the bass staff while leaving normal ABC files unaffected. Voice selection, melody, practice tempo and the existing independent Treble/Stradella playback behavior are unchanged.
+- Adds regression coverage for the transcription's bass/chord roles and chord-mode mapping.
+
+## v0.15.25 — Automatic ABC example discovery
+
+The ABC Player discovers example files from `public/abc/` during Vite development and builds. Example titles come from the ABC `T:` header (or filenames), and a generated catalog replaces manual `examples.json` maintenance. Duplicate identical files are listed once; existing identifiers remain stable. Includes a melody/bass transcription of Katyusha (practice tempo 100 BPM) from the supplied score; the other submitted PDFs require separate full transcriptions. On GitHub Pages, adding an example requires rebuilding and redeploying.
+
+## v0.15.24 — Instrument settings consolidation
+
+- The **Instrument** settings section contains the selected treble or Stradella layout and, for Stradella, separate configured bass/counterbass and preset-chord registers. Existing settings keys and defaults are unchanged.
+- A contextual note explains the fixed three-tone dominant-seventh and diminished-seventh button constructions. Chord-button formulas remain non-configurable.
+- Chord-label display and treble octave-number visibility are kept under Notation and Appearance, respectively, rather than treated as instrument construction.
+- Removed unused legacy `StradellaReferenceChartPanel` and `HarmonyProgressionAssistant` components. The functioning Functional Reference label mode and Progression Assistant remain available.
+
+## v0.15.23 — Chord Finder spelling and interface consistency
+
+- The Stradella Chord Finder spells pitch classes in their requested chord context instead of borrowing enharmonic bass-button labels. Physical button labels remain independent of harmonic note spelling.
+- The Chord Finder displays its result status and counts only when a search is active. Opening the tool is reflected in the application status bar.
+- The in-app help topic list excludes obsolete Text Notes and developer-only material. The current maintainer guide is `docs/internal/developer-guide.md`.
+- Simplified current-behavior documentation headings without changing musical engines or settings defaults.
+
+## v0.15.22 — Cueca floreo melody and bass examples
+
+- Labels the five built-in examples **Cueca floreo 1–5**, identically in all six interface languages, without key names or translation.
+- Adds a second ABC voice containing tonic and dominant single-bass notes in the four-bar sequence T–D–D–T. Each 6/8 bar has bass notes on eighth-note positions 2, 3, 5 and 6 only.
+- Sets all examples to 80 quarter-note BPM and corrects Floreo 1's final-bar E note. Preserves the melody-only Treble part as voice 1, while the Stradella ABC Player selects the bass voice separately.
+- Does not add preset chords, fingering, or simultaneous two-manual playback.
+
+## v0.15.21 — Cueca floreos for ABC Player
+
+- Adds five treble-only cueca floreos as selectable ABC Player examples: Floreo 1 (C major), Floreo 2 (G major and A minor), and Floreo 3 (C major and E minor).
+- Preserves the notated 6/8 meter, melody pitches, durations, accidentals, and rests. No bass line, chord accompaniment, fingering, or harmonic-function labels are included.
+- Provides localized names in all six interface languages. The ABC source is editable, and its practice tempo is a starting value rather than a prescribed performance speed.
+- Documents the source-image transcription limitation; the exercise notation should be checked against a higher-resolution original before treating it as a verified edition.
+
 ## v0.15.20 — PNG diagram export
 
 - PNG downloads work with Stradella and Treble explanation footers and the nominal interval chart. Export converts HTML-based footer content into native SVG text and graphics before canvas rasterization; SVG downloads retain their existing structure.

@@ -126,7 +126,7 @@ The **Include summary note in rendered notation** checkbox adds a concise text l
 I–IV–V–I progression · Alternate bass polka · 8 bars · Root C · 2 repeats per chord · 4/4
 ```
 
-This replaces the older compact bass-pattern sheet preview, which has been removed from the interface.
+The staff-notation view presents the current pattern.
 
 ## Downloading rendered notation
 

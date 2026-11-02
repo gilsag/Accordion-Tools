@@ -524,7 +524,7 @@ The rendered notation can optionally include a summary note at the end, for exam
 I–IV–V–I progression · Alternate bass polka · 8 bars · Root C · 2 repeats per chord · 4/4
 ```
 
-The old compact bass-pattern sheet preview has been removed from the interface. Staff notation is now the main visual notation view.
+Staff notation is the primary visual notation view.
 
 Rendered notation can be downloaded as an SVG file from the notation panel.
 

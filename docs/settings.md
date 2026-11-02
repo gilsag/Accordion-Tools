@@ -138,9 +138,15 @@ Persistent binary **choices** use a segmented control with **both options visibl
 
 Commands that show or hide content (e.g., **Show/Hide Stradella row labels**, **Show/Hide octave numbers**) remain action buttons, describing the next action; visibility controls also expose their current state to assistive technologies. All three-or-more-option selectors remain dropdowns.
 
+## Instrument settings
+
+**Settings → Instrument** groups the current instrument geometry and register assumptions. On the Stradella side it contains bass count, the fixed chord-button construction note and the two modeled register groups. On Treble it contains keyboard system (C-system/B-system/piano), rows, size or piano range as applicable. The selected sides keep their independent state; there is no saved named profile or configurable chord-button formula.
+
+The chord-button construction tooltip describes the model’s **three-note** dominant-seventh (`1–3–♭7`) and diminished-seventh (`1–♭3–𝄫7`) buttons, omitting the fifth in each case. These formulas remain fixed and affect the existing chord-finding and playback assumptions; the UI does not offer four-note variants. Chord-label display remains in Notation, and the treble octave-number toggle is in Appearance.
+
 ## Stradella analytical registers
 
-Under **Settings → Stradella registers** (separate from Sound), two compact groups—**Bass / counterbass** and **Preset chords**—provide independent **Starting octave** and **Grouping** controls, followed by their **Configured range**. The C–B/F–E grouping tooltip explains the octave boundary. The section help explains that these are nominal model pitches rather than measured reed frequencies. Configure the two twelve-pitch ranges independently:
+Under **Settings → Instrument → Stradella registers** (separate from Sound), two compact groups—**Bass / counterbass** and **Preset chords**—provide independent **Starting octave** and **Grouping** controls, followed by their **Configured range**. The C–B/F–E grouping tooltip explains the octave boundary. The section help explains that these are nominal model pitches rather than measured reed frequencies. Configure the two twelve-pitch ranges independently:
 
 | Setting | Default | Choices |
 |---|---|---|
@@ -184,7 +190,7 @@ The sound engine uses the browser Web Audio API. The built-in synthesizer is an 
 
 ### Compact settings controls
 
-The Appearance sliders display each translated label, its current value and a range control in a compact vertical group. The Stradella row-label action is a full-width Show/Hide toggle alongside the button-label and bellows-guide actions. Sound has contextual help for the source and pitch-mapping controls; the visible mapping summary identifies the currently selected behavior. Stradella registers use two mirrored groups for bass/counterbass and preset chords. Each shows its configured nominal range and a grouping tooltip; the section help distinguishes configured pitches from measured accordion voicing. La Melodiosa attribution and transposition limitations remain in About and this guide.
+The Appearance sliders display each translated label, its current value and a range control in a compact vertical group. The Stradella row-label action is a full-width Show/Hide toggle alongside the button-label and bellows-guide actions. Sound has contextual help for the source and pitch-mapping controls; the visible mapping summary identifies the currently selected behavior. Under Instrument, Stradella registers use two mirrored groups for bass/counterbass and preset chords. Each shows its configured nominal range and a grouping tooltip; the section help distinguishes configured pitches from measured accordion voicing. La Melodiosa attribution and transposition limitations remain in About and this guide.
 
 ### La Melodiosa attribution
 
@@ -267,13 +273,7 @@ The repeat control affects playback only. The pattern definition still describes
 
 ## ABC example manifest
 
-Built-in ABC examples are not discovered by scanning the folder at runtime. The browser loads this manifest instead:
-
-```text
-public/abc/examples.json
-```
-
-To add a new example to the dropdown, place the `.abc` file in `public/abc/` and add a manifest entry with `value`, `label`, and `file`.
+The ABC Player catalog is generated at development/build time by scanning `public/abc/*.abc`. To add an example, copy an ABC file into the folder and rebuild/redeploy; no manifest edit is needed. Its title is read from the ABC `T:` header, with filename fallback. Static GitHub Pages hosting cannot enumerate files uploaded without rebuilding the site.
 
 ## Recommended workflow
 

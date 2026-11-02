@@ -1,6 +1,6 @@
 # Annotate Diagram Tool
 
-The Annotate Diagram tool adds custom text directly to the SVG diagram. It replaces the older Text Notes workflow with a click-first, inline editing workflow.
+The Annotate Diagram tool adds custom text directly to the SVG diagram. Click the diagram to place and edit annotations inline.
 
 ## Basic workflow
 

@@ -1,0 +1,10 @@
+X:1
+T:Cueca floreo 4
+M:6/8
+L:1/8
+Q:1/4=80
+K:C
+V:1 clef=treble
+V:2 clef=bass
+[V:1] c e d c B A | G ^F/ G/ B/ d/ g z2 | G A G F E D | C B,/ C/ E/ G/ c z2 |]
+[V:2] z C,, C,, z C,, C,, | z G,, G,, z G,, G,, | z G,, G,, z G,, G,, | z C,, C,, z C,, C,, |]

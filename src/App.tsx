@@ -4,7 +4,7 @@ import { accordionStatusText, diagramAutoTitle, harmonyRelatedDisplayName, harmo
 import { DEFAULT_STRADELLA_NOTE_LEVELS, normalizeStradellaNoteLevels, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "./tools/contextualTitles";
 import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "./tools/chordDisplay";
-import { chordToneName, displayRoot, realizedChordName } from "./tools/stradellaChordFinder/chordSpelling";
+import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } from "./tools/stradellaChordFinder/chordSpelling";
 /*
   Application orchestration: React owns diagram/tool settings; src/tools/*
   supplies music algorithms, while src/sound.ts owns playback. Do not derive
@@ -232,34 +232,7 @@ const ABC_EXAMPLE_PLACEHOLDER: AbcExampleOption = {
   file: "",
 };
 
-const ABC_EXAMPLE_FALLBACK_OPTIONS: AbcExampleOption[] = [
-  ABC_EXAMPLE_PLACEHOLDER,
-  {
-    value: "c-major-scale",
-    label: "C major scale",
-    file: "abc/c-major-scale.abc",
-  },
-  {
-    value: "happy-birthday",
-    label: "Happy Birthday",
-    file: "abc/happy-birthday.abc",
-  },
-  {
-    value: "twinkle-little-star",
-    label: "Twinkle Little Star",
-    file: "abc/twinkle-little-star.abc",
-  },
-  {
-    value: "dyads-and-chords",
-    label: "Dyads and chords",
-    file: "abc/dyads-and-chords.abc",
-  },
-  {
-    value: "stradella-chord-symbols",
-    label: "Stradella chord symbols",
-    file: "abc/stradella-chord-symbols.abc",
-  },
-];
+
 
 /** Dropdown options for treble instrument range presets. */
 const TREBLE_SIZE_OPTIONS: Array<{ value: TrebleSizePreset; label: string }> = [
@@ -632,13 +605,12 @@ function App() {
   const [workspaceMode, setWorkspaceMode] = useState<"accordion" | "harmony">("accordion");
 
   type SettingsSection =
-    | "layout"
+    | "instrument"
     | "title"
     | "appearance"
     | "notation"
     | "musicNotation"
     | "sound"
-    | "stradellaRegisters"
     | "harmony"
     | "about"
     | null;
@@ -712,9 +684,7 @@ function App() {
   const [abcEditorExpanded, setAbcEditorExpanded] = useState(false);
   const [abcFileName, setAbcFileName] = useState("");
   const [abcExampleValue, setAbcExampleValue] = useState("");
-  const [abcExampleOptions, setAbcExampleOptions] = useState<AbcExampleOption[]>(
-    ABC_EXAMPLE_FALLBACK_OPTIONS,
-  );
+  const [abcExampleOptions, setAbcExampleOptions] = useState<AbcExampleOption[]>([ABC_EXAMPLE_PLACEHOLDER]);
   const [abcTempoBpm, setAbcTempoBpm] = useState(80);
   const [abcPositionBeat, setAbcPositionBeat] = useState(0);
   const [abcPlaybackState, setAbcPlaybackState] = useState<
@@ -4041,26 +4011,12 @@ function App() {
     );
   }
 
-  /** Formats one pitch with the same spelling used by visible Stradella bass-button labels. */
+  /** Finder tone spelling follows chord harmony, never the leftmost bass-button label. */
   function formatStradellaFinderPitch(pitch: string) {
-    const matchingBassButton = buttons
-      .filter(
-        (button) =>
-          (button.kind === "bass-root" || button.kind === "bass-counterbass") &&
-          button.pitchClass === pitch,
-      )
-      .sort((a, b) => {
-        if (a.kind !== b.kind) return a.kind === "bass-root" ? -1 : 1;
-        if (a.column !== b.column) return a.column - b.column;
-        return a.row - b.row;
-      })[0];
-
-    if (matchingBassButton) return getMainLabel(matchingBassButton);
-
-    return formatPitch(pitch, notation, stradellaAccidental);
+    return formatChordFinderTone(stradellaChordFinderRoot, stradellaChordFinderPattern, pitch, notation, stradellaAccidental);
   }
 
-  /** Formats finder pitch lists with the same spelling used by visible Stradella bass-button labels. */
+  /** Formats the Chord Finder pitch list using its requested harmonic context. */
   function formatStradellaFinderPitches(pitches: string[]) {
     if (pitches.length === 0) return "none";
     return pitches.map(formatStradellaFinderPitch).join(", ");
@@ -4069,12 +4025,12 @@ function App() {
 
   /** Formats Stradella Scale Finder note names, preserving scale spelling such as E#, B#, and F##. */
   function formatStradellaScaleFinderNames(names: string[], fallbackPitches: string[]) {
-    const source = names.length > 0 ? names : fallbackPitches.map(formatStradellaFinderPitch);
+    const source = names.length > 0 ? names : fallbackPitches.map((pitch) => formatPitch(pitch, notation, stradellaAccidental));
     if (source.length === 0) return "none";
     return source.map((name) => name.replaceAll("##", "𝄪")).join(", ");
   }
 
-  /** Rewrites technical Stradella explanations so pitch names match the visible button labels. */
+  /** Rewrites pitch-class names in technical finder text using harmonic spelling. */
   function formatStradellaFinderText(text: string) {
     return [...INDEX_TO_PITCH]
       .sort((a, b) => b.length - a.length)
@@ -4577,7 +4533,11 @@ function App() {
                     ? t("ui.annotateDiagram")
                     : selectionOnClick
                       ? t("ui.selection")
-                      : t("ui.noActiveTool")
+                      : activeToolSection === "stradellaChordFinder"
+                        ? t("tools.chordFinder")
+                        : activeToolSection === "scaleFinder"
+                          ? t("ui.scaleFinder")
+                          : t("ui.noActiveTool")
       : abcPlaybackState === "playing" || abcPlaybackState === "paused"
         ? t("ui.abcDefault")
         : scaleFinderActive
@@ -4592,7 +4552,11 @@ function App() {
                   ? t("ui.annotateDiagram")
                   : selectionOnClick
                     ? t("ui.selection")
-                    : t("ui.noActiveTool");
+                    : activeToolSection === "chordFinder"
+                      ? t("tools.chordFinder")
+                      : activeToolSection === "scaleFinder"
+                        ? t("ui.scaleFinder")
+                        : t("ui.noActiveTool");
 
   const statusBarText = accordionStatusText({
     side, basses, trebleLayout, pianoRange: pianoTrebleRange, trebleRows,
@@ -4631,13 +4595,13 @@ function App() {
               <section className="control-section">
                               <button
                                 className="section-title"
-                                onClick={() => toggleSettingsSection("layout")}
+                                onClick={() => toggleSettingsSection("instrument")}
                               >
-                                {t("settings.layout")}{" "}
-                                <span>{activeSettingsSection === "layout" ? "−" : "+"}</span>
+                                {t("settings.instrument")}{" "}
+                                <span>{activeSettingsSection === "instrument" ? "−" : "+"}</span>
                               </button>
               
-                              {activeSettingsSection === "layout" && (
+                              {activeSettingsSection === "instrument" && (
                                 <div className="section-content">
                                   {side === "stradella" && (
                                     <>
@@ -4657,30 +4621,6 @@ function App() {
                                         </select>
                                       </label>
               
-                                      <label>
-                                        {t("ui.chordLabels")}
-                                        <select
-                                          value={chordLabelMode}
-                                          onChange={(event) =>
-                                            setChordLabelMode(
-                                              event.target.value as ChordLabelMode,
-                                            )
-                                          }
-                                        >
-                                          <option value="none">{t("common.none")}</option>
-                                          <option value="chord-name">
-                                            {t("ui.chordNamesSelectedStyle")}
-                                          </option>
-                                          <option value="root-only">{t("ui.rootOnly")}</option>
-                                          <option value="chord-tones">{t("ui.chordTones")}</option>
-                                          <option value="row-function">
-                                            {t("ui.rowFunctionMM7")}
-                                          </option>
-                                          <option value="functional-reference">
-                                            {t("ui.functionalReferenceIIvV7")}
-                                          </option>
-                                        </select>
-                                      </label>
                                     </>
                                   )}
               
@@ -4767,8 +4707,43 @@ function App() {
                                         </label>
                                       )}
               
-                                      <BinaryChoiceButton label={t("ui.octaveNumbers")} enabled={showTrebleOctaves} onToggle={() => setShowTrebleOctaves((value) => !value)} whenEnabled={t("ui.hideOctaveNumbers")} whenDisabled={t("ui.showOctaveNumbers")} />
                                     </>
+                                  )}
+                                  {side === "stradella" && (
+                                    <div className="instrument-stradella-details">
+                                      <div className="instrument-chord-construction">
+                                        <span>{t("ui.presetChordConstruction")}</span>
+                                        <HelpTip text={t("ui.presetChordConstructionHelp")} />
+                                      </div>
+                      <div className="stradella-register-settings">
+                        <div className="stradella-register-intro-help">
+                          <span>{t("settings.registers")}</span>
+                          <HelpTip text={t("ui.stradellaRegisterIntro")} />
+                        </div>
+                        <section className="stradella-register-group" aria-labelledby="stradella-bass-register-heading">
+                          <h3 id="stradella-bass-register-heading">{t("ui.registerBassGroup")}</h3>
+                          <label>
+                            {t("ui.registerStartingOctave")}
+                            <select aria-label={t("ui.bassCounterbassStartingOctave")} value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
+                              {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
+                            </select>
+                          </label>
+                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.bassCounterbassGrouping")} value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
+                        </section>
+                        <section className="stradella-register-group" aria-labelledby="stradella-chord-register-heading">
+                          <h3 id="stradella-chord-register-heading">{t("ui.registerChordGroup")}</h3>
+                          <label>
+                            {t("ui.registerStartingOctave")}
+                            <select aria-label={t("ui.presetChordStartingOctave")} value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
+                              {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
+                            </select>
+                          </label>
+                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.presetChordGrouping")} value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
+                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
+                        </section>
+                      </div>
+                                    </div>
                                   )}
                                 </div>
                               )}
@@ -4799,6 +4774,35 @@ function App() {
                                       </select>
                                     </label>
                                   </div>
+
+                                  {side === "stradella" && (
+                                    <div className="notation-stradella-chord-labels">
+                                      <label>
+                                        {t("ui.chordLabels")}
+                                        <select
+                                          value={chordLabelMode}
+                                          onChange={(event) =>
+                                            setChordLabelMode(
+                                              event.target.value as ChordLabelMode,
+                                            )
+                                          }
+                                        >
+                                          <option value="none">{t("common.none")}</option>
+                                          <option value="chord-name">
+                                            {t("ui.chordNamesSelectedStyle")}
+                                          </option>
+                                          <option value="root-only">{t("ui.rootOnly")}</option>
+                                          <option value="chord-tones">{t("ui.chordTones")}</option>
+                                          <option value="row-function">
+                                            {t("ui.rowFunctionMM7")}
+                                          </option>
+                                          <option value="functional-reference">
+                                            {t("ui.functionalReferenceIIvV7")}
+                                          </option>
+                                        </select>
+                                      </label>
+                                    </div>
+                                  )}
 
                                   <label>
                                     {t("settings.pitchNotation")}
@@ -5120,6 +5124,10 @@ function App() {
                                     </button>
                                   )}
               
+                                  {side === "treble" && (
+                                    <BinaryChoiceButton label={t("ui.octaveNumbers")} enabled={showTrebleOctaves} onToggle={() => setShowTrebleOctaves((value) => !value)} whenEnabled={t("ui.hideOctaveNumbers")} whenDisabled={t("ui.showOctaveNumbers")} />
+                                  )}
+
                                   <label>
                                     {t("ui.buttonSize")}: {buttonSize}
                                     <input
@@ -5335,46 +5343,6 @@ function App() {
                 )}
               </section>
             )}
-
-              {workspaceMode === "accordion" && side === "stradella" && (
-                <section className="control-section">
-                  <button type="button" className="section-title" onClick={() => toggleSettingsSection("stradellaRegisters")}>
-                    {t("settings.registers")} <span>{activeSettingsSection === "stradellaRegisters" ? "−" : "+"}</span>
-                  </button>
-                  {activeSettingsSection === "stradellaRegisters" && (
-                    <div className="section-content">
-                      <div className="stradella-register-settings">
-                        <div className="stradella-register-intro-help">
-                          <span>{t("ui.registerNominalModel")}</span>
-                          <HelpTip text={t("ui.stradellaRegisterIntro")} />
-                        </div>
-                        <section className="stradella-register-group" aria-labelledby="stradella-bass-register-heading">
-                          <h3 id="stradella-bass-register-heading">{t("ui.registerBassGroup")}</h3>
-                          <label>
-                            {t("ui.registerStartingOctave")}
-                            <select aria-label={t("ui.bassCounterbassStartingOctave")} value={stradellaBassRegisterOctave} onChange={(event) => setStradellaBassRegisterOctave(Number(event.target.value))}>
-                              {[1, 2, 3, 4].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
-                            </select>
-                          </label>
-                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.bassCounterbassGrouping")} value={stradellaBassRegisterGrouping} onChange={setStradellaBassRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
-                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.bass)}</p>
-                        </section>
-                        <section className="stradella-register-group" aria-labelledby="stradella-chord-register-heading">
-                          <h3 id="stradella-chord-register-heading">{t("ui.registerChordGroup")}</h3>
-                          <label>
-                            {t("ui.registerStartingOctave")}
-                            <select aria-label={t("ui.presetChordStartingOctave")} value={stradellaChordRegisterOctave} onChange={(event) => setStradellaChordRegisterOctave(Number(event.target.value))}>
-                              {[2, 3, 4, 5].map((octave) => <option key={octave} value={octave}>{t("ui.octave")} {octave}</option>)}
-                            </select>
-                          </label>
-                          <SegmentedChoice label={<>{t("ui.registerGrouping")} <HelpTip text={t("ui.registerGroupingHelp")} /></>} ariaLabel={t("ui.presetChordGrouping")} value={stradellaChordRegisterGrouping} onChange={setStradellaChordRegisterGrouping} options={[{ value: "C-B", label: "C–B" }, { value: "F-E", label: "F–E" }]} />
-                          <p className="stradella-register-range">{t("ui.registerConfiguredRange")}: {formatRegisterRange(stradellaRegisterModel.chord)}</p>
-                        </section>
-                      </div>
-                    </div>
-                  )}
-                </section>
-              )}
 
               <section className="control-section">
                 <button

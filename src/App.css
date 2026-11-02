@@ -2370,3 +2370,20 @@ input[type="range"] {
 .density-comfortable .stradella-register-group + .stradella-register-group { padding-top: 15px; }
 .density-compact .stradella-register-range { font-size: 11px; }
 .density-comfortable .stradella-register-range { font-size: 12.5px; }
+
+/* Instrument section: independently configured nominal Stradella registers. */
+.instrument-stradella-details {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin-top: 12px;
+}
+.instrument-chord-construction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  flex-wrap: wrap;
+}
+.notation-stradella-chord-labels { min-width: 0; }

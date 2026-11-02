@@ -1,0 +1,22 @@
+X:1
+T:Easy Polka
+C:Jean-Michel Bencetti
+M:2/4
+L:1/8
+% The printed metronome mark is half-note = 80; the ABC Player uses quarter-note BPM.
+Q:1/4=160
+K:C
+% accordion-tools-stradella-bass-chord
+%%score { 1 | 2 }
+V:1 clef=treble name="Melody"
+V:2 clef=bass name="Bass and chords"
+V:1
+E A |: c2 c e | c2 d c | B2 B d | B2 c B |
+A2 A B | c2 B A | B2 E2 | [1 E2 E A :| [2 E2 G E |
+|: F2 A F | E2 G E | D2 G D | C2 B, C | D2 G A |
+G2 d B | c2 c2 | [1 c2 G E :| [2 c2 |]
+V:2
+z2 |: C,/2 z3/2 "C"C/2 z3/2 | C,/2 z3/2 C/2 z3/2 | G,,/2 z3/2 "G"G,/2 z3/2 | G,,/2 z3/2 G,/2 z3/2 |
+F,,/2 z3/2 "F"F,/2 z3/2 | F,,/2 z3/2 F,/2 z3/2 | G,,/2 z3/2 "G"G,/2 z3/2 | [1 G,,/2 z3/2 G,/2 z3/2 :| [2 G,,/2 z3/2 G,/2 z3/2 |
+|: F,,/2 z3/2 "F"F,/2 z3/2 | C,/2 z3/2 "C"C/2 z3/2 | G,,/2 z3/2 "G"G,/2 z3/2 | C,/2 z3/2 "C"C/2 z3/2 | F,,/2 z3/2 "F"F,/2 z3/2 |
+G,,/2 z3/2 "G"G,/2 z3/2 | G,,/2 z3/2 G,/2 z3/2 | [1 C,/2 z3/2 "C"C/2 z3/2 :| [2 C,2 |]

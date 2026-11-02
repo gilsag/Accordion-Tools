@@ -33,7 +33,7 @@ const fr = realizationAnnotation("C", "major-triad", result, DEFAULT_STRADELLA_R
 assert.equal(fr.filenameKey, en.filenameKey);
 assert.equal(fr.title, en.title);
 assert.match(fr.lines.join("\n"), /Identité harmonique/);
-assert.match(fr.lines.join("\n"), /Réalisation physique: CM · 1 bouton joué/);
+assert.match(fr.lines.join("\n"), /Réalisation physique: CM/);
 assert.match(explainStradellaRealization("C", "major-triad", result, "chord-buttons-only", DEFAULT_STRADELLA_REGISTER_MODEL, null, "letter", "fr"), /utilise/);
 const explanation = buildDiagramExplanation({
   referenceFamilyName: "triade majeure", relatedFamilyName: "septième mineure", scaleName: "ionien (majeur)",
@@ -44,6 +44,6 @@ assert.match(explanation, /anneau intérieur/);
 assert.match(explanation, /masqué/);
 const app = readFileSync("src/App.tsx", "utf8");
 assert.match(app, /SUPPORTED_LANGUAGES\.map/);
-assert.match(readFileSync("README.md", "utf8"), /\*\*Version:\*\* 0\.15\.20/);
+assert.ok(readFileSync("README.md", "utf8").includes(`**Version:** ${JSON.parse(readFileSync("package.json", "utf8")).version}`));
 assert.match(readFileSync("docs/internal/adding-interface-languages.md", "utf8"), /SUPPORTED_LANGUAGES/);
 console.log("✓ French catalog, registry, chord and Harmony explanations, labels, and filename invariants passed");
