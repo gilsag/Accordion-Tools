@@ -1,10 +1,10 @@
-# Modularization roadmap — work toward v0.16.0
+# Modularization roadmap — v0.16.0 architecture and follow-up
 
-**Status:** in progress, unreleased. **Base release:** v0.15.28. This document describes implementation boundaries and migration gates; it does not describe a completed modular architecture.
+**Status:** Phases 1–10 implemented for v0.16.0; core architectural objectives achieved, with remaining controller consolidation optional. **Previous release:** v0.15.28. The user reported passing Windows `npm run verify:release` and broadly working browser interfaces, with the Progression Assistant waltz-realization limitation explicitly deferred. Some earlier phase notes below describe intermediate, now superseded release gates.
 
 ## Motivation and invariants
 
-`src/App.tsx` still owns layout assembly and cross-tool commands, but SVG drawing, export helpers, audio preferences/event scheduling and notation rendering now have separate owners; settings validation and export mapping are delegated to `settingsController.ts`, while diagram appearance/overlay/annotation state is now feature-owned. The aim is for it eventually to assemble the application shell. Migrate incrementally: no changes to chord results, ranked realizations, default controls, SVG/PNG/ZIP and notation export content, sound (including sample mapping), localization, or accepted older JSON settings files.
+`src/App.tsx` now assembles the layout (~28 lines); `src/app/useAppController.ts` remains the typed integration controller, with cross-tool commands in `src/app/crossToolCommands.ts`. SVG drawing, export helpers, audio preferences/event scheduling and notation rendering now have separate owners; settings validation and export mapping are delegated to `settingsController.ts`, while diagram appearance/overlay/annotation state is now feature-owned. The aim is for it eventually to assemble the application shell. Migrate incrementally: no changes to chord results, ranked realizations, default controls, SVG/PNG/ZIP and notation export content, sound (including sample mapping), localization, or accepted older JSON settings files.
 
 The analytical Stradella register model is **instrument configuration**, not sound configuration. Its `bass` and `chord` ranges are modeled starting octaves and C–B/F–E groupings, not physical reed measurements. Playback-specific settings (`soundSource`, sample registers, volume, `laMelodiosaFollowStradellaRegisters`) remain separate in `src/audio/useSoundSettings.ts`. A future adapter may consume the instrument's *nominal* model when sampled playback follows that model; never merge these state domains.
 
@@ -93,7 +93,7 @@ The initial extraction deliberately retains individual React state setters and t
 - `scripts/app-navigation-modules.test.mjs` exercises the registry and state transitions through a small React dispatcher mock, plus integration-source assertions for playback-stop ordering, toolbar controls and shell markup. The test is included in `test:modules` and can run without native esbuild. These checks supplement but do not replace browser smoke tests.
 - Public version, settings JSON (118 keys), localization catalogs, musical algorithms, SVG/PNG/ZIP/MIDI/LilyPond exports, nominal instrument registers, and sound sample mappings are untouched.
 
-## Combined Phase 6: typed views and cross-tool commands (implemented, unreleased)
+## Combined Phase 6: typed views and cross-tool commands (implemented in v0.16.0)
 
 - `src/App.tsx` now **only assembles the layout** using `LanguageProvider`, `AppShell`, a conditional sidebar containing `SettingsView`/`ToolsView`, and `WorkspaceView`. The previous large JSX trees were moved with their existing controls, identifiers, DOM classes, event handlers and localization keys intact to `src/app/views/`.
 - `src/app/useAppController.ts` remains a **large transitional hook** that preserves all React hooks, settings setters, derived geometry/results, transport and reset actions in their original invocation order. It returns three inferred, typed view-specific prop groups (`settings`, `tools`, `workspace`) rather than exporting mutable globals or a universal store. This is an architectural intermediate point: future work should further divide its derived state and command adapters; do not call this controller a final modular solution.
@@ -102,7 +102,7 @@ The initial extraction deliberately retains individual React state setters and t
 - **No behavioral changes intended** to registered tools, instrument versus sound configuration, chord results, settings export schema (118 keys), `default-settings.json`, `accordionTools.customBassPatterns.v2`, notation, XML/SVG/PNG/ZIP/MIDI/LilyPond exports, six languages, or generated file names. Eager `abcjs` and heavy tool panels still load at startup.
 - Local validation here: TypeScript and ESLint passed; all 11 module groups passed; 33 TypeScript regressions passed through a platform-neutral loader and 20 direct JS/CJS scripts passed. Full `npm run test:all`, Vite build and browser smoke tests **require Windows validation** (the inherited `node_modules` lacks compatible native binaries).
 
-## Phase 7: controller helpers and deferred modules (implemented, unreleased)
+## Phase 7: controller helpers and deferred modules (implemented in v0.16.0)
 
 - `src/app/controllerOptions.ts` owns display-choice constants and localized progression-option labels; `src/notation/useNotationSettings.ts` owns the existing notation presentation preferences, maintaining all setter names, default values, and the 118-key settings export schema. These extractions do **not** redesign the remaining transitional controller.
 - `ToolsView` defers the Treble Chord Finder, Stradella Chord Finder, Harmony Explorer, and Progression Assistant **panels** with `React.lazy` and `Suspense`. `WorkspaceView` defers `HarmonicCircle`. The tools' **state hooks remain mounted** in the application controller, preventing loss of selections when panels are shown, hidden or still loading. The loading placeholders are transient and noninteractive.
@@ -111,7 +111,7 @@ The initial extraction deliberately retains individual React state setters and t
 - `scripts/lazy-loading-boundaries.test.mjs` scans the static source-import graph starting at `main.tsx` and verifies the intended dynamic boundaries. `scripts/abc-feature-module.test.mjs` and `scripts/render-audio-services.test.mjs` now check deferred import, original first-use parsing/mapping contracts and stale-render cancellation. These tests prove source boundaries, **not actual compiled chunk sizes or browser load timing**.
 - TypeScript, ESLint and all 12 module tests passed in the preparation environment. Selected musical regressions also passed. Production Vite chunks, the full `test:all` suite and browser-level first-use playback/notation must be checked on Windows because the supplied dependencies lack a Linux Rolldown native binding.
 
-## Phase 8: transport/reset, live export capture, presentation selectors (implemented, unreleased)
+## Phase 8: transport/reset, live export capture, presentation selectors (implemented in v0.16.0)
 
 - `src/audio/playbackLifecycle.ts` contains React-independent **stop/pause** orchestration for ABC and Bass Pattern playback. State setters and timer refs are passed in through typed ports, retaining the original call order, beat calculation, bass-loop cancellation generation and sound-stop calls. Existing start/schedule logic, audio engine and interval timing remain unchanged in the controller and audio services.
 - `src/app/resetCommands.ts` owns exact Stradella Finder default values and the diagram-work reset ordering. It does not clear instrument-register, audio preference, or global settings. The controller still chooses when to reset each domain.
@@ -121,15 +121,22 @@ The initial extraction deliberately retains individual React state setters and t
 - The controller is still substantial (~2,407 lines), and contains start/playback coordination, derived diagram geometry and remaining download orchestration. **This is not the end of controller decomposition or v0.16.0 release acceptance.**
 
 
-## Phase 9: Start transport and diagram geometry (implemented, unreleased)
+## Phase 9: Start transport and diagram geometry (implemented in v0.16.0)
 
 - `src/audio/playbackStart.ts` owns the exact, synchronous ABC and Bass Pattern **start** sequence. Empty event collections are no-ops; ABC clears old ABC timers, stops Bass Pattern and audio, clears progression highlighting and Finders, records its clock/beat, then invokes the existing schedule. Bass increments the loop run ID before clearing timers, stopping ABC and audio, clearing highlights/Finders and invoking the existing scheduler with that ID. The caller still provides all React setters, refs and schedule callbacks; no state store or audio engine is moved.
 - `src/diagram/diagramGeometry.ts` computes SVG width/height, contextual-title text fit, note and chart footer dimensions, and annotation placement. The formulas come from Phase 8 without mathematical changes, but receive explicit typed inputs rather than closing over controller state. The controller still computes the view-model's musical content, visibility flags and chord annotations.
 - `scripts/phase9-playback-geometry.test.mjs` executes transport call-order contracts and **five checked-in numerical fixtures derived from the original Phase 8 geometry** (compact treble, piano, full and compact Stradella, and empty large treble). It is included in `test:modules`. The contextual-title test now checks the new integration boundary rather than searching for its old formula inside App.
 - This is not a final v0.16.0 acceptance: the controller remains the coordinator of recorded Harmony playback, per-tool sound actions and export launch. The full Windows test suite, production Vite chunk inspection and first-use browser checks must be completed before release.
 
-## Remaining stages — not yet implemented
+## Potential follow-up work after v0.16.0
 
 1. **Further controller consolidation:** Phases 8–9 now own reset, start/stop/pause transport, synchronous batch capture and pure SVG sizing. Review only the remaining shared coordination (recorded Harmony playback, export launch, any strongly coupled diagram view-model) where a smaller interface demonstrably improves maintainability; avoid cosmetic extraction. Preserve cross-tool handoff sequencing and physical playback-button IDs.
 2. **Build and first-use acceptance:** Verify actual Vite code splitting in `dist/assets` or browser Network; open every deferred panel and notation view; import multi-voice ABC and test plays, pauses, resets and downloads after initial module load. Compare snapshot exports and old settings round-trips before merging. Source import-graph tests are not a substitute for this step.
 3. **Release acceptance:** Full Windows test/build, browser SVG/PNG/ZIP/ABC/MIDI/notation/audio checks, locale settings compatibility; only then consider v0.16.0.
+
+## Phase 10: release evidence and remaining acceptance considerations
+
+- `scripts/release-readiness.test.mjs` checks package/lock/About/README version consistency, the published GitHub Pages base, and local Markdown links. It is not a musical-behavior test.
+- `scripts/bundle-audit-lib.mjs` and `scripts/audit-production-bundle.mjs` inspect the Vite build manifest to confirm six named heavy/ABC dynamic entries are not in the eager import closure. The output lists actual emitted **uncompressed** JavaScript sizes, with no arbitrary performance threshold. `scripts/bundle-audit.test.mjs` verifies pass and accidental eager/missing-entry failures using synthetic fixtures.
+- `npm run verify:release` combines lint, the original full regression suite, metadata tests, and `tsc -b && vite build --manifest` followed by chunk inspection; it should be run in a clean local Windows checkout until platform dependencies are available elsewhere. This is **not a browser acceptance test**.
+- The explicit first-use, settings, audio, export, six-language and mobile acceptance matrix is in [the release worksheet](release-v0.16.0-validation.md). The user reported passing Windows automated checks and broadly functional browser interfaces, and accepted the known Progression Assistant accompaniment limitation for this release. Detailed worksheet/device coverage and deployment checks remain useful follow-up evidence. Existing 118-key settings schema and audio/instrument separation are unchanged.
