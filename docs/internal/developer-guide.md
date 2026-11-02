@@ -2,7 +2,7 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). Phase 6 has moved the complete Settings, Tools and Workspace JSX out of `App.tsx`. The controller in `src/app/useAppController.ts` is still large and coordinates state and audio, while the view components are presentational and tool-specific state remains in dedicated feature hooks. This is not a finished modular controller. Phase 7 introduced deferred tool panels and abcjs; Phases 8–9 extracted lifecycle/start commands, reset, batch capture, SVG geometry and status-label selectors. The controller remains transitional. Real bundle and first-use behavior still require Windows/browser validation.
+The v0.16.0 architecture migration is documented in the [modularization roadmap](modularization-roadmap.md). `App.tsx` composes the Settings, Tools and Workspace views; tool-specific state is owned by feature hooks, and `src/app/useAppController.ts` remains a sizable, explicitly transitional coordination layer. Heavy tool panels and `abcjs` notation loading are deferred. Playback lifecycle, reset, batch capture, and SVG geometry are handled by dedicated services. The Windows release build confirmed the expected chunk separation; browser acceptance was broadly reported by the user, with the known Progression Assistant accompaniment limitation recorded in the release notes.
 
 ### Phase 9 playback-start and SVG geometry contracts
 
@@ -172,6 +172,12 @@ When changing scoring, preserve tests for diagram-size invariance, stable tie-br
 - **Two-state UI controls:** a `BinaryChoiceButton` shows the next action (Show/Hide, Use, etc.) while retaining the underlying setting value. Multichoice selectors should not be converted blindly.
 - **Titles/exports:** `src/tools/contextualTitles.ts` formats harmonic-identity-aware display titles. Explicit Stradella slash basses reflect user intent; a different, *modeled* lowest note is reported as such, never silently substituted as an identity. Treble titles report the selected inversion and actual pitch-class completeness. This presentation layer is independent of the four note checkboxes. Contextual diagram titles are distinct from sanitized ASCII recipe filenames; do not reintroduce tool-local title controls that conflict with the central title setting.
 - **La Melodiosa:** retain attribution and the original sample mapping/resources in `public/samples/la-melodiosa/`.
+
+## Release stabilization and bundle inspection
+
+The v0.16.0 architecture uses a short `App.tsx`, typed feature hooks and an integration controller. For ongoing verification, use `npm run verify:release` after `npm ci` to run lint, the full existing test suite, release metadata checks, and a manifest-producing Vite production build. `build:analyze` inspects six expected lazy panel/parser entries, verifies they do not appear in the initial static chunk graph, and logs the emitted uncompressed JS sizes. This is not a network timing measurement. A failing bundle audit must be investigated; do not disable it to produce a green report.
+
+The [release acceptance worksheet](release-v0.16.0-validation.md) covers first-use `abcjs`, tool-panel loading, playback, six translations, old settings files, physical Stradella IDs and register versus sample settings, output file identity, and GitHub Pages asset loading. The Windows build was reported passing for v0.16.0; detailed browser/device checks remain a separate acceptance record. Static source-location assertions are implementation checks, not substitutes for behavioral fixtures.
 
 ## Validation before release
 

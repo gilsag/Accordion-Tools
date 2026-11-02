@@ -1,4 +1,20 @@
-## Unreleased — Architecture migration, Phases 1–9 (toward v0.16.0)
+## v0.16.0 — Modular architecture and release stabilization (2026-11-02)
+
+This release reorganizes Accordion Tools internally while preserving existing musical algorithms, Stradella chord ranking, physical button identities, nominal register settings, six interface languages, settings file compatibility, and export formats.
+
+- Split the former monolithic application into feature-owned state hooks, a typed workspace registry, Settings/Tools/Workspace views, and dedicated diagram, audio, notation, settings, and export services.
+- Added explicit cross-tool navigation and playback lifecycle commands, plus regression checks for command ordering and diagram geometry.
+- Deferred loading of the heavier Finder/Harmony panels, ABC parsing, and `abcjs` notation rendering. The Windows production build confirmed the expected split chunks and no eager inclusion of the audited heavy entrypoints.
+- Strengthened compatibility tests, preserving all 118 exported settings keys and the existing musical, language, audio, and download contracts. The user reported successful Windows `npm run verify:release` results and broadly functional browser interfaces.
+- Refreshed the public README with concise feature descriptions and five illustrated tool workflows.
+
+**Known limitation accepted for this release:** Progression Assistant accompaniment can follow a bass/counterbass-only optimized realization for a Major chord, so its waltz playback may not produce the conventional bass–preset-chord–preset-chord pattern. The previously proposed corrective patch is **not included**. A future enhancement should allow choosing an individual Stradella Chord Finder realization for each progression chord and use it consistently in playback, highlights, and notation.
+
+### Phase 10 — Release readiness and bundle validation
+
+- Added dependency-free release metadata/document-link preflight and production bundle-manifest inspection with fixture tests for missing or unexpectedly eager chunks. `npm run verify:release` combines lint, the existing full regression suite, these preflights, and a production Vite build with manifest inspection. Added a browser and compatibility sign-off worksheet; **broad browser review was subsequently reported by the user; not every detailed worksheet item has been independently signed off**. Application algorithms, playback, settings JSON, exports and localization remain unchanged.
+
+### Architecture migration, Phases 1–9 (development history)
 
 - **Phase 9 (playback-start commands and diagram geometry):** Extracted original ABC/Bass Pattern start order, mutually exclusive player cancellation, active-Finder reset and timer-run generation into `src/audio/playbackStart.ts`. React setters, actual audio scheduling and transport state remain with their existing owners. Moved SVG viewBox sizing, contextual-title auto-fit, treble footer placement and Stradella annotation/chart sizing into pure `src/diagram/diagramGeometry.ts`. Five golden geometry fixtures were computed from the unchanged Phase 8 formulas; start-order tests exercise empty-event no-ops and exact scheduling order. Updated one contextual-title regression that assumed the old source location. No music, export, audio DSP, translation, settings or version change intended. Full Windows native tests/build and browser acceptance remain required.
 
@@ -38,7 +54,7 @@
 - **Combined Phase 3f (diagram and annotation state):** Extracted visual geometry/display/title settings to `src/diagram/useDiagramAppearanceState.ts`, moved the unchanged treble/piano size tables into `src/instrument/sizePresets.ts`, and isolated physical-button overlays and fingering editing in `src/diagram/useDiagramOverlays.ts`.
 - Moved Annotate Diagram's text notes, style/anchor controls, editor state, SVG-anchor coordinate formula, and edit/commit/delete actions into `src/features/annotateDiagram/useDiagramAnnotations.ts`. Kept `makeTextNote`, the rendered SVG, browser click-coordinate conversion, shared audio, layout resets, and export/download functions unchanged.
 - Added `scripts/diagram-annotation-modules.test.mjs` for visual defaults, physical-button mark behavior, note positioning, style, editor lifecycle and settings-setter stability. Existing translations and all 118 settings export keys remain unchanged. Full browser rendering/export acceptance remains necessary.
-- No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
+- During these individual phases the version identifier was not incremented; their combined changes are released in v0.16.0.
 
 ## v0.15.28 — Documentation maintenance
 
