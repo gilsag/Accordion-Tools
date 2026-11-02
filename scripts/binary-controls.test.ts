@@ -7,6 +7,7 @@ import { join } from "node:path";
 const source = (path: string) => readFileSync(path, "utf8");
 const app = source("src/App.tsx");
 const panel = source("src/components/tools/StradellaChordFinderPanel.tsx");
+const toolbar = source("src/app/components/WorkspaceToolbar.tsx");
 const component = source("src/components/ui/BinaryChoiceButton.tsx");
 
 assert.match(app, /showStradellaRowLabels \? t\("ui\.hideStradellaRowLabels"\) : t\("ui\.showStradellaRowLabels"\)/);
@@ -15,7 +16,7 @@ assert.match(panel, /whenEnabled=\{t\("ui\.hideRootBass"\)\}/);
 assert.match(panel, /whenDisabled=\{t\("ui\.showRootBass"\)\}/);
 assert.match(component, /aria-pressed=\{enabled\}/, "Binary buttons should expose their selected state");
 assert.match(component, /onClick=\{onToggle\}/, "Binary buttons should invoke the shared state callback");
-assert.match(app, /<SegmentedChoice label=\{t\("ui\.downloadFormat"\)\}/);
+assert.match(toolbar, /<SegmentedChoice label=\{t\("ui\.downloadFormat"\)\}/);
 for (const key of ["ui.bassCounterbassGrouping", "ui.presetChordGrouping", "ui.soundSource", "ui.samplePitchMapping", "ui.interfaceDensity"]) {
   assert.ok(app.includes(`t("${key}")`), `Missing persistent translated choice: ${key}`);
 }

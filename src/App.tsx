@@ -27,6 +27,10 @@ import type { DefaultSettingsFile } from "./settings/settingsSchema";
 import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "./settings/settingsController";
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
 import { useLanguageSettings } from "./settings/useLanguageSettings";
+import { useWorkspaceNavigation } from "./app/useWorkspaceNavigation";
+import type { ToolSection } from "./app/toolRegistry";
+import { AppShell } from "./app/components/AppShell";
+import { WorkspaceToolbar } from "./app/components/WorkspaceToolbar";
 import { useInstrumentState } from "./instrument/useInstrumentState";
 import { TREBLE_PRESET_BUTTON_SIZE, PIANO_TREBLE_PRESET_BUTTON_SIZE } from "./instrument/sizePresets";
 import { useDiagramAppearanceState } from "./diagram/useDiagramAppearanceState";
@@ -74,7 +78,6 @@ import type {
   FinderScalePattern,
   FontFamily,
   InterfaceDensity,
-  LeftPanelMode,
   NotationMode,
   PianoTrebleRange,
   NumberPosition,
@@ -288,25 +291,6 @@ function formatProgressionOptionLabel(progression: ChordProgressionDefinition, l
 function App() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
-  const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
-  useEffect(() => {
-    function closeOnOutside(event: PointerEvent) {
-      if (resetMenuRef.current?.open && !resetMenuRef.current.contains(event.target as Node))
-        resetMenuRef.current.open = false;
-    }
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape" && resetMenuRef.current?.open) {
-        resetMenuRef.current.open = false;
-        resetMenuRef.current.querySelector("summary")?.focus();
-      }
-    }
-    document.addEventListener("pointerdown", closeOnOutside);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutside);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
   const harmonySvgRef = useRef<SVGSVGElement | null>(null);
   const previousLayoutSignatureRef = useRef<string | null>(null);
   const abcPlaybackTimeoutsRef = useRef<number[]>([]);
@@ -357,43 +341,14 @@ function App() {
   } = useDiagramAppearanceState();
   const [interfaceDensity, setInterfaceDensity] = useState<InterfaceDensity>("compact");
 
-  /* Left panel visibility and accordion-section state. */
-  const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("tools");
-  const [workspaceMode, setWorkspaceMode] = useState<"accordion" | "harmony">("accordion");
-
-  type SettingsSection =
-    | "instrument"
-    | "title"
-    | "appearance"
-    | "notation"
-    | "musicNotation"
-    | "sound"
-    | "harmony"
-    | "about"
-    | null;
-  type ToolSection =
-    | "scaleFinder"
-    | "chordFinder"
-    | "abcPlayer"
-    | "bassPatternPlayer"
-    | "stradellaChordFinder"
-    | "harmonyExplorer"
-    | "progressionAssistant"
-    | "fingering"
-    | "selection"
-    | "sequences"
-    | "annotateDiagram"
-    | null;
-
-  const [activeSettingsSection, setActiveSettingsSection] =
-    useState<SettingsSection>(null);
-
-  const [activeToolSection, setActiveToolSection] = useState<ToolSection>(null);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Close the settings panel when the workspace or manual changes.
-    setActiveSettingsSection(null);
-  }, [workspaceMode, side]);
+  /* The application shell owns workspace/tool visibility; physical side stays
+   * in useInstrumentState, and audio cancellation remains with the commands. */
+  const {
+    leftPanelMode, workspaceMode,
+    activeSettingsSection, activeToolSection,
+    toggleSettingsSection, toggleToolSection: toggleWorkspaceToolSection,
+    navigateToTool, selectAccordionSide, setPanel, toggleFocusPanel,
+  } = useWorkspaceNavigation(side, setSide);
 
   /* Physical-button overlays/fingerings are independent of musical selection. */
   const {
@@ -1688,10 +1643,7 @@ function App() {
     setHarmonyProgression(recordedChords.map((chord) => ({ ...chord, id: `harmony-progression-${harmonyProgressionIdRef.current++}` })));
     setHarmonyProgressionRecording(false);
     setHarmonyRecordedNotationVisible(false);
-    setWorkspaceMode("accordion");
-    setSide("stradella");
-    setLeftPanelMode("tools");
-    setActiveToolSection("progressionAssistant");
+    navigateToTool("progressionAssistant", { side: "stradella" });
     setHarmonyProgressionPreviewIndex(null);
     setStradellaChordFinderActive(false);
     setScaleFinderActive(false);
@@ -1731,10 +1683,7 @@ function App() {
       if (!sameHarmonyProgressionChord(next[next.length - 1], target)) next.push(target);
       return next;
     });
-    setWorkspaceMode("accordion");
-    setSide("stradella");
-    setLeftPanelMode("tools");
-    setActiveToolSection("progressionAssistant");
+    navigateToTool("progressionAssistant", { side: "stradella" });
     setHarmonyProgressionPreviewIndex(null);
     setStradellaChordFinderActive(false);
     setScaleFinderActive(false);
@@ -1761,10 +1710,7 @@ function App() {
     const step = harmonyProgressionPlan.steps[index];
     if (!step) return;
     setHarmonyProgressionPreviewIndex(index);
-    setWorkspaceMode("accordion");
-    setSide("stradella");
-    setLeftPanelMode("tools");
-    setActiveToolSection("progressionAssistant");
+    navigateToTool("progressionAssistant", { side: "stradella" });
     setStradellaChordFinderActive(false);
     setScaleFinderActive(false);
     setChordFinderActive(false);
@@ -1778,10 +1724,7 @@ function App() {
     if (!pattern) return;
     const resultKey = step.result.playbackButtons.map((button) => button.id).sort().join("|");
     setPendingProgressionRealizationKey(resultKey);
-    setWorkspaceMode("accordion");
-    setSide("stradella");
-    setLeftPanelMode("tools");
-    setActiveToolSection("stradellaChordFinder");
+    navigateToTool("stradellaChordFinder", { side: "stradella" });
     setStradellaChordFinderRoot(pitchClassNameFromNumber(step.chord.rootPc));
     setStradellaChordFinderRequestedBass(null);
     setStradellaChordFinderPattern(pattern);
@@ -1841,10 +1784,7 @@ function App() {
     if (!harmonySelection) return;
     const pattern = finderPatternForHarmonyFamily(harmonySelection.candidate.familyId);
     if (!pattern) return;
-    setWorkspaceMode("accordion");
-    setSide("stradella");
-    setLeftPanelMode("tools");
-    setActiveToolSection("stradellaChordFinder");
+    navigateToTool("stradellaChordFinder", { side: "stradella" });
     setStradellaChordFinderRoot(pitchClassNameFromNumber(harmonySelection.candidate.rootPc));
     setStradellaChordFinderRequestedBass(null);
     setStradellaChordFinderPattern(pattern);
@@ -1874,9 +1814,7 @@ function App() {
       setHarmonyFocusedReferenceRootPc(null);
     }
 
-    setWorkspaceMode("harmony");
-    setLeftPanelMode("tools");
-    setActiveToolSection("harmonyExplorer");
+    navigateToTool("harmonyExplorer");
     stopAllSound();
     stopAbcPlayback();
     stopBassPatternPlayback();
@@ -1888,29 +1826,17 @@ function App() {
     }
   }, [soundEnabled, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister]);
 
-  /** Opens one settings group, or closes it if it is already open. */
-  function toggleSettingsSection(section: Exclude<SettingsSection, null>) {
-    setActiveSettingsSection((current) =>
-      current === section ? null : section,
-    );
-  }
-
-  /** Opens one tool group, or closes it if it is already open. */
+  /** Tool-specific side effects remain explicit until the command service is extracted.
+   * Navigation itself is owned by the workspace controller, not by tool state. */
   function toggleToolSection(section: Exclude<ToolSection, null>) {
-    if (section === "harmonyExplorer") {
-      setWorkspaceMode("harmony");
-    } else {
-      setWorkspaceMode("accordion");
-    }
+    toggleWorkspaceToolSection(section);
     if (section === "progressionAssistant") {
-      setSide("stradella");
       setStradellaChordFinderActive(false);
       setScaleFinderActive(false);
       setChordFinderActive(false);
       stopAbcPlayback();
       stopBassPatternPlayback();
     }
-    setActiveToolSection((current) => (current === section ? null : section));
   }
 
   /**
@@ -2326,11 +2252,6 @@ function App() {
     return diagramAutoTitle(side, basses, trebleLayout, language);
   }
 
-  /** Toggles the requested left panel; clicking the active panel hides it. */
-  function setPanel(mode: Exclude<LeftPanelMode, "hidden">) {
-    setLeftPanelMode((current) => (current === mode ? "hidden" : mode));
-  }
-
   /** Download every eligible realization with the current filter, labels,
    * layout, register model, footer and SVG/PNG settings. Capture each live SVG
    * synchronously, then restore selection before asynchronous PNG encoding. */
@@ -2676,11 +2597,7 @@ function App() {
 
   return (
     <LanguageProvider language={language}>
-    <main
-      lang={language}
-      className={`app density-${interfaceDensity}`}
-      style={{ gridTemplateColumns: appGridColumns }}
-    >
+    <AppShell language={language} density={interfaceDensity} gridTemplateColumns={appGridColumns}>
       {leftPanelMode !== "hidden" && (
         <aside className="left-panel">
           <h1>{leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}</h1>
@@ -5165,166 +5082,39 @@ function App() {
       )}
 
       <section className="workspace">
-        <div className="topbar">
-          <button
-            className={`topbar-button ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
-            onClick={() => {
-              setWorkspaceMode("accordion");
-              setSide("stradella");
-              stopAbcPlayback();
-            }}
-          >
-            {t("nav.stradella")}
-          </button>
-
-          <button
-            className={`topbar-button ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
-            onClick={() => {
-              setWorkspaceMode("accordion");
-              setSide("treble");
-              stopAbcPlayback();
-            }}
-          >
-            {t("nav.treble")}
-          </button>
-
-          <button
-            className={`topbar-button ${workspaceMode === "harmony" ? "active" : ""}`}
-            onClick={() => {
-              setWorkspaceMode("harmony");
-              setLeftPanelMode("tools");
-              setActiveToolSection("harmonyExplorer");
-              stopAbcPlayback();
-              stopBassPatternPlayback();
-              stopAllSound();
-            }}
-          >
-            {t("nav.harmony")}
-          </button>
-
-          <span className="topbar-separator" />
-
-          <button
-            className={`topbar-button ${leftPanelMode === "settings" ? "active" : ""}`}
-            onClick={() => setPanel("settings")}
-          >
-            {t("nav.settings")}
-          </button>
-
-          <button
-            className={`topbar-button ${leftPanelMode === "tools" ? "active" : ""}`}
-            onClick={() => setPanel("tools")}
-          >
-            {t("nav.tools")}
-          </button>
-
-          <button
-            className={`topbar-button ${leftPanelMode === "hidden" ? "active" : ""}`}
-            onClick={() =>
-              setLeftPanelMode((current) =>
-                current === "hidden" ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden",
-              )
-            }
-            title={t("nav.focusHint")}
-          >
-            {leftPanelMode === "hidden" ? t("nav.showControls") : t("nav.focusDiagram")}
-          </button>
-
-          {workspaceMode === "accordion" &&
-            side === "stradella" &&
-            activeToolSection === "bassPatternPlayer" &&
-            bassPatternEvents.length > 0 && (
-              <>
-                <button
-                  className={`topbar-button ${bassPatternRenderedNotationVisible ? "active" : ""}`}
-                  onClick={toggleBassPatternNotation}
-                >
-                  {bassPatternRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
-                </button>
-              </>
-            )}
-
-          {workspaceMode === "harmony" && harmonyRecordedProgression.length > 0 && (
-            <button
-              className={`topbar-button ${harmonyRecordedNotationVisible ? "active" : ""}`}
-              onClick={toggleHarmonyRecordedNotation}
-            >
-              {harmonyRecordedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
-            </button>
-          )}
-
-          {workspaceMode === "accordion" &&
-            side === "stradella" &&
-            activeToolSection === "progressionAssistant" &&
-            harmonyProgressionPlan.playable && (
-              <button
-                className={`topbar-button ${harmonyProgressionNotationVisible ? "active" : ""}`}
-                onClick={toggleHarmonyProgressionNotation}
-              >
-                {harmonyProgressionNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
-              </button>
-            )}
-
-          {workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim() && (
-            <button
-              className={`topbar-button ${abcRenderedNotationVisible ? "active" : ""}`}
-              onClick={toggleAbcNotation}
-            >
-              {abcRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
-            </button>
-          )}
-
-          {workspaceMode === "accordion" && activeToolSection === "sequences" &&
-            sequenceStepsWithButtons.length > 0 && (
-              <button
-                className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
-                onClick={toggleSequenceNotation}
-              >
-                {sequenceRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
-              </button>
-            )}
-
-          <span className="topbar-spacer" />
-
-          <button
-            className={`topbar-button ${soundEnabled ? "active" : ""}`}
-            onClick={() => setSoundEnabled((current) => !current)}
-          >
-            {soundEnabled ? t("ui.soundOn") : t("ui.soundOff")}
-          </button>
-
-          <details ref={resetMenuRef} className="reset-menu">
-            <summary className="topbar-button reset-button" title={t("ui.resetScope")}>
-              {t("ui.reset")} <span aria-hidden="true">▾</span>
-            </summary>
-            <div className="reset-menu-options">
-              <button type="button" onClick={(event) => {
-                if (workspaceMode === "harmony") clearHarmonyWork(); else resetDiagramWork();
-                event.currentTarget.closest("details")?.removeAttribute("open");
-              }}>{t("ui.clearCurrentWork")}</button>
-              {(workspaceMode === "harmony" || (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
-                <button type="button" onClick={(event) => {
-                  resetCurrentToolDefaults();
-                  event.currentTarget.closest("details")?.removeAttribute("open");
-                }}>{t("ui.restoreToolDefaults")}</button>
-              )}
-            </div>
-          </details>
-
-          <span className="topbar-after-reset-space" aria-hidden="true" />
-
-          <div className="topbar-format-choice">
-            <SegmentedChoice label={t("ui.downloadFormat")} value={downloadFormat} onChange={setDownloadFormat}
-              options={[{ value: "svg", label: "SVG" }, { value: "png", label: "PNG" }]} />
-          </div>
-
-          <button
-            className="topbar-button download-button"
-            onClick={downloadCurrentDiagram}
-          >
-            {t("ui.downloadKind", { kind: downloadFormat.toUpperCase() })}
-          </button>
-        </div>
+        <WorkspaceToolbar
+          t={t} workspaceMode={workspaceMode} side={side} leftPanelMode={leftPanelMode}
+          activeToolSection={activeToolSection}
+          onSelectStradella={() => { selectAccordionSide("stradella"); stopAbcPlayback(); }}
+          onSelectTreble={() => { selectAccordionSide("treble"); stopAbcPlayback(); }}
+          onSelectHarmony={() => {
+            navigateToTool("harmonyExplorer");
+            stopAbcPlayback(); stopBassPatternPlayback(); stopAllSound();
+          }}
+          onShowSettings={() => setPanel("settings")}
+          onShowTools={() => setPanel("tools")}
+          onToggleFocus={toggleFocusPanel}
+          bassPatternEvents={bassPatternEvents}
+          bassPatternRenderedNotationVisible={bassPatternRenderedNotationVisible}
+          onToggleBassPatternNotation={toggleBassPatternNotation}
+          harmonyRecordedProgression={harmonyRecordedProgression}
+          harmonyRecordedNotationVisible={harmonyRecordedNotationVisible}
+          onToggleHarmonyRecordedNotation={toggleHarmonyRecordedNotation}
+          harmonyProgressionPlayable={harmonyProgressionPlan.playable}
+          harmonyProgressionNotationVisible={harmonyProgressionNotationVisible}
+          onToggleHarmonyProgressionNotation={toggleHarmonyProgressionNotation}
+          abcText={abcText} abcRenderedNotationVisible={abcRenderedNotationVisible}
+          onToggleAbcNotation={toggleAbcNotation}
+          sequenceStepsWithButtons={sequenceStepsWithButtons}
+          sequenceRenderedNotationVisible={sequenceRenderedNotationVisible}
+          onToggleSequenceNotation={toggleSequenceNotation}
+          soundEnabled={soundEnabled}
+          onToggleSound={() => setSoundEnabled(current => !current)}
+          onClearWork={() => { if (workspaceMode === "harmony") clearHarmonyWork(); else resetDiagramWork(); }}
+          onRestoreToolDefaults={resetCurrentToolDefaults}
+          downloadFormat={downloadFormat} setDownloadFormat={setDownloadFormat}
+          onDownloadDiagram={downloadCurrentDiagram}
+        />
 
         {showStatusBar && workspaceMode === "accordion" && (
           <div className="status-bar" title={statusBarText}>
@@ -5765,7 +5555,7 @@ function App() {
             </div>
           )}
       </section>
-    </main>
+    </AppShell>
     </LanguageProvider>
   );
 }
