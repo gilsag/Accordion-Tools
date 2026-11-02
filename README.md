@@ -131,7 +131,7 @@ Accordion-Tools includes a lightweight synthesized sound engine and optional pla
 
 ## Documentation
 
-Current user documentation is available in [`docs/`](docs/). Historical validation reports, architecture proposals, and maintainer guidance are kept in [`docs/internal/`](docs/internal/) and should not be read as current test results. The [modularization roadmap](docs/internal/modularization-roadmap.md) records unreleased refactoring work, including the extracted instrument, language, settings controller, Scale Finder, Treble Chord Finder, Stradella Chord Finder, and ABC Player state modules and their compatibility tests. The user guides include:
+Current user documentation is available in [`docs/`](docs/). Historical validation reports, architecture proposals, and maintainer guidance are kept in [`docs/internal/`](docs/internal/) and should not be read as current test results. The [modularization roadmap](docs/internal/modularization-roadmap.md) records unreleased refactoring work, including the extracted instrument, language, settings controller, Scale Finder, Treble Chord Finder, Stradella Chord Finder, ABC Player, Bass Pattern Player, and Sequence/Recording state modules and their compatibility tests. The user guides include:
 
 - [Settings](docs/settings.md)
 - [Scale Finder](docs/scale-finder.md)

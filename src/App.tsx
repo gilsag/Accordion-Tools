@@ -7,7 +7,7 @@ import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } 
 /*
   Incremental modularization: instrument and language state live in dedicated
   hooks; the settings controller owns validation and serialization while App
-  still coordinates tool state, SVG, audio, and exports.
+  still coordinates shared layout, cross-tool state, SVG, audio, and exports.
   src/tools/* supplies music algorithms; src/sound.ts owns playback. Do not derive
   harmonic content from SVG highlights: an optional root reference may be
   highlighted without sounding. Finder results expose playbackButtons for that.
@@ -16,7 +16,7 @@ import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } 
 /*
   Main application component.
 
-  This file still owns most tool/visual state and connects diagram generators
+  This file still coordinates shared tool/visual state and connects diagram generators
   to the SVG renderer. The physical instrument/register state and settings file
   validation, export projection and I/O have been extracted; see
   docs/internal/modularization-roadmap.md.
@@ -28,6 +28,8 @@ import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, ty
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
 import { useLanguageSettings } from "./settings/useLanguageSettings";
 import { useInstrumentState } from "./instrument/useInstrumentState";
+import { useBassPatternState, useBassPatternResults } from "./features/bassPatternPlayer/useBassPatternPlayer";
+import { useSequenceState, useSequenceResults } from "./features/sequences/useSequenceState";
 import { useAbcPlayerState, useAbcPlayerResults } from "./features/abcPlayer/useAbcPlayer";
 import { useStradellaChordFinderState, useStradellaChordFinderResults } from "./features/stradellaChordFinder/useStradellaChordFinder";
 import { useScaleFinderState, useScaleFinderResults } from "./features/scaleFinder/useScaleFinder";
@@ -48,7 +50,6 @@ import { abcExampleName, bassPatternName, progressionName } from "./i18n/optionL
 import type {
   AbcStradellaMode,
   AccidentalMode,
-  BassPatternChordVoicing,
   AccidentalStyle,
   BassCount,
   ButtonKind,
@@ -67,7 +68,6 @@ import type {
   NumberPosition,
   SequenceColorPreset,
   SequenceDisplayMode,
-  SequenceStep,
   SoundSource,
   SoundVoicePreset,
   SoundWaveform,
@@ -107,7 +107,6 @@ import {
 import { downloadPng, downloadSvg, downloadZip, serializeSvg, svgStringToPngBytes } from "./download";
 import {
   getSequenceLabelsForButton,
-  getSequenceStepsWithButtons,
   makeSequenceArrowPath,
   sequenceArrowStyleFromMode,
   sequenceModeShowsArrows,
@@ -126,14 +125,7 @@ import {
   bassPatternEventsToMidiBytes,
   bassPatternEventsToLilyPond,
   bassPatternEventsToStradellaNotationAbc,
-  bassPatternMissingItems,
-  makeBassPatternEvents,
   patternBarCount,
-  validateBassPatternLibrary,
-  totalBassPatternBeats,
-  type BassPatternDefinition,
-  type BassPatternLibrary,
-  type BassPatternPlaybackEvent,
   type ChordProgressionDefinition,
   type StradellaNotationAbcOptions,
 } from "./tools/bassPatternPlayerTools";
@@ -462,19 +454,21 @@ function App() {
 
   /* Tool state for selections, fingerings, note sequences, and diagram annotations. */
   const [overlays, setOverlays] = useState<Record<string, Overlay>>({});
-  const [isRecordingSequence, setIsRecordingSequence] = useState(false);
-  const [sequenceSteps, setSequenceSteps] = useState<SequenceStep[]>([]);
-  const [sequenceDisplayMode, setSequenceDisplayMode] =
-    useState<SequenceDisplayMode>("numbers-and-curved-arrows");
-  const [sequenceColorPreset, setSequenceColorPreset] =
-    useState<SequenceColorPreset>("red");
-  const [sequenceThickness, setSequenceThickness] = useState(3.2);
-  const [sequenceArrowheadSize, setSequenceArrowheadSize] = useState(4);
-  const [sequenceNumberFontSize, setSequenceNumberFontSize] = useState(10);
-  const [sequenceNumberColorPreset, setSequenceNumberColorPreset] =
-    useState<SequenceColorPreset>("red");
-  const [sequenceNumberPosition, setSequenceNumberPosition] =
-    useState<NumberPosition>("above");
+
+  /* Recording and path-display state is independent of the physical manual and sound. */
+  const {
+    isRecordingSequence, setIsRecordingSequence,
+    sequenceSteps, setSequenceSteps,
+    sequenceDisplayMode, setSequenceDisplayMode,
+    sequenceColorPreset, setSequenceColorPreset,
+    sequenceThickness, setSequenceThickness,
+    sequenceArrowheadSize, setSequenceArrowheadSize,
+    sequenceNumberFontSize, setSequenceNumberFontSize,
+    sequenceNumberColorPreset, setSequenceNumberColorPreset,
+    sequenceNumberPosition, setSequenceNumberPosition,
+    appendRecordedButton, clearSequence, sequenceRenderedNotationVisible,
+    setSequenceRenderedNotationVisible, sequenceNotationRef,
+  } = useSequenceState();
   const [fingeringPosition, setFingeringPosition] =
     useState<NumberPosition>("inside-bottom");
   const [fingeringDraft, setFingeringDraft] = useState("1");
@@ -512,43 +506,32 @@ function App() {
     abcNotationRef, loadAbcExample,
   } = useAbcPlayerState();
 
-  /* Stradella Bass Pattern Player state. */
-  const [builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions] =
-    useState<BassPatternDefinition[]>([]);
-  const [customBassPatternDefinitions, setCustomBassPatternDefinitions] =
-    useState<BassPatternDefinition[]>(() => {
-      try {
-        const stored = window.localStorage.getItem("accordionTools.customBassPatterns.v2");
-        if (!stored) return [];
-        const parsed: unknown = JSON.parse(stored);
-        return Array.isArray(parsed) ? parsed as BassPatternDefinition[] : [];
-      } catch {
-        // Ignore malformed local custom pattern data.
-        return [];
-      }
-    });
-  const bassPatternDefinitions = useMemo(
-    () => [...builtInBassPatternDefinitions, ...customBassPatternDefinitions],
-    [builtInBassPatternDefinitions, customBassPatternDefinitions],
-  );
-  const [chordProgressionDefinitions, setChordProgressionDefinitions] =
-    useState<ChordProgressionDefinition[]>([]);
-  const [bassPatternId, setBassPatternId] = useState("polka");
-  const [chordProgressionId, setChordProgressionId] = useState("i-iv-v-i");
-  const [bassPatternRoot, setBassPatternRoot] = useState("C");
-  const [bassPatternTempoBpm, setBassPatternTempoBpm] = useState(80);
-  const [bassPatternChordVoicing, setBassPatternChordVoicing] =
-    useState<BassPatternChordVoicing>("simple");
-  const [bassPatternBarsPerChord, setBassPatternBarsPerChord] = useState(2);
-  const [bassPatternLoopMode, setBassPatternLoopMode] = useState<
-    "once" | "fixed" | "infinite"
-  >("fixed");
-  const [bassPatternLoopCount, setBassPatternLoopCount] = useState(2);
-  const [bassPatternExportFormat, setBassPatternExportFormat] = useState<
-    "abc" | "midi" | "lilypond"
-  >("abc");
-  const [bassPatternEditorExpanded, setBassPatternEditorExpanded] =
-    useState(false);
+
+  /* Bass-pattern preferences, editor, library and pattern selection are feature-owned. */
+  const {
+    customBassPatternDefinitions,
+    bassPatternDefinitions,
+    chordProgressionDefinitions,
+    bassPatternId, setBassPatternId,
+    chordProgressionId, setChordProgressionId,
+    bassPatternRoot, setBassPatternRoot,
+    bassPatternTempoBpm, setBassPatternTempoBpm,
+    bassPatternChordVoicing, setBassPatternChordVoicing,
+    bassPatternBarsPerChord, setBassPatternBarsPerChord,
+    bassPatternLoopMode, setBassPatternLoopMode,
+    bassPatternLoopCount, setBassPatternLoopCount,
+    bassPatternExportFormat, setBassPatternExportFormat,
+    bassPatternEditorExpanded, setBassPatternEditorExpanded,
+    bassPatternRenderedNotationVisible, setBassPatternRenderedNotationVisible,
+    bassPatternValidationErrors,
+    bassPatternEditorText, setBassPatternEditorText,
+    bassPatternEditorMessage,
+    bassPatternPlaybackState, setBassPatternPlaybackState,
+    bassPatternActiveButtonIds, setBassPatternActiveButtonIds,
+    bassPatternTimeoutsRef, bassPatternPlaybackRunRef, bassPatternNotationRef,
+    bassPatternEditorErrors, saveCustomBassPattern, removeSelectedCustomBassPattern,
+    loadSelectedPatternIntoEditor,
+  } = useBassPatternState(t);
   const [musicNotationIncludeTitle, setMusicNotationIncludeTitle] =
     useState(true);
   const [musicNotationIncludeDescription, setMusicNotationIncludeDescription] =
@@ -564,39 +547,9 @@ function App() {
   const [musicNotationStaffWidth, setMusicNotationStaffWidth] = useState(520);
   const [musicNotationStaffSeparator, setMusicNotationStaffSeparator] =
     useState(14);
-  const [
-    bassPatternRenderedNotationVisible,
-    setBassPatternRenderedNotationVisible,
-  ] = useState(false);
-  const [bassPatternValidationErrors, setBassPatternValidationErrors] =
-    useState<string[]>([]);
-  const [bassPatternEditorText, setBassPatternEditorText] = useState(() =>
-    JSON.stringify(
-      {
-        id: "custom-oom-pah",
-        name: "Custom Oom-pah",
-        meter: "4/4",
-        tags: ["custom"],
-        pattern: ">B C A C",
-      },
-      null,
-      2,
-    ),
-  );
-  const [bassPatternEditorMessage, setBassPatternEditorMessage] = useState("");
-  const [bassPatternPlaybackState, setBassPatternPlaybackState] = useState<
-    "stopped" | "playing"
-  >("stopped");
-  const [bassPatternActiveButtonIds, setBassPatternActiveButtonIds] = useState<
-    string[]
-  >([]);
-  const bassPatternTimeoutsRef = useRef<number[]>([]);
-  const bassPatternPlaybackRunRef = useRef(0);
-  const bassPatternNotationRef = useRef<HTMLDivElement | null>(null);
 
-  const [sequenceRenderedNotationVisible, setSequenceRenderedNotationVisible] =
-    useState(false);
-  const sequenceNotationRef = useRef<HTMLDivElement | null>(null);
+
+
 
   function toggleBassPatternNotation() {
     setBassPatternRenderedNotationVisible((current) => !current);
@@ -618,7 +571,6 @@ function App() {
 
   useEffect(() => {
     if (activeToolSection !== "bassPatternPlayer") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Hide notation when its associated tool is no longer active.
       setBassPatternRenderedNotationVisible(false);
     }
     if (activeToolSection !== "abcPlayer") {
@@ -627,7 +579,7 @@ function App() {
     if (activeToolSection !== "sequences") {
       setSequenceRenderedNotationVisible(false);
     }
-  }, [activeToolSection, setAbcRenderedNotationVisible]);
+  }, [activeToolSection, setAbcRenderedNotationVisible, setBassPatternRenderedNotationVisible, setSequenceRenderedNotationVisible]);
 
   /* Finder request, presentation, and cross-tool handoff state live in the feature.
      Shared batch-export and mobile diagram state remain in the application shell. */
@@ -918,70 +870,7 @@ function App() {
     setTrebleLayout, setTrebleRows, setTrebleSize,
   ]);
 
-  useEffect(() => {
-    let cancelled = false;
 
-    async function loadBassPatternData() {
-      try {
-        const [patternsResponse, progressionsResponse] = await Promise.all([
-          fetch(`${import.meta.env.BASE_URL}bass-patterns/bass-patterns.json`),
-          fetch(
-            `${import.meta.env.BASE_URL}chord-progressions/chord-progressions.json`,
-          ),
-        ]);
-
-        if (!patternsResponse.ok || !progressionsResponse.ok) return;
-
-        const patternLibrary =
-          (await patternsResponse.json()) as BassPatternLibrary;
-        const progressions =
-          (await progressionsResponse.json()) as ChordProgressionDefinition[];
-        if (cancelled) return;
-
-        const validationErrors = validateBassPatternLibrary(patternLibrary);
-        setBassPatternValidationErrors(validationErrors);
-
-        if (
-          validationErrors.length === 0 &&
-          patternLibrary.version === 2 &&
-          Array.isArray(patternLibrary.patterns) &&
-          patternLibrary.patterns.length > 0
-        ) {
-          const patternsWithLegend = patternLibrary.patterns.map((pattern) => ({
-            ...pattern,
-            legend: pattern.legend ?? patternLibrary.legend,
-          }));
-          setBuiltInBassPatternDefinitions(patternsWithLegend);
-          setBassPatternId((current) =>
-            patternsWithLegend.some((pattern) => pattern.id === current)
-              ? current
-              : patternsWithLegend[0].id,
-          );
-        }
-
-        if (Array.isArray(progressions) && progressions.length > 0) {
-          setChordProgressionDefinitions(progressions);
-          setChordProgressionId((current) =>
-            progressions.some((progression) => progression.id === current)
-              ? current
-              : progressions[0].id,
-          );
-        }
-      } catch (error) {
-        setBassPatternValidationErrors([
-          error instanceof Error
-            ? error.message
-            : "Could not load bass pattern files.",
-        ]);
-        /* Bass pattern files are optional; the rest of the app still works without them. */
-      }
-    }
-
-    loadBassPatternData();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   /** Applies a settings JSON object without changing the editable default-settings.json file. */
   /** Snapshot value capture stays in App until each tool owns its own controller. */
@@ -1320,7 +1209,7 @@ function App() {
       setStradellaChordFinderActive(false);
       previousLayoutSignatureRef.current = layoutSignature;
     }
-  }, [layoutSignature, setScaleFinderActive, setChordFinderActive, setStradellaChordFinderActive]);
+  }, [layoutSignature, setScaleFinderActive, setChordFinderActive, setStradellaChordFinderActive, setIsRecordingSequence, setSequenceSteps]);
 
   /* Button IDs currently selected through the selection/fingering tool. */
   const selectedButtonIds = Object.entries(overlays)
@@ -1331,11 +1220,9 @@ function App() {
     .map((id) => buttons.find((button) => button.id === id))
     .filter(Boolean) as DiagramButton[];
 
-  /* Sequence steps enriched with current button geometry for arrow rendering. */
-  const sequenceStepsWithButtons = getSequenceStepsWithButtons(
-    sequenceSteps,
-    buttons,
-  );
+
+
+  const sequenceStepsWithButtons = useSequenceResults(sequenceSteps, buttons);
 
   /* Finder result selectors use the *existing diagram buttons*, retaining exact
    * button identity, ordering, octave/row choices, and playback/export semantics. */
@@ -1357,51 +1244,15 @@ function App() {
     abcStradellaMode, abcTrebleChordSymbolsMode, side, isTrebleLikeSide, buttons,
   });
 
-  const selectedBassPattern = useMemo(
-    () =>
-      bassPatternDefinitions.find((pattern) => pattern.id === bassPatternId) ??
-      bassPatternDefinitions[0],
-    [bassPatternDefinitions, bassPatternId],
-  );
-  const selectedChordProgression = useMemo(
-    () =>
-      chordProgressionDefinitions.find(
-        (progression) => progression.id === chordProgressionId,
-      ) ?? chordProgressionDefinitions[0],
-    [chordProgressionDefinitions, chordProgressionId],
-  );
-  const bassPatternEvents = useMemo<BassPatternPlaybackEvent[]>(() => {
-    if (
-      side !== "stradella" ||
-      !selectedBassPattern ||
-      !selectedChordProgression
-    )
-      return [];
-    return makeBassPatternEvents(
-      buttons,
-      selectedBassPattern,
-      selectedChordProgression,
-      bassPatternRoot,
-      bassPatternChordVoicing,
-      bassPatternBarsPerChord,
-    );
-  }, [
-    bassPatternBarsPerChord,
-    bassPatternChordVoicing,
-    bassPatternRoot,
-    buttons,
-    selectedBassPattern,
-    selectedChordProgression,
-    side,
-  ]);
-  const bassPatternTotalBeats = useMemo(
-    () => totalBassPatternBeats(bassPatternEvents),
-    [bassPatternEvents],
-  );
-  const bassPatternMissingText = useMemo(
-    () => bassPatternMissingItems(bassPatternEvents).join(", "),
-    [bassPatternEvents],
-  );
+
+  const {
+    selectedBassPattern, selectedChordProgression, bassPatternEvents,
+    bassPatternTotalBeats, bassPatternMissingText, bassPatternActiveButtonIdSet,
+  } = useBassPatternResults({
+    bassPatternDefinitions, bassPatternId, chordProgressionDefinitions, chordProgressionId,
+    buttons, side, bassPatternRoot, bassPatternChordVoicing, bassPatternBarsPerChord,
+    bassPatternActiveButtonIds,
+  });
   const musicNotationAbcOptions: StradellaNotationAbcOptions = useMemo(
     () => ({
       includeTitle: musicNotationIncludeTitle,
@@ -1640,6 +1491,7 @@ function App() {
   }, [
     bassPatternRenderedNotationAbc,
     bassPatternRenderedNotationVisible,
+    bassPatternNotationRef,
     renderNotationInto,
   ]);
 
@@ -1662,6 +1514,7 @@ function App() {
   }, [
     sequenceRenderedNotationAbc,
     sequenceRenderedNotationVisible,
+    sequenceNotationRef,
     renderNotationInto,
   ]);
 
@@ -1735,10 +1588,7 @@ function App() {
     harmonyProgressionPlan,
   ]);
 
-  const bassPatternActiveButtonIdSet = useMemo(
-    () => new Set(bassPatternActiveButtonIds),
-    [bassPatternActiveButtonIds],
-  );
+
 
   const harmonyProgressionActiveButtonIdSet = useMemo(
     () => new Set(harmonyProgressionActiveButtonIds),
@@ -2351,12 +2201,7 @@ function App() {
       setFingeringDraft("");
     }
 
-    if (isRecordingSequence) {
-      setSequenceSteps((current) => [
-        ...current,
-        { id, step: current.length + 1 },
-      ]);
-    }
+    if (isRecordingSequence) appendRecordedButton(id);
 
     playButtonSound(button, soundOptions);
   }
@@ -2426,10 +2271,7 @@ function App() {
     }));
   }
 
-  /** Removes all recorded sequence steps. */
-  function clearSequence() {
-    setSequenceSteps([]);
-  }
+
 
   /** Clears the Scale Finder highlight without changing its selected root or pattern. */
 
@@ -2581,76 +2423,7 @@ function App() {
     stopAllSound();
   }
 
-  const bassPatternEditorErrors = useMemo(() => {
-    try {
-      const candidate = JSON.parse(
-        bassPatternEditorText,
-      ) as BassPatternDefinition;
-      return validateBassPatternLibrary({ version: 2, patterns: [candidate] });
-    } catch (error) {
-      return [error instanceof Error ? error.message : t("ui.invalidJSON")];
-    }
-  }, [bassPatternEditorText, t]);
 
-  function saveCustomBassPattern() {
-    try {
-      const candidate = JSON.parse(
-        bassPatternEditorText,
-      ) as BassPatternDefinition;
-      const errors = validateBassPatternLibrary({
-        version: 2,
-        patterns: [candidate],
-      });
-      if (errors.length > 0) {
-        setBassPatternEditorMessage(t("ui.cannotSave", { reason: errors[0] }));
-        return;
-      }
-      const nextPatterns = [
-        candidate,
-        ...customBassPatternDefinitions.filter(
-          (pattern) => pattern.id !== candidate.id,
-        ),
-      ];
-      setCustomBassPatternDefinitions(nextPatterns);
-      window.localStorage.setItem(
-        "accordionTools.customBassPatterns.v2",
-        JSON.stringify(nextPatterns),
-      );
-      setBassPatternId(candidate.id);
-      setBassPatternEditorMessage(t("ui.savedCustomPattern", { name: candidate.name }));
-    } catch (error) {
-      setBassPatternEditorMessage(
-        error instanceof Error ? error.message : t("ui.invalidJSON"),
-      );
-    }
-  }
-
-  function removeSelectedCustomBassPattern() {
-    if (
-      !customBassPatternDefinitions.some(
-        (pattern) => pattern.id === bassPatternId,
-      )
-    )
-      return;
-    const nextPatterns = customBassPatternDefinitions.filter(
-      (pattern) => pattern.id !== bassPatternId,
-    );
-    setCustomBassPatternDefinitions(nextPatterns);
-    window.localStorage.setItem(
-      "accordionTools.customBassPatterns.v2",
-      JSON.stringify(nextPatterns),
-    );
-    setBassPatternId(
-      (builtInBassPatternDefinitions[0] ?? nextPatterns[0])?.id ?? "",
-    );
-    setBassPatternEditorMessage(t("ui.removedCustomPattern"));
-  }
-
-  function loadSelectedPatternIntoEditor() {
-    if (!selectedBassPattern) return;
-    setBassPatternEditorText(JSON.stringify(selectedBassPattern, null, 2));
-    setBassPatternEditorMessage(t("ui.loadedPatternIntoEditor"));
-  }
 
   function downloadTextFile(
     filename: string,
