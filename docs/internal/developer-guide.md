@@ -2,7 +2,7 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The current file ownership below reflects the **first extraction only**; `App.tsx` is not yet just a layout shell.
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **first two extraction stages**; `App.tsx` is not yet just a layout shell.
 
 ## Code ownership and data flow
 
@@ -16,10 +16,17 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 | Playback | `src/sound.ts`, `src/laMelodiosa.ts` | Convert selected buttons into nominal sounding pitches and render synthesizer/sample audio |
 | Import/notation | `src/tools/abcPlayerTools.ts`, `src/tools/bassPatternPlayerTools.ts` | Parse musical events, choose physical buttons, and create notation/export formats |
 | Instrument state | `src/instrument/useInstrumentState.ts` | Physical layout selection and four nominal Stradella register fields (separate from sound configuration) |
-| Settings schema and I/O | `src/settings/settingsSchema.ts`, `src/settings/settingsPersistence.ts` | Existing partial settings JSON contract, fetching editable defaults, import parsing, and download serialization |
+| Settings schema and I/O | `src/settings/settingsSchema.ts`, `src/settings/settingsPersistence.ts` | Existing partial JSON contract, editable defaults fetch, import parsing, and download serialization |
+| Settings validation and export projection | `src/settings/settingsController.ts` | Distinct startup/import validation, old aliases, typed state-owner callbacks, and ordered export serialization |
 | Language preference | `src/settings/useLanguageSettings.ts` | Persisted language preference, browser-language changes, document language, and translation callback |
-| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Still applies/collects settings, owns tool state, derived data, SVG rendering, controls, playback orchestration, and downloads |
+| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns remaining tool state, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
 | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
+
+### Settings compatibility — migration contract
+
+Maintain three distinct settings operations: `applyStartupSettings` (editable defaults, with the stored-language precedence check), `applyImportedSettings` (valid fields from a partial user file, including explicit language persistence), and `collectCurrentSettings` (exact JSON key order). They intentionally differ. Old `roman` / `tonal-function` chord-label aliases and `bassPatternBarsPerChord` must continue to work; omitted fields must leave the current state unchanged. The separate `SettingsSetters` adapter must reference **stable React state setters** so the initial async defaults effect is not restarted by unrelated renders. Avoid reading snapshot values in asynchronous callbacks when a freshly collected export is required.
+
+The source-of-truth regression is `scripts/settings-controller-compatibility.test.mjs`: fixture traces were captured from the original inline validation logic before extraction and cover seven startup/import scenarios. `scripts/settings-export-keys.json` pins all 118 exported field names and their insertion order; a change to this ordering can affect byte-for-byte JSON exports. Run `npm run test:modules` before merging refactor branches. Do not refactor these historically different paths into one generic setter table without proving identical results.
 
 **Important separation:** harmonic validity uses pitch classes; ergonomics uses physical button coordinates; sounding pitches/octaves belong to playback; registral explanation describes button roles and may express a *conditional* inversion character. Do not derive one of these directly from a different layer unless the conversion is explicit and reliable.
 
@@ -94,7 +101,7 @@ Use comments to record *why* a constraint exists, the units and coordinate orien
 
 `src/tools/stradellaChordFinder/diagramAnnotations.ts` produces four independent, labeled concise strings (`lines`) from the selected played-button result and the optional nominal register model. `StradellaNoteLevels` toggles only these export/diagram strings. Never derive a new chord identity from a pitch-class collection, and never claim the nominal `lowestPitch` is a measured acoustic note. `App.tsx` still owns the selected level switches; `StradellaChordFinderPanel.tsx` provides four checkboxes beneath the master diagram-note toggle. The rendered SVG `foreignObject` uses the same filtered `lines` for both the screen and SVG/PNG downloads; height estimation must account for wrapping independently on each line. With no enabled lines, remove the entire footer.
 
-The expanded `explainStradellaRealization` remains independent of these toggles. The settings I/O helper in `src/settings/settingsPersistence.ts` preserves the JSON format; `App.tsx` still applies and collects each field. Default settings and exported/imported settings must remain backward compatible with older files lacking `stradellaNoteLevels`. Unit tests live in `scripts/stradella-four-level-notes.test.ts`.
+The expanded `explainStradellaRealization` remains independent of these toggles. The settings controller owns per-field validation and ordered JSON projection; `settingsPersistence.ts` preserves the file format. `App.tsx` provides current values and stable setter callbacks. Default settings and exported/imported settings must remain backward compatible with older files lacking `stradellaNoteLevels`. Unit tests live in `scripts/stradella-four-level-notes.test.ts`.
 
 
 ## Stradella sampled playback and register alignment

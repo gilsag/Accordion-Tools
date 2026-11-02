@@ -1,7 +1,7 @@
 /** Public JSON settings contract. Keys and legacy aliases remain stable across versions.
  * Importing a partial or older settings file must not reset unspecified preferences.
- * This type describes the shape; existing runtime validators still live in App until
- * the settings-application controller is extracted in a later migration stage.
+ * This type describes the shape; runtime validators live in settingsController.ts.
+ * Keep existing keys and aliases stable for previously exported settings files.
  */
 import type {
   AbcStradellaMode,

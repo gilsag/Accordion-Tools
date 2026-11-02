@@ -30,6 +30,8 @@ for (const { code } of SUPPORTED_LANGUAGES) {
 }
 
 const app = readFileSync("src/App.tsx", "utf8");
+// Settings import/serialization contracts live in the Phase 2 settings controller.
+const settingsController = readFileSync("src/settings/settingsController.ts", "utf8");
 const circle = readFileSync("src/tools/harmonyExplorer/components/HarmonicCircle.tsx", "utf8");
 const panel = readFileSync("src/components/tools/HarmonyExplorerPanel.tsx", "utf8");
 const css = readFileSync("src/App.css", "utf8");
@@ -41,8 +43,8 @@ assert.match(app, /setHarmonyShowNoteRing\(true\)/);
 assert.match(app, /showNoteRing: harmonyShowNoteRing/);
 assert.match(app, /harmonyAllFamiliesMode,\s+harmonyShowNoteRing,\s+harmonyCounts/);
 assert.match(app, /\[showStradellaVoicingIntervals, setShowStradellaVoicingIntervals\] = useState\(true\)/);
-assert.match(app, /typeof settings\.stradellaShowNominalNoteSpacing === "boolean"/);
-assert.match(app, /stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals/);
+assert.match(settingsController, /typeof settings\.stradellaShowNominalNoteSpacing === "boolean"/);
+assert.match(settingsController, /stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals/);
 assert.match(circle, /\.\.\.\(showNoteRing \? \[\{/);
 assert.match(circle, /ui\.noteRingLegendTitle/);
 assert.match(circle, /ui\.referenceChordRing/);

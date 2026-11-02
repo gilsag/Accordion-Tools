@@ -10,6 +10,7 @@ const source = (path) => readFileSync(path, 'utf8');
 const app = source('src/App.tsx');
 const instrument = source('src/instrument/useInstrumentState.ts');
 const schema = source('src/settings/settingsSchema.ts');
+const controller = source('src/settings/settingsController.ts');
 
 assert.match(app, /useInstrumentState\(\)/, 'App consumes instrument ownership hook');
 assert.match(app, /useLanguageSettings\(\)/, 'App consumes persisted language hook');
@@ -24,6 +25,10 @@ for (const key of ['stradellaBassRegisterOctave', 'stradellaBassRegisterGrouping
 }
 assert.doesNotMatch(instrument, /SoundSource|SampleRegister|laMelodiosa|playButtonSound/, 'Sound ownership remains independent');
 assert.match(schema, /bassPatternBarsPerChord/, 'Legacy settings alias retained');
+assert.match(app, /applyStartupSettings\(defaults, settingsSettersRef\.current\)/, 'Startup settings delegate to controller');
+assert.match(app, /applyImportedSettings\(settings, settingsSettersRef\.current\)/, 'Imported settings delegate to controller');
+assert.doesNotMatch(app, /function applyExtendedDefaultSettings\(/, 'Legacy setter validation moved out of App');
+assert.match(controller, /export function collectCurrentSettings\(/, 'JSON projection now owned by controller');
 assert.match(schema, /bassPatternRepeatsPerChord/, 'Current settings key retained');
 
 // Evaluate the actual pure settings I/O module: type-only imports are erased.

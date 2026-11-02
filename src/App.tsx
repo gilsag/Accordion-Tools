@@ -1,13 +1,14 @@
 import type { MinimumNominalGap } from "./tools/stradellaChordFinder/voicingDensity";
 import { familyName, scaleName, stradellaDiagramRowLabel } from "./i18n/musicTerms";
 import { accordionStatusText, diagramAutoTitle, harmonyRelatedDisplayName, harmonyStatusText, pianoRangeStatusLabel } from "./i18n/diagramLabels";
-import { DEFAULT_STRADELLA_NOTE_LEVELS, normalizeStradellaNoteLevels, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
+import { DEFAULT_STRADELLA_NOTE_LEVELS, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "./tools/contextualTitles";
 import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "./tools/chordDisplay";
 import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } from "./tools/stradellaChordFinder/chordSpelling";
 /*
   Incremental modularization: instrument and language state live in dedicated
-  hooks, while App still coordinates tools, settings application, SVG, and export.
+  hooks; the settings controller owns validation and serialization while App
+  still coordinates tool state, SVG, audio, and exports.
   src/tools/* supplies music algorithms; src/sound.ts owns playback. Do not derive
   harmonic content from SVG highlights: an optional root reference may be
   highlighted without sounding. Finder results expose playbackButtons for that.
@@ -18,11 +19,13 @@ import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } 
 
   This file still owns most tool/visual state and connects diagram generators
   to the SVG renderer. The physical instrument/register state and settings file
-  I/O have been extracted; see docs/internal/modularization-roadmap.md.
+  validation, export projection and I/O have been extracted; see
+  docs/internal/modularization-roadmap.md.
 */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DefaultSettingsFile } from "./settings/settingsSchema";
+import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "./settings/settingsController";
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
 import { useLanguageSettings } from "./settings/useLanguageSettings";
 import { useInstrumentState } from "./instrument/useInstrumentState";
@@ -31,7 +34,6 @@ import { renderAbc } from "abcjs";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import "./App.css";
 import {
-  isInterfaceLanguagePreference,
   SUPPORTED_LANGUAGES,
   translate, translateKnownLabel,
   type InterfaceLanguagePreference,
@@ -298,12 +300,6 @@ const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
 };
 
 
-function isOneOf<T extends string>(
-  value: unknown,
-  allowed: readonly T[],
-): value is T {
-  return typeof value === "string" && allowed.includes(value as T);
-}
 
 const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{
   value: SequenceDisplayMode;
@@ -316,9 +312,6 @@ const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{
   { value: "numbers-and-curved-arrows", label: "Numbers + curved arrows" },
 ];
 
-const SEQUENCE_DISPLAY_MODE_VALUES = SEQUENCE_DISPLAY_MODE_OPTIONS.map(
-  (option) => option.value,
-);
 
 function finderLabelsForButton(buttons: DiagramButton[], buttonId: string) {
   return buttons
@@ -814,6 +807,130 @@ function App() {
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
   const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
 
+  // React's state setters are stable. Keep this adapter stable so asynchronous
+  // editable-default loading runs once; the controller owns validation only.
+  const settingsSettersRef = useRef<SettingsSetters>({
+    changeLanguage,
+    setAbcStradellaMode,
+    setAbcTempoBpm,
+    setAbcTrebleChordSymbolsMode,
+    setAccidental,
+    setAccidentalStyle,
+    setAnnotationBold,
+    setAnnotationButtonAnchor,
+    setAnnotationItalic,
+    setAnnotationOffsetPercent,
+    setBassPatternBarsPerChord,
+    setBassPatternChordVoicing,
+    setBassPatternLoopCount,
+    setBassPatternLoopMode,
+    setBassPatternRoot,
+    setBassPatternTempoBpm,
+    setBasses,
+    setButtonSize,
+    setButtonStrokeWidth,
+    setChordDisplayStyle,
+    setChordFillStrength,
+    setChordFinderInversion,
+    setChordFinderOctave,
+    setChordFinderPattern,
+    setChordFinderRoot,
+    setChordLabelMode,
+    setColorTheme,
+    setCustomTitle,
+    setDiagramScale,
+    setDiagramVerticalSpacing,
+    setDownloadFormat,
+    setFingeringPosition,
+    setHarmonyColorByFamily,
+    setHarmonyDiameter,
+    setHarmonyFontSize,
+    setHarmonyPlaybackStyle,
+    setHarmonyProgressionAllowApproximations,
+    setHarmonyProgressionHandMovementWeight,
+    setHarmonyProgressionRhythmPattern,
+    setHarmonyRingVisibility,
+    setHarmonyShowEnharmonics,
+    setHarmonyShowExplanation,
+    setHarmonyShowLegend,
+    setHarmonyShowNoteRing,
+    setHarmonyShowSeparators,
+    setHarmonyShowToneTooltips,
+    setHarmonyVoicingStyle,
+    setInterfaceDensity,
+    setLaMelodiosaBassRegister,
+    setLaMelodiosaFollowStradellaRegisters,
+    setLaMelodiosaTrebleRegister,
+    setLabelFont,
+    setLabelFontSize,
+    setLanguagePreference,
+    setMusicNotationBarsPerLine,
+    setMusicNotationChordFontSize,
+    setMusicNotationIncludeDescription,
+    setMusicNotationIncludeSummary,
+    setMusicNotationIncludeTitle,
+    setMusicNotationScale,
+    setMusicNotationStaffSeparator,
+    setMusicNotationStaffWidth,
+    setMusicNotationUseBarsPerLine,
+    setNotation,
+    setPianoBlackKeyHeightScale,
+    setPianoBlackKeyWidthScale,
+    setPianoKeyHeightScale,
+    setPianoKeyWidthScale,
+    setPianoTrebleRange,
+    setReferenceStrokeWidth,
+    setScaleFinderDisplayMode,
+    setScaleFinderPattern,
+    setScaleFinderRoot,
+    setScaleFinderRowLimit,
+    setSelectionOnClick,
+    setSequenceArrowheadSize,
+    setSequenceColorPreset,
+    setSequenceDisplayMode,
+    setSequenceNumberColorPreset,
+    setSequenceNumberFontSize,
+    setSequenceNumberPosition,
+    setSequenceThickness,
+    setShowBellowsGuide,
+    setShowButtonLabels,
+    setShowStatusBar,
+    setShowStradellaRowLabels,
+    setShowStradellaVoicingIntervals,
+    setShowTrebleOctaves,
+    setSide,
+    setSoundAttackMs,
+    setSoundEnabled,
+    setSoundMusetteDetuneCents,
+    setSoundNoteDurationMs,
+    setSoundReleaseMs,
+    setSoundSequenceTempoBpm,
+    setSoundSource,
+    setSoundVoicePreset,
+    setSoundVolume,
+    setSoundWaveform,
+    setSpacing,
+    setStradellaBassRegisterGrouping,
+    setStradellaBassRegisterOctave,
+    setStradellaBassVoicing,
+    setStradellaChordFinderMarkRootBass,
+    setStradellaChordFinderMode,
+    setStradellaChordRegisterGrouping,
+    setStradellaChordRegisterOctave,
+    setStradellaMinimumNominalGap,
+    setStradellaNoteLevels,
+    setTextNoteColor,
+    setTextNoteFont,
+    setTextNoteFontSize,
+    setTitleFont,
+    setTitleMode,
+    setTitleSize,
+    setTrebleAngle,
+    setTrebleLayout,
+    setTrebleRows,
+    setTrebleSize,
+  });
+
   useEffect(() => {
     let cancelled = false;
 
@@ -862,132 +979,6 @@ function App() {
   }, []);
 
   /** Applies extended visual/tool defaults that are also user-editable in default-settings.json. */
-  function applyExtendedDefaultSettings(settings: DefaultSettingsFile) {
-    if (typeof settings.stradellaShowNominalNoteSpacing === "boolean")
-      setShowStradellaVoicingIntervals(settings.stradellaShowNominalNoteSpacing);
-    if ([0, 2, 3].includes(Number(settings.stradellaMinimumNominalGap)))
-      setStradellaMinimumNominalGap(Number(settings.stradellaMinimumNominalGap) as MinimumNominalGap);
-    if (typeof settings.buttonSize === "number")
-      setButtonSize(Math.max(14, Math.min(44, Math.round(settings.buttonSize))));
-    if (typeof settings.buttonSpacing === "number")
-      setSpacing(Math.max(1.4, Math.min(3.6, settings.buttonSpacing)));
-    if (typeof settings.trebleAngle === "number")
-      setTrebleAngle(Math.max(-45, Math.min(45, Math.round(settings.trebleAngle))));
-    if (typeof settings.buttonStrokeWidth === "number")
-      setButtonStrokeWidth(Math.max(0, Math.min(8, settings.buttonStrokeWidth)));
-    if (typeof settings.referenceStrokeWidth === "number")
-      setReferenceStrokeWidth(Math.max(0, Math.min(12, settings.referenceStrokeWidth)));
-    if (typeof settings.chordFillStrength === "number")
-      setChordFillStrength(Math.max(0, Math.min(100, Math.round(settings.chordFillStrength))));
-    if (isOneOf(settings.accidentalStyle, ["dark", "grey", "outline", "theme"] as const))
-      setAccidentalStyle(settings.accidentalStyle);
-    if (typeof settings.labelFontSize === "number")
-      setLabelFontSize(Math.max(8, Math.min(24, Math.round(settings.labelFontSize))));
-    if (isOneOf(settings.titleFont, ["system", "serif", "mono", "rounded"] as const))
-      setTitleFont(settings.titleFont);
-    if (typeof settings.titleSize === "number")
-      setTitleSize(Math.max(12, Math.min(48, Math.round(settings.titleSize))));
-    if (isOneOf(settings.labelFont, ["system", "serif", "mono", "rounded"] as const))
-      setLabelFont(settings.labelFont);
-    if (isOneOf(settings.sequenceDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES))
-      setSequenceDisplayMode(settings.sequenceDisplayMode);
-    if (isOneOf(settings.sequenceColorPreset, ["red", "blue", "black", "grey", "theme"] as const))
-      setSequenceColorPreset(settings.sequenceColorPreset);
-    if (typeof settings.sequenceThickness === "number")
-      setSequenceThickness(Math.max(1, Math.min(10, settings.sequenceThickness)));
-    if (typeof settings.sequenceArrowheadSize === "number")
-      setSequenceArrowheadSize(Math.max(1, Math.min(12, settings.sequenceArrowheadSize)));
-    if (typeof settings.sequenceNumberFontSize === "number")
-      setSequenceNumberFontSize(Math.max(6, Math.min(24, Math.round(settings.sequenceNumberFontSize))));
-    if (isOneOf(settings.sequenceNumberColorPreset, ["red", "blue", "black", "grey", "theme"] as const))
-      setSequenceNumberColorPreset(settings.sequenceNumberColorPreset);
-    if (isOneOf(settings.sequenceNumberPosition, ["above", "inside-top", "inside-bottom", "none"] as const))
-      setSequenceNumberPosition(settings.sequenceNumberPosition);
-    if (isOneOf(settings.fingeringPosition, ["above", "inside-top", "inside-bottom", "none"] as const))
-      setFingeringPosition(settings.fingeringPosition);
-    if (typeof settings.scaleFinderRoot === "string") setScaleFinderRoot(settings.scaleFinderRoot);
-    if (isOneOf(settings.scaleFinderPattern, ["major-scale", "natural-minor-scale", "harmonic-minor-scale", "major-pentatonic-scale", "minor-pentatonic-scale", "major-blues-scale", "minor-blues-scale", "chromatic-scale"] as const))
-      setScaleFinderPattern(settings.scaleFinderPattern);
-    if ([3, 4, 5].includes(Number(settings.scaleFinderRowLimit)))
-      setScaleFinderRowLimit(Number(settings.scaleFinderRowLimit) as 3 | 4 | 5);
-    if (typeof settings.chordFinderRoot === "string") setChordFinderRoot(settings.chordFinderRoot);
-    if (isOneOf(settings.chordFinderPattern, ["major-triad", "minor-triad", "augmented-triad", "diminished-triad", "sus2", "sus4", "dominant7sus4", "majorAdd9", "minorAdd9", "major6add9", "minor6add9", "dominant7sharp5", "dominant7sharp9", "major7sharp11", "dominant7", "major6", "minor6", "dominant7b5", "dominant7b9", "dominant9", "dominant9sus4", "dominant11", "major11", "minor11", "dominant13", "major13", "minor13", "major7", "major9", "major7add9", "minor7", "minorMajor7", "minor7b5", "minor9", "minorMajor9", "diminished7"] as const))
-      setChordFinderPattern(settings.chordFinderPattern);
-    if (isOneOf(settings.chordFinderInversion, ["root", "first", "second", "third"] as const))
-      setChordFinderInversion(settings.chordFinderInversion);
-    if ([3, 4, 5].includes(Number(settings.chordFinderOctave)))
-      setChordFinderOctave(Number(settings.chordFinderOctave) as FinderChordOctave);
-    if (typeof settings.bassPatternRoot === "string") setBassPatternRoot(settings.bassPatternRoot);
-    if (typeof settings.annotationTextSize === "number")
-      setTextNoteFontSize(Math.max(8, Math.min(36, Math.round(settings.annotationTextSize))));
-    if (typeof settings.annotationTextColor === "string") setTextNoteColor(settings.annotationTextColor);
-    if (isOneOf(settings.annotationFont, ["system", "serif", "mono", "rounded"] as const))
-      setTextNoteFont(settings.annotationFont);
-    if (typeof settings.annotationBold === "boolean") setAnnotationBold(settings.annotationBold);
-    if (typeof settings.annotationItalic === "boolean") setAnnotationItalic(settings.annotationItalic);
-    if (typeof settings.annotationOffsetPercent === "number")
-      setAnnotationOffsetPercent(Math.max(0, Math.min(100, Math.round(settings.annotationOffsetPercent))));
-    if (isOneOf(settings.annotationButtonAnchor, ["center", "top", "bottom", "left", "right", "topLeft", "topRight", "bottomLeft", "bottomRight"] as const))
-      setAnnotationButtonAnchor(settings.annotationButtonAnchor);
-    if (typeof settings.soundVolume === "number")
-      setSoundVolume(Math.max(0, Math.min(1, settings.soundVolume)));
-    if (isOneOf(settings.soundSource, ["synth", "la-melodiosa"] as const))
-      setSoundSource(settings.soundSource);
-    if (isOneOf(settings.laMelodiosaTrebleRegister, ["I", "II", "III"] as const))
-      setLaMelodiosaTrebleRegister(settings.laMelodiosaTrebleRegister);
-    if (isOneOf(settings.laMelodiosaBassRegister, ["I", "II", "III"] as const))
-      setLaMelodiosaBassRegister(settings.laMelodiosaBassRegister);
-    if (typeof settings.laMelodiosaFollowStradellaRegisters === "boolean")
-      setLaMelodiosaFollowStradellaRegisters(settings.laMelodiosaFollowStradellaRegisters);
-    if (isOneOf(settings.soundVoicePreset, ["single", "soft-reed", "bright-reed", "musette", "organ", "bass-reed"] as const))
-      setSoundVoicePreset(settings.soundVoicePreset);
-    if (isOneOf(settings.soundWaveform, ["sine", "triangle", "square", "sawtooth"] as const))
-      setSoundWaveform(settings.soundWaveform);
-    if (typeof settings.soundMusetteDetuneCents === "number")
-      setSoundMusetteDetuneCents(Math.max(0, Math.min(30, Math.round(settings.soundMusetteDetuneCents))));
-    if (typeof settings.soundAttackMs === "number")
-      setSoundAttackMs(Math.max(0, Math.min(300, Math.round(settings.soundAttackMs))));
-    if (typeof settings.soundReleaseMs === "number")
-      setSoundReleaseMs(Math.max(10, Math.min(1000, Math.round(settings.soundReleaseMs))));
-    if (typeof settings.soundNoteDurationMs === "number")
-      setSoundNoteDurationMs(Math.max(60, Math.min(2000, Math.round(settings.soundNoteDurationMs))));
-    if (typeof settings.harmonyShowEnharmonics === "boolean")
-      setHarmonyShowEnharmonics(settings.harmonyShowEnharmonics);
-    if (typeof settings.harmonyShowSeparators === "boolean")
-      setHarmonyShowSeparators(settings.harmonyShowSeparators);
-    if (typeof settings.harmonyShowLegend === "boolean")
-      setHarmonyShowLegend(settings.harmonyShowLegend);
-    if (typeof settings.harmonyShowExplanation === "boolean")
-      setHarmonyShowExplanation(settings.harmonyShowExplanation);
-    if (settings.harmonyRingVisibility && typeof settings.harmonyRingVisibility === "object") {
-      const next: Record<number, boolean> = { ...DEFAULT_RING_VISIBILITY };
-      for (const [key, value] of Object.entries(settings.harmonyRingVisibility)) {
-        const count = Number(key);
-        if (Number.isInteger(count) && typeof value === "boolean") next[count] = value;
-      }
-      setHarmonyRingVisibility(next);
-    }
-    if (typeof settings.harmonyShowToneTooltips === "boolean")
-      setHarmonyShowToneTooltips(settings.harmonyShowToneTooltips);
-    if (typeof settings.harmonyShowNoteRing === "boolean")
-      setHarmonyShowNoteRing(settings.harmonyShowNoteRing);
-    if (typeof settings.harmonyColorByFamily === "boolean")
-      setHarmonyColorByFamily(settings.harmonyColorByFamily);
-    if (typeof settings.harmonyDiameter === "number")
-      setHarmonyDiameter(Math.max(600, Math.min(1400, Math.round(settings.harmonyDiameter))));
-    if (typeof settings.harmonyFontSize === "number")
-      setHarmonyFontSize(Math.max(10, Math.min(30, Math.round(settings.harmonyFontSize))));
-    if (isOneOf(settings.harmonyPlaybackStyle, ["block", "arpeggio"] as const))
-      setHarmonyPlaybackStyle(settings.harmonyPlaybackStyle);
-    if (isOneOf(settings.harmonyVoicingStyle, ["root", "smooth"] as const))
-      setHarmonyVoicingStyle(settings.harmonyVoicingStyle);
-    if (typeof settings.progressionAllowApproximations === "boolean")
-      setHarmonyProgressionAllowApproximations(settings.progressionAllowApproximations);
-    if (typeof settings.progressionHandMovementWeight === "number")
-      setHarmonyProgressionHandMovementWeight(Math.max(0, Math.min(1, settings.progressionHandMovementWeight)));
-    if (isOneOf(settings.progressionRhythmPattern, ["block", "oom-pah", "waltz", "march"] as const))
-      setHarmonyProgressionRhythmPattern(settings.progressionRhythmPattern);
-  }
 
 
   useEffect(() => {
@@ -999,338 +990,7 @@ function App() {
           `${import.meta.env.BASE_URL}default-settings.json`,
         );
         if (cancelled || !defaults || typeof defaults !== "object") return;
-        // The user's stored choice takes precedence over editable defaults.
-        try {
-          if (window.localStorage.getItem('accordionTools.interfaceLanguage.v1') === null && isInterfaceLanguagePreference(defaults.language)) {
-            setLanguagePreference(defaults.language);
-          }
-        } catch {
-          if (isInterfaceLanguagePreference(defaults.language)) setLanguagePreference(defaults.language);
-        }
-
-
-        if (isOneOf(defaults.side, ["stradella", "treble"] as const)) {
-          setSide(defaults.side);
-        }
-        if (
-          isOneOf(defaults.notation, [
-            "english",
-            "german",
-            "solfege",
-            "intervals",
-            "blank",
-          ] as const)
-        ) {
-          setNotation(defaults.notation);
-        }
-        if (
-          isOneOf(defaults.accidental, ["natural", "flats", "sharps", "enharmonic"] as const)
-        ) {
-          setAccidental(defaults.accidental);
-        }
-        if (isOneOf(defaults.chordDisplayStyle, ["compact", "letter", "words"] as const)) {
-          setChordDisplayStyle(defaults.chordDisplayStyle);
-        }
-        const defaultChordLabelMode = (defaults as { chordLabelMode?: unknown }).chordLabelMode;
-        if (defaultChordLabelMode === "roman" || defaultChordLabelMode === "tonal-function") {
-          setChordLabelMode("functional-reference");
-        } else if (
-          isOneOf(defaultChordLabelMode, [
-            "none",
-            "chord-name",
-            "root-only",
-            "chord-tones",
-            "row-function",
-            "functional-reference",
-          ] as const)
-        ) {
-          setChordLabelMode(defaultChordLabelMode);
-        }
-        if (
-          isOneOf(defaults.basses, [
-            "8",
-            "12",
-            "24",
-            "32",
-            "40",
-            "48-8x6",
-            "48-12x4",
-            "60",
-            "72",
-            "80",
-            "96",
-            "100",
-            "120",
-          ] as const)
-        ) {
-          setBasses(defaults.basses);
-        }
-        if (
-          isOneOf(defaults.trebleLayout, [
-            "c-system",
-            "b-system",
-            "piano",
-          ] as const)
-        ) {
-          setTrebleLayout(defaults.trebleLayout);
-        }
-        if ([3, 4, 5].includes(Number(defaults.trebleRows))) {
-          setTrebleRows(Number(defaults.trebleRows) as 3 | 4 | 5);
-        }
-        if (isOneOf(defaults.trebleSize, ["one-octave", "two-octave", "small", "full", "large"] as const)) {
-          setTrebleSize(defaults.trebleSize);
-        }
-        if (
-          isOneOf(defaults.pianoTrebleRange, [
-            "two-octave",
-            "three-octave",
-            "four-octave",
-          ] as const)
-        ) {
-          setPianoTrebleRange(defaults.pianoTrebleRange);
-        }
-        if (typeof defaults.showTrebleOctaves === "boolean") {
-          setShowTrebleOctaves(defaults.showTrebleOctaves);
-        }
-        if (typeof defaults.diagramVerticalSpacing === "number") {
-          setDiagramVerticalSpacing(
-            Math.max(0, Math.min(80, defaults.diagramVerticalSpacing)),
-          );
-        }
-        if (typeof defaults.pianoKeyWidthScale === "number") {
-          setPianoKeyWidthScale(
-            Math.max(0.75, Math.min(1.45, defaults.pianoKeyWidthScale)),
-          );
-        }
-        if (typeof defaults.pianoKeyHeightScale === "number") {
-          setPianoKeyHeightScale(
-            Math.max(0.75, Math.min(1.8, defaults.pianoKeyHeightScale)),
-          );
-        }
-        if (typeof defaults.pianoBlackKeyWidthScale === "number") {
-          setPianoBlackKeyWidthScale(
-            Math.max(0.75, Math.min(1.35, defaults.pianoBlackKeyWidthScale)),
-          );
-        }
-        if (typeof defaults.pianoBlackKeyHeightScale === "number") {
-          setPianoBlackKeyHeightScale(
-            Math.max(0.75, Math.min(1.5, defaults.pianoBlackKeyHeightScale)),
-          );
-        }
-        if (typeof defaults.diagramScale === "number") {
-          setDiagramScale(Math.max(70, Math.min(140, defaults.diagramScale)));
-        }
-        if (
-          isOneOf(defaults.interfaceDensity, [
-            "compact",
-            "comfortable",
-          ] as const)
-        ) {
-          setInterfaceDensity(defaults.interfaceDensity);
-        }
-        if (typeof defaults.showStatusBar === "boolean") {
-          setShowStatusBar(defaults.showStatusBar);
-        }
-        if (
-          isOneOf(defaults.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES)
-        ) {
-          setScaleFinderDisplayMode(defaults.scaleFinderDisplayMode);
-        }
-        if (
-          isOneOf(defaults.colorTheme, [
-            "default",
-            "classic",
-            "pastel",
-            "print",
-            "warm",
-            "contrast",
-          ] as const)
-        ) {
-          setColorTheme(defaults.colorTheme);
-        }
-        if (isOneOf(defaults.titleMode, ["auto", "contextual", "custom", "none"] as const)) {
-          setTitleMode(defaults.titleMode);
-        }
-        if (typeof defaults.customTitle === "string") {
-          setCustomTitle(defaults.customTitle);
-        }
-        if (typeof defaults.showButtonLabels === "boolean") {
-          setShowButtonLabels(defaults.showButtonLabels);
-        }
-        if (typeof defaults.showBellowsGuide === "boolean") {
-          setShowBellowsGuide(defaults.showBellowsGuide);
-        }
-        if (typeof defaults.showStradellaRowLabels === "boolean") {
-          setShowStradellaRowLabels(defaults.showStradellaRowLabels);
-        }
-        if (typeof defaults.selectionOnClick === "boolean") {
-          setSelectionOnClick(defaults.selectionOnClick);
-        }
-        if (isOneOf(defaults.downloadFormat, ["svg", "png"] as const)) {
-          setDownloadFormat(defaults.downloadFormat);
-        }
-        if (typeof defaults.soundEnabled === "boolean") {
-          setSoundEnabled(defaults.soundEnabled);
-        }
-        if (isOneOf(defaults.soundSource, ["synth", "la-melodiosa"] as const)) {
-          setSoundSource(defaults.soundSource);
-        }
-        if (isOneOf(defaults.laMelodiosaTrebleRegister, ["I", "II", "III"] as const)) {
-          setLaMelodiosaTrebleRegister(defaults.laMelodiosaTrebleRegister);
-        }
-        if (isOneOf(defaults.laMelodiosaBassRegister, ["I", "II", "III"] as const)) {
-          setLaMelodiosaBassRegister(defaults.laMelodiosaBassRegister);
-        }
-        if (typeof defaults.laMelodiosaFollowStradellaRegisters === "boolean") {
-          setLaMelodiosaFollowStradellaRegisters(defaults.laMelodiosaFollowStradellaRegisters);
-        }
-        if (
-          isOneOf(defaults.stradellaBassVoicing, [
-            "single-low",
-            "low-and-middle",
-            "single-middle",
-          ] as const)
-        ) {
-          setStradellaBassVoicing(defaults.stradellaBassVoicing);
-        }
-        if (defaults.stradellaNoteLevels) setStradellaNoteLevels(normalizeStradellaNoteLevels(defaults.stradellaNoteLevels));
-        if ([1, 2, 3, 4].includes(Number(defaults.stradellaBassRegisterOctave)))
-          setStradellaBassRegisterOctave(Number(defaults.stradellaBassRegisterOctave));
-        if (isOneOf(defaults.stradellaBassRegisterGrouping, ["C-B", "F-E"] as const))
-          setStradellaBassRegisterGrouping(defaults.stradellaBassRegisterGrouping);
-        if ([2, 3, 4, 5].includes(Number(defaults.stradellaChordRegisterOctave)))
-          setStradellaChordRegisterOctave(Number(defaults.stradellaChordRegisterOctave));
-        if (isOneOf(defaults.stradellaChordRegisterGrouping, ["C-B", "F-E"] as const))
-          setStradellaChordRegisterGrouping(defaults.stradellaChordRegisterGrouping);
-        if (
-          isOneOf(defaults.stradellaChordFinderMode, [
-            "bass-only",
-            "chord-buttons-only",
-            "bass-and-chords",
-          ] as const)
-        ) {
-          setStradellaChordFinderMode(defaults.stradellaChordFinderMode);
-        }
-        if (typeof defaults.stradellaChordFinderMarkRootBass === "boolean") {
-          setStradellaChordFinderMarkRootBass(
-            defaults.stradellaChordFinderMarkRootBass,
-          );
-        }
-        if (
-          isOneOf(defaults.abcStradellaMode, [
-            "bass-notes-only",
-            "chord-symbols-only",
-            "bass-notes-and-chord-symbols",
-          ] as const)
-        ) {
-          setAbcStradellaMode(defaults.abcStradellaMode);
-        }
-        if (
-          isOneOf(defaults.abcTrebleChordSymbolsMode, [
-            "ignore",
-            "play",
-          ] as const)
-        ) {
-          setAbcTrebleChordSymbolsMode(defaults.abcTrebleChordSymbolsMode);
-        }
-        if (
-          isOneOf(defaults.bassPatternChordVoicing, ["simple", "full"] as const)
-        ) {
-          setBassPatternChordVoicing(defaults.bassPatternChordVoicing);
-        }
-        const defaultRepeatsPerChord =
-          typeof defaults.bassPatternRepeatsPerChord === "number"
-            ? defaults.bassPatternRepeatsPerChord
-            : defaults.bassPatternBarsPerChord;
-        if (typeof defaultRepeatsPerChord === "number") {
-          setBassPatternBarsPerChord(
-            Math.max(1, Math.min(8, Math.round(defaultRepeatsPerChord))),
-          );
-        }
-        if (typeof defaults.bassPatternTempoBpm === "number") {
-          setBassPatternTempoBpm(
-            Math.max(
-              50,
-              Math.min(220, Math.round(defaults.bassPatternTempoBpm)),
-            ),
-          );
-        }
-        if (
-          isOneOf(defaults.bassPatternLoopMode, [
-            "once",
-            "fixed",
-            "infinite",
-          ] as const)
-        ) {
-          setBassPatternLoopMode(defaults.bassPatternLoopMode);
-        }
-        if (typeof defaults.bassPatternLoopCount === "number") {
-          setBassPatternLoopCount(
-            Math.max(
-              1,
-              Math.min(64, Math.round(defaults.bassPatternLoopCount)),
-            ),
-          );
-        }
-        if (typeof defaults.abcTempoBpm === "number") {
-          setAbcTempoBpm(
-            Math.max(30, Math.min(220, Math.round(defaults.abcTempoBpm))),
-          );
-        }
-        if (typeof defaults.soundSequenceTempoBpm === "number") {
-          setSoundSequenceTempoBpm(
-            Math.max(
-              30,
-              Math.min(220, Math.round(defaults.soundSequenceTempoBpm)),
-            ),
-          );
-        }
-        if (typeof defaults.musicNotationIncludeTitle === "boolean")
-          setMusicNotationIncludeTitle(defaults.musicNotationIncludeTitle);
-        if (typeof defaults.musicNotationIncludeDescription === "boolean")
-          setMusicNotationIncludeDescription(
-            defaults.musicNotationIncludeDescription,
-          );
-        if (typeof defaults.musicNotationIncludeSummary === "boolean")
-          setMusicNotationIncludeSummary(defaults.musicNotationIncludeSummary);
-        if (typeof defaults.musicNotationUseBarsPerLine === "boolean")
-          setMusicNotationUseBarsPerLine(defaults.musicNotationUseBarsPerLine);
-        if (typeof defaults.musicNotationBarsPerLine === "number")
-          setMusicNotationBarsPerLine(
-            Math.max(
-              1,
-              Math.min(8, Math.round(defaults.musicNotationBarsPerLine)),
-            ),
-          );
-        if (typeof defaults.musicNotationChordFontSize === "number")
-          setMusicNotationChordFontSize(
-            Math.max(
-              8,
-              Math.min(24, Math.round(defaults.musicNotationChordFontSize)),
-            ),
-          );
-        if (typeof defaults.musicNotationScale === "number")
-          setMusicNotationScale(
-            Math.max(
-              40,
-              Math.min(100, Math.round(defaults.musicNotationScale)),
-            ),
-          );
-        if (typeof defaults.musicNotationStaffWidth === "number")
-          setMusicNotationStaffWidth(
-            Math.max(
-              320,
-              Math.min(900, Math.round(defaults.musicNotationStaffWidth)),
-            ),
-          );
-        if (typeof defaults.musicNotationStaffSeparator === "number")
-          setMusicNotationStaffSeparator(
-            Math.max(
-              8,
-              Math.min(32, Math.round(defaults.musicNotationStaffSeparator)),
-            ),
-          );
-        applyExtendedDefaultSettings(defaults);
+        applyStartupSettings(defaults, settingsSettersRef.current);
       } catch {
         /* The app still runs with built-in defaults if the editable file is missing or invalid. */
       }
@@ -1413,380 +1073,133 @@ function App() {
   }, []);
 
   /** Applies a settings JSON object without changing the editable default-settings.json file. */
-  function applyImportedSettings(settings: DefaultSettingsFile) {
-    if (!settings || typeof settings !== "object") return;
-
-    if (isInterfaceLanguagePreference(settings.language)) changeLanguage(settings.language);
-    if (isOneOf(settings.side, ["stradella", "treble"] as const))
-      setSide(settings.side);
-    if (
-      isOneOf(settings.notation, [
-        "english",
-        "german",
-        "solfege",
-        "intervals",
-        "blank",
-      ] as const)
-    )
-      setNotation(settings.notation);
-    if (isOneOf(settings.accidental, ["natural", "flats", "sharps", "enharmonic"] as const))
-      setAccidental(settings.accidental);
-    if (isOneOf(settings.chordDisplayStyle, ["compact", "letter", "words"] as const)) {
-      setChordDisplayStyle(settings.chordDisplayStyle);
-    }
-    const importedChordLabelMode = (settings as { chordLabelMode?: unknown }).chordLabelMode;
-    if (importedChordLabelMode === "roman" || importedChordLabelMode === "tonal-function") {
-      setChordLabelMode("functional-reference");
-    } else if (
-      isOneOf(importedChordLabelMode, [
-        "none",
-        "chord-name",
-        "root-only",
-        "chord-tones",
-        "row-function",
-        "functional-reference",
-      ] as const)
-    )
-      setChordLabelMode(importedChordLabelMode);
-    if (
-      isOneOf(settings.basses, [
-        "8",
-        "12",
-        "24",
-        "32",
-        "40",
-        "48-8x6",
-        "48-12x4",
-        "60",
-        "72",
-        "80",
-        "96",
-        "100",
-        "120",
-      ] as const)
-    )
-      setBasses(settings.basses);
-    if (
-      isOneOf(settings.trebleLayout, ["c-system", "b-system", "piano"] as const)
-    )
-      setTrebleLayout(settings.trebleLayout);
-    if ([3, 4, 5].includes(Number(settings.trebleRows)))
-      setTrebleRows(Number(settings.trebleRows) as 3 | 4 | 5);
-    if (isOneOf(settings.trebleSize, ["one-octave", "two-octave", "small", "full", "large"] as const))
-      setTrebleSize(settings.trebleSize);
-    if (
-      isOneOf(settings.pianoTrebleRange, [
-        "two-octave",
-        "three-octave",
-        "four-octave",
-      ] as const)
-    )
-      setPianoTrebleRange(settings.pianoTrebleRange);
-    if (typeof settings.showTrebleOctaves === "boolean")
-      setShowTrebleOctaves(settings.showTrebleOctaves);
-    if (typeof settings.diagramVerticalSpacing === "number")
-      setDiagramVerticalSpacing(
-        Math.max(0, Math.min(80, settings.diagramVerticalSpacing)),
-      );
-    if (typeof settings.pianoKeyWidthScale === "number")
-      setPianoKeyWidthScale(
-        Math.max(0.75, Math.min(1.45, settings.pianoKeyWidthScale)),
-      );
-    if (typeof settings.pianoKeyHeightScale === "number")
-      setPianoKeyHeightScale(
-        Math.max(0.75, Math.min(1.8, settings.pianoKeyHeightScale)),
-      );
-    if (typeof settings.pianoBlackKeyWidthScale === "number")
-      setPianoBlackKeyWidthScale(
-        Math.max(0.75, Math.min(1.35, settings.pianoBlackKeyWidthScale)),
-      );
-    if (typeof settings.pianoBlackKeyHeightScale === "number")
-      setPianoBlackKeyHeightScale(
-        Math.max(0.75, Math.min(1.5, settings.pianoBlackKeyHeightScale)),
-      );
-    if (typeof settings.diagramScale === "number")
-      setDiagramScale(Math.max(70, Math.min(140, settings.diagramScale)));
-    if (isOneOf(settings.interfaceDensity, ["compact", "comfortable"] as const))
-      setInterfaceDensity(settings.interfaceDensity);
-    if (typeof settings.showStatusBar === "boolean")
-      setShowStatusBar(settings.showStatusBar);
-    if (isOneOf(settings.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES))
-      setScaleFinderDisplayMode(settings.scaleFinderDisplayMode);
-    if (
-      isOneOf(settings.colorTheme, [
-        "default",
-        "classic",
-        "pastel",
-        "print",
-        "warm",
-        "contrast",
-      ] as const)
-    )
-      setColorTheme(settings.colorTheme);
-    if (isOneOf(settings.titleMode, ["auto", "contextual", "custom", "none"] as const))
-      setTitleMode(settings.titleMode);
-    if (typeof settings.customTitle === "string")
-      setCustomTitle(settings.customTitle);
-    if (typeof settings.showButtonLabels === "boolean")
-      setShowButtonLabels(settings.showButtonLabels);
-    if (typeof settings.showBellowsGuide === "boolean")
-      setShowBellowsGuide(settings.showBellowsGuide);
-    if (typeof settings.showStradellaRowLabels === "boolean")
-      setShowStradellaRowLabels(settings.showStradellaRowLabels);
-    if (typeof settings.selectionOnClick === "boolean")
-      setSelectionOnClick(settings.selectionOnClick);
-    if (isOneOf(settings.downloadFormat, ["svg", "png"] as const))
-      setDownloadFormat(settings.downloadFormat);
-    if (typeof settings.soundEnabled === "boolean")
-      setSoundEnabled(settings.soundEnabled);
-    if (
-      isOneOf(settings.stradellaBassVoicing, [
-        "single-low",
-        "low-and-middle",
-        "single-middle",
-      ] as const)
-    )
-      setStradellaBassVoicing(settings.stradellaBassVoicing);
-    if (settings.stradellaNoteLevels) setStradellaNoteLevels(normalizeStradellaNoteLevels(settings.stradellaNoteLevels));
-    if ([1, 2, 3, 4].includes(Number(settings.stradellaBassRegisterOctave)))
-      setStradellaBassRegisterOctave(Number(settings.stradellaBassRegisterOctave));
-    if (isOneOf(settings.stradellaBassRegisterGrouping, ["C-B", "F-E"] as const))
-      setStradellaBassRegisterGrouping(settings.stradellaBassRegisterGrouping);
-    if ([2, 3, 4, 5].includes(Number(settings.stradellaChordRegisterOctave)))
-      setStradellaChordRegisterOctave(Number(settings.stradellaChordRegisterOctave));
-    if (isOneOf(settings.stradellaChordRegisterGrouping, ["C-B", "F-E"] as const))
-      setStradellaChordRegisterGrouping(settings.stradellaChordRegisterGrouping);
-    if (
-      isOneOf(settings.stradellaChordFinderMode, [
-        "bass-only",
-        "chord-buttons-only",
-        "bass-and-chords",
-      ] as const)
-    )
-      setStradellaChordFinderMode(settings.stradellaChordFinderMode);
-    if ([0, 2, 3].includes(Number(settings.stradellaMinimumNominalGap)))
-      setStradellaMinimumNominalGap(Number(settings.stradellaMinimumNominalGap) as MinimumNominalGap);
-    if (typeof settings.stradellaChordFinderMarkRootBass === "boolean")
-      setStradellaChordFinderMarkRootBass(
-        settings.stradellaChordFinderMarkRootBass,
-      );
-    if (
-      isOneOf(settings.abcStradellaMode, [
-        "bass-notes-only",
-        "chord-symbols-only",
-        "bass-notes-and-chord-symbols",
-      ] as const)
-    )
-      setAbcStradellaMode(settings.abcStradellaMode);
-    if (
-      isOneOf(settings.abcTrebleChordSymbolsMode, ["ignore", "play"] as const)
-    )
-      setAbcTrebleChordSymbolsMode(settings.abcTrebleChordSymbolsMode);
-    if (isOneOf(settings.bassPatternChordVoicing, ["simple", "full"] as const))
-      setBassPatternChordVoicing(settings.bassPatternChordVoicing);
-    const savedRepeatsPerChord =
-      typeof settings.bassPatternRepeatsPerChord === "number"
-        ? settings.bassPatternRepeatsPerChord
-        : settings.bassPatternBarsPerChord;
-    if (typeof savedRepeatsPerChord === "number")
-      setBassPatternBarsPerChord(
-        Math.max(1, Math.min(8, Math.round(savedRepeatsPerChord))),
-      );
-    if (typeof settings.bassPatternTempoBpm === "number")
-      setBassPatternTempoBpm(
-        Math.max(50, Math.min(220, Math.round(settings.bassPatternTempoBpm))),
-      );
-    if (
-      isOneOf(settings.bassPatternLoopMode, [
-        "once",
-        "fixed",
-        "infinite",
-      ] as const)
-    )
-      setBassPatternLoopMode(settings.bassPatternLoopMode);
-    if (typeof settings.bassPatternLoopCount === "number")
-      setBassPatternLoopCount(
-        Math.max(1, Math.min(64, Math.round(settings.bassPatternLoopCount))),
-      );
-    if (typeof settings.abcTempoBpm === "number")
-      setAbcTempoBpm(
-        Math.max(30, Math.min(220, Math.round(settings.abcTempoBpm))),
-      );
-    if (typeof settings.soundSequenceTempoBpm === "number")
-      setSoundSequenceTempoBpm(
-        Math.max(30, Math.min(220, Math.round(settings.soundSequenceTempoBpm))),
-      );
-    if (typeof settings.musicNotationIncludeTitle === "boolean")
-      setMusicNotationIncludeTitle(settings.musicNotationIncludeTitle);
-    if (typeof settings.musicNotationIncludeDescription === "boolean")
-      setMusicNotationIncludeDescription(
-        settings.musicNotationIncludeDescription,
-      );
-    if (typeof settings.musicNotationIncludeSummary === "boolean")
-      setMusicNotationIncludeSummary(settings.musicNotationIncludeSummary);
-    if (typeof settings.musicNotationUseBarsPerLine === "boolean")
-      setMusicNotationUseBarsPerLine(settings.musicNotationUseBarsPerLine);
-    if (typeof settings.musicNotationBarsPerLine === "number")
-      setMusicNotationBarsPerLine(
-        Math.max(1, Math.min(8, Math.round(settings.musicNotationBarsPerLine))),
-      );
-    if (typeof settings.musicNotationChordFontSize === "number")
-      setMusicNotationChordFontSize(
-        Math.max(
-          8,
-          Math.min(24, Math.round(settings.musicNotationChordFontSize)),
-        ),
-      );
-    if (typeof settings.musicNotationScale === "number")
-      setMusicNotationScale(
-        Math.max(40, Math.min(100, Math.round(settings.musicNotationScale))),
-      );
-    if (typeof settings.musicNotationStaffWidth === "number")
-      setMusicNotationStaffWidth(
-        Math.max(
-          320,
-          Math.min(900, Math.round(settings.musicNotationStaffWidth)),
-        ),
-      );
-    if (typeof settings.musicNotationStaffSeparator === "number")
-      setMusicNotationStaffSeparator(
-        Math.max(
-          8,
-          Math.min(32, Math.round(settings.musicNotationStaffSeparator)),
-        ),
-      );
-    applyExtendedDefaultSettings(settings);
-  }
-
-  /** Collects the current persistent settings in the same shape as public/default-settings.json. */
-  function collectCurrentSettings(): DefaultSettingsFile {
-    return {
-      language: languagePreference,
-      side,
-      notation,
-      accidental,
-      chordLabelMode,
-      chordDisplayStyle,
-      basses,
-      trebleLayout,
-      trebleRows,
-      trebleSize,
-      pianoTrebleRange,
-      showTrebleOctaves,
-      colorTheme,
-      titleMode,
-      customTitle,
-      showButtonLabels,
-      showBellowsGuide,
-      showStradellaRowLabels,
-      selectionOnClick,
-      downloadFormat,
-      soundEnabled,
-      stradellaBassVoicing,
-      stradellaBassRegisterOctave,
-      stradellaBassRegisterGrouping,
-      stradellaChordRegisterOctave,
-      stradellaChordRegisterGrouping,
-      stradellaChordFinderMarkRootBass,
-      stradellaChordFinderMode,
-      stradellaNoteLevels,
-      stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,
-      stradellaMinimumNominalGap,
-      diagramVerticalSpacing,
-      pianoKeyWidthScale,
-      pianoKeyHeightScale,
-      pianoBlackKeyWidthScale,
-      pianoBlackKeyHeightScale,
-      diagramScale,
-      interfaceDensity,
-      showStatusBar,
-      scaleFinderDisplayMode,
+  /** Snapshot value capture stays in App until each tool owns its own controller. */
+  function collectSettingsSnapshot(): DefaultSettingsFile {
+    return collectCurrentSettings({
       abcStradellaMode,
-      abcTrebleChordSymbolsMode,
-      bassPatternChordVoicing,
-      bassPatternRepeatsPerChord: bassPatternBarsPerChord,
-      bassPatternTempoBpm,
-      bassPatternLoopMode,
-      bassPatternLoopCount,
       abcTempoBpm,
-      soundSequenceTempoBpm,
-      musicNotationIncludeTitle,
-      musicNotationIncludeDescription,
-      musicNotationIncludeSummary,
-      musicNotationUseBarsPerLine,
-      musicNotationBarsPerLine,
-      musicNotationChordFontSize,
-      musicNotationScale,
-      musicNotationStaffWidth,
-      musicNotationStaffSeparator,
-      buttonSize,
-      buttonSpacing: spacing,
-      trebleAngle,
-      buttonStrokeWidth,
-      referenceStrokeWidth,
-      chordFillStrength,
+      abcTrebleChordSymbolsMode,
+      accidental,
       accidentalStyle,
-      labelFontSize,
-      titleFont,
-      titleSize,
-      labelFont,
-      sequenceDisplayMode,
-      sequenceColorPreset,
-      sequenceThickness,
-      sequenceArrowheadSize,
-      sequenceNumberFontSize,
-      sequenceNumberColorPreset,
-      sequenceNumberPosition,
-      fingeringPosition,
-      scaleFinderRoot,
-      scaleFinderPattern,
-      scaleFinderRowLimit,
-      chordFinderRoot,
-      chordFinderPattern,
-      chordFinderInversion,
-      chordFinderOctave,
-      bassPatternRoot,
-      annotationTextSize: textNoteFontSize,
-      annotationTextColor: textNoteColor,
-      annotationFont: textNoteFont,
       annotationBold,
+      annotationButtonAnchor,
       annotationItalic,
       annotationOffsetPercent,
-      annotationButtonAnchor,
-      soundVolume,
-      soundSource,
-      laMelodiosaTrebleRegister,
-      laMelodiosaBassRegister,
-      laMelodiosaFollowStradellaRegisters,
-      soundVoicePreset,
-      soundWaveform,
-      soundMusetteDetuneCents,
-      soundAttackMs,
-      soundReleaseMs,
-      soundNoteDurationMs,
-      harmonyShowEnharmonics,
-      harmonyShowSeparators,
-      harmonyShowLegend,
-      harmonyShowExplanation,
-      harmonyRingVisibility: Object.fromEntries(
-        Object.entries(harmonyRingVisibility).map(([key, value]) => [String(key), value]),
-      ) as Record<string, boolean>,
-      harmonyShowToneTooltips,
-      harmonyShowNoteRing,
+      bassPatternBarsPerChord,
+      bassPatternChordVoicing,
+      bassPatternLoopCount,
+      bassPatternLoopMode,
+      bassPatternRoot,
+      bassPatternTempoBpm,
+      basses,
+      buttonSize,
+      buttonStrokeWidth,
+      chordDisplayStyle,
+      chordFillStrength,
+      chordFinderInversion,
+      chordFinderOctave,
+      chordFinderPattern,
+      chordFinderRoot,
+      chordLabelMode,
+      colorTheme,
+      customTitle,
+      diagramScale,
+      diagramVerticalSpacing,
+      downloadFormat,
+      fingeringPosition,
       harmonyColorByFamily,
       harmonyDiameter,
       harmonyFontSize,
       harmonyPlaybackStyle,
+      harmonyProgressionAllowApproximations,
+      harmonyProgressionHandMovementWeight,
+      harmonyProgressionRhythmPattern,
+      harmonyRingVisibility,
+      harmonyShowEnharmonics,
+      harmonyShowExplanation,
+      harmonyShowLegend,
+      harmonyShowNoteRing,
+      harmonyShowSeparators,
+      harmonyShowToneTooltips,
       harmonyVoicingStyle,
-      progressionAllowApproximations: harmonyProgressionAllowApproximations,
-      progressionHandMovementWeight: harmonyProgressionHandMovementWeight,
-      progressionRhythmPattern: harmonyProgressionRhythmPattern,
-    };
+      interfaceDensity,
+      laMelodiosaBassRegister,
+      laMelodiosaFollowStradellaRegisters,
+      laMelodiosaTrebleRegister,
+      labelFont,
+      labelFontSize,
+      languagePreference,
+      musicNotationBarsPerLine,
+      musicNotationChordFontSize,
+      musicNotationIncludeDescription,
+      musicNotationIncludeSummary,
+      musicNotationIncludeTitle,
+      musicNotationScale,
+      musicNotationStaffSeparator,
+      musicNotationStaffWidth,
+      musicNotationUseBarsPerLine,
+      notation,
+      pianoBlackKeyHeightScale,
+      pianoBlackKeyWidthScale,
+      pianoKeyHeightScale,
+      pianoKeyWidthScale,
+      pianoTrebleRange,
+      referenceStrokeWidth,
+      scaleFinderDisplayMode,
+      scaleFinderPattern,
+      scaleFinderRoot,
+      scaleFinderRowLimit,
+      selectionOnClick,
+      sequenceArrowheadSize,
+      sequenceColorPreset,
+      sequenceDisplayMode,
+      sequenceNumberColorPreset,
+      sequenceNumberFontSize,
+      sequenceNumberPosition,
+      sequenceThickness,
+      showBellowsGuide,
+      showButtonLabels,
+      showStatusBar,
+      showStradellaRowLabels,
+      showStradellaVoicingIntervals,
+      showTrebleOctaves,
+      side,
+      soundAttackMs,
+      soundEnabled,
+      soundMusetteDetuneCents,
+      soundNoteDurationMs,
+      soundReleaseMs,
+      soundSequenceTempoBpm,
+      soundSource,
+      soundVoicePreset,
+      soundVolume,
+      soundWaveform,
+      spacing,
+      stradellaBassRegisterGrouping,
+      stradellaBassRegisterOctave,
+      stradellaBassVoicing,
+      stradellaChordFinderMarkRootBass,
+      stradellaChordFinderMode,
+      stradellaChordRegisterGrouping,
+      stradellaChordRegisterOctave,
+      stradellaMinimumNominalGap,
+      stradellaNoteLevels,
+      textNoteColor,
+      textNoteFont,
+      textNoteFontSize,
+      titleFont,
+      titleMode,
+      titleSize,
+      trebleAngle,
+      trebleLayout,
+      trebleRows,
+      trebleSize,
+    });
   }
 
   /** Download format and filename remain compatible with v0.15.28. */
   function downloadCurrentSettings() {
-    downloadSettingsDocument(collectCurrentSettings());
+    downloadSettingsDocument(collectSettingsSnapshot());
   }
 
   /** Imports a settings JSON file and applies it to the current session. */
@@ -1794,7 +1207,7 @@ function App() {
     if (!file) return;
     try {
       const settings = await parseSettingsDocumentFile(file);
-      applyImportedSettings(settings);
+      applyImportedSettings(settings, settingsSettersRef.current);
     } catch {
       window.alert(
         t("ui.invalidSettingsFile"),
