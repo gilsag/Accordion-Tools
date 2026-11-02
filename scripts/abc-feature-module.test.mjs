@@ -15,8 +15,10 @@ assert.doesNotMatch(app, /const \[abcText,\s*setAbcText\] = useState/);
 assert.doesNotMatch(app, /const abcParseResult = useMemo/);
 assert.match(app, /function scheduleAbcPlayback\(/, "Playback orchestration remains in App for now");
 assert.match(app, /renderNotationInto\(abcNotationRef\.current, abcText\)/);
-assert.match(app, /playButtonSound\(button, soundOptions\)/);
-assert.match(app, /abcMappedEvents\.filter\(/);
+const scheduling = readFileSync("src/audio/playbackScheduling.ts", "utf8");
+assert.match(app, /scheduleAbcMappedPlayback\(\{abcMappedEvents/);
+assert.match(scheduling, /playButtonSound\(button, soundOptions\)/);
+assert.match(scheduling, /abcMappedEvents\.filter\(/);
 
 let index = 0;
 const slots = [];

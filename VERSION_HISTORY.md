@@ -1,4 +1,10 @@
-## Unreleased — Architecture migration, Phases 1–3f (toward v0.16.0)
+## Unreleased — Architecture migration, Phases 1–4 (toward v0.16.0)
+
+- **Combined Phase 4 (diagram, export, audio, notation):** Added `DiagramSvgSurface`, `DiagramButtonLayer`, `DiagramConnections` and `DiagramAnnotationsLayer`. The DOM's SVG viewBox, CSS classes, physical button IDs, overlays, markers and annotation editor semantics remain unchanged. The exported diagram still uses the existing SVG/PNG rasterizer and ZIP generator.
+- Extracted filename normalization, Harmony diagram export naming, SVG/PNG dispatch, asynchronous batch snapshot encoding and pointer-to-viewBox conversion into `src/diagram/diagramExport.ts`. Capture and `flushSync` realization restoration remain in App to preserve the snapshot-before-encoding ordering.
+- Extracted sample/synth options and volume settings into `src/audio/useSoundSettings.ts` while retaining the nominal Stradella register in the instrument module. Introduced `src/audio/playbackTransport.ts` and `playbackScheduling.ts` for per-feature timer cancellation and original ABC/Bass Pattern event schedules; cross-tool start/stop coordination remains in App.
+- Moved shared abcjs notation rendering and rendered SVG score export to `src/notation/notationService.ts`. `abcjs` remains statically imported **inside the service** until a separately tested lazy-loading phase. Added `scripts/render-audio-services.test.mjs`, migrated source-location assertions to the new owners, and updated documentation. No musical, UI, settings, translation or public version changes are intended.
+
 
 - Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
 - Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.

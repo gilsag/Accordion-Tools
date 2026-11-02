@@ -30,6 +30,10 @@ import { useLanguageSettings } from "./settings/useLanguageSettings";
 import { useInstrumentState } from "./instrument/useInstrumentState";
 import { TREBLE_PRESET_BUTTON_SIZE, PIANO_TREBLE_PRESET_BUTTON_SIZE } from "./instrument/sizePresets";
 import { useDiagramAppearanceState } from "./diagram/useDiagramAppearanceState";
+import { DiagramButtonLayer } from "./diagram/components/DiagramButtonLayer";
+import { DiagramConnections } from "./diagram/components/DiagramConnections";
+import { DiagramAnnotationsLayer } from "./diagram/components/DiagramAnnotationsLayer";
+import { DiagramSvgSurface } from "./diagram/components/DiagramSvgSurface";
 import { useDiagramOverlays } from "./diagram/useDiagramOverlays";
 import { useDiagramAnnotations } from "./features/annotateDiagram/useDiagramAnnotations";
 import { useBassPatternState, useBassPatternResults } from "./features/bassPatternPlayer/useBassPatternPlayer";
@@ -41,7 +45,10 @@ import { useStradellaChordFinderState, useStradellaChordFinderResults } from "./
 import { useScaleFinderState, useScaleFinderResults } from "./features/scaleFinder/useScaleFinder";
 import { useTrebleChordFinderState, useTrebleChordFinderButtons } from "./features/trebleChordFinder/useTrebleChordFinder";
 import { flushSync } from "react-dom";
-import { renderAbc } from "abcjs";
+import { useSoundSettings } from "./audio/useSoundSettings";
+import { playbackClockMs, clearPlaybackTimers } from "./audio/playbackTransport";
+import { scheduleAbcMappedPlayback, scheduleBassPatternEvents } from "./audio/playbackScheduling";
+import { renderNotationInto as renderSharedNotation, downloadRenderedNotationSvg } from "./notation/notationService";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import "./App.css";
 import {
@@ -73,7 +80,6 @@ import type {
   NumberPosition,
   SequenceColorPreset,
   SequenceDisplayMode,
-  SoundSource,
   SoundVoicePreset,
   SoundWaveform,
   SampleRegister,
@@ -89,9 +95,7 @@ import {
   formatPitch,
   INDEX_TO_PITCH,
   INTERVALS_FROM_C,
-  isAccidentalPitch,
   isChordKind,
-  renderMusicLabel,
   rowFunction,
 } from "./music";
 
@@ -108,15 +112,13 @@ import {
   PIANO_TREBLE_RANGE_PRESETS,
   pianoTrebleWhiteKeyCount,
 } from "./pianoTreble";
-import { downloadPng, downloadSvg, downloadZip, serializeSvg, svgStringToPngBytes } from "./download";
+import { serializeSvg } from "./download";
+import { accordionDiagramFilename, harmonyDiagramFilename, downloadDiagram, downloadDiagramBatch, svgPointFromClient } from "./diagram/diagramExport";
 import {
-  getSequenceLabelsForButton,
-  makeSequenceArrowPath,
   sequenceArrowStyleFromMode,
   sequenceModeShowsArrows,
   sequenceModeShowsNumbers,
 } from "./tools/sequenceTools";
-import { splitMultilineText } from "./tools/textNoteTools";
 import {
   FINDER_ROOT_OPTIONS,
   SCALE_FINDER_OPTIONS,
@@ -257,13 +259,6 @@ const SEQUENCE_DISPLAY_MODE_OPTIONS: Array<{
 ];
 
 
-function finderLabelsForButton(buttons: DiagramButton[], buttonId: string) {
-  return buttons
-    .map((button, index) => (button.id === buttonId ? String(index + 1) : ""))
-    .filter(Boolean)
-    .join(",");
-}
-
 function normalizeProgressionText(value: string) {
   return value
     .replace(/[♭𝄫]/gu, "b")
@@ -289,33 +284,7 @@ function formatProgressionOptionLabel(progression: ChordProgressionDefinition, l
   return `${localizedName} — ${chordList}`;
 }
 
-/** Calculates the y-coordinate for a sequence number relative to a button. */
-function numberY(
-  buttonY: number,
-  buttonSize: number,
-  position: NumberPosition,
-) {
-  if (position === "above") return buttonY - buttonSize * 0.72;
-  if (position === "inside-top") return buttonY - buttonSize * 0.48;
-  return buttonY + buttonSize * 0.58;
-}
-
-/** Calculates the y-coordinate for a fingering label relative to a button. */
-function fingeringY(
-  buttonY: number,
-  buttonSize: number,
-  position: NumberPosition,
-) {
-  if (position === "above") return buttonY - buttonSize * 0.72;
-  if (position === "inside-top") return buttonY - buttonSize * 0.48;
-  return buttonY + buttonSize * 0.58;
-}
-
 /** Renders the full accordion diagram generator application. */
-function playbackClockMs() {
-  return performance.now();
-}
-
 function App() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -657,25 +626,11 @@ function App() {
     commitInlineAnnotation, cancelInlineAnnotation,
   } = useDiagramAnnotations(buttonSize);
 
-  /* Sound tool state for synthesized button and sequence playback. */
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [soundVolume, setSoundVolume] = useState(0.2);
-  const [soundSource, setSoundSource] = useState<SoundSource>("la-melodiosa");
-  const [laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister] =
-    useState<SampleRegister>("I");
-  const [laMelodiosaBassRegister, setLaMelodiosaBassRegister] =
-    useState<SampleRegister>("III");
-  const [laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters] = useState(true);
-  const [soundVoicePreset, setSoundVoicePreset] =
-    useState<SoundVoicePreset>("soft-reed");
-  const [soundWaveform, setSoundWaveform] = useState<SoundWaveform>("triangle");
-  const [soundMusetteDetuneCents, setSoundMusetteDetuneCents] = useState(9);
-  const [soundAttackMs, setSoundAttackMs] = useState(14);
-  const [soundReleaseMs, setSoundReleaseMs] = useState(120);
-  const [soundNoteDurationMs, setSoundNoteDurationMs] = useState(420);
-  const [soundSequenceTempoBpm, setSoundSequenceTempoBpm] = useState(80);
-  const [stradellaBassVoicing, setStradellaBassVoicing] =
-    useState<StradellaBassVoicing>("single-low");
+  /* Audio settings are separate from the nominal physical register model. */
+  const {
+    soundEnabled, setSoundEnabled, soundVolume, setSoundVolume, soundSource, setSoundSource, laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister, laMelodiosaBassRegister, setLaMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters, soundVoicePreset, setSoundVoicePreset, soundWaveform, setSoundWaveform, soundMusetteDetuneCents, setSoundMusetteDetuneCents, soundAttackMs, setSoundAttackMs, soundReleaseMs, setSoundReleaseMs, soundNoteDurationMs, setSoundNoteDurationMs, soundSequenceTempoBpm, setSoundSequenceTempoBpm, stradellaBassVoicing, setStradellaBassVoicing,
+    soundOptions,
+  } = useSoundSettings(stradellaRegisterModel);
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
   const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
 
@@ -1231,33 +1186,8 @@ function App() {
     selectedChordProgression,
   ]);
 
-  const renderNotationInto = useCallback((
-    target: HTMLDivElement | null,
-    abcSource: string,
-  ) => {
-    if (!target) return;
-    target.innerHTML = "";
-    if (!abcSource.trim()) return;
-
-    try {
-      target.classList.remove("rendered-abc-error");
-      renderAbc(target, abcSource, {
-        add_classes: true,
-        responsive: "resize",
-        scale: musicNotationScale / 100,
-        paddingleft: 0,
-        paddingright: 0,
-        paddingtop: 0,
-        paddingbottom: 0,
-        staffwidth: musicNotationStaffWidth,
-      });
-    } catch (error) {
-      target.classList.add("rendered-abc-error");
-      target.textContent =
-        error instanceof Error
-          ? `Could not render notation: ${error.message}`
-          : "Could not render notation.";
-    }
+  const renderNotationInto = useCallback((target: HTMLDivElement | null, abcSource: string) => {
+    renderSharedNotation(target, abcSource, musicNotationScale, musicNotationStaffWidth);
   }, [musicNotationScale, musicNotationStaffWidth]);
 
   function abcNoteNameForButton(button: DiagramButton) {
@@ -1499,29 +1429,6 @@ function App() {
 
 
 
-  /* Consolidated sound options passed to the Web Audio helper functions. */
-  const soundOptions = useMemo(() => ({
-    enabled: soundEnabled,
-    volume: soundVolume,
-    source: soundSource,
-    laMelodiosaTrebleRegister,
-    laMelodiosaBassRegister,
-    laMelodiosaFollowStradellaRegisters,
-    stradellaRegisterModel,
-    voicePreset: soundVoicePreset,
-    waveform: soundWaveform,
-    musetteDetuneCents: soundMusetteDetuneCents,
-    attackMs: soundAttackMs,
-    releaseMs: soundReleaseMs,
-    noteDurationMs: soundNoteDurationMs,
-    sequenceTempoBpm: soundSequenceTempoBpm,
-    stradellaBassVoicing,
-  }), [
-    soundEnabled, soundVolume, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister,
-    laMelodiosaFollowStradellaRegisters, stradellaRegisterModel, soundVoicePreset, soundWaveform, soundMusetteDetuneCents,
-    soundAttackMs, soundReleaseMs, soundNoteDurationMs, soundSequenceTempoBpm, stradellaBassVoicing,
-  ]);
-
   function abcNameForConcreteNote(pitchClass: string, octave: number) {
     const accidentalMap: Record<string, string> = {
       C: "C", "C#": "^C", Db: "_D", D: "D", "D#": "^D", Eb: "_E",
@@ -1728,8 +1635,7 @@ function App() {
   }
 
   function stopHarmonyRecordedProgressionPlayback() {
-    harmonyRecordedPlaybackTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
-    harmonyRecordedPlaybackTimeoutsRef.current = [];
+    clearPlaybackTimers(harmonyRecordedPlaybackTimeoutsRef);
     setHarmonyRecordedProgressionPlaying(false);
     stopAllSound();
   }
@@ -2073,10 +1979,7 @@ function App() {
   }
 
   function clearAbcTimers() {
-    abcPlaybackTimeoutsRef.current.forEach((timeoutId) =>
-      window.clearTimeout(timeoutId),
-    );
-    abcPlaybackTimeoutsRef.current = [];
+    clearPlaybackTimers(abcPlaybackTimeoutsRef);
   }
 
   function stopAbcPlayback() {
@@ -2120,53 +2023,13 @@ function App() {
     abcPlaybackStartedAtRef.current = playbackClockMs();
     abcPlaybackStartBeatRef.current = startBeat;
 
-    const beatMs = 60000 / Math.max(20, abcTempoBpm);
-    const eventsToSchedule = abcMappedEvents.filter(
-      (event) => event.startBeat + event.durationBeats >= startBeat,
-    );
-
-    eventsToSchedule.forEach((event) => {
-      const delayMs = Math.max(0, (event.startBeat - startBeat) * beatMs);
-      const onTimeout = window.setTimeout(() => {
-        setAbcPositionBeat(event.startBeat);
-        setAbcActiveButtonIds(event.buttons.map((button) => button.id));
-        event.buttons.forEach((button) =>
-          playButtonSound(button, soundOptions),
-        );
-
-        const clearTimeoutId = window.setTimeout(
-          () => {
-            setAbcActiveButtonIds((current) => {
-              const eventIds = new Set(
-                event.buttons.map((button) => button.id),
-              );
-              return current.filter((id) => !eventIds.has(id));
-            });
-          },
-          Math.max(80, event.durationBeats * beatMs * 0.85),
-        );
-        abcPlaybackTimeoutsRef.current.push(clearTimeoutId);
-      }, delayMs);
-      abcPlaybackTimeoutsRef.current.push(onTimeout);
-    });
-
-    const stopTimeout = window.setTimeout(
-      () => {
-        setAbcPlaybackState("stopped");
-        setAbcPositionBeat(0);
-        setAbcActiveButtonIds([]);
-        abcPlaybackStartedAtRef.current = null;
-      },
-      Math.max(0, (abcTotalBeats - startBeat) * beatMs) + 120,
-    );
-    abcPlaybackTimeoutsRef.current.push(stopTimeout);
+    scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoBpm,
+      abcTotalBeats, abcPlaybackTimeoutsRef, abcPlaybackStartedAtRef,
+      soundOptions, setAbcPositionBeat, setAbcActiveButtonIds, setAbcPlaybackState});
   }
 
   function clearBassPatternTimers() {
-    bassPatternTimeoutsRef.current.forEach((timeoutId) =>
-      window.clearTimeout(timeoutId),
-    );
-    bassPatternTimeoutsRef.current = [];
+    clearPlaybackTimers(bassPatternTimeoutsRef);
   }
 
   function stopBassPatternPlayback() {
@@ -2254,25 +2117,6 @@ function App() {
     }
   }
 
-  function safeFilenamePart(value: string) {
-    return (
-      value
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "") || "notation"
-    );
-  }
-
-  function downloadRenderedNotationSvg(
-    target: HTMLDivElement | null,
-    filenameBase: string,
-  ) {
-    const svg = target?.querySelector("svg");
-    if (!(svg instanceof SVGSVGElement)) return;
-    downloadSvg(svg, `${safeFilenamePart(filenameBase)}.svg`);
-  }
-
   function scheduleBassPatternPlayback() {
     if (bassPatternEvents.length === 0) return;
 
@@ -2287,81 +2131,10 @@ function App() {
     setStradellaChordFinderActive(false);
     setBassPatternPlaybackState("playing");
 
-    const beatMs = 60000 / Math.max(30, bassPatternTempoBpm);
-    const cycleBeats = Math.max(0, bassPatternTotalBeats);
-    const repeats =
-      bassPatternLoopMode === "fixed"
-        ? Math.max(1, Math.min(64, Math.round(bassPatternLoopCount)))
-        : 1;
-
-    const scheduleCycle = (cycleIndex: number) => {
-      if (bassPatternPlaybackRunRef.current !== runId) return;
-      const cycleOffsetMs = cycleIndex * cycleBeats * beatMs;
-
-      bassPatternEvents.forEach((event) => {
-        const onTimeout = window.setTimeout(
-          () => {
-            if (bassPatternPlaybackRunRef.current !== runId) return;
-            setBassPatternActiveButtonIds(
-              event.buttons.map((button) => button.id),
-            );
-            const eventSoundOptions = {
-              ...soundOptions,
-              volume: Math.min(1, soundOptions.volume * event.gain),
-            };
-            event.buttons.forEach((button) =>
-              playButtonSound(button, eventSoundOptions),
-            );
-
-            const clearTimeoutId = window.setTimeout(
-              () => {
-                if (bassPatternPlaybackRunRef.current !== runId) return;
-                setBassPatternActiveButtonIds((current) => {
-                  const eventIds = new Set(
-                    event.buttons.map((button) => button.id),
-                  );
-                  return current.filter((id) => !eventIds.has(id));
-                });
-              },
-              Math.max(80, event.durationBeats * beatMs * 0.85),
-            );
-            bassPatternTimeoutsRef.current.push(clearTimeoutId);
-          },
-          Math.max(0, cycleOffsetMs + event.startBeat * beatMs),
-        );
-        bassPatternTimeoutsRef.current.push(onTimeout);
-      });
-    };
-
-    if (bassPatternLoopMode === "infinite") {
-      const scheduleInfiniteCycle = (cycleIndex: number) => {
-        if (bassPatternPlaybackRunRef.current !== runId) return;
-        scheduleCycle(cycleIndex);
-        const nextCycleTimeout = window.setTimeout(
-          () => {
-            scheduleInfiniteCycle(cycleIndex + 1);
-          },
-          Math.max(120, cycleBeats * beatMs),
-        );
-        bassPatternTimeoutsRef.current.push(nextCycleTimeout);
-      };
-      scheduleInfiniteCycle(0);
-      return;
-    }
-
-    for (let cycleIndex = 0; cycleIndex < repeats; cycleIndex += 1) {
-      scheduleCycle(cycleIndex);
-    }
-
-    const stopTimeout = window.setTimeout(
-      () => {
-        if (bassPatternPlaybackRunRef.current !== runId) return;
-        setBassPatternPlaybackState("stopped");
-        setBassPatternActiveButtonIds([]);
-      },
-      Math.max(0, cycleBeats * repeats * beatMs) + 140,
-    );
-    bassPatternTimeoutsRef.current.push(stopTimeout);
+    scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm,
+      bassPatternTotalBeats, bassPatternLoopMode, bassPatternLoopCount,
+      bassPatternTimeoutsRef, bassPatternPlaybackRunRef, runId, soundOptions,
+      setBassPatternActiveButtonIds, setBassPatternPlaybackState});
   }
 
   /** Stops currently playing notes and any scheduled sequence playback. */
@@ -2598,18 +2371,7 @@ function App() {
       } finally {
         flushSync(() => setStradellaChordFinderRealizationIndex(initialIndex));
       }
-      const encoder = new TextEncoder();
-      const entries: Array<{ name: string; data: Uint8Array }> = [];
-      for (const snapshot of snapshots) {
-        const isPng = downloadFormat === "png";
-        entries.push({
-          name: `${snapshot.name}.${isPng ? "png" : "svg"}`,
-          data: isPng
-            ? await svgStringToPngBytes(snapshot.svg, snapshot.width, snapshot.height)
-            : encoder.encode(snapshot.svg),
-        });
-      }
-      downloadZip(entries, `stradella-${stradellaChordFinderRoot}-${stradellaChordFinderPattern}-${downloadFormat}-${entries.length}-realizations.zip`);
+      await downloadDiagramBatch(snapshots, downloadFormat, `stradella-${stradellaChordFinderRoot}-${stradellaChordFinderPattern}-${downloadFormat}-${snapshots.length}-realizations.zip`);
     } catch (error) {
       window.alert(error instanceof Error ? error.message : "Could not export all diagrams.");
     } finally {
@@ -2617,36 +2379,19 @@ function App() {
     }
   }
 
-  /** Downloads the currently rendered accordion or Harmony Explorer diagram. */
+  /** The application determines musical titles; the diagram export service
+   * owns filename normalization, format dispatch and viewBox coordinate mapping. */
   function downloadCurrentDiagram() {
     if (workspaceMode === "harmony") {
       if (!harmonySvgRef.current) return;
-      const safePart = (value: string) => value
-        .toLowerCase()
-        .replace(/[()]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      const name = `harmonic-circle-${safePart(harmonyReferenceFamily.shortName)}-${safePart(harmonyRelatedName)}-${safePart(harmonyScale.name)}`;
-      if (downloadFormat === "png") {
-        downloadPng(harmonySvgRef.current, `${name}.png`);
-      } else {
-        downloadSvg(harmonySvgRef.current, `${name}.svg`);
-      }
+      const name = harmonyDiagramFilename(harmonyReferenceFamily.shortName, harmonyRelatedName, harmonyScale.name);
+      downloadDiagram(harmonySvgRef.current, name, downloadFormat);
       return;
     }
-
     if (!svgRef.current) return;
-    const layoutName =
-      side === "stradella"
-        ? "stradella"
-        : trebleLayout === "piano"
-          ? "piano-treble"
-          : `${trebleLayout}-treble`;
-
-    // Match the title currently displayed on the diagram, including the
-    // Chord Finder's automatically generated chord/realization title.
+    const layoutName = side === "stradella" ? "stradella"
+      : trebleLayout === "piano" ? "piano-treble" : `${trebleLayout}-treble`;
     const displayedTitle = titleMode !== "none" ? finalTitle : "";
-    // ASCII-only, Windows-safe filenames; identify individual Chord Finder recipes.
     const rawName = titleMode === "contextual" && finderAnnotationActive && finderAnnotation
       ? finderAnnotation.filenameKey
       : titleMode === "contextual" && side === "treble" && chordFinderActive
@@ -2657,36 +2402,12 @@ function App() {
           })
         : (titleMode === "auto" ||
            (titleMode === "contextual" && !stradellaChordFinderActive && !(side === "treble" && chordFinderActive) && !scaleFinderActive))
-          ? autoTitle()
-          : displayedTitle;
-    const asciiName = rawName
-      .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
-      .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-zA-Z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 160).replace(/-+$/g, "");
-    const reservedName = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i;
-    const filenameBase = asciiName && !reservedName.test(asciiName)
-      ? asciiName
-      : `${layoutName}-accordion-diagram`;
-
-    if (downloadFormat === "png") {
-      downloadPng(svgRef.current, `${filenameBase}.png`);
-      return;
-    }
-
-    downloadSvg(svgRef.current, `${filenameBase}.svg`);
+          ? autoTitle() : displayedTitle;
+    downloadDiagram(svgRef.current, accordionDiagramFilename(rawName, layoutName), downloadFormat);
   }
-  /** Converts a browser mouse click into SVG viewBox coordinates. */
-  function svgPointFromMouse(event: ReactMouseEvent<SVGSVGElement>) {
-    const svg = svgRef.current;
-    const screenMatrix = svg?.getScreenCTM();
-    if (!svg || !screenMatrix) return null;
 
-    const point = svg.createSVGPoint();
-    point.x = event.clientX;
-    point.y = event.clientY;
-    return point.matrixTransform(screenMatrix.inverse());
+  function svgPointFromMouse(event: ReactMouseEvent<SVGSVGElement>) {
+    return svgPointFromClient(svgRef.current, event.clientX, event.clientY);
   }
 
   /** Starts a free-position inline annotation when Annotate Diagram is active. */
@@ -5695,14 +5416,11 @@ function App() {
           className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
           style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
         >
-          <svg
-            ref={svgRef}
-            preserveAspectRatio="xMinYMin meet"
-            className={`diagram diagram-theme-${colorTheme} accidental-style-${accidentalStyle} ${activeToolSection === "annotateDiagram" ? "annotating-diagram" : ""}`}
-            viewBox={`0 0 ${viewWidth} ${viewHeight}`}
-            role="img"
-            onClick={handleSvgClick}
-            style={svgStyle}
+          <DiagramSvgSurface
+            ref={svgRef} colorTheme={colorTheme} accidentalStyle={accidentalStyle}
+            annotationActive={activeToolSection === "annotateDiagram"}
+            viewWidth={viewWidth} viewHeight={viewHeight}
+            onClick={handleSvgClick} style={svgStyle}
           >
             <defs>
               <marker
@@ -5862,371 +5580,49 @@ function App() {
                 );
               })}
 
-            {buttons.map((button) => {
-              const overlay = overlays[button.id] ?? {};
-              const mainLabel = getMainLabel(button);
-              const isChord = isChordKind(button.kind);
-              const isTreble = button.kind === "treble-note";
-              const isTrebleAccidental =
-                isTreble && isAccidentalPitch(button.pitchClass);
-              const isPianoKey =
-                button.visualShape?.startsWith("piano-") ?? false;
-              const isPianoBlackKey = button.visualShape === "piano-black-key";
-              const sequenceLabels = getSequenceLabelsForButton(
-                sequenceSteps,
-                button.id,
-              );
-              const scaleFinderLabels = showScaleFinderNumbers
-                ? finderLabelsForButton(scaleFinderButtons, button.id)
-                : "";
-              const finderMatch = finderButtonIds.has(button.id) || progressionPreviewButtonIds.has(button.id);
-              const abcMatch =
-                abcActiveButtonIdSet.has(button.id) ||
-                bassPatternActiveButtonIdSet.has(button.id) ||
-                harmonyProgressionActiveButtonIdSet.has(button.id);
-              const primaryFinderMatch =
-                stradellaChordFinderActive &&
-                stradellaPrimaryFinderButtonIds.has(button.id);
-              const rootBassFinderMatch =
-                stradellaChordFinderActive &&
-                stradellaRootBassFinderButtonIds.has(button.id);
+            <DiagramButtonLayer
+              buttons={buttons} overlays={overlays} sequenceSteps={sequenceSteps}
+              scaleFinderButtons={scaleFinderButtons} finderButtonIds={finderButtonIds}
+              progressionPreviewButtonIds={progressionPreviewButtonIds}
+              abcActiveButtonIdSet={abcActiveButtonIdSet}
+              bassPatternActiveButtonIdSet={bassPatternActiveButtonIdSet}
+              harmonyProgressionActiveButtonIdSet={harmonyProgressionActiveButtonIdSet}
+              stradellaChordFinderActive={stradellaChordFinderActive}
+              stradellaPrimaryFinderButtonIds={stradellaPrimaryFinderButtonIds}
+              stradellaRootBassFinderButtonIds={stradellaRootBassFinderButtonIds}
+              getMainLabel={getMainLabel} toggleButton={toggleButton}
+              buttonSize={buttonSize} chordLabelMode={chordLabelMode}
+              showScaleFinderNumbers={showScaleFinderNumbers} labelFontSize={labelFontSize}
+              showButtonLabels={showButtonLabels} labelFont={labelFont}
+              showSequenceNumbers={showSequenceNumbers}
+              sequenceNumberPosition={sequenceNumberPosition}
+              annotationActive={activeToolSection === "annotateDiagram"}
+              annotationPointForButton={annotationPointForButton}
+              annotationButtonAnchor={annotationButtonAnchor}
+              fingeringPosition={fingeringPosition}
+            />
 
-              const fontSize =
-                chordLabelMode === "chord-tones" && isChord
-                  ? Math.max(7, labelFontSize * 0.75)
-                  : labelFontSize;
+            <DiagramConnections
+              showScaleFinderArrows={showScaleFinderArrows}
+              scaleFinderButtons={scaleFinderButtons}
+              chordFinderActive={chordFinderActive} chordFinderButtons={chordFinderButtons}
+              showSequenceArrows={showSequenceArrows}
+              sequenceStepsWithButtons={sequenceStepsWithButtons} buttonSize={buttonSize}
+              scaleFinderArrowStyle={scaleFinderArrowStyle} sequenceArrowStyle={sequenceArrowStyle}
+              finderArrowheadMarkerId={finderArrowheadMarkerId}
+              sequenceArrowheadMarkerId={sequenceArrowheadMarkerId}
+            />
 
-              return (
-                <g
-                  key={button.id}
-                  className="button-group"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    toggleButton(button);
-                  }}
-                >
-                  {isPianoKey ? (
-                    <>
-                      <rect
-                        x={button.x - (button.width ?? buttonSize * 2) / 2}
-                        y={button.y - (button.height ?? buttonSize * 2) / 2}
-                        width={button.width ?? buttonSize * 2}
-                        height={button.height ?? buttonSize * 2}
-                        rx={isPianoBlackKey ? 5 : 7}
-                        className={[
-                          "button",
-                          "piano-key",
-                          isPianoBlackKey
-                            ? "piano-black-key"
-                            : "piano-white-key",
-                          overlay.selected ? "selected" : "",
-                          finderMatch ? "finder-match" : "",
-                          abcMatch ? "abc-match" : "",
-                          primaryFinderMatch ? "finder-primary" : "",
-                          rootBassFinderMatch ? "finder-root-bass" : "",
-                          sequenceLabels || scaleFinderLabels
-                            ? "in-sequence"
-                            : "",
-                        ].join(" ")}
-                      />
-                      {(finderMatch || abcMatch) && (
-                        <rect
-                          x={
-                            button.x - (button.width ?? buttonSize * 2) / 2 + 3
-                          }
-                          y={
-                            button.y - (button.height ?? buttonSize * 2) / 2 + 3
-                          }
-                          width={(button.width ?? buttonSize * 2) - 6}
-                          height={(button.height ?? buttonSize * 2) - 6}
-                          rx={isPianoBlackKey ? 4 : 6}
-                          className={
-                            abcMatch
-                              ? "finder-ring abc-ring"
-                              : rootBassFinderMatch
-                                ? "finder-ring finder-root-bass-ring"
-                                : primaryFinderMatch
-                                  ? "finder-ring finder-primary-ring"
-                                  : "finder-ring"
-                          }
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <circle
-                        cx={button.x}
-                        cy={button.y}
-                        r={buttonSize}
-                        className={[
-                          "button",
-                          isChord ? "chord" : "note",
-                          isTreble ? "treble-button" : "",
-                          isTrebleAccidental ? "treble-accidental" : "",
-                          overlay.selected ? "selected" : "",
-                          button.isReference ? "reference" : "",
-                          finderMatch ? "finder-match" : "",
-                          abcMatch ? "abc-match" : "",
-                          primaryFinderMatch ? "finder-primary" : "",
-                          rootBassFinderMatch ? "finder-root-bass" : "",
-                          sequenceLabels || scaleFinderLabels
-                            ? "in-sequence"
-                            : "",
-                        ].join(" ")}
-                      />
-                      {(finderMatch || abcMatch) && (
-                        <circle
-                          cx={button.x}
-                          cy={button.y}
-                          r={buttonSize + 4}
-                          className={
-                            abcMatch
-                              ? "finder-ring abc-ring"
-                              : rootBassFinderMatch
-                                ? "finder-ring finder-root-bass-ring"
-                                : primaryFinderMatch
-                                  ? "finder-ring finder-primary-ring"
-                                  : "finder-ring"
-                          }
-                        />
-                      )}
-                    </>
-                  )}
-
-                  {showButtonLabels && (
-                    <text
-                      x={button.x}
-                      y={
-                        isPianoKey
-                          ? button.y +
-                            (button.height ?? buttonSize * 2) / 2 -
-                            18
-                          : button.y -
-                            (overlay.finger || sequenceLabels ? 2 : 0)
-                      }
-                      textAnchor="middle"
-                      className={[
-                        "main-label",
-                        fontClass(labelFont),
-                        isTreble ? "treble-label" : "",
-                        isTrebleAccidental || isPianoBlackKey
-                          ? "treble-accidental-label"
-                          : "",
-                        (isTrebleAccidental || isPianoBlackKey) && (finderMatch || abcMatch)
-                          ? "highlighted-accidental-label"
-                          : "",
-                      ].join(" ")}
-                      style={{ fontSize }}
-                    >
-                      {renderMusicLabel(mainLabel)}
-                    </text>
-                  )}
-                  {showSequenceNumbers && sequenceLabels && (
-                    <text
-                      x={button.x}
-                      y={numberY(button.y, buttonSize, sequenceNumberPosition)}
-                      textAnchor="middle"
-                      className="sequence-number"
-                    >
-                      {sequenceLabels}
-                    </text>
-                  )}
-                  {scaleFinderLabels && (
-                    <text
-                      x={button.x}
-                      y={numberY(button.y, buttonSize, sequenceNumberPosition)}
-                      textAnchor="middle"
-                      className="finder-number"
-                    >
-                      {scaleFinderLabels}
-                    </text>
-                  )}
-
-                  {activeToolSection === "annotateDiagram" && !isPianoKey && (() => {
-                    const point = annotationPointForButton(button, annotationButtonAnchor);
-                    return (
-                      <circle
-                        cx={point.x}
-                        cy={point.y}
-                        r={Math.max(5, buttonSize * 0.24)}
-                        className="annotation-anchor-placeholder"
-                      />
-                    );
-                  })()}
-
-                  {activeToolSection === "annotateDiagram" && isPianoKey && (() => {
-                    const point = annotationPointForButton(button, annotationButtonAnchor);
-                    const markerSize = Math.max(10, buttonSize * 0.42);
-                    return (
-                      <rect
-                        x={point.x - markerSize / 2}
-                        y={point.y - markerSize / 2}
-                        width={markerSize}
-                        height={markerSize}
-                        rx="4"
-                        className="annotation-anchor-placeholder"
-                      />
-                    );
-                  })()}
-
-                  {overlay.finger && (
-                    <text
-                      x={button.x}
-                      y={fingeringY(button.y, buttonSize, fingeringPosition)}
-                      textAnchor="middle"
-                      className={[
-                        "finger-label",
-                        fontClass(labelFont),
-                        isTrebleAccidental ? "treble-accidental-label" : "",
-                        isTrebleAccidental && (finderMatch || abcMatch)
-                          ? "highlighted-accidental-label"
-                          : "",
-                      ].join(" ")}
-                      style={{ fontSize: buttonSize * 0.44 }}
-                    >
-                      {overlay.finger}
-                    </text>
-                  )}
-                </g>
-              );
-            })}
-
-            {showScaleFinderArrows &&
-              scaleFinderButtons.length > 1 &&
-              scaleFinderButtons.slice(0, -1).map((fromButton, index) => {
-                const toButton = scaleFinderButtons[index + 1];
-
-                return (
-                  <path
-                    key={`scale-finder-${fromButton.id}-${toButton.id}-${index}`}
-                    d={makeSequenceArrowPath(
-                      fromButton,
-                      toButton,
-                      index,
-                      buttonSize,
-                      scaleFinderArrowStyle,
-                    )}
-                    className="finder-arrow"
-                    markerEnd={`url(#${finderArrowheadMarkerId})`}
-                  />
-                );
-              })}
-
-            {chordFinderActive &&
-              chordFinderButtons.length > 1 &&
-              chordFinderButtons.slice(0, -1).map((fromButton, index) => {
-                const toButton = chordFinderButtons[index + 1];
-
-                return (
-                  <path
-                    key={`chord-finder-${fromButton.id}-${toButton.id}-${index}`}
-                    d={makeSequenceArrowPath(
-                      fromButton,
-                      toButton,
-                      index,
-                      buttonSize,
-                      "straight",
-                    )}
-                    className="finder-arrow"
-                    markerEnd={`url(#${finderArrowheadMarkerId})`}
-                  />
-                );
-              })}
-
-            {showSequenceArrows &&
-              sequenceStepsWithButtons.slice(0, -1).map((fromStep, index) => {
-                const toStep = sequenceStepsWithButtons[index + 1];
-
-                return (
-                  <path
-                    key={`${fromStep.id}-${toStep.id}-${fromStep.step}-${toStep.step}`}
-                    d={makeSequenceArrowPath(
-                      fromStep.button,
-                      toStep.button,
-                      index,
-                      buttonSize,
-                      sequenceArrowStyle,
-                    )}
-                    className="sequence-arrow"
-                    markerEnd={`url(#${sequenceArrowheadMarkerId})`}
-                  />
-                );
-              })}
-
-            {textNotes.map((note) => (
-              <text
-                key={note.id}
-                x={note.x}
-                y={note.y}
-                textAnchor={note.anchor}
-                className={`free-text-note ${fontClass(note.font)}`}
-                style={{
-                  fontSize: note.fontSize,
-                  fill: note.color,
-                  fontWeight: note.bold ? 800 : 500,
-                  fontStyle: note.italic ? "italic" : undefined,
-                }}
-              >
-                {splitMultilineText(note.text).map((line, index) => (
-                  <tspan
-                    key={index}
-                    x={note.x}
-                    dy={index === 0 ? 0 : note.fontSize * 1.25}
-                  >
-                    {line || " "}
-                  </tspan>
-                ))}
-              </text>
-            ))}
-
-            {inlineAnnotationEditor && (() => {
-              const editorWidth = 180;
-              const editorHeight = 68;
-              const editorX = Math.max(8, Math.min(inlineAnnotationEditor.x - editorWidth / 2, viewWidth - editorWidth - 8));
-              const editorY = Math.max(8, Math.min(inlineAnnotationEditor.y - editorHeight / 2, viewHeight - editorHeight - 8));
-
-              return (
-                <foreignObject
-                  x={editorX}
-                  y={editorY}
-                  width={editorWidth}
-                  height={editorHeight}
-                  className="annotation-editor-object"
-                  onClick={(event) => event.stopPropagation()}
-                >
-                  <div className="annotation-editor">
-                    <textarea
-                      ref={annotationEditorRef}
-                      value={inlineAnnotationEditor.text}
-                      placeholder={t("ui.annotationPlaceholder")}
-                      style={{
-                        fontSize: inlineAnnotationEditor.fontSize,
-                        color: inlineAnnotationEditor.color,
-                        fontWeight: inlineAnnotationEditor.bold ? 800 : 500,
-                        fontStyle: inlineAnnotationEditor.italic ? "italic" : undefined,
-                      }}
-                      onChange={(event) =>
-                        setInlineAnnotationEditor((current) =>
-                          current ? { ...current, text: event.target.value } : current,
-                        )
-                      }
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" && !event.shiftKey) {
-                          event.preventDefault();
-                          commitInlineAnnotation();
-                        }
-                        if (event.key === "Escape") {
-                          event.preventDefault();
-                          cancelInlineAnnotation();
-                        }
-                      }}
-                      onBlur={commitInlineAnnotation}
-                    />
-                  </div>
-                </foreignObject>
-              );
-            })()}
-          </svg>
+            <DiagramAnnotationsLayer
+              textNotes={textNotes} inlineAnnotationEditor={inlineAnnotationEditor}
+              setInlineAnnotationEditor={setInlineAnnotationEditor}
+              annotationEditorRef={annotationEditorRef}
+              commitInlineAnnotation={commitInlineAnnotation}
+              cancelInlineAnnotation={cancelInlineAnnotation}
+              viewWidth={viewWidth} viewHeight={viewHeight}
+              annotationPlaceholder={t("ui.annotationPlaceholder")}
+            />
+          </DiagramSvgSurface>
         </div>
         )}
 

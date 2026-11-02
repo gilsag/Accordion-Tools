@@ -15,8 +15,10 @@ for (const marker of ['useDiagramAppearanceState()', 'useDiagramOverlays()', 'us
   assert.ok(app.includes(marker), `Application delegates: ${marker}`);
 for (const name of ['overlays','textNotes','diagramScale','buttonSize','annotationButtonAnchor','fingeringDraft'])
   assert.doesNotMatch(app,new RegExp(`\\[${name},\\s*set[A-Z][^\\]]*\\]\\s*=\\s*useState`), `${name} owned by feature`);
-for (const marker of ['function svgPointFromMouse(', 'function handleSvgClick(', 'function downloadCurrentDiagram(', 'ref={svgRef}'])
-  assert.ok(app.includes(marker), `SVG conversion/export/rendering still coordinated by App: ${marker}`);
+for (const marker of ['function svgPointFromMouse(', 'function handleSvgClick(', 'function downloadCurrentDiagram(', '<DiagramSvgSurface'])
+  assert.ok(app.includes(marker), `SVG conversion/export/rendering delegated by App: ${marker}`);
+assert.match(source('src/diagram/components/DiagramSvgSurface.tsx'),/ref=\{ref\}/);
+assert.match(source('src/diagram/diagramExport.ts'),/svgPointFromClient/);
 
 function hookFixture() {
   const slots=[]; let cursor=0; let effects=[];
