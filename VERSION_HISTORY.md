@@ -1,4 +1,4 @@
-## Unreleased — Architecture migration, Phases 1–3e (toward v0.16.0)
+## Unreleased — Architecture migration, Phases 1–3f (toward v0.16.0)
 
 - Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
 - Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.
@@ -16,7 +16,10 @@
 - **Combined Phase 3d (patterns and sequences):** Extracted Bass Pattern Player state, bundled library and progression loading, custom pattern JSON editing, historical localStorage persistence, and Stradella-only derived accompaniment events into `src/features/bassPatternPlayer/useBassPatternPlayer.ts`. Retained original validation behavior, fallback selection, per-field settings setters, exact engine input order, musical/notation/export formats and playback button references.
 - Extracted Sequence/Recording state, append-order step numbering, visual path preferences, notation visibility, and current physical-button reconnection into `src/features/sequences/useSequenceState.ts`; shared audio/notation rendering and file downloads remain in `App.tsx` pending service extraction.
 - Added `scripts/pattern-sequence-feature-modules.test.mjs` to verify original feature defaults, pattern persistence and editor operations, bundled loading, derived event/button identity, and recorded step order. Registered it in `test:modules`. No public behavior or version changes.
-- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Harmony/Progression and annotation tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
+- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Shared SVG rendering, export/playback orchestration, cross-tool commands and lazy loading are **not yet extracted**.
+- **Combined Phase 3f (diagram and annotation state):** Extracted visual geometry/display/title settings to `src/diagram/useDiagramAppearanceState.ts`, moved the unchanged treble/piano size tables into `src/instrument/sizePresets.ts`, and isolated physical-button overlays and fingering editing in `src/diagram/useDiagramOverlays.ts`.
+- Moved Annotate Diagram's text notes, style/anchor controls, editor state, SVG-anchor coordinate formula, and edit/commit/delete actions into `src/features/annotateDiagram/useDiagramAnnotations.ts`. Kept `makeTextNote`, the rendered SVG, browser click-coordinate conversion, shared audio, layout resets, and export/download functions unchanged.
+- Added `scripts/diagram-annotation-modules.test.mjs` for visual defaults, physical-button mark behavior, note positioning, style, editor lifecycle and settings-setter stability. Existing translations and all 118 settings export keys remain unchanged. Full browser rendering/export acceptance remains necessary.
 - No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
 
 ## v0.15.28 — Documentation maintenance

@@ -28,6 +28,10 @@ import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, ty
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
 import { useLanguageSettings } from "./settings/useLanguageSettings";
 import { useInstrumentState } from "./instrument/useInstrumentState";
+import { TREBLE_PRESET_BUTTON_SIZE, PIANO_TREBLE_PRESET_BUTTON_SIZE } from "./instrument/sizePresets";
+import { useDiagramAppearanceState } from "./diagram/useDiagramAppearanceState";
+import { useDiagramOverlays } from "./diagram/useDiagramOverlays";
+import { useDiagramAnnotations } from "./features/annotateDiagram/useDiagramAnnotations";
 import { useBassPatternState, useBassPatternResults } from "./features/bassPatternPlayer/useBassPatternPlayer";
 import { useSequenceState, useSequenceResults } from "./features/sequences/useSequenceState";
 import { useAbcPlayerState, useAbcPlayerResults } from "./features/abcPlayer/useAbcPlayer";
@@ -65,7 +69,6 @@ import type {
   InterfaceDensity,
   LeftPanelMode,
   NotationMode,
-  Overlay,
   PianoTrebleRange,
   NumberPosition,
   SequenceColorPreset,
@@ -77,7 +80,6 @@ import type {
   StradellaBassVoicing,
   TrebleLayout,
   TrebleSizePreset,
-  TextNote,
   TitleMode,
 } from "./types";
 
@@ -114,7 +116,7 @@ import {
   sequenceModeShowsArrows,
   sequenceModeShowsNumbers,
 } from "./tools/sequenceTools";
-import { makeTextNote, splitMultilineText } from "./tools/textNoteTools";
+import { splitMultilineText } from "./tools/textNoteTools";
 import {
   FINDER_ROOT_OPTIONS,
   SCALE_FINDER_OPTIONS,
@@ -230,22 +232,6 @@ const TREBLE_SIZE_VIEW_WIDTH: Record<TrebleSizePreset, number> = {
   small: 1080,
   full: 1220,
   large: 1460,
-};
-
-/** Default button sizes applied when a treble size preset is selected. */
-const TREBLE_PRESET_BUTTON_SIZE: Record<TrebleSizePreset, number> = {
-  "one-octave": 28,
-  "two-octave": 28,
-  small: 28,
-  full: 24,
-  large: 20,
-};
-
-/** Default key-size slider values applied when a piano range is selected. */
-const PIANO_TREBLE_PRESET_BUTTON_SIZE: Record<PianoTrebleRange, number> = {
-  "two-octave": 28,
-  "three-octave": 24,
-  "four-octave": 20,
 };
 
 /** Named colors used by sequence arrows and sequence numbers. */
@@ -377,36 +363,30 @@ function App() {
   const [chordLabelMode, setChordLabelMode] =
     useState<ChordLabelMode>("chord-name");
 
-  /* Appearance state shared by Stradella and treble diagrams. */
-  const [buttonSize, setButtonSize] = useState(TREBLE_PRESET_BUTTON_SIZE.small);
-  const [spacing, setSpacing] = useState(2.3);
-  const [diagramVerticalSpacing, setDiagramVerticalSpacing] = useState(18);
-  const [pianoKeyWidthScale, setPianoKeyWidthScale] = useState(1);
-  const [pianoKeyHeightScale, setPianoKeyHeightScale] = useState(1);
-  const [pianoBlackKeyWidthScale, setPianoBlackKeyWidthScale] = useState(1);
-  const [pianoBlackKeyHeightScale, setPianoBlackKeyHeightScale] = useState(1);
-  const [diagramScale, setDiagramScale] = useState(100);
-  const [interfaceDensity, setInterfaceDensity] =
-    useState<InterfaceDensity>("compact");
-  const [showStatusBar, setShowStatusBar] = useState(true);
-  const [trebleAngle, setTrebleAngle] = useState(30);
-  const [buttonStrokeWidth, setButtonStrokeWidth] = useState(3);
-  const [referenceStrokeWidth, setReferenceStrokeWidth] = useState(6);
-  const [chordFillStrength, setChordFillStrength] = useState(100);
-  const [accidentalStyle, setAccidentalStyle] =
-    useState<AccidentalStyle>("grey");
-  const [labelFontSize, setLabelFontSize] = useState(13);
-  const [showButtonLabels, setShowButtonLabels] = useState(true);
-  const [showBellowsGuide, setShowBellowsGuide] = useState(true);
-  const [showStradellaRowLabels, setShowStradellaRowLabels] = useState(true);
-
-  /* Title and label font state. */
-  const [titleMode, setTitleMode] = useState<TitleMode>("contextual");
-  const [customTitle, setCustomTitle] = useState("My accordion diagram");
-  const [titleFont, setTitleFont] = useState<FontFamily>("system");
-  const [titleSize, setTitleSize] = useState(24);
-  const [labelFont, setLabelFont] = useState<FontFamily>("system");
-  const [colorTheme, setColorTheme] = useState<ColorTheme>("default");
+  /* Diagram appearance and typography are state-owned by the diagram feature.
+   * Keep the original setters for the settings-controller compatibility adapter. */
+  const {
+    buttonSize, setButtonSize, spacing, setSpacing,
+    diagramVerticalSpacing, setDiagramVerticalSpacing,
+    pianoKeyWidthScale, setPianoKeyWidthScale,
+    pianoKeyHeightScale, setPianoKeyHeightScale,
+    pianoBlackKeyWidthScale, setPianoBlackKeyWidthScale,
+    pianoBlackKeyHeightScale, setPianoBlackKeyHeightScale,
+    diagramScale, setDiagramScale,
+    showStatusBar, setShowStatusBar, trebleAngle, setTrebleAngle,
+    buttonStrokeWidth, setButtonStrokeWidth,
+    referenceStrokeWidth, setReferenceStrokeWidth,
+    chordFillStrength, setChordFillStrength,
+    accidentalStyle, setAccidentalStyle,
+    labelFontSize, setLabelFontSize,
+    showButtonLabels, setShowButtonLabels,
+    showBellowsGuide, setShowBellowsGuide,
+    showStradellaRowLabels, setShowStradellaRowLabels,
+    titleMode, setTitleMode, customTitle, setCustomTitle,
+    titleFont, setTitleFont, titleSize, setTitleSize,
+    labelFont, setLabelFont, colorTheme, setColorTheme,
+  } = useDiagramAppearanceState();
+  const [interfaceDensity, setInterfaceDensity] = useState<InterfaceDensity>("compact");
 
   /* Left panel visibility and accordion-section state. */
   const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("tools");
@@ -446,8 +426,14 @@ function App() {
     setActiveSettingsSection(null);
   }, [workspaceMode, side]);
 
-  /* Tool state for selections, fingerings, note sequences, and diagram annotations. */
-  const [overlays, setOverlays] = useState<Record<string, Overlay>>({});
+  /* Physical-button overlays/fingerings are independent of musical selection. */
+  const {
+    overlays, setOverlays, fingeringPosition, setFingeringPosition,
+    fingeringDraft, setFingeringDraft, isApplyingFingering,
+    setIsApplyingFingering, selectionOnClick, setSelectionOnClick,
+    selectedButtonIds, markButtonOverlay, applyFingerToSelected,
+    clearFingerForSelected, clearAllFingerings, clearSelection, deselectButton,
+  } = useDiagramOverlays();
 
   /* Recording and path-display state is independent of the physical manual and sound. */
   const {
@@ -463,11 +449,6 @@ function App() {
     appendRecordedButton, clearSequence, sequenceRenderedNotationVisible,
     setSequenceRenderedNotationVisible, sequenceNotationRef,
   } = useSequenceState();
-  const [fingeringPosition, setFingeringPosition] =
-    useState<NumberPosition>("inside-bottom");
-  const [fingeringDraft, setFingeringDraft] = useState("1");
-  const [isApplyingFingering, setIsApplyingFingering] = useState(false);
-  const [selectionOnClick, setSelectionOnClick] = useState(false);
 
   /* Finder requests are independent feature state. App coordinates only which
    * tool is shown; the tools own their preferences, selections, and results. */
@@ -663,35 +644,18 @@ function App() {
     }
   }, [activeToolSection, setHarmonyProgressionNotationVisible, setHarmonyProgressionActiveButtonIds]);
 
-  const [textNotes, setTextNotes] = useState<TextNote[]>([]);
-  const [textNoteFontSize, setTextNoteFontSize] = useState(15);
-  const [textNoteColor, setTextNoteColor] = useState("#172033");
-  const [textNoteFont, setTextNoteFont] = useState<FontFamily>("system");
-  const [annotationBold, setAnnotationBold] = useState(false);
-  const [annotationItalic, setAnnotationItalic] = useState(false);
-  const [annotationOffsetPercent, setAnnotationOffsetPercent] = useState(50);
-  const [annotationButtonAnchor, setAnnotationButtonAnchor] =
-    useState<DiagramAnnotationAnchor>("center");
-  const annotationEditorRef = useRef<HTMLTextAreaElement | null>(null);
-  const [inlineAnnotationEditor, setInlineAnnotationEditor] = useState<{
-    x: number;
-    y: number;
-    text: string;
-    fontSize: number;
-    color: string;
-    font: FontFamily;
-    bold: boolean;
-    italic: boolean;
-    annotationOffsetPercent: number;
-    attachedToButtonId?: string;
-    annotationAnchor?: DiagramAnnotationAnchor;
-  } | null>(null);
-  useEffect(() => {
-    if (inlineAnnotationEditor) {
-      window.setTimeout(() => annotationEditorRef.current?.focus(), 0);
-    }
-  }, [inlineAnnotationEditor]);
-
+  /* Annotation editor and saved note state live outside the renderer. */
+  const {
+    textNotes, setTextNotes, textNoteFontSize, setTextNoteFontSize,
+    textNoteColor, setTextNoteColor, textNoteFont, setTextNoteFont,
+    annotationBold, setAnnotationBold, annotationItalic, setAnnotationItalic,
+    annotationOffsetPercent, setAnnotationOffsetPercent,
+    annotationButtonAnchor, setAnnotationButtonAnchor,
+    annotationEditorRef, inlineAnnotationEditor, setInlineAnnotationEditor,
+    clearTextNotes, deleteTextNote, annotationLocationLabel, annotationPreview,
+    annotationPointForButton, beginButtonAnnotation, beginFreeAnnotation,
+    commitInlineAnnotation, cancelInlineAnnotation,
+  } = useDiagramAnnotations(buttonSize);
 
   /* Sound tool state for synthesized button and sequence playback. */
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -1177,12 +1141,7 @@ function App() {
       setStradellaChordFinderActive(false);
       previousLayoutSignatureRef.current = layoutSignature;
     }
-  }, [layoutSignature, setScaleFinderActive, setChordFinderActive, setStradellaChordFinderActive, setIsRecordingSequence, setSequenceSteps]);
-
-  /* Button IDs currently selected through the selection/fingering tool. */
-  const selectedButtonIds = Object.entries(overlays)
-    .filter(([, overlay]) => overlay.selected)
-    .map(([id]) => id);
+  }, [layoutSignature, setScaleFinderActive, setChordFinderActive, setStradellaChordFinderActive, setIsRecordingSequence, setSequenceSteps, setIsApplyingFingering, setOverlays, setTextNotes]);
 
   const selectedButtons = selectedButtonIds
     .map((id) => buttons.find((button) => button.id === id))
@@ -2061,100 +2020,12 @@ function App() {
     }
 
 
-    const id = button.id;
-    const trimmedFinger = fingeringDraft.trim();
+    markButtonOverlay(button.id);
 
-    setOverlays((current) => {
-      const existing = current[id] ?? {};
-
-      return {
-        ...current,
-        [id]: {
-          ...existing,
-          selected: selectionOnClick ? !existing.selected : existing.selected,
-          finger:
-            isApplyingFingering && trimmedFinger
-              ? trimmedFinger
-              : existing.finger,
-        },
-      };
-    });
-
-    if (isApplyingFingering && trimmedFinger) {
-      setFingeringDraft("");
-    }
-
-    if (isRecordingSequence) appendRecordedButton(id);
+    if (isRecordingSequence) appendRecordedButton(button.id);
 
     playButtonSound(button, soundOptions);
   }
-
-  /** Applies the current fingering value to every selected button. */
-  function applyFingerToSelected() {
-    const trimmedFinger = fingeringDraft.trim();
-    if (!trimmedFinger || selectedButtonIds.length === 0) return;
-
-    setOverlays((current) => {
-      const next = { ...current };
-
-      selectedButtonIds.forEach((id) => {
-        next[id] = { ...next[id], finger: trimmedFinger };
-      });
-
-      return next;
-    });
-
-    setFingeringDraft("");
-  }
-
-  /** Removes fingering numbers from all currently selected buttons. */
-  function clearFingerForSelected() {
-    if (selectedButtonIds.length === 0) return;
-
-    setOverlays((current) => {
-      const next = { ...current };
-
-      selectedButtonIds.forEach((id) => {
-        next[id] = { ...next[id], finger: "" };
-      });
-
-      return next;
-    });
-  }
-  /** Removes all fingering numbers while preserving other overlay state. */
-  function clearAllFingerings() {
-    setOverlays((current) => {
-      const next = { ...current };
-      Object.keys(next).forEach((id) => {
-        next[id] = { ...next[id], finger: "" };
-      });
-      return next;
-    });
-  }
-
-  /** Clears selected-button highlights while preserving fingerings. */
-  function clearSelection() {
-    setOverlays((current) => {
-      const next = { ...current };
-      Object.keys(next).forEach((id) => {
-        next[id] = { ...next[id], selected: false };
-      });
-      return next;
-    });
-  }
-
-  /** Removes selected-button highlighting from one button in the selection list. */
-  function deselectButton(id: string) {
-    setOverlays((current) => ({
-      ...current,
-      [id]: {
-        ...current[id],
-        selected: false,
-      },
-    }));
-  }
-
-
 
   /** Clears the Scale Finder highlight without changing its selected root or pattern. */
 
@@ -2501,31 +2372,6 @@ function App() {
     setHarmonyProgressionActiveButtonIds([]);
   }
 
-  /** Removes all diagram annotations and closes any inline editor. */
-  function clearTextNotes() {
-    setTextNotes([]);
-    setInlineAnnotationEditor(null);
-  }
-
-  /** Removes one diagram annotation. */
-  function deleteTextNote(noteId: string) {
-    setTextNotes((current) => current.filter((note) => note.id !== noteId));
-  }
-
-  function annotationLocationLabel(note: TextNote) {
-    if (!note.attachedToButtonId) return "Free label";
-    const anchorLabel = (note.annotationAnchor ?? "center")
-      .replace(/([A-Z])/g, " $1")
-      .toLowerCase();
-    return `Button · ${anchorLabel}`;
-  }
-
-  function annotationPreview(note: TextNote) {
-    const compact = note.text.replace(/\s+/g, " ").trim();
-    if (!compact) return "Untitled annotation";
-    return compact.length > 34 ? `${compact.slice(0, 31)}...` : compact;
-  }
-
   /** Clear Harmony selection/recording without discarding user preferences. */
   function clearHarmonyWork() {
     setHarmonySelection(null);
@@ -2841,97 +2687,6 @@ function App() {
     point.x = event.clientX;
     point.y = event.clientY;
     return point.matrixTransform(screenMatrix.inverse());
-  }
-
-  function annotationPointForButton(
-    button: DiagramButton,
-    anchor: DiagramAnnotationAnchor,
-    offsetPercent = annotationOffsetPercent,
-  ) {
-    const halfWidth = (button.width ?? buttonSize * 2) / 2;
-    const halfHeight = (button.height ?? buttonSize * 2) / 2;
-    const offsetRatio = Math.max(0, Math.min(offsetPercent, 100)) / 100;
-    const xOffset = Math.min(halfWidth * offsetRatio, buttonSize * 0.9);
-    const yOffset = Math.min(halfHeight * offsetRatio, buttonSize * 0.9);
-
-    const x =
-      anchor === "left" || anchor === "topLeft" || anchor === "bottomLeft"
-        ? button.x - xOffset
-        : anchor === "right" || anchor === "topRight" || anchor === "bottomRight"
-          ? button.x + xOffset
-          : button.x;
-
-    const y =
-      anchor === "top" || anchor === "topLeft" || anchor === "topRight"
-        ? button.y - yOffset
-        : anchor === "bottom" || anchor === "bottomLeft" || anchor === "bottomRight"
-          ? button.y + yOffset
-          : button.y;
-
-    return { x, y };
-  }
-
-  function beginButtonAnnotation(button: DiagramButton) {
-    const point = annotationPointForButton(
-      button,
-      annotationButtonAnchor,
-      annotationOffsetPercent,
-    );
-    setInlineAnnotationEditor({
-      ...point,
-      text: "",
-      fontSize: textNoteFontSize,
-      color: textNoteColor,
-      font: textNoteFont,
-      bold: annotationBold,
-      italic: annotationItalic,
-      annotationOffsetPercent,
-      attachedToButtonId: button.id,
-      annotationAnchor: annotationButtonAnchor,
-    });
-  }
-
-  function beginFreeAnnotation(x: number, y: number) {
-    setInlineAnnotationEditor({
-      x,
-      y,
-      text: "",
-      fontSize: textNoteFontSize,
-      color: textNoteColor,
-      font: textNoteFont,
-      bold: annotationBold,
-      italic: annotationItalic,
-      annotationOffsetPercent,
-    });
-  }
-
-  function commitInlineAnnotation() {
-    if (!inlineAnnotationEditor) return;
-    const text = inlineAnnotationEditor.text.trim();
-    if (text) {
-      setTextNotes((current) => [
-        ...current,
-        makeTextNote({
-          x: inlineAnnotationEditor.x,
-          y: inlineAnnotationEditor.y,
-          text,
-          fontSize: inlineAnnotationEditor.fontSize,
-          color: inlineAnnotationEditor.color,
-          font: inlineAnnotationEditor.font,
-          anchor: "middle",
-          bold: inlineAnnotationEditor.bold,
-          italic: inlineAnnotationEditor.italic,
-          annotationOffsetPercent: inlineAnnotationEditor.annotationOffsetPercent,
-          attachedToButtonId: inlineAnnotationEditor.attachedToButtonId,
-          annotationAnchor: inlineAnnotationEditor.annotationAnchor,
-        }),
-      ]);
-    }
-    setInlineAnnotationEditor(null);
-  }
-
-  function cancelInlineAnnotation() {
-    setInlineAnnotationEditor(null);
   }
 
   /** Starts a free-position inline annotation when Annotate Diagram is active. */
