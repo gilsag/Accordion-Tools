@@ -131,7 +131,7 @@ Accordion-Tools includes a lightweight synthesized sound engine and optional pla
 
 ## Documentation
 
-Current user documentation is available in [`docs/`](docs/). Historical validation reports, architecture proposals, and maintainer guidance are kept in [`docs/internal/`](docs/internal/) and should not be read as current test results. The user guides include:
+Current user documentation is available in [`docs/`](docs/). Historical validation reports, architecture proposals, and maintainer guidance are kept in [`docs/internal/`](docs/internal/) and should not be read as current test results. The [modularization roadmap](docs/internal/modularization-roadmap.md) records the unreleased refactoring work and compatibility requirements. The user guides include:
 
 - [Settings](docs/settings.md)
 - [Scale Finder](docs/scale-finder.md)

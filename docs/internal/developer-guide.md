@@ -2,6 +2,8 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The current file ownership below reflects the **first extraction only**; `App.tsx` is not yet just a layout shell.
+
 ## Code ownership and data flow
 
 | Layer | Main files | Responsibility |
@@ -13,7 +15,10 @@ This guide documents the **implementation boundaries and assumptions** that are 
 | Harmony and progressions | `src/tools/harmonyExplorer/*.ts` | Shared-note analysis, musical motion, and global progression optimization |
 | Playback | `src/sound.ts`, `src/laMelodiosa.ts` | Convert selected buttons into nominal sounding pitches and render synthesizer/sample audio |
 | Import/notation | `src/tools/abcPlayerTools.ts`, `src/tools/bassPatternPlayerTools.ts` | Parse musical events, choose physical buttons, and create notation/export formats |
-| UI/orchestration | `src/App.tsx`, `src/components/` | Own user state, derived data, SVG rendering, controls, and downloads |
+| Instrument state | `src/instrument/useInstrumentState.ts` | Physical layout selection and four nominal Stradella register fields (separate from sound configuration) |
+| Settings schema and I/O | `src/settings/settingsSchema.ts`, `src/settings/settingsPersistence.ts` | Existing partial settings JSON contract, fetching editable defaults, import parsing, and download serialization |
+| Language preference | `src/settings/useLanguageSettings.ts` | Persisted language preference, browser-language changes, document language, and translation callback |
+| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Still applies/collects settings, owns tool state, derived data, SVG rendering, controls, playback orchestration, and downloads |
 | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
 
 **Important separation:** harmonic validity uses pitch classes; ergonomics uses physical button coordinates; sounding pitches/octaves belong to playback; registral explanation describes button roles and may express a *conditional* inversion character. Do not derive one of these directly from a different layer unless the conversion is explicit and reliable.
@@ -55,7 +60,7 @@ When changing scoring, preserve tests for diagram-size invariance, stable tie-br
 
 ### Configured nominal Stradella register model
 
-`src/tools/stradellaChordFinder/registerModel.ts` maps actual `playbackButtons` into a *hypothetical* pitch set using independent bass/counterbass and preset-chord ranges. The ranges are a starting MIDI octave and grouping (`C-B` or `F-E`); for `F-E`, C through E lie in the octave **above** the starting F. The calculation returns a lowest *modeled* pitch, retaining its played-button source, and **must not** be treated as measured reed voicing. Real-world registers may produce multi-octave ranks. This model is not passed into harmonic candidate search or ergonomic scoring. When sampled playback is configured to follow the register model, the sound engine uses its nominal MIDI mapping, as documented below. The app stores four independent setting fields, and the explanatory UI explicitly labels the result as a model prediction.
+`src/tools/stradellaChordFinder/registerModel.ts` maps actual `playbackButtons` into a *hypothetical* pitch set using independent bass/counterbass and preset-chord ranges. The ranges are a starting MIDI octave and grouping (`C-B` or `F-E`); for `F-E`, C through E lie in the octave **above** the starting F. The calculation returns a lowest *modeled* pitch, retaining its played-button source, and **must not** be treated as measured reed voicing. Real-world registers may produce multi-octave ranks. This model is not passed into harmonic candidate search or ergonomic scoring. When sampled playback is configured to follow the register model, the sound engine uses its nominal MIDI mapping, as documented below. The instrument state hook owns four independent setting fields, and the explanatory UI explicitly labels the result as a model prediction.
 
 ## Other key invariants
 
@@ -87,20 +92,20 @@ Use comments to record *why* a constraint exists, the units and coordinate orien
 
 ### Four-level diagram-note presentation
 
-`src/tools/stradellaChordFinder/diagramAnnotations.ts` produces four independent, labeled concise strings (`lines`) from the selected played-button result and the optional nominal register model. `StradellaNoteLevels` toggles only these export/diagram strings. Never derive a new chord identity from a pitch-class collection, and never claim the nominal `lowestPitch` is a measured acoustic note. `App.tsx` owns the selected level switches; `StradellaChordFinderPanel.tsx` provides four checkboxes beneath the master diagram-note toggle. The rendered SVG `foreignObject` uses the same filtered `lines` for both the screen and SVG/PNG downloads; height estimation must account for wrapping independently on each line. With no enabled lines, remove the entire footer.
+`src/tools/stradellaChordFinder/diagramAnnotations.ts` produces four independent, labeled concise strings (`lines`) from the selected played-button result and the optional nominal register model. `StradellaNoteLevels` toggles only these export/diagram strings. Never derive a new chord identity from a pitch-class collection, and never claim the nominal `lowestPitch` is a measured acoustic note. `App.tsx` still owns the selected level switches; `StradellaChordFinderPanel.tsx` provides four checkboxes beneath the master diagram-note toggle. The rendered SVG `foreignObject` uses the same filtered `lines` for both the screen and SVG/PNG downloads; height estimation must account for wrapping independently on each line. With no enabled lines, remove the entire footer.
 
-The expanded `explainStradellaRealization` remains independent of these toggles. The default settings loader and exported/imported settings must remain backward compatible with older files lacking `stradellaNoteLevels`. Unit tests live in `scripts/stradella-four-level-notes.test.ts`.
+The expanded `explainStradellaRealization` remains independent of these toggles. The settings I/O helper in `src/settings/settingsPersistence.ts` preserves the JSON format; `App.tsx` still applies and collects each field. Default settings and exported/imported settings must remain backward compatible with older files lacking `stradellaNoteLevels`. Unit tests live in `scripts/stradella-four-level-notes.test.ts`.
 
 
 ## Stradella sampled playback and register alignment
 
-`stradellaRegisterModel` remains a nominal one-pitch-per-pitch-class analysis layer. The sound engine's `notesForButton()` optionally maps the physical played bass and preset chord buttons to these same MIDI pitches when `source === "la-melodiosa"` and `laMelodiosaFollowStradellaRegisters` is true. Otherwise the earlier playback mapping remains available. Harmony Explorer's abstract pitch-class playback does not represent physical buttons and is unchanged. Never infer a particular accordion's measured reed spectrum from the model.
+`stradellaRegisterModel` is derived within `useInstrumentState()` and remains a nominal one-pitch-per-pitch-class analysis layer. The sound engine's `notesForButton()` optionally maps the physical played bass and preset chord buttons to these same MIDI pitches when `source === "la-melodiosa"` and `laMelodiosaFollowStradellaRegisters` is true. Otherwise the earlier playback mapping remains available. Harmony Explorer's abstract pitch-class playback does not represent physical buttons and is unchanged. Never infer a particular accordion's measured reed spectrum from the model.
 
 The La Melodiosa engine selects SFZ regions in its original register I, II, or III and transposes the selected WAV via `AudioBufferSourceNode.playbackRate` for requested pitches, including out-of-range pitches by nearest-region extrapolation. Both the original in-range SFZ mapping and out-of-range extrapolation may require transposition of a recorded sample. Do not silently fall back to `scheduleTone()` in sampled mode: missing/corrupt assets must be disclosed through warnings, not covered with synthesized notes. The explicit `synth` source remains separate. Be mindful that large playback-rate changes modify sample duration, transients, and timbre.
 
 ## Stradella explanation and settings presentation
 
-The analytical register state remains stored under the existing `stradellaBassRegister*` / `stradellaChordRegister*` keys and is exposed in a dedicated `stradellaRegisters` settings section. Sound still controls the independent La Melodiosa pitch-mapping toggle and sample reed register. No changes are made to the nominal model, candidate generation, or playback.
+The analytical register state is owned by `useInstrumentState()`, remains exported under the existing `stradellaBassRegister*` / `stradellaChordRegister*` JSON keys, and is exposed in the **Instrument** settings section. Sound still controls the independent La Melodiosa pitch-mapping toggle and sample reed register. No changes are made to the nominal model, candidate generation, or playback.
 
 `formatModeledStradellaNotes` renders ascending modeled MIDI pitches, grouping repeated same-MIDI contributions as `×N`. The four independently enabled `realizationAnnotation().lines` retain their fixed presentation-only role. The SVG `foreignObject` uses left-aligned, label-emphasized markup with extra wrap space, ensuring exports match the on-screen diagram. Level toggles are conditionally rendered under the master checkbox but persist when hidden. Arrow navigation changes only the selected realization index, without autoplay.
 

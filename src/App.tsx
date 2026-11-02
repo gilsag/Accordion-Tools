@@ -6,8 +6,9 @@ import { trebleContextualTitle } from "./tools/contextualTitles";
 import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "./tools/chordDisplay";
 import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } from "./tools/stradellaChordFinder/chordSpelling";
 /*
-  Application orchestration: React owns diagram/tool settings; src/tools/*
-  supplies music algorithms, while src/sound.ts owns playback. Do not derive
+  Incremental modularization: instrument and language state live in dedicated
+  hooks, while App still coordinates tools, settings application, SVG, and export.
+  src/tools/* supplies music algorithms; src/sound.ts owns playback. Do not derive
   harmonic content from SVG highlights: an optional root reference may be
   highlighted without sounding. Finder results expose playbackButtons for that.
 */
@@ -15,22 +16,23 @@ import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } 
 /*
   Main application component.
 
-  This file owns the user interface state, connects the layout generators to the
-  SVG renderer, and coordinates tools such as fingering, sequences, and text
-  notes. Music and layout calculations live in separate modules.
+  This file still owns most tool/visual state and connects diagram generators
+  to the SVG renderer. The physical instrument/register state and settings file
+  I/O have been extracted; see docs/internal/modularization-roadmap.md.
 */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { DefaultSettingsFile } from "./settings/settingsSchema";
+import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
+import { useLanguageSettings } from "./settings/useLanguageSettings";
+import { useInstrumentState } from "./instrument/useInstrumentState";
 import { flushSync } from "react-dom";
 import { renderAbc } from "abcjs";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import "./App.css";
 import {
-  browserLanguagePreferences,
-  detectBrowserLanguage,
   isInterfaceLanguagePreference,
   SUPPORTED_LANGUAGES,
-  resolveInterfaceLanguage,
   translate, translateKnownLabel,
   type InterfaceLanguagePreference,
   type InterfaceLanguage,
@@ -65,7 +67,6 @@ import type {
   SequenceColorPreset,
   SequenceDisplayMode,
   SequenceStep,
-  Side,
   SoundSource,
   SoundVoicePreset,
   SoundWaveform,
@@ -151,7 +152,7 @@ import { getChordFinderTrebleButtons, type TrebleChordVoicingMode } from "./tool
 import { intervalsForChordFinder } from "./music/chordDefinitions";
 import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "./tools/stradellaChordFinderTools";
 import { realizationAnnotation, finderChordSymbol } from "./tools/stradellaChordFinder/diagramAnnotations";
-import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaOctaveGrouping, type StradellaRegisterModel, formatRegisterRange } from "./tools/stradellaChordFinder/registerModel";
+import { analyzeConfiguredStradellaVoicing, formatRegisterRange } from "./tools/stradellaChordFinder/registerModel";
 import { voicingIntervalLayout } from "./tools/stradellaChordFinder/voicingIntervalLayout";
 import { describeTrebleChord } from "./tools/trebleChordExplanation";
 import {
@@ -296,127 +297,6 @@ const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
   theme: "#1746d0",
 };
 
-type DefaultSettingsFile = Partial<{
-  stradellaNoteLevels: StradellaNoteLevels;
-  stradellaShowNominalNoteSpacing: boolean;
-  stradellaMinimumNominalGap: MinimumNominalGap;
-  side: Side;
-  notation: NotationMode;
-  accidental: AccidentalMode;
-  chordLabelMode: ChordLabelMode;
-  chordDisplayStyle: ChordDisplayStyle;
-  language: InterfaceLanguagePreference;
-  basses: BassCount;
-  trebleLayout: TrebleLayout;
-  trebleRows: 3 | 4 | 5;
-  trebleSize: TrebleSizePreset;
-  pianoTrebleRange: PianoTrebleRange;
-  showTrebleOctaves: boolean;
-  diagramVerticalSpacing: number;
-  pianoKeyWidthScale: number;
-  pianoKeyHeightScale: number;
-  pianoBlackKeyWidthScale: number;
-  pianoBlackKeyHeightScale: number;
-  diagramScale: number;
-  interfaceDensity: InterfaceDensity;
-  showStatusBar: boolean;
-  scaleFinderDisplayMode: SequenceDisplayMode;
-  colorTheme: ColorTheme;
-  titleMode: TitleMode;
-  customTitle: string;
-  showButtonLabels: boolean;
-  showBellowsGuide: boolean;
-  showStradellaRowLabels: boolean;
-  selectionOnClick: boolean;
-  downloadFormat: DownloadFormat;
-  soundEnabled: boolean;
-  stradellaBassVoicing: StradellaBassVoicing;
-  stradellaBassRegisterOctave: number;
-  stradellaBassRegisterGrouping: StradellaOctaveGrouping;
-  stradellaChordRegisterOctave: number;
-  stradellaChordRegisterGrouping: StradellaOctaveGrouping;
-  stradellaChordFinderMode: StradellaChordFinderMode;
-  stradellaChordFinderMarkRootBass: boolean;
-  abcStradellaMode: AbcStradellaMode;
-  abcTrebleChordSymbolsMode: AbcTrebleChordSymbolsMode;
-  bassPatternChordVoicing: BassPatternChordVoicing;
-  bassPatternBarsPerChord: number;
-  bassPatternRepeatsPerChord: number;
-  bassPatternTempoBpm: number;
-  bassPatternLoopMode: "once" | "fixed" | "infinite";
-  bassPatternLoopCount: number;
-  abcTempoBpm: number;
-  soundSequenceTempoBpm: number;
-  musicNotationIncludeTitle: boolean;
-  musicNotationIncludeDescription: boolean;
-  musicNotationIncludeSummary: boolean;
-  musicNotationUseBarsPerLine: boolean;
-  musicNotationBarsPerLine: number;
-  musicNotationChordFontSize: number;
-  musicNotationScale: number;
-  musicNotationStaffWidth: number;
-  musicNotationStaffSeparator: number;
-  buttonSize: number;
-  buttonSpacing: number;
-  trebleAngle: number;
-  buttonStrokeWidth: number;
-  referenceStrokeWidth: number;
-  chordFillStrength: number;
-  accidentalStyle: AccidentalStyle;
-  labelFontSize: number;
-  titleFont: FontFamily;
-  titleSize: number;
-  labelFont: FontFamily;
-  sequenceDisplayMode: SequenceDisplayMode;
-  sequenceColorPreset: SequenceColorPreset;
-  sequenceThickness: number;
-  sequenceArrowheadSize: number;
-  sequenceNumberFontSize: number;
-  sequenceNumberColorPreset: SequenceColorPreset;
-  sequenceNumberPosition: NumberPosition;
-  fingeringPosition: NumberPosition;
-  scaleFinderRoot: string;
-  scaleFinderPattern: FinderScalePattern;
-  scaleFinderRowLimit: 3 | 4 | 5;
-  chordFinderRoot: string;
-  chordFinderPattern: FinderChordPattern;
-  chordFinderInversion: FinderChordInversion;
-  chordFinderOctave: FinderChordOctave;
-  bassPatternRoot: string;
-  annotationTextSize: number;
-  annotationTextColor: string;
-  annotationFont: FontFamily;
-  annotationBold: boolean;
-  annotationItalic: boolean;
-  annotationOffsetPercent: number;
-  annotationButtonAnchor: DiagramAnnotationAnchor;
-  soundVolume: number;
-  soundSource: SoundSource;
-  laMelodiosaTrebleRegister: SampleRegister;
-  laMelodiosaBassRegister: SampleRegister;
-  laMelodiosaFollowStradellaRegisters: boolean;
-  soundVoicePreset: SoundVoicePreset;
-  soundWaveform: SoundWaveform;
-  soundMusetteDetuneCents: number;
-  soundAttackMs: number;
-  soundReleaseMs: number;
-  soundNoteDurationMs: number;
-  harmonyShowEnharmonics: boolean;
-  harmonyShowSeparators: boolean;
-  harmonyShowLegend: boolean;
-  harmonyShowExplanation: boolean;
-  harmonyRingVisibility: Record<string, boolean>;
-  harmonyShowToneTooltips: boolean;
-  harmonyShowNoteRing: boolean;
-  harmonyColorByFamily: boolean;
-  harmonyDiameter: number;
-  harmonyFontSize: number;
-  harmonyPlaybackStyle: HarmonyPlaybackStyle;
-  harmonyVoicingStyle: HarmonyVoicingStyle;
-  progressionAllowApproximations: boolean;
-  progressionHandMovementWeight: number;
-  progressionRhythmPattern: ProgressionRhythmPattern;
-}>;
 
 function isOneOf<T extends string>(
   value: unknown,
@@ -528,50 +408,23 @@ function App() {
   const abcPlaybackStartBeatRef = useRef(0);
 
   /* Core layout and notation state. */
-  const [languagePreference, setLanguagePreference] = useState<InterfaceLanguagePreference>(() => {
-    try {
-      const saved = window.localStorage.getItem('accordionTools.interfaceLanguage.v1');
-      return isInterfaceLanguagePreference(saved) ? saved : 'auto';
-    } catch {
-      return 'auto';
-    }
-  });
-  const [browserLanguage, setBrowserLanguage] = useState(() =>
-    detectBrowserLanguage(browserLanguagePreferences()),
-  );
-  const language = resolveInterfaceLanguage(languagePreference, [browserLanguage]);
-  const t = useCallback((key: Parameters<typeof translate>[1], params?: Record<string, string | number>) =>
-    translate(language, key, params), [language]);
-  function changeLanguage(next: InterfaceLanguagePreference) {
-    setLanguagePreference(next);
-    try {
-      window.localStorage.setItem('accordionTools.interfaceLanguage.v1', next);
-    } catch {
-      /* The setting remains active for this session when storage is unavailable. */
-    }
-  }
-  useEffect(() => {
-    document.documentElement.lang = language;
-  }, [language]);
-  useEffect(() => {
-    const refresh = () => setBrowserLanguage(detectBrowserLanguage(browserLanguagePreferences()));
-    window.addEventListener('languagechange', refresh);
-    return () => window.removeEventListener('languagechange', refresh);
-  }, []);
+  const { languagePreference, setLanguagePreference, language, t, changeLanguage } = useLanguageSettings();
 
-  const [side, setSide] = useState<Side>("stradella");
+  const {
+    side, setSide, basses, setBasses, trebleLayout, setTrebleLayout,
+    trebleRows, setTrebleRows, trebleSize, setTrebleSize,
+    pianoTrebleRange, setPianoTrebleRange, showTrebleOctaves, setShowTrebleOctaves,
+    stradellaBassRegisterOctave, setStradellaBassRegisterOctave,
+    stradellaBassRegisterGrouping, setStradellaBassRegisterGrouping,
+    stradellaChordRegisterOctave, setStradellaChordRegisterOctave,
+    stradellaChordRegisterGrouping, setStradellaChordRegisterGrouping,
+    stradellaRegisterModel,
+  } = useInstrumentState();
   const [notation, setNotation] = useState<NotationMode>("english");
   const [accidental, setAccidental] = useState<AccidentalMode>("natural");
   const [chordDisplayStyle, setChordDisplayStyle] = useState<ChordDisplayStyle>(DEFAULT_CHORD_DISPLAY_STYLE);
   const [chordLabelMode, setChordLabelMode] =
     useState<ChordLabelMode>("chord-name");
-  const [basses, setBasses] = useState<BassCount>("96");
-  const [trebleLayout, setTrebleLayout] = useState<TrebleLayout>("c-system");
-  const [trebleRows, setTrebleRows] = useState<3 | 4 | 5>(5);
-  const [trebleSize, setTrebleSize] = useState<TrebleSizePreset>("small");
-  const [pianoTrebleRange, setPianoTrebleRange] =
-    useState<PianoTrebleRange>("three-octave");
-  const [showTrebleOctaves, setShowTrebleOctaves] = useState(false);
 
   /* Appearance state shared by Stradella and treble diagrams. */
   const [buttonSize, setButtonSize] = useState(TREBLE_PRESET_BUTTON_SIZE.small);
@@ -832,15 +685,6 @@ function App() {
   const [stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex] = useState(0);
   // Per-chord harmonic intention, not a global instrument preference.
   const [stradellaChordFinderRequestedBass, setStradellaChordFinderRequestedBass] = useState<string | null>(null);
-  // Register assumptions describe nominal pitch placement, not sound source or reed registration.
-  const [stradellaBassRegisterOctave, setStradellaBassRegisterOctave] = useState(DEFAULT_STRADELLA_REGISTER_MODEL.bass.startOctave);
-  const [stradellaBassRegisterGrouping, setStradellaBassRegisterGrouping] = useState<StradellaOctaveGrouping>(DEFAULT_STRADELLA_REGISTER_MODEL.bass.grouping);
-  const [stradellaChordRegisterOctave, setStradellaChordRegisterOctave] = useState(DEFAULT_STRADELLA_REGISTER_MODEL.chord.startOctave);
-  const [stradellaChordRegisterGrouping, setStradellaChordRegisterGrouping] = useState<StradellaOctaveGrouping>(DEFAULT_STRADELLA_REGISTER_MODEL.chord.grouping);
-  const stradellaRegisterModel: StradellaRegisterModel = useMemo(() => ({
-    bass: { startOctave: stradellaBassRegisterOctave, grouping: stradellaBassRegisterGrouping },
-    chord: { startOctave: stradellaChordRegisterOctave, grouping: stradellaChordRegisterGrouping },
-  }), [stradellaBassRegisterOctave, stradellaBassRegisterGrouping, stradellaChordRegisterOctave, stradellaChordRegisterGrouping]);
   const [finderMaxButtons, setFinderMaxButtons] = useState(3);
   const [finderSpanColumns, setFinderSpanColumns] = useState(4.3);
   const [stradellaMinimumNominalGap, setStradellaMinimumNominalGap] = useState<MinimumNominalGap>(0);
@@ -1151,15 +995,9 @@ function App() {
 
     async function loadDefaultSettings() {
       try {
-        const response = await fetch(
+        const defaults = await fetchDefaultSettingsDocument(
           `${import.meta.env.BASE_URL}default-settings.json`,
-          {
-            cache: "no-store",
-          },
         );
-        if (!response.ok) return;
-
-        const defaults = (await response.json()) as DefaultSettingsFile;
         if (cancelled || !defaults || typeof defaults !== "object") return;
         // The user's stored choice takes precedence over editable defaults.
         try {
@@ -1502,7 +1340,12 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [
+    setBasses, setLanguagePreference, setPianoTrebleRange, setShowTrebleOctaves,
+    setSide, setStradellaBassRegisterGrouping, setStradellaBassRegisterOctave,
+    setStradellaChordRegisterGrouping, setStradellaChordRegisterOctave,
+    setTrebleLayout, setTrebleRows, setTrebleSize,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1941,27 +1784,16 @@ function App() {
     };
   }
 
-  /** Downloads current app settings as a separate JSON file. */
+  /** Download format and filename remain compatible with v0.15.28. */
   function downloadCurrentSettings() {
-    const blob = new Blob([JSON.stringify(collectCurrentSettings(), null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "accordion-tools-settings.json";
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    URL.revokeObjectURL(url);
+    downloadSettingsDocument(collectCurrentSettings());
   }
 
   /** Imports a settings JSON file and applies it to the current session. */
   async function importSettingsFile(file: File | undefined) {
     if (!file) return;
     try {
-      const text = await file.text();
-      const settings = JSON.parse(text) as DefaultSettingsFile;
+      const settings = await parseSettingsDocumentFile(file);
       applyImportedSettings(settings);
     } catch {
       window.alert(

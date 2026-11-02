@@ -86,13 +86,18 @@ for (const [language, expectedIdentity, expectedPhysical, expectedExplanation] o
 }
 const app = readFileSync("src/App.tsx", "utf8");
 assert.match(app, /SUPPORTED_LANGUAGES\.map/);
-assert.match(app, /document\.documentElement\.lang/);
+const languageSettings = readFileSync("src/settings/useLanguageSettings.ts", "utf8");
+assert.match(app, /useLanguageSettings\(\)/);
+assert.match(languageSettings, /document\.documentElement\.lang/);
+assert.match(languageSettings, /accordionTools\.interfaceLanguage\.v1/);
 const version = JSON.parse(readFileSync("package.json", "utf8")).version;
 const lock = JSON.parse(readFileSync("package-lock.json", "utf8"));
 assert.equal(lock.version, version);
 assert.equal(lock.packages[""].version, version);
 assert.ok(readFileSync("src/config/appInfo.ts", "utf8").includes(`version: "${version}"`));
 assert.ok(readFileSync("README.md", "utf8").includes(`**Version:** ${version}`));
-assert.ok(readFileSync("VERSION_HISTORY.md", "utf8").startsWith(`## v${version}`));
+const history = readFileSync("VERSION_HISTORY.md", "utf8");
+assert.match(history, /^## (?:Unreleased|v\d+)/);
+assert.ok(history.includes(`## v${version}`), "Current release still present after unreleased roadmap notes");
 assert.match(readFileSync("docs/internal/adding-interface-languages.md", "utf8"), /pt\.ts/);
 console.log("✓ Six complete catalogs, browser/persisted locales, new music terms, built-ins, notes, explanations, filenames and release references passed");
