@@ -2,7 +2,7 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, ABC Player, Bass Pattern Player, Sequence/Recording, Harmony Explorer, Progression Assistant, and the diagram/annotation state modules**; `App.tsx` is not yet just a layout shell.
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, ABC Player, Bass Pattern Player, Sequence/Recording, Harmony Explorer, Progression Assistant, and the diagram/annotation state modules**; `App.tsx` is not yet just a layout shell; Phase 5 moved navigation, the outer frame and toolbar to `src/app/`.
 
 ## Code ownership and data flow
 
@@ -30,7 +30,8 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 | Diagram appearance state | `src/diagram/useDiagramAppearanceState.ts`, `src/instrument/sizePresets.ts` | Shared geometry/display/title settings and unchanged treble/piano size presets, not instrument construction or sound |
 | Diagram overlay/fingering state | `src/diagram/useDiagramOverlays.ts` | Selected physical IDs, fingering draft/placement, mark/toggle/clear actions; renderer components and audio playback are separate |
 | Annotate Diagram state | `src/features/annotateDiagram/useDiagramAnnotations.ts` | Free and button-anchored text notes, formatting controls, inline editor/ref, SVG-coordinate anchor calculation, original note creation |
-| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns shared tool navigation, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
+| Application navigation and shell | `src/app/toolRegistry.ts`, `src/app/useWorkspaceNavigation.ts`, `src/app/components/` | Owns typed tool destinations, workspace/section/panel navigation, the outer DOM frame and toolbar controls; not sound or musical payloads |
+| Remaining UI/orchestration | `src/App.tsx`, `src/components/` | Owns large control panels, typed settings adapters/current snapshot, derived diagrams, cross-tool musical handoffs, playback cancellation, and downloads |
 | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
 
 ### Diagram state and annotation boundary (combined Phase 3f)
@@ -42,6 +43,14 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 Changing physical layout or invoking reset still clears overlays and annotation notes from the App orchestration effect. The settings contract is unchanged: annotation font/color/size, offset, anchor, bold/italic, fingering placement, appearance and title fields must continue to import/export under the same JSON keys and order. `scripts/diagram-annotation-modules.test.mjs` protects state defaults, editing and mark behavior; visual focus, click positioning and exported output require browser smoke testing.
 
 #
+### Phase 5: workspace navigation and application shell
+
+The **eleven tool IDs** are now defined once in `src/app/toolRegistry.ts`. `toolDestination()` is a typed, pure helper; it distinguishes Harmony from Accordion and supplies the default Stradella side for *command navigation* to the Stradella Finder and Progression Assistant. `useWorkspaceNavigation()` owns left-panel visibility, workspace selection, active tool/settings sections and their original focus/toggle rules. It does not contain musical results, timers, settings imports or instrument construction.
+
+`App.tsx` still coordinates cross-tool state transfer and sound cancellation. For example, opening a Harmony relationship in the Stradella Finder must continue to set the exact root, requested bass, chord family, activation and `playbackButtons` realization signature after routing. `navigateToTool()` only handles workspace, side and panel visibility; do not move audio stop or data-transfer operations into a generic navigation helper. Tool toggles retain the historical exception that only Progression Assistant forces the Stradella side, even though explicit commands to the Stradella Finder have a Stradella destination.
+
+The outer DOM lives in `AppShell.tsx` and the top navigation/reset/notation/download bar in `WorkspaceToolbar.tsx`; the toolbar owns its own outside-click/Escape listeners. `App.tsx` still supplies the large sidebar and workspace children. This is **an incremental split**, not proof that App is now a pure layout-only component or that dynamic tool loading is implemented. Verify with `node scripts/app-navigation-modules.test.mjs`, followed by the complete suite and browser checks (focus return, reset menu Escape, ABC stop on workspace switches, notation toggle/download and Harmony-to-Progression-to-Stradella handoffs).
+
 ### Combined Phase 4: rendering, export and shared media services
 
 - `src/diagram/components/DiagramSvgSurface.tsx` holds the root SVG ref, class names and viewBox. `DiagramButtonLayer`, `DiagramConnections`, and `DiagramAnnotationsLayer` retain original physical button IDs, JSX ordering, overlays, SVG editor behavior, and rendering coordinates. They must not infer playable notes from highlights.
@@ -60,7 +69,7 @@ The source-of-truth regression is `scripts/settings-controller-compatibility.tes
 
 `useAbcPlayerState()` owns the ABC editor text and visibility, loaded filename/example choices, catalog manifest validation and asynchronous example fetch, tempo, transport position/status, active physical button IDs, treble/Stradella voice-mapping preferences and the ABC notation container ref. It returns the original individual setters used by settings JSON import; **do not** modify their defaults, accepted values, or setter identities. `useAbcPlayerResults()` calls the existing `parseAbc`, voice filtering, physical button-mapping, beat counting and missing-note functions in `src/tools/abcPlayerTools.ts`. It preserves their exact `DiagramButton` references and the existing effect that synchronizes score tempo only when playback is not playing. Do not combine treble and Stradella voice streams or transform their original start beats.
 
-`App.tsx` still owns `scheduleAbcPlayback`, pause/stop, timeout refs, cross-tool cancellation, `playButtonSound`, playback-clock calculations, notation rendering via `abcjs`, and shared downloaded-image/export behavior. These operations are intentionally **not migrated in Phase 3c**; moving them requires independently verified sound, notation and lazy-loading steps. The ABC example manifest is still loaded once with `cache: no-store`, its options are validated individually, and a failed example request still produces the original visible diagnostic text. Regression: `scripts/abc-feature-module.test.mjs` (in `test:modules`), plus the existing `test:abc` suite (ties, repeats, two-voice song examples, catalog and localizations).
+`App.tsx` still owns start/pause/stop command coordination and cross-tool cancellation, but Phase 4 moved event scheduling, notation rendering and export helpers into services. This historical Phase 3c boundary must not be interpreted as the current implementation. The ABC example manifest is still loaded once with `cache: no-store`, its options are validated individually, and a failed example request still produces the original visible diagnostic text. Regression: `scripts/abc-feature-module.test.mjs` (in `test:modules`), plus the existing `test:abc` suite (ties, repeats, two-voice song examples, catalog and localizations).
 
 ### Bass Pattern and Sequence/Recording boundaries (combined Phase 3d)
 

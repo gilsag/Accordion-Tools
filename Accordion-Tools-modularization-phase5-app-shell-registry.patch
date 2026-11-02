@@ -1,0 +1,1095 @@
+diff --git a/README.md b/README.md
+index e3e1e41..2aad19c 100644
+--- a/README.md
++++ b/README.md
+@@ -79,7 +79,7 @@ Create ordered button paths using numbers and arrows for exercises, bass movemen
+ 
+ Optimize Stradella realizations across an entire chord progression, balancing harmonic voice movement and physical button movement. The assistant supports playback, accompaniment patterns, button highlighting, and staff notation.
+ 
+-**Modularization work (unreleased, toward v0.16.0):** Finder, ABC, Bass Pattern, Sequence, Harmony and Progression state now live in dedicated feature hooks. Diagram appearance, button overlays/fingering, and Annotate Diagram state have also been extracted, while SVG surface/button/arrow/annotation drawing, diagram export filenames and encoding, sound preferences, ABC/Bass Pattern scheduling, and abcjs notation rendering now have separate modules. App still coordinates cross-tool activation, layout, and transport start/stop. The public app remains at v0.15.28; behavior, settings and musical engines are unchanged. See the [modularization roadmap](docs/internal/modularization-roadmap.md).
++**Modularization work (unreleased, toward v0.16.0):** Finder, ABC, Bass Pattern, Sequence, Harmony and Progression state now live in dedicated feature hooks. Diagram appearance, button overlays/fingering, and Annotate Diagram state have also been extracted, while SVG surface/button/arrow/annotation drawing, diagram export filenames and encoding, sound preferences, ABC/Bass Pattern scheduling, and abcjs notation rendering now have separate modules. Phase 5 now centralizes typed tool destinations and workspace/panel navigation, and extracts the outer App shell and toolbar. App still coordinates cross-tool musical transfers, the large settings/tool UI and transport start/stop. The public app remains at v0.15.28; behavior, settings and musical engines are unchanged. See the [modularization roadmap](docs/internal/modularization-roadmap.md).
+ 
+ For contributors and maintainers, see the [Developer Guide](docs/internal/developer-guide.md) for the source architecture, musical and registral assumptions, physical-button invariants, and validation checks.
+ 
+diff --git a/VERSION_HISTORY.md b/VERSION_HISTORY.md
+index 7294a26..7bffa0b 100644
+--- a/VERSION_HISTORY.md
++++ b/VERSION_HISTORY.md
+@@ -1,5 +1,6 @@
+-## Unreleased — Architecture migration, Phases 1–4 (toward v0.16.0)
++## Unreleased — Architecture migration, Phases 1–5 (toward v0.16.0)
+ 
++- **Phase 5 (application shell and navigation):** Added a typed registry covering the existing eleven tool sections, extracted workspace/settings/tool-panel navigation into `useWorkspaceNavigation`, and separated outer application DOM and top toolbar into `AppShell` and `WorkspaceToolbar`. Existing Harmony/Progression/Stradella navigation now uses typed destinations; audio stops and musical result transfer remain in the controller with unchanged sequencing. The reset menu continues to close on outside click/Escape. Added an executable navigation regression and retained existing button identity, settings and playback invariants. The Settings/Tools panels and most canvas composition remain in `App.tsx`; this is not the final layout-only shell or a lazy-loading implementation. No public version bump.
+ - **Combined Phase 4 (diagram, export, audio, notation):** Added `DiagramSvgSurface`, `DiagramButtonLayer`, `DiagramConnections` and `DiagramAnnotationsLayer`. The DOM's SVG viewBox, CSS classes, physical button IDs, overlays, markers and annotation editor semantics remain unchanged. The exported diagram still uses the existing SVG/PNG rasterizer and ZIP generator.
+ - Extracted filename normalization, Harmony diagram export naming, SVG/PNG dispatch, asynchronous batch snapshot encoding and pointer-to-viewBox conversion into `src/diagram/diagramExport.ts`. Capture and `flushSync` realization restoration remain in App to preserve the snapshot-before-encoding ordering.
+ - Extracted sample/synth options and volume settings into `src/audio/useSoundSettings.ts` while retaining the nominal Stradella register in the instrument module. Introduced `src/audio/playbackTransport.ts` and `playbackScheduling.ts` for per-feature timer cancellation and original ABC/Bass Pattern event schedules; cross-tool start/stop coordination remains in App.
+diff --git a/docs/internal/developer-guide.md b/docs/internal/developer-guide.md
+index b61f592..6bef8f2 100644
+--- a/docs/internal/developer-guide.md
++++ b/docs/internal/developer-guide.md
+@@ -2,7 +2,7 @@
+ 
+ This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
+ 
+-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, ABC Player, Bass Pattern Player, Sequence/Recording, Harmony Explorer, Progression Assistant, and the diagram/annotation state modules**; `App.tsx` is not yet just a layout shell.
++For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, ABC Player, Bass Pattern Player, Sequence/Recording, Harmony Explorer, Progression Assistant, and the diagram/annotation state modules**; `App.tsx` is not yet just a layout shell; Phase 5 moved navigation, the outer frame and toolbar to `src/app/`.
+ 
+ ## Code ownership and data flow
+ 
+@@ -30,7 +30,8 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
+ | Diagram appearance state | `src/diagram/useDiagramAppearanceState.ts`, `src/instrument/sizePresets.ts` | Shared geometry/display/title settings and unchanged treble/piano size presets, not instrument construction or sound |
+ | Diagram overlay/fingering state | `src/diagram/useDiagramOverlays.ts` | Selected physical IDs, fingering draft/placement, mark/toggle/clear actions; renderer components and audio playback are separate |
+ | Annotate Diagram state | `src/features/annotateDiagram/useDiagramAnnotations.ts` | Free and button-anchored text notes, formatting controls, inline editor/ref, SVG-coordinate anchor calculation, original note creation |
+-| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns shared tool navigation, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
++| Application navigation and shell | `src/app/toolRegistry.ts`, `src/app/useWorkspaceNavigation.ts`, `src/app/components/` | Owns typed tool destinations, workspace/section/panel navigation, the outer DOM frame and toolbar controls; not sound or musical payloads |
++| Remaining UI/orchestration | `src/App.tsx`, `src/components/` | Owns large control panels, typed settings adapters/current snapshot, derived diagrams, cross-tool musical handoffs, playback cancellation, and downloads |
+ | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
+ 
+ ### Diagram state and annotation boundary (combined Phase 3f)
+@@ -42,6 +43,14 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
+ Changing physical layout or invoking reset still clears overlays and annotation notes from the App orchestration effect. The settings contract is unchanged: annotation font/color/size, offset, anchor, bold/italic, fingering placement, appearance and title fields must continue to import/export under the same JSON keys and order. `scripts/diagram-annotation-modules.test.mjs` protects state defaults, editing and mark behavior; visual focus, click positioning and exported output require browser smoke testing.
+ 
+ #
++### Phase 5: workspace navigation and application shell
++
++The **eleven tool IDs** are now defined once in `src/app/toolRegistry.ts`. `toolDestination()` is a typed, pure helper; it distinguishes Harmony from Accordion and supplies the default Stradella side for *command navigation* to the Stradella Finder and Progression Assistant. `useWorkspaceNavigation()` owns left-panel visibility, workspace selection, active tool/settings sections and their original focus/toggle rules. It does not contain musical results, timers, settings imports or instrument construction.
++
++`App.tsx` still coordinates cross-tool state transfer and sound cancellation. For example, opening a Harmony relationship in the Stradella Finder must continue to set the exact root, requested bass, chord family, activation and `playbackButtons` realization signature after routing. `navigateToTool()` only handles workspace, side and panel visibility; do not move audio stop or data-transfer operations into a generic navigation helper. Tool toggles retain the historical exception that only Progression Assistant forces the Stradella side, even though explicit commands to the Stradella Finder have a Stradella destination.
++
++The outer DOM lives in `AppShell.tsx` and the top navigation/reset/notation/download bar in `WorkspaceToolbar.tsx`; the toolbar owns its own outside-click/Escape listeners. `App.tsx` still supplies the large sidebar and workspace children. This is **an incremental split**, not proof that App is now a pure layout-only component or that dynamic tool loading is implemented. Verify with `node scripts/app-navigation-modules.test.mjs`, followed by the complete suite and browser checks (focus return, reset menu Escape, ABC stop on workspace switches, notation toggle/download and Harmony-to-Progression-to-Stradella handoffs).
++
+ ### Combined Phase 4: rendering, export and shared media services
+ 
+ - `src/diagram/components/DiagramSvgSurface.tsx` holds the root SVG ref, class names and viewBox. `DiagramButtonLayer`, `DiagramConnections`, and `DiagramAnnotationsLayer` retain original physical button IDs, JSX ordering, overlays, SVG editor behavior, and rendering coordinates. They must not infer playable notes from highlights.
+@@ -60,7 +69,7 @@ The source-of-truth regression is `scripts/settings-controller-compatibility.tes
+ 
+ `useAbcPlayerState()` owns the ABC editor text and visibility, loaded filename/example choices, catalog manifest validation and asynchronous example fetch, tempo, transport position/status, active physical button IDs, treble/Stradella voice-mapping preferences and the ABC notation container ref. It returns the original individual setters used by settings JSON import; **do not** modify their defaults, accepted values, or setter identities. `useAbcPlayerResults()` calls the existing `parseAbc`, voice filtering, physical button-mapping, beat counting and missing-note functions in `src/tools/abcPlayerTools.ts`. It preserves their exact `DiagramButton` references and the existing effect that synchronizes score tempo only when playback is not playing. Do not combine treble and Stradella voice streams or transform their original start beats.
+ 
+-`App.tsx` still owns `scheduleAbcPlayback`, pause/stop, timeout refs, cross-tool cancellation, `playButtonSound`, playback-clock calculations, notation rendering via `abcjs`, and shared downloaded-image/export behavior. These operations are intentionally **not migrated in Phase 3c**; moving them requires independently verified sound, notation and lazy-loading steps. The ABC example manifest is still loaded once with `cache: no-store`, its options are validated individually, and a failed example request still produces the original visible diagnostic text. Regression: `scripts/abc-feature-module.test.mjs` (in `test:modules`), plus the existing `test:abc` suite (ties, repeats, two-voice song examples, catalog and localizations).
++`App.tsx` still owns start/pause/stop command coordination and cross-tool cancellation, but Phase 4 moved event scheduling, notation rendering and export helpers into services. This historical Phase 3c boundary must not be interpreted as the current implementation. The ABC example manifest is still loaded once with `cache: no-store`, its options are validated individually, and a failed example request still produces the original visible diagnostic text. Regression: `scripts/abc-feature-module.test.mjs` (in `test:modules`), plus the existing `test:abc` suite (ties, repeats, two-voice song examples, catalog and localizations).
+ 
+ ### Bass Pattern and Sequence/Recording boundaries (combined Phase 3d)
+ 
+diff --git a/docs/internal/modularization-roadmap.md b/docs/internal/modularization-roadmap.md
+index b9aafa9..f91d968 100644
+--- a/docs/internal/modularization-roadmap.md
++++ b/docs/internal/modularization-roadmap.md
+@@ -85,10 +85,18 @@ The initial extraction deliberately retains individual React state setters and t
+ - `src/notation/notationService.ts` handles the five notation panels' common `renderAbc` options/DOM errors and extracted notation SVG downloads. `abcjs` **still loads eagerly**; the future lazy-loading phase must preserve first-use rendering and multiple notation consumers.
+ - Tests: `scripts/render-audio-services.test.mjs` added to `test:modules` and the earlier ABC/diagram source-location checks were retargeted. All original settings export keys/order, audio mapping engines, source algorithms, and translations remain unchanged. Full browser/manual acceptance remains a separate requirement.
+ 
++## Phase 5: application shell, toolbar, typed tool registry and navigation (implemented)
++
++- `src/app/toolRegistry.ts` is a typed inventory of all eleven existing tool sections. Its destination metadata identifies the Harmony workspace and the Stradella-specific command targets; it imports **no tool implementation, audio engine or UI panels**. It is not yet a lazy-component/plugin manifest.
++- `src/app/useWorkspaceNavigation.ts` owns workspace, tool-section activation, left-panel/focus state, and expanded settings section. The hook retains the original accordion-section toggle semantics (only Progression Assistant forces Stradella), the settings-close-on-side/workspace effect and the hidden-panel restoration rule. `navigateToTool()` is the explicit **navigation portion** of Harmony/Progression/Stradella cross-tool commands; musical payload construction, realization matching, state resets and playback cancellation remain in `App.tsx` in their original order.
++- `src/app/components/AppShell.tsx` owns the outer app DOM (`main`, locale, density and two-column grid), while `WorkspaceToolbar.tsx` owns the toolbar and reset-menu pointer/Escape listeners. `App.tsx` still supplies workspace/sidebar children, translation callbacks and toolbar action handlers; it has **not** become a layout-only component. The markup, CSS selectors, accessibility titles, modal state and stop/reset behavior are unchanged.
++- `scripts/app-navigation-modules.test.mjs` exercises the registry and state transitions through a small React dispatcher mock, plus integration-source assertions for playback-stop ordering, toolbar controls and shell markup. The test is included in `test:modules` and can run without native esbuild. These checks supplement but do not replace browser smoke tests.
++- Public version, settings JSON (118 keys), localization catalogs, musical algorithms, SVG/PNG/ZIP/MIDI/LilyPond exports, nominal instrument registers, and sound sample mappings are untouched.
++
+ ## Remaining stages — not yet implemented
+ 
+-1. **Application shell and typed feature registry:** isolate remaining UI assembly, tool activation and cross-tool commands. Preserve all tool-state controller contracts, button identities, and context transfer. Do not introduce unnecessary global stores.
+-2. **Remaining orchestration consolidation:** Harmony/progression scheduling and other shared command sequencing still belong to App. Consider extracting them only with observable timing/cancellation tests; no need to rewrite engines.
++1. **Complete panel/UI decomposition:** move the remaining large Settings, Tool and Workspace sections out of App using typed view props or carefully scoped contexts. Phase 5 has extracted only the outer shell and toolbar. Avoid introducing a global store or moving all controllers into one replacement megacomponent.
++2. **Finish typed cross-tool commands:** navigation is centralized, but musical payload handoffs, Harmony/progression scheduling, selection synchronization, and cross-feature audio stop ordering still belong to App. Extract behind explicit adapters only with observable timing/cancellation/physical-identity tests; do not rewrite engines.
+ 3. **Lazy loading:** defer large tool panels and abcjs across every import site (notation is shared among five tools). Verify bundle splitting, preload/fallback behavior, first-use notation rendering, and stop/switch timing.
+ 4. **Stabilization and release:** run full Windows npm tests/build, manual browser checks for all tools, languages, legacy settings and SVG/PNG/ZIP/MIDI/LilyPond/audio outputs. Keep version `0.15.28` until v0.16.0 is accepted.
+ 
+diff --git a/package.json b/package.json
+index 2baebb7..192111b 100644
+--- a/package.json
++++ b/package.json
+@@ -11,7 +11,7 @@
+     "test:chords": "tsx scripts/chord-family-expansion.test.ts && tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts",
+     "test:notation": "tsx scripts/notation.test.ts",
+     "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:controls && npm run test:audio && npm run test:display && npm run test:i18n && npm run test:modules",
+-    "test:modules": "node scripts/module-boundaries.test.mjs && node scripts/settings-controller-compatibility.test.mjs && node scripts/finder-feature-modules.test.mjs && node scripts/stradella-finder-module.test.mjs && node scripts/abc-feature-module.test.mjs && node scripts/pattern-sequence-feature-modules.test.mjs && node scripts/harmony-progression-feature-modules.test.mjs && node scripts/diagram-annotation-modules.test.mjs && node scripts/render-audio-services.test.mjs",
++    "test:modules": "node scripts/module-boundaries.test.mjs && node scripts/settings-controller-compatibility.test.mjs && node scripts/finder-feature-modules.test.mjs && node scripts/stradella-finder-module.test.mjs && node scripts/abc-feature-module.test.mjs && node scripts/pattern-sequence-feature-modules.test.mjs && node scripts/harmony-progression-feature-modules.test.mjs && node scripts/diagram-annotation-modules.test.mjs && node scripts/render-audio-services.test.mjs && node scripts/app-navigation-modules.test.mjs",
+     "test:abc": "tsx scripts/abc-ties.test.ts && tsx scripts/katyusha-accordion-bass.test.ts && tsx scripts/easy-polka-happy-birthday.test.ts && node scripts/cueca-abc-examples.test.mjs && node scripts/abc-example-catalog.test.mjs",
+     "test:harmony": "tsx scripts/harmony-note-ring-ui.test.ts && tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts",
+     "test:controls": "tsx scripts/binary-controls.test.ts && node scripts/panel-control-layout.test.mjs && node scripts/stradella-register-panel.test.mjs && node scripts/instrument-settings-consolidation.test.mjs && node scripts/stradella-finder-state-help.test.mjs && npm run test:explanation-ui",
+diff --git a/scripts/app-navigation-modules.test.mjs b/scripts/app-navigation-modules.test.mjs
+new file mode 100644
+index 0000000..3a943c4
+--- /dev/null
++++ b/scripts/app-navigation-modules.test.mjs
+@@ -0,0 +1,135 @@
++/** Phase 5: observable navigation contracts without a DOM or native bundler. */
++import assert from "node:assert/strict";
++import { readFileSync } from "node:fs";
++import { runInNewContext } from "node:vm";
++import ts from "typescript";
++
++const source = (path) => readFileSync(path, "utf8");
++function load(path, imports) {
++  const output = ts.transpileModule(source(path), { compilerOptions: {
++    module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022,
++  } }).outputText;
++  const mod = { exports: {} };
++  runInNewContext(output, { module: mod, exports: mod.exports, require(id) {
++    if (id in imports) return imports[id];
++    throw new Error(`Unexpected dependency ${id}`);
++  } }, { filename: path });
++  return mod.exports;
++}
++
++const registry = load("src/app/toolRegistry.ts", {});
++const ids = ["scaleFinder", "chordFinder", "abcPlayer", "bassPatternPlayer",
++  "stradellaChordFinder", "harmonyExplorer", "progressionAssistant",
++  "fingering", "selection", "sequences", "annotateDiagram"];
++assert.deepEqual(Object.keys(registry.TOOL_REGISTRY), ids, "All eleven original tool sections registered");
++for (const id of ids) {
++  const destination = registry.toolDestination(id);
++  assert.equal(destination.workspace, id === "harmonyExplorer" ? "harmony" : "accordion");
++}
++assert.equal(registry.toolDestination("progressionAssistant").defaultSide, "stradella");
++assert.equal(registry.toolDestination("stradellaChordFinder").defaultSide, "stradella");
++assert.equal(registry.toolDestination("scaleFinder").defaultSide, undefined);
++
++// Simulated React hook dispatcher retains setter semantics between renders.
++const slots = [];
++let cursor = 0;
++let pendingEffects = [];
++const react = {
++  useState(initial) {
++    const index = cursor++;
++    if (!(index in slots)) slots[index] = initial;
++    return [slots[index], value => {
++      slots[index] = typeof value === "function" ? value(slots[index]) : value;
++    }];
++  },
++  useEffect(effect) { pendingEffects.push(effect); },
++};
++const { useWorkspaceNavigation } = load("src/app/useWorkspaceNavigation.ts", {
++  react, "./toolRegistry": registry,
++});
++let instrumentSide = "treble";
++const sideSetCalls = [];
++function setInstrumentSide(next) {
++  sideSetCalls.push(next);
++  instrumentSide = typeof next === "function" ? next(instrumentSide) : next;
++}
++function render() {
++  cursor = 0;
++  pendingEffects = [];
++  return useWorkspaceNavigation(instrumentSide, setInstrumentSide);
++}
++let navigation = render();
++assert.equal(navigation.leftPanelMode, "tools");
++assert.equal(navigation.workspaceMode, "accordion");
++assert.equal(navigation.activeToolSection, null);
++assert.equal(navigation.activeSettingsSection, null);
++
++navigation.toggleToolSection("chordFinder");
++navigation = render();
++assert.equal(navigation.activeToolSection, "chordFinder");
++assert.equal(instrumentSide, "treble", "Ordinary toggles do not change instrument side");
++navigation.toggleToolSection("chordFinder");
++navigation = render();
++assert.equal(navigation.activeToolSection, null, "Clicking the open section collapses it");
++
++navigation.setPanel("tools");
++navigation = render();
++assert.equal(navigation.leftPanelMode, "hidden");
++navigation.toggleToolSection("progressionAssistant");
++navigation = render();
++assert.equal(instrumentSide, "stradella", "Progression panel keeps historical side switch");
++assert.equal(navigation.leftPanelMode, "hidden", "Accordion toggle does not force-open panel");
++assert.equal(navigation.activeToolSection, "progressionAssistant");
++
++navigation.navigateToTool("harmonyExplorer");
++navigation = render();
++assert.equal(navigation.workspaceMode, "harmony");
++assert.equal(navigation.leftPanelMode, "tools");
++assert.equal(navigation.activeToolSection, "harmonyExplorer");
++navigation.setPanel("tools");
++navigation = render();
++navigation.toggleFocusPanel();
++navigation = render();
++assert.equal(navigation.leftPanelMode, "tools", "Harmony focus returns to Tools");
++
++navigation.navigateToTool("stradellaChordFinder", { side: "stradella" });
++navigation = render();
++assert.equal(navigation.workspaceMode, "accordion");
++assert.equal(navigation.activeToolSection, "stradellaChordFinder");
++assert.equal(instrumentSide, "stradella");
++navigation.setPanel("tools");
++navigation = render();
++navigation.toggleFocusPanel();
++navigation = render();
++assert.equal(navigation.leftPanelMode, "settings", "Accordion focus returns to Settings");
++navigation.toggleSettingsSection("instrument");
++navigation = render();
++assert.equal(navigation.activeSettingsSection, "instrument");
++// React calls the effect when the side or workspace changes; it closes settings.
++pendingEffects[0]();
++navigation = render();
++assert.equal(navigation.activeSettingsSection, null);
++
++navigation.selectAccordionSide("treble");
++navigation = render();
++assert.equal(instrumentSide, "treble");
++assert.equal(navigation.workspaceMode, "accordion");
++assert.ok(sideSetCalls.length >= 3);
++
++// Keep the shell DOM classes and toolbar interactive controls stable.
++const shell = source("src/app/components/AppShell.tsx");
++const toolbar = source("src/app/components/WorkspaceToolbar.tsx");
++const app = source("src/App.tsx");
++assert.match(shell, /className={`app density-\${density}`}/);
++assert.match(shell, /style={{ gridTemplateColumns }}/);
++assert.match(toolbar, /className="topbar"/);
++assert.match(toolbar, /className="reset-menu-options"/);
++assert.match(toolbar, /addEventListener\("keydown", closeOnEscape\)/);
++assert.match(toolbar, /onToggleSound/);
++assert.match(toolbar, /onDownloadDiagram/);
++assert.match(app, /navigateToTool\("stradellaChordFinder", \{ side: "stradella" \}\)/);
++assert.match(app, /navigateToTool\("progressionAssistant", \{ side: "stradella" \}\)/);
++assert.match(app, /onSelectHarmony=\{\(\) => \{\s*navigateToTool\("harmonyExplorer"\);\s*stopAbcPlayback\(\); stopBassPatternPlayback\(\); stopAllSound\(\);/);
++assert.match(app, /onSelectStradella=\{\(\) => \{ selectAccordionSide\("stradella"\); stopAbcPlayback\(\); \}\}/);
++assert.match(app, /onClearWork=\{\(\) => \{ if \(workspaceMode === "harmony"\) clearHarmonyWork\(\); else resetDiagramWork\(\); \}\}/);
++console.log("✓ Registry, workspace navigation, section toggles, focus behavior, toolbar command ordering and shell structure passed");
+diff --git a/scripts/binary-controls.test.ts b/scripts/binary-controls.test.ts
+index ed21eb9..5efb5ce 100644
+--- a/scripts/binary-controls.test.ts
++++ b/scripts/binary-controls.test.ts
+@@ -7,6 +7,7 @@ import { join } from "node:path";
+ const source = (path: string) => readFileSync(path, "utf8");
+ const app = source("src/App.tsx");
+ const panel = source("src/components/tools/StradellaChordFinderPanel.tsx");
++const toolbar = source("src/app/components/WorkspaceToolbar.tsx");
+ const component = source("src/components/ui/BinaryChoiceButton.tsx");
+ 
+ assert.match(app, /showStradellaRowLabels \? t\("ui\.hideStradellaRowLabels"\) : t\("ui\.showStradellaRowLabels"\)/);
+@@ -15,7 +16,7 @@ assert.match(panel, /whenEnabled=\{t\("ui\.hideRootBass"\)\}/);
+ assert.match(panel, /whenDisabled=\{t\("ui\.showRootBass"\)\}/);
+ assert.match(component, /aria-pressed=\{enabled\}/, "Binary buttons should expose their selected state");
+ assert.match(component, /onClick=\{onToggle\}/, "Binary buttons should invoke the shared state callback");
+-assert.match(app, /<SegmentedChoice label=\{t\("ui\.downloadFormat"\)\}/);
++assert.match(toolbar, /<SegmentedChoice label=\{t\("ui\.downloadFormat"\)\}/);
+ for (const key of ["ui.bassCounterbassGrouping", "ui.presetChordGrouping", "ui.soundSource", "ui.samplePitchMapping", "ui.interfaceDensity"]) {
+   assert.ok(app.includes(`t("${key}")`), `Missing persistent translated choice: ${key}`);
+ }
+diff --git a/scripts/nominal-gap-and-batch-export.test.ts b/scripts/nominal-gap-and-batch-export.test.ts
+index 7016264..88b3eb4 100644
+--- a/scripts/nominal-gap-and-batch-export.test.ts
++++ b/scripts/nominal-gap-and-batch-export.test.ts
+@@ -44,7 +44,8 @@ assert.equal(new DataView(buffer.buffer).getUint16(buffer.length-12,true),2);
+ const app=readFileSync(new URL("../src/App.tsx",import.meta.url),"utf8");
+ assert.match(app,/function clearHarmonyWork\(/);
+ assert.match(app,/function resetStradellaFinderDefaults\(/);
+-assert.match(app,/className="reset-menu"/);
++const toolbar=readFileSync(new URL("../src/app/components/WorkspaceToolbar.tsx",import.meta.url),"utf8");
++assert.match(toolbar,/className="reset-menu"/);
+ assert.match(app,/flushSync\(\(\) => setStradellaChordFinderRealizationIndex\(initialIndex\)\)/);
+ assert.match(app,/stradellaMinimumNominalGap,/);
+ console.log("✓ Proportional layout, adjacent-gap filter, ZIP metadata and reset scope checks passed");
+diff --git a/scripts/stradella-explanation-ui.test.ts b/scripts/stradella-explanation-ui.test.ts
+index fd727bf..ae5c6e5 100644
+--- a/scripts/stradella-explanation-ui.test.ts
++++ b/scripts/stradella-explanation-ui.test.ts
+@@ -4,7 +4,8 @@ import { EN, ES } from "../src/i18n/catalog";
+ const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
+ const app = readFileSync("src/App.tsx", "utf8");
+ const css = readFileSync("src/App.css", "utf8");
+-assert.match(app, /\| "instrument"/);
++const workspaceNavigation = readFileSync("src/app/useWorkspaceNavigation.ts", "utf8");
++assert.match(workspaceNavigation, /SettingsSection = "instrument"/);
+ assert.match(app, /toggleSettingsSection\("instrument"\)/);
+ assert.match(app, /\{t\("settings\.instrument"\)\}/);
+ assert.equal(EN["settings.registers"], "Stradella registers");
+diff --git a/src/App.tsx b/src/App.tsx
+index f2a32f8..1d901ac 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -27,6 +27,10 @@ import type { DefaultSettingsFile } from "./settings/settingsSchema";
+ import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "./settings/settingsController";
+ import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
+ import { useLanguageSettings } from "./settings/useLanguageSettings";
++import { useWorkspaceNavigation } from "./app/useWorkspaceNavigation";
++import type { ToolSection } from "./app/toolRegistry";
++import { AppShell } from "./app/components/AppShell";
++import { WorkspaceToolbar } from "./app/components/WorkspaceToolbar";
+ import { useInstrumentState } from "./instrument/useInstrumentState";
+ import { TREBLE_PRESET_BUTTON_SIZE, PIANO_TREBLE_PRESET_BUTTON_SIZE } from "./instrument/sizePresets";
+ import { useDiagramAppearanceState } from "./diagram/useDiagramAppearanceState";
+@@ -74,7 +78,6 @@ import type {
+   FinderScalePattern,
+   FontFamily,
+   InterfaceDensity,
+-  LeftPanelMode,
+   NotationMode,
+   PianoTrebleRange,
+   NumberPosition,
+@@ -288,25 +291,6 @@ function formatProgressionOptionLabel(progression: ChordProgressionDefinition, l
+ function App() {
+   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
+   const svgRef = useRef<SVGSVGElement | null>(null);
+-  const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
+-  useEffect(() => {
+-    function closeOnOutside(event: PointerEvent) {
+-      if (resetMenuRef.current?.open && !resetMenuRef.current.contains(event.target as Node))
+-        resetMenuRef.current.open = false;
+-    }
+-    function closeOnEscape(event: KeyboardEvent) {
+-      if (event.key === "Escape" && resetMenuRef.current?.open) {
+-        resetMenuRef.current.open = false;
+-        resetMenuRef.current.querySelector("summary")?.focus();
+-      }
+-    }
+-    document.addEventListener("pointerdown", closeOnOutside);
+-    document.addEventListener("keydown", closeOnEscape);
+-    return () => {
+-      document.removeEventListener("pointerdown", closeOnOutside);
+-      document.removeEventListener("keydown", closeOnEscape);
+-    };
+-  }, []);
+   const harmonySvgRef = useRef<SVGSVGElement | null>(null);
+   const previousLayoutSignatureRef = useRef<string | null>(null);
+   const abcPlaybackTimeoutsRef = useRef<number[]>([]);
+@@ -357,43 +341,14 @@ function App() {
+   } = useDiagramAppearanceState();
+   const [interfaceDensity, setInterfaceDensity] = useState<InterfaceDensity>("compact");
+ 
+-  /* Left panel visibility and accordion-section state. */
+-  const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("tools");
+-  const [workspaceMode, setWorkspaceMode] = useState<"accordion" | "harmony">("accordion");
+-
+-  type SettingsSection =
+-    | "instrument"
+-    | "title"
+-    | "appearance"
+-    | "notation"
+-    | "musicNotation"
+-    | "sound"
+-    | "harmony"
+-    | "about"
+-    | null;
+-  type ToolSection =
+-    | "scaleFinder"
+-    | "chordFinder"
+-    | "abcPlayer"
+-    | "bassPatternPlayer"
+-    | "stradellaChordFinder"
+-    | "harmonyExplorer"
+-    | "progressionAssistant"
+-    | "fingering"
+-    | "selection"
+-    | "sequences"
+-    | "annotateDiagram"
+-    | null;
+-
+-  const [activeSettingsSection, setActiveSettingsSection] =
+-    useState<SettingsSection>(null);
+-
+-  const [activeToolSection, setActiveToolSection] = useState<ToolSection>(null);
+-
+-  useEffect(() => {
+-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Close the settings panel when the workspace or manual changes.
+-    setActiveSettingsSection(null);
+-  }, [workspaceMode, side]);
++  /* The application shell owns workspace/tool visibility; physical side stays
++   * in useInstrumentState, and audio cancellation remains with the commands. */
++  const {
++    leftPanelMode, workspaceMode,
++    activeSettingsSection, activeToolSection,
++    toggleSettingsSection, toggleToolSection: toggleWorkspaceToolSection,
++    navigateToTool, selectAccordionSide, setPanel, toggleFocusPanel,
++  } = useWorkspaceNavigation(side, setSide);
+ 
+   /* Physical-button overlays/fingerings are independent of musical selection. */
+   const {
+@@ -1688,10 +1643,7 @@ function App() {
+     setHarmonyProgression(recordedChords.map((chord) => ({ ...chord, id: `harmony-progression-${harmonyProgressionIdRef.current++}` })));
+     setHarmonyProgressionRecording(false);
+     setHarmonyRecordedNotationVisible(false);
+-    setWorkspaceMode("accordion");
+-    setSide("stradella");
+-    setLeftPanelMode("tools");
+-    setActiveToolSection("progressionAssistant");
++    navigateToTool("progressionAssistant", { side: "stradella" });
+     setHarmonyProgressionPreviewIndex(null);
+     setStradellaChordFinderActive(false);
+     setScaleFinderActive(false);
+@@ -1731,10 +1683,7 @@ function App() {
+       if (!sameHarmonyProgressionChord(next[next.length - 1], target)) next.push(target);
+       return next;
+     });
+-    setWorkspaceMode("accordion");
+-    setSide("stradella");
+-    setLeftPanelMode("tools");
+-    setActiveToolSection("progressionAssistant");
++    navigateToTool("progressionAssistant", { side: "stradella" });
+     setHarmonyProgressionPreviewIndex(null);
+     setStradellaChordFinderActive(false);
+     setScaleFinderActive(false);
+@@ -1761,10 +1710,7 @@ function App() {
+     const step = harmonyProgressionPlan.steps[index];
+     if (!step) return;
+     setHarmonyProgressionPreviewIndex(index);
+-    setWorkspaceMode("accordion");
+-    setSide("stradella");
+-    setLeftPanelMode("tools");
+-    setActiveToolSection("progressionAssistant");
++    navigateToTool("progressionAssistant", { side: "stradella" });
+     setStradellaChordFinderActive(false);
+     setScaleFinderActive(false);
+     setChordFinderActive(false);
+@@ -1778,10 +1724,7 @@ function App() {
+     if (!pattern) return;
+     const resultKey = step.result.playbackButtons.map((button) => button.id).sort().join("|");
+     setPendingProgressionRealizationKey(resultKey);
+-    setWorkspaceMode("accordion");
+-    setSide("stradella");
+-    setLeftPanelMode("tools");
+-    setActiveToolSection("stradellaChordFinder");
++    navigateToTool("stradellaChordFinder", { side: "stradella" });
+     setStradellaChordFinderRoot(pitchClassNameFromNumber(step.chord.rootPc));
+     setStradellaChordFinderRequestedBass(null);
+     setStradellaChordFinderPattern(pattern);
+@@ -1841,10 +1784,7 @@ function App() {
+     if (!harmonySelection) return;
+     const pattern = finderPatternForHarmonyFamily(harmonySelection.candidate.familyId);
+     if (!pattern) return;
+-    setWorkspaceMode("accordion");
+-    setSide("stradella");
+-    setLeftPanelMode("tools");
+-    setActiveToolSection("stradellaChordFinder");
++    navigateToTool("stradellaChordFinder", { side: "stradella" });
+     setStradellaChordFinderRoot(pitchClassNameFromNumber(harmonySelection.candidate.rootPc));
+     setStradellaChordFinderRequestedBass(null);
+     setStradellaChordFinderPattern(pattern);
+@@ -1874,9 +1814,7 @@ function App() {
+       setHarmonyFocusedReferenceRootPc(null);
+     }
+ 
+-    setWorkspaceMode("harmony");
+-    setLeftPanelMode("tools");
+-    setActiveToolSection("harmonyExplorer");
++    navigateToTool("harmonyExplorer");
+     stopAllSound();
+     stopAbcPlayback();
+     stopBassPatternPlayback();
+@@ -1888,29 +1826,17 @@ function App() {
+     }
+   }, [soundEnabled, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister]);
+ 
+-  /** Opens one settings group, or closes it if it is already open. */
+-  function toggleSettingsSection(section: Exclude<SettingsSection, null>) {
+-    setActiveSettingsSection((current) =>
+-      current === section ? null : section,
+-    );
+-  }
+-
+-  /** Opens one tool group, or closes it if it is already open. */
++  /** Tool-specific side effects remain explicit until the command service is extracted.
++   * Navigation itself is owned by the workspace controller, not by tool state. */
+   function toggleToolSection(section: Exclude<ToolSection, null>) {
+-    if (section === "harmonyExplorer") {
+-      setWorkspaceMode("harmony");
+-    } else {
+-      setWorkspaceMode("accordion");
+-    }
++    toggleWorkspaceToolSection(section);
+     if (section === "progressionAssistant") {
+-      setSide("stradella");
+       setStradellaChordFinderActive(false);
+       setScaleFinderActive(false);
+       setChordFinderActive(false);
+       stopAbcPlayback();
+       stopBassPatternPlayback();
+     }
+-    setActiveToolSection((current) => (current === section ? null : section));
+   }
+ 
+   /**
+@@ -2326,11 +2252,6 @@ function App() {
+     return diagramAutoTitle(side, basses, trebleLayout, language);
+   }
+ 
+-  /** Toggles the requested left panel; clicking the active panel hides it. */
+-  function setPanel(mode: Exclude<LeftPanelMode, "hidden">) {
+-    setLeftPanelMode((current) => (current === mode ? "hidden" : mode));
+-  }
+-
+   /** Download every eligible realization with the current filter, labels,
+    * layout, register model, footer and SVG/PNG settings. Capture each live SVG
+    * synchronously, then restore selection before asynchronous PNG encoding. */
+@@ -2676,11 +2597,7 @@ function App() {
+ 
+   return (
+     <LanguageProvider language={language}>
+-    <main
+-      lang={language}
+-      className={`app density-${interfaceDensity}`}
+-      style={{ gridTemplateColumns: appGridColumns }}
+-    >
++    <AppShell language={language} density={interfaceDensity} gridTemplateColumns={appGridColumns}>
+       {leftPanelMode !== "hidden" && (
+         <aside className="left-panel">
+           <h1>{leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}</h1>
+@@ -5165,166 +5082,39 @@ function App() {
+       )}
+ 
+       <section className="workspace">
+-        <div className="topbar">
+-          <button
+-            className={`topbar-button ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
+-            onClick={() => {
+-              setWorkspaceMode("accordion");
+-              setSide("stradella");
+-              stopAbcPlayback();
+-            }}
+-          >
+-            {t("nav.stradella")}
+-          </button>
+-
+-          <button
+-            className={`topbar-button ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
+-            onClick={() => {
+-              setWorkspaceMode("accordion");
+-              setSide("treble");
+-              stopAbcPlayback();
+-            }}
+-          >
+-            {t("nav.treble")}
+-          </button>
+-
+-          <button
+-            className={`topbar-button ${workspaceMode === "harmony" ? "active" : ""}`}
+-            onClick={() => {
+-              setWorkspaceMode("harmony");
+-              setLeftPanelMode("tools");
+-              setActiveToolSection("harmonyExplorer");
+-              stopAbcPlayback();
+-              stopBassPatternPlayback();
+-              stopAllSound();
+-            }}
+-          >
+-            {t("nav.harmony")}
+-          </button>
+-
+-          <span className="topbar-separator" />
+-
+-          <button
+-            className={`topbar-button ${leftPanelMode === "settings" ? "active" : ""}`}
+-            onClick={() => setPanel("settings")}
+-          >
+-            {t("nav.settings")}
+-          </button>
+-
+-          <button
+-            className={`topbar-button ${leftPanelMode === "tools" ? "active" : ""}`}
+-            onClick={() => setPanel("tools")}
+-          >
+-            {t("nav.tools")}
+-          </button>
+-
+-          <button
+-            className={`topbar-button ${leftPanelMode === "hidden" ? "active" : ""}`}
+-            onClick={() =>
+-              setLeftPanelMode((current) =>
+-                current === "hidden" ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden",
+-              )
+-            }
+-            title={t("nav.focusHint")}
+-          >
+-            {leftPanelMode === "hidden" ? t("nav.showControls") : t("nav.focusDiagram")}
+-          </button>
+-
+-          {workspaceMode === "accordion" &&
+-            side === "stradella" &&
+-            activeToolSection === "bassPatternPlayer" &&
+-            bassPatternEvents.length > 0 && (
+-              <>
+-                <button
+-                  className={`topbar-button ${bassPatternRenderedNotationVisible ? "active" : ""}`}
+-                  onClick={toggleBassPatternNotation}
+-                >
+-                  {bassPatternRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
+-                </button>
+-              </>
+-            )}
+-
+-          {workspaceMode === "harmony" && harmonyRecordedProgression.length > 0 && (
+-            <button
+-              className={`topbar-button ${harmonyRecordedNotationVisible ? "active" : ""}`}
+-              onClick={toggleHarmonyRecordedNotation}
+-            >
+-              {harmonyRecordedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
+-            </button>
+-          )}
+-
+-          {workspaceMode === "accordion" &&
+-            side === "stradella" &&
+-            activeToolSection === "progressionAssistant" &&
+-            harmonyProgressionPlan.playable && (
+-              <button
+-                className={`topbar-button ${harmonyProgressionNotationVisible ? "active" : ""}`}
+-                onClick={toggleHarmonyProgressionNotation}
+-              >
+-                {harmonyProgressionNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
+-              </button>
+-            )}
+-
+-          {workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim() && (
+-            <button
+-              className={`topbar-button ${abcRenderedNotationVisible ? "active" : ""}`}
+-              onClick={toggleAbcNotation}
+-            >
+-              {abcRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
+-            </button>
+-          )}
+-
+-          {workspaceMode === "accordion" && activeToolSection === "sequences" &&
+-            sequenceStepsWithButtons.length > 0 && (
+-              <button
+-                className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
+-                onClick={toggleSequenceNotation}
+-              >
+-                {sequenceRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
+-              </button>
+-            )}
+-
+-          <span className="topbar-spacer" />
+-
+-          <button
+-            className={`topbar-button ${soundEnabled ? "active" : ""}`}
+-            onClick={() => setSoundEnabled((current) => !current)}
+-          >
+-            {soundEnabled ? t("ui.soundOn") : t("ui.soundOff")}
+-          </button>
+-
+-          <details ref={resetMenuRef} className="reset-menu">
+-            <summary className="topbar-button reset-button" title={t("ui.resetScope")}>
+-              {t("ui.reset")} <span aria-hidden="true">▾</span>
+-            </summary>
+-            <div className="reset-menu-options">
+-              <button type="button" onClick={(event) => {
+-                if (workspaceMode === "harmony") clearHarmonyWork(); else resetDiagramWork();
+-                event.currentTarget.closest("details")?.removeAttribute("open");
+-              }}>{t("ui.clearCurrentWork")}</button>
+-              {(workspaceMode === "harmony" || (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
+-                <button type="button" onClick={(event) => {
+-                  resetCurrentToolDefaults();
+-                  event.currentTarget.closest("details")?.removeAttribute("open");
+-                }}>{t("ui.restoreToolDefaults")}</button>
+-              )}
+-            </div>
+-          </details>
+-
+-          <span className="topbar-after-reset-space" aria-hidden="true" />
+-
+-          <div className="topbar-format-choice">
+-            <SegmentedChoice label={t("ui.downloadFormat")} value={downloadFormat} onChange={setDownloadFormat}
+-              options={[{ value: "svg", label: "SVG" }, { value: "png", label: "PNG" }]} />
+-          </div>
+-
+-          <button
+-            className="topbar-button download-button"
+-            onClick={downloadCurrentDiagram}
+-          >
+-            {t("ui.downloadKind", { kind: downloadFormat.toUpperCase() })}
+-          </button>
+-        </div>
++        <WorkspaceToolbar
++          t={t} workspaceMode={workspaceMode} side={side} leftPanelMode={leftPanelMode}
++          activeToolSection={activeToolSection}
++          onSelectStradella={() => { selectAccordionSide("stradella"); stopAbcPlayback(); }}
++          onSelectTreble={() => { selectAccordionSide("treble"); stopAbcPlayback(); }}
++          onSelectHarmony={() => {
++            navigateToTool("harmonyExplorer");
++            stopAbcPlayback(); stopBassPatternPlayback(); stopAllSound();
++          }}
++          onShowSettings={() => setPanel("settings")}
++          onShowTools={() => setPanel("tools")}
++          onToggleFocus={toggleFocusPanel}
++          bassPatternEvents={bassPatternEvents}
++          bassPatternRenderedNotationVisible={bassPatternRenderedNotationVisible}
++          onToggleBassPatternNotation={toggleBassPatternNotation}
++          harmonyRecordedProgression={harmonyRecordedProgression}
++          harmonyRecordedNotationVisible={harmonyRecordedNotationVisible}
++          onToggleHarmonyRecordedNotation={toggleHarmonyRecordedNotation}
++          harmonyProgressionPlayable={harmonyProgressionPlan.playable}
++          harmonyProgressionNotationVisible={harmonyProgressionNotationVisible}
++          onToggleHarmonyProgressionNotation={toggleHarmonyProgressionNotation}
++          abcText={abcText} abcRenderedNotationVisible={abcRenderedNotationVisible}
++          onToggleAbcNotation={toggleAbcNotation}
++          sequenceStepsWithButtons={sequenceStepsWithButtons}
++          sequenceRenderedNotationVisible={sequenceRenderedNotationVisible}
++          onToggleSequenceNotation={toggleSequenceNotation}
++          soundEnabled={soundEnabled}
++          onToggleSound={() => setSoundEnabled(current => !current)}
++          onClearWork={() => { if (workspaceMode === "harmony") clearHarmonyWork(); else resetDiagramWork(); }}
++          onRestoreToolDefaults={resetCurrentToolDefaults}
++          downloadFormat={downloadFormat} setDownloadFormat={setDownloadFormat}
++          onDownloadDiagram={downloadCurrentDiagram}
++        />
+ 
+         {showStatusBar && workspaceMode === "accordion" && (
+           <div className="status-bar" title={statusBarText}>
+@@ -5765,7 +5555,7 @@ function App() {
+             </div>
+           )}
+       </section>
+-    </main>
++    </AppShell>
+     </LanguageProvider>
+   );
+ }
+diff --git a/src/app/components/AppShell.tsx b/src/app/components/AppShell.tsx
+new file mode 100644
+index 0000000..dbc6051
+--- /dev/null
++++ b/src/app/components/AppShell.tsx
+@@ -0,0 +1,16 @@
++import type { CSSProperties, ReactNode } from "react";
++import type { InterfaceLanguage } from "../../i18n/catalog";
++import type { InterfaceDensity } from "../../types";
++
++/** Stable DOM shell. Panel/workspace content is supplied by the controller
++ * until the remaining large control panels can be extracted independently.
++ */
++export function AppShell({ language, density, gridTemplateColumns, children }: {
++  language: InterfaceLanguage;
++  density: InterfaceDensity;
++  gridTemplateColumns: CSSProperties["gridTemplateColumns"];
++  children: ReactNode;
++}) {
++  return <main lang={language} className={`app density-${density}`}
++    style={{ gridTemplateColumns }}>{children}</main>;
++}
+diff --git a/src/app/components/WorkspaceToolbar.tsx b/src/app/components/WorkspaceToolbar.tsx
+new file mode 100644
+index 0000000..422a3f5
+--- /dev/null
++++ b/src/app/components/WorkspaceToolbar.tsx
+@@ -0,0 +1,217 @@
++import { useEffect, useRef } from "react";
++import type { Side, LeftPanelMode, DownloadFormat } from "../../types";
++import type { useLanguageSettings } from "../../settings/useLanguageSettings";
++import type { ToolSection, WorkspaceMode } from "../toolRegistry";
++import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
++
++/** Presentational toolbar. Callbacks must retain App's stop/cancel and reset ordering. */
++export type WorkspaceToolbarProps = {
++  t: ReturnType<typeof useLanguageSettings>["t"];
++  workspaceMode: WorkspaceMode;
++  side: Side;
++  leftPanelMode: LeftPanelMode;
++  activeToolSection: ToolSection;
++  onSelectStradella: () => void;
++  onSelectTreble: () => void;
++  onSelectHarmony: () => void;
++  onShowSettings: () => void;
++  onShowTools: () => void;
++  onToggleFocus: () => void;
++  bassPatternEvents: readonly unknown[];
++  bassPatternRenderedNotationVisible: boolean;
++  onToggleBassPatternNotation: () => void;
++  harmonyRecordedProgression: readonly unknown[];
++  harmonyRecordedNotationVisible: boolean;
++  onToggleHarmonyRecordedNotation: () => void;
++  harmonyProgressionPlayable: boolean;
++  harmonyProgressionNotationVisible: boolean;
++  onToggleHarmonyProgressionNotation: () => void;
++  abcText: string;
++  abcRenderedNotationVisible: boolean;
++  onToggleAbcNotation: () => void;
++  sequenceStepsWithButtons: readonly unknown[];
++  sequenceRenderedNotationVisible: boolean;
++  onToggleSequenceNotation: () => void;
++  soundEnabled: boolean;
++  onToggleSound: () => void;
++  onClearWork: () => void;
++  onRestoreToolDefaults: () => void;
++  downloadFormat: DownloadFormat;
++  setDownloadFormat: (format: DownloadFormat) => void;
++  onDownloadDiagram: () => void;
++};
++
++export function WorkspaceToolbar({
++  t, workspaceMode, side, leftPanelMode, activeToolSection,
++  onSelectStradella, onSelectTreble, onSelectHarmony, onShowSettings, onShowTools, onToggleFocus,
++  bassPatternEvents, bassPatternRenderedNotationVisible, onToggleBassPatternNotation,
++  harmonyRecordedProgression, harmonyRecordedNotationVisible, onToggleHarmonyRecordedNotation,
++  harmonyProgressionPlayable, harmonyProgressionNotationVisible, onToggleHarmonyProgressionNotation,
++  abcText, abcRenderedNotationVisible, onToggleAbcNotation,
++  sequenceStepsWithButtons, sequenceRenderedNotationVisible, onToggleSequenceNotation,
++  soundEnabled, onToggleSound, onClearWork, onRestoreToolDefaults,
++  downloadFormat, setDownloadFormat, onDownloadDiagram,
++}: WorkspaceToolbarProps) {
++  const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
++  useEffect(() => {
++    function closeOnOutside(event: PointerEvent) {
++      if (resetMenuRef.current?.open && !resetMenuRef.current.contains(event.target as Node))
++        resetMenuRef.current.open = false;
++    }
++    function closeOnEscape(event: KeyboardEvent) {
++      if (event.key === "Escape" && resetMenuRef.current?.open) {
++        resetMenuRef.current.open = false;
++        resetMenuRef.current.querySelector("summary")?.focus();
++      }
++    }
++    document.addEventListener("pointerdown", closeOnOutside);
++    document.addEventListener("keydown", closeOnEscape);
++    return () => {
++      document.removeEventListener("pointerdown", closeOnOutside);
++      document.removeEventListener("keydown", closeOnEscape);
++    };
++  }, []);
++  return (
++        <div className="topbar">
++          <button
++            className={`topbar-button ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
++            onClick={onSelectStradella}
++          >
++            {t("nav.stradella")}
++          </button>
++
++          <button
++            className={`topbar-button ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
++            onClick={onSelectTreble}
++          >
++            {t("nav.treble")}
++          </button>
++
++          <button
++            className={`topbar-button ${workspaceMode === "harmony" ? "active" : ""}`}
++            onClick={onSelectHarmony}
++          >
++            {t("nav.harmony")}
++          </button>
++
++          <span className="topbar-separator" />
++
++          <button
++            className={`topbar-button ${leftPanelMode === "settings" ? "active" : ""}`}
++            onClick={onShowSettings}
++          >
++            {t("nav.settings")}
++          </button>
++
++          <button
++            className={`topbar-button ${leftPanelMode === "tools" ? "active" : ""}`}
++            onClick={onShowTools}
++          >
++            {t("nav.tools")}
++          </button>
++
++          <button
++            className={`topbar-button ${leftPanelMode === "hidden" ? "active" : ""}`}
++            onClick={onToggleFocus}
++            title={t("nav.focusHint")}
++          >
++            {leftPanelMode === "hidden" ? t("nav.showControls") : t("nav.focusDiagram")}
++          </button>
++
++          {workspaceMode === "accordion" &&
++            side === "stradella" &&
++            activeToolSection === "bassPatternPlayer" &&
++            bassPatternEvents.length > 0 && (
++              <>
++                <button
++                  className={`topbar-button ${bassPatternRenderedNotationVisible ? "active" : ""}`}
++                  onClick={onToggleBassPatternNotation}
++                >
++                  {bassPatternRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
++                </button>
++              </>
++            )}
++
++          {workspaceMode === "harmony" && harmonyRecordedProgression.length > 0 && (
++            <button
++              className={`topbar-button ${harmonyRecordedNotationVisible ? "active" : ""}`}
++              onClick={onToggleHarmonyRecordedNotation}
++            >
++              {harmonyRecordedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
++            </button>
++          )}
++
++          {workspaceMode === "accordion" &&
++            side === "stradella" &&
++            activeToolSection === "progressionAssistant" &&
++            harmonyProgressionPlayable && (
++              <button
++                className={`topbar-button ${harmonyProgressionNotationVisible ? "active" : ""}`}
++                onClick={onToggleHarmonyProgressionNotation}
++              >
++                {harmonyProgressionNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
++              </button>
++            )}
++
++          {workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim() && (
++            <button
++              className={`topbar-button ${abcRenderedNotationVisible ? "active" : ""}`}
++              onClick={onToggleAbcNotation}
++            >
++              {abcRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
++            </button>
++          )}
++
++          {workspaceMode === "accordion" && activeToolSection === "sequences" &&
++            sequenceStepsWithButtons.length > 0 && (
++              <button
++                className={`topbar-button ${sequenceRenderedNotationVisible ? "active" : ""}`}
++                onClick={onToggleSequenceNotation}
++              >
++                {sequenceRenderedNotationVisible ? t("ui.hideNotation") : t("ui.showNotation")}
++              </button>
++            )}
++
++          <span className="topbar-spacer" />
++
++          <button
++            className={`topbar-button ${soundEnabled ? "active" : ""}`}
++            onClick={onToggleSound}
++          >
++            {soundEnabled ? t("ui.soundOn") : t("ui.soundOff")}
++          </button>
++
++          <details ref={resetMenuRef} className="reset-menu">
++            <summary className="topbar-button reset-button" title={t("ui.resetScope")}>
++              {t("ui.reset")} <span aria-hidden="true">▾</span>
++            </summary>
++            <div className="reset-menu-options">
++              <button type="button" onClick={(event) => {
++                onClearWork();
++                event.currentTarget.closest("details")?.removeAttribute("open");
++              }}>{t("ui.clearCurrentWork")}</button>
++              {(workspaceMode === "harmony" || (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
++                <button type="button" onClick={(event) => {
++                  onRestoreToolDefaults();
++                  event.currentTarget.closest("details")?.removeAttribute("open");
++                }}>{t("ui.restoreToolDefaults")}</button>
++              )}
++            </div>
++          </details>
++
++          <span className="topbar-after-reset-space" aria-hidden="true" />
++
++          <div className="topbar-format-choice">
++            <SegmentedChoice label={t("ui.downloadFormat")} value={downloadFormat} onChange={setDownloadFormat}
++              options={[{ value: "svg", label: "SVG" }, { value: "png", label: "PNG" }]} />
++          </div>
++
++          <button
++            className="topbar-button download-button"
++            onClick={onDownloadDiagram}
++          >
++            {t("ui.downloadKind", { kind: downloadFormat.toUpperCase() })}
++          </button>
++        </div>
++  );
++}
+diff --git a/src/app/toolRegistry.ts b/src/app/toolRegistry.ts
+new file mode 100644
+index 0000000..d2383e7
+--- /dev/null
++++ b/src/app/toolRegistry.ts
+@@ -0,0 +1,33 @@
++/** Registry of currently implemented tool sections.
++ *
++ * The navigation contract is intentionally independent of musical engines,
++ * panel imports and sound. It does not yet determine lazy-loaded components.
++ * `defaultSide` is applied when a command explicitly opens a tool; existing
++ * accordion-section toggles retain their historical side behavior.
++ */
++export const TOOL_REGISTRY = {
++  scaleFinder: { workspace: "accordion", category: "finder" },
++  chordFinder: { workspace: "accordion", category: "finder" },
++  abcPlayer: { workspace: "accordion", category: "player" },
++  bassPatternPlayer: { workspace: "accordion", category: "player" },
++  stradellaChordFinder: { workspace: "accordion", category: "finder", defaultSide: "stradella" },
++  harmonyExplorer: { workspace: "harmony", category: "harmony" },
++  progressionAssistant: { workspace: "accordion", category: "harmony", defaultSide: "stradella" },
++  fingering: { workspace: "accordion", category: "diagram" },
++  selection: { workspace: "accordion", category: "diagram" },
++  sequences: { workspace: "accordion", category: "diagram" },
++  annotateDiagram: { workspace: "accordion", category: "diagram" },
++} as const;
++
++export type ToolId = keyof typeof TOOL_REGISTRY;
++export type ToolSection = ToolId | null;
++export type WorkspaceMode = "accordion" | "harmony";
++
++/** A missing default side means the tool leaves the current instrument side unchanged. */
++export function toolDestination(tool: ToolId): { workspace: WorkspaceMode; defaultSide?: "stradella" } {
++  const definition = TOOL_REGISTRY[tool];
++  return {
++    workspace: definition.workspace,
++    ...("defaultSide" in definition ? { defaultSide: definition.defaultSide } : {}),
++  };
++}
+diff --git a/src/app/useWorkspaceNavigation.ts b/src/app/useWorkspaceNavigation.ts
+new file mode 100644
+index 0000000..f845ee3
+--- /dev/null
++++ b/src/app/useWorkspaceNavigation.ts
+@@ -0,0 +1,66 @@
++import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
++import type { LeftPanelMode, Side } from "../types";
++import { toolDestination, type ToolId, type ToolSection, type WorkspaceMode } from "./toolRegistry";
++
++export type SettingsSection = "instrument" | "title" | "appearance" | "notation" |
++  "musicNotation" | "sound" | "harmony" | "about" | null;
++
++/** Workspace/UI navigation; instrument layout stays with the instrument hook.
++ * Musical tool state, playback cancellation and selection transfer remain owned
++ * by their feature controllers and the App command handlers, respectively.
++ */
++export function useWorkspaceNavigation(side: Side, setSide: Dispatch<SetStateAction<Side>>) {
++  const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("tools");
++  const [workspaceMode, setWorkspaceMode] = useState<WorkspaceMode>("accordion");
++  const [activeSettingsSection, setActiveSettingsSection] = useState<SettingsSection>(null);
++  const [activeToolSection, setActiveToolSection] = useState<ToolSection>(null);
++
++  useEffect(() => {
++    // eslint-disable-next-line react-hooks/set-state-in-effect -- Preserve the original settings-close behavior on workspace/instrument changes.
++    setActiveSettingsSection(null);
++  }, [workspaceMode, side]);
++
++  function toggleSettingsSection(section: Exclude<SettingsSection, null>) {
++    setActiveSettingsSection(current => current === section ? null : section);
++  }
++
++  function toggleToolSection(tool: ToolId) {
++    setWorkspaceMode(toolDestination(tool).workspace);
++    // Historical accordion behavior: only Progression Assistant forces Stradella.
++    if (tool === "progressionAssistant") setSide("stradella");
++    setActiveToolSection(current => current === tool ? null : tool);
++  }
++
++  /** Command navigation, unlike accordion toggling, always exposes its target.
++   * The caller continues to own any cross-tool data transfer and audio stops.
++   */
++  function navigateToTool(tool: ToolId, options: { side?: Side; showTools?: boolean } = {}) {
++    const destination = toolDestination(tool);
++    setWorkspaceMode(destination.workspace);
++    const nextSide = options.side ?? destination.defaultSide;
++    if (nextSide) setSide(nextSide);
++    if (options.showTools !== false) setLeftPanelMode("tools");
++    setActiveToolSection(tool);
++  }
++
++  function selectAccordionSide(nextSide: Side) {
++    setWorkspaceMode("accordion");
++    setSide(nextSide);
++  }
++
++  function setPanel(mode: Exclude<LeftPanelMode, "hidden">) {
++    setLeftPanelMode(current => current === mode ? "hidden" : mode);
++  }
++
++  function toggleFocusPanel() {
++    setLeftPanelMode(current => current === "hidden"
++      ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden");
++  }
++
++  return {
++    leftPanelMode, setLeftPanelMode, workspaceMode, setWorkspaceMode,
++    activeSettingsSection, setActiveSettingsSection, activeToolSection, setActiveToolSection,
++    toggleSettingsSection, toggleToolSection, navigateToTool,
++    selectAccordionSide, setPanel, toggleFocusPanel,
++  };
++}
