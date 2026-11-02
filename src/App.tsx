@@ -1,4 +1,4 @@
-import { familyName, scaleName, stradellaDiagramRowLabel } from "./i18n/musicTerms";
+import { stradellaDiagramRowLabel } from "./i18n/musicTerms";
 import { accordionStatusText, diagramAutoTitle, harmonyRelatedDisplayName, harmonyStatusText, pianoRangeStatusLabel } from "./i18n/diagramLabels";
 import { DEFAULT_STRADELLA_NOTE_LEVELS, type StradellaNoteLevels } from "./tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "./tools/contextualTitles";
@@ -31,6 +31,8 @@ import { useInstrumentState } from "./instrument/useInstrumentState";
 import { useBassPatternState, useBassPatternResults } from "./features/bassPatternPlayer/useBassPatternPlayer";
 import { useSequenceState, useSequenceResults } from "./features/sequences/useSequenceState";
 import { useAbcPlayerState, useAbcPlayerResults } from "./features/abcPlayer/useAbcPlayer";
+import { useHarmonyExplorerState, useHarmonyExplorerResults } from "./features/harmonyExplorer/useHarmonyExplorer";
+import { useHarmonyProgressionState, useHarmonyProgressionResults } from "./features/progressionAssistant/useProgressionAssistant";
 import { useStradellaChordFinderState, useStradellaChordFinderResults } from "./features/stradellaChordFinder/useStradellaChordFinder";
 import { useScaleFinderState, useScaleFinderResults } from "./features/scaleFinder/useScaleFinder";
 import { useTrebleChordFinderState, useTrebleChordFinderButtons } from "./features/trebleChordFinder/useTrebleChordFinder";
@@ -146,7 +148,6 @@ import {
   playHarmonyPitchClassChord,
   playHarmonyRelationship,
   notesForButton,
-  type ProgressionRhythmPattern,
 } from "./sound";
 import { AboutPanel } from "./components/settings/AboutPanel";
 import { TrebleChordFinderPanel } from "./components/tools/TrebleChordFinderPanel";
@@ -158,25 +159,18 @@ import { SegmentedChoice } from "./components/ui/SegmentedChoice";
 import { HarmonyExplorerPanel } from "./components/tools/HarmonyExplorerPanel";
 import { ProgressionAssistantPanel } from "./components/tools/ProgressionAssistantPanel";
 import { HarmonicCircle } from "./tools/harmonyExplorer/components/HarmonicCircle";
-import { buildDiagramExplanation } from "./tools/harmonyExplorer/explanation";
-import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "./tools/harmonyExplorer/music";
+import type { ChordFamilyId } from "./tools/harmonyExplorer/music";
 import {
   CIRCLE_OF_FIFTHS,
   DEFAULT_RING_VISIBILITY,
-  buildSectorRelationships,
-  chordFamily as harmonyChordFamily,
   chordLabel as harmonyChordLabel,
   chordMidiNotes as harmonyChordMidiNotes,
-  filterRelationshipCounts,
   pitchClassesForChord as harmonyPitchClassesForChord,
-  relatedFamilyName as harmonyRelatedFamilyName,
-  relationshipCounts as harmonyRelationshipCounts,
-  scaleDefinition as harmonyScaleDefinition,
 } from "./tools/harmonyExplorer/music";
-import type { HarmonyPlaybackStyle, HarmonySelection, HarmonyVoicingStyle } from "./tools/harmonyExplorer/types";
-import type { HarmonyProgressionChord, HarmonyRecordedEvent } from "./tools/harmonyExplorer/progression";
+import type { HarmonyPlaybackStyle } from "./tools/harmonyExplorer/types";
+import type { HarmonyProgressionChord } from "./tools/harmonyExplorer/progression";
 import { isHarmonyProgressionChord } from "./tools/harmonyExplorer/progression";
-import { optimizeStradellaProgression, progressionBassPulseButtons } from "./tools/harmonyExplorer/progression";
+import { progressionBassPulseButtons } from "./tools/harmonyExplorer/progression";
 import {
   finderPatternForHarmonyFamily,
   harmonyFamilyForFinderPattern,
@@ -603,44 +597,49 @@ function App() {
   // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
   const [mobileDiagramView, setMobileDiagramView] = useState<"readable" | "fit">("readable");
 
-  /* Harmony Explorer state. Kept independent from accordion layout state so the
-     harmonic relationship engine can remain reusable and later evolve separately. */
-  const [harmonyReferenceFamilyId, setHarmonyReferenceFamilyId] = useState<ChordFamilyId>("major");
-  const [harmonyRelatedFamilyId, setHarmonyRelatedFamilyId] = useState<RelatedFamilyId>("minor7");
-  const [harmonyScaleId, setHarmonyScaleId] = useState<ScaleId>("ionian");
-  const [harmonyDiatonicOnly, setHarmonyDiatonicOnly] = useState(false);
-  const [harmonyHighlightDiatonic, setHarmonyHighlightDiatonic] = useState(true);
-  const [harmonyShowEnharmonics, setHarmonyShowEnharmonics] = useState(false);
-  const [harmonyShowSeparators, setHarmonyShowSeparators] = useState(true);
-  const [harmonyShowLegend, setHarmonyShowLegend] = useState(true);
-  const [harmonyShowExplanation, setHarmonyShowExplanation] = useState(false);
-  const [harmonyRingVisibility, setHarmonyRingVisibility] = useState<Record<number, boolean>>(() => ({ ...DEFAULT_RING_VISIBILITY }));
-  const [harmonyShowToneTooltips, setHarmonyShowToneTooltips] = useState(true);
-  const [harmonyShowNoteRing, setHarmonyShowNoteRing] = useState(true);
-  const [harmonyColorByFamily, setHarmonyColorByFamily] = useState(false);
-  const [harmonyDiameter, setHarmonyDiameter] = useState(900);
-  const [harmonyFontSize, setHarmonyFontSize] = useState(18);
-  const [harmonyPlaybackStyle, setHarmonyPlaybackStyle] = useState<HarmonyPlaybackStyle>("block");
-  const [harmonyVoicingStyle, setHarmonyVoicingStyle] = useState<HarmonyVoicingStyle>("root");
-  const [harmonySelection, setHarmonySelection] = useState<HarmonySelection | null>(null);
-  const [harmonyFocusedReferenceRootPc, setHarmonyFocusedReferenceRootPc] = useState<number | null>(null);
-  const [harmonyProgression, setHarmonyProgression] = useState<HarmonyProgressionChord[]>([]);
-  const [harmonyRecordedProgression, setHarmonyRecordedProgression] = useState<HarmonyRecordedEvent[]>([]);
-  const [harmonyProgressionRecording, setHarmonyProgressionRecording] = useState(false);
-  const [harmonyRecordedNotationVisible, setHarmonyRecordedNotationVisible] = useState(false);
-  const [harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying] = useState(false);
-  const harmonyRecordedPlaybackTimeoutsRef = useRef<number[]>([]);
-  const harmonyRecordedNotationRef = useRef<HTMLDivElement | null>(null);
-  const [harmonyProgressionManualRoot, setHarmonyProgressionManualRoot] = useState("C");
-  const [harmonyProgressionManualFamilyId, setHarmonyProgressionManualFamilyId] = useState<ChordFamilyId>("major");
-  const [harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations] = useState(true);
-  const [harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight] = useState(0.65);
-  const [harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern] = useState<ProgressionRhythmPattern>("block");
-  const [harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex] = useState<number | null>(null);
-  const [harmonyProgressionActiveButtonIds, setHarmonyProgressionActiveButtonIds] = useState<string[]>([]);
-  const [harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible] = useState(false);
-  const harmonyProgressionIdRef = useRef(1);
-  const harmonyProgressionNotationRef = useRef<HTMLDivElement | null>(null);
+
+
+
+  /* Harmony Explorer retains its independent selection/display state. */
+  const {
+    harmonyReferenceFamilyId, setHarmonyReferenceFamilyId,
+    harmonyRelatedFamilyId, setHarmonyRelatedFamilyId,
+    harmonyScaleId, setHarmonyScaleId,
+    harmonyDiatonicOnly, setHarmonyDiatonicOnly,
+    harmonyHighlightDiatonic, setHarmonyHighlightDiatonic,
+    harmonyShowEnharmonics, setHarmonyShowEnharmonics,
+    harmonyShowSeparators, setHarmonyShowSeparators,
+    harmonyShowLegend, setHarmonyShowLegend,
+    harmonyShowExplanation, setHarmonyShowExplanation,
+    harmonyRingVisibility, setHarmonyRingVisibility,
+    harmonyShowToneTooltips, setHarmonyShowToneTooltips,
+    harmonyShowNoteRing, setHarmonyShowNoteRing,
+    harmonyColorByFamily, setHarmonyColorByFamily,
+    harmonyDiameter, setHarmonyDiameter,
+    harmonyFontSize, setHarmonyFontSize,
+    harmonyPlaybackStyle, setHarmonyPlaybackStyle,
+    harmonyVoicingStyle, setHarmonyVoicingStyle,
+    harmonySelection, setHarmonySelection,
+    harmonyFocusedReferenceRootPc, setHarmonyFocusedReferenceRootPc,
+  } = useHarmonyExplorerState();
+  /* Progression state is separate from both the instrument and sound. */
+  const {
+    harmonyProgression, setHarmonyProgression,
+    harmonyRecordedProgression, setHarmonyRecordedProgression,
+    harmonyProgressionRecording, setHarmonyProgressionRecording,
+    harmonyRecordedNotationVisible, setHarmonyRecordedNotationVisible,
+    harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying,
+    harmonyProgressionManualRoot, setHarmonyProgressionManualRoot,
+    harmonyProgressionManualFamilyId, setHarmonyProgressionManualFamilyId,
+    harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations,
+    harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
+    harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,
+    harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex,
+    harmonyProgressionActiveButtonIds, setHarmonyProgressionActiveButtonIds,
+    harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible,
+    harmonyRecordedPlaybackTimeoutsRef, harmonyRecordedNotationRef,
+    harmonyProgressionIdRef, harmonyProgressionNotationRef,
+  } = useHarmonyProgressionState();
 
   function toggleHarmonyProgressionNotation() {
     setHarmonyProgressionNotationVisible((current) => !current);
@@ -659,11 +658,10 @@ function App() {
 
   useEffect(() => {
     if (activeToolSection !== "progressionAssistant") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Clear progression state on tool change.
       setHarmonyProgressionNotationVisible(false);
       setHarmonyProgressionActiveButtonIds([]);
     }
-  }, [activeToolSection]);
+  }, [activeToolSection, setHarmonyProgressionNotationVisible, setHarmonyProgressionActiveButtonIds]);
 
   const [textNotes, setTextNotes] = useState<TextNote[]>([]);
   const [textNoteFontSize, setTextNoteFontSize] = useState(15);
@@ -1127,47 +1125,17 @@ function App() {
     isPianoTreble,
   ]);
 
-  /* Harmony progression optimization always targets the Stradella manual, even
-     while the Harmony workspace is visible or the treble side was last active. */
-  const harmonyProgressionStradellaButtons = useMemo(
-    () => generateStradella(
-      basses,
-      buttonSize,
-      spacing,
-      stradellaAccidental,
-      diagramVerticalSpacing,
-    ),
-    [basses, buttonSize, spacing, stradellaAccidental, diagramVerticalSpacing],
-  );
 
-  const harmonyProgressionPlan = useMemo(
-    () => optimizeStradellaProgression(
-      harmonyProgressionStradellaButtons,
-      harmonyProgression,
-      {
-        allowApproximations: harmonyProgressionAllowApproximations,
-        handMovementWeight: harmonyProgressionHandMovementWeight,
-        maxRealizationsPerChord: 5,
-      },
-    ),
-    [
-      harmonyProgressionStradellaButtons,
-      harmonyProgression,
-      harmonyProgressionAllowApproximations,
-      harmonyProgressionHandMovementWeight,
-    ],
-  );
 
-  useEffect(() => {
-    if (!harmonyProgressionPlan.playable) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Clear a preview when there is no playable progression.
-      setHarmonyProgressionPreviewIndex(null);
-      return;
-    }
-    setHarmonyProgressionPreviewIndex((current) =>
-      current !== null && current >= harmonyProgressionPlan.steps.length ? null : current,
-    );
-  }, [harmonyProgressionPlan.playable, harmonyProgressionPlan.steps.length]);
+  const { harmonyProgressionPlan,
+    progressionPreviewButtonIds, harmonyProgressionActiveButtonIdSet,
+  } = useHarmonyProgressionResults({
+    basses, buttonSize, spacing, stradellaAccidental, diagramVerticalSpacing,
+    harmonyProgression, harmonyProgressionAllowApproximations,
+    harmonyProgressionHandMovementWeight, harmonyProgressionPreviewIndex,
+    setHarmonyProgressionPreviewIndex, harmonyProgressionActiveButtonIds,
+    activeToolSection,
+  });
 
   /* Signature of layout-changing options used to clear stale tool markings. */
   const layoutSignature = [
@@ -1570,30 +1538,7 @@ function App() {
     [finderButtons],
   );
 
-  const progressionPreviewButtonIds = useMemo(() => {
-    if (
-      activeToolSection !== "progressionAssistant" ||
-      harmonyProgressionPreviewIndex === null ||
-      harmonyProgressionActiveButtonIds.length > 0 ||
-      !harmonyProgressionPlan.playable
-    ) {
-      return new Set<string>();
-    }
-    const step = harmonyProgressionPlan.steps[harmonyProgressionPreviewIndex];
-    return new Set((step?.result.playbackButtons ?? []).map((button) => button.id));
-  }, [
-    activeToolSection,
-    harmonyProgressionPreviewIndex,
-    harmonyProgressionActiveButtonIds.length,
-    harmonyProgressionPlan,
-  ]);
 
-
-
-  const harmonyProgressionActiveButtonIdSet = useMemo(
-    () => new Set(harmonyProgressionActiveButtonIds),
-    [harmonyProgressionActiveButtonIds],
-  );
 
   /* Consolidated sound options passed to the Web Audio helper functions. */
   const soundOptions = useMemo(() => ({
@@ -1702,6 +1647,7 @@ function App() {
   }, [
     harmonyProgressionNotationVisible,
     harmonyProgressionRenderedNotationAbc,
+    harmonyProgressionNotationRef,
     renderNotationInto,
   ]);
 
@@ -1742,85 +1688,22 @@ function App() {
   }, [
     harmonyRecordedNotationVisible,
     harmonyRecordedProgressionNotationAbc,
+    harmonyRecordedNotationRef,
     renderNotationInto,
   ]);
 
-  /* Harmony Explorer derives all diagram data from pitch-class relationships. */
-  const harmonyAllFamiliesMode = harmonyRelatedFamilyId === "all";
-  const harmonyEffectiveDiatonicOnly = harmonyDiatonicOnly || harmonyAllFamiliesMode;
-  const harmonyEffectiveHighlightDiatonic = !harmonyEffectiveDiatonicOnly && harmonyHighlightDiatonic;
-  const harmonySectors = useMemo(
-    () => buildSectorRelationships(
-      harmonyReferenceFamilyId,
-      harmonyRelatedFamilyId,
-      harmonyScaleId,
-      harmonyEffectiveDiatonicOnly,
-      true,
-    ),
-    [harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId, harmonyEffectiveDiatonicOnly],
-  );
-  const harmonyAvailableCounts = useMemo(
-    () => harmonyRelationshipCounts(harmonySectors),
-    [harmonySectors],
-  );
-  const harmonyCounts = useMemo(
-    () => filterRelationshipCounts(harmonyAvailableCounts, harmonyRingVisibility),
-    [harmonyAvailableCounts, harmonyRingVisibility],
-  );
-  const harmonyAllSectors = useMemo(
-    () => buildSectorRelationships(
-      harmonyReferenceFamilyId,
-      harmonyRelatedFamilyId,
-      harmonyScaleId,
-      harmonyAllFamiliesMode,
-      true,
-    ),
-    [harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId, harmonyAllFamiliesMode],
-  );
-  const harmonyAllCounts = useMemo(
-    () => harmonyRelationshipCounts(harmonyAllSectors),
-    [harmonyAllSectors],
-  );
-  const harmonyReferenceFamily = harmonyChordFamily(harmonyReferenceFamilyId);
-  const harmonyRelatedName = harmonyRelatedFamilyName(harmonyRelatedFamilyId);
-  const harmonyScale = harmonyScaleDefinition(harmonyScaleId);
-  const harmonyExplanation = useMemo(
-    () => buildDiagramExplanation({
-      referenceFamilyName: familyName(harmonyReferenceFamily.id, harmonyReferenceFamily.name, language),
-      relatedFamilyName: harmonyRelatedFamilyId === "all" ? t("ui.allDiatonicFamilies") : familyName(harmonyRelatedFamilyId, harmonyRelatedName, language),
-      scaleName: scaleName(harmonyScale.id, harmonyScale.name, language),
-      diatonicOnly: harmonyEffectiveDiatonicOnly,
-      highlightDiatonic: harmonyEffectiveHighlightDiatonic,
-      allFamiliesMode: harmonyAllFamiliesMode,
-      showNoteRing: harmonyShowNoteRing,
-      counts: harmonyCounts,
-      availableCounts: harmonyAvailableCounts,
-      allCounts: harmonyAllCounts,
-      language,
-    }),
-    [
-      harmonyReferenceFamily.id,
-      harmonyReferenceFamily.name,
-      harmonyRelatedFamilyId,
-      harmonyRelatedName,
-      harmonyScale.id,
-      harmonyScale.name,
-      harmonyEffectiveDiatonicOnly,
-      harmonyEffectiveHighlightDiatonic,
-      harmonyAllFamiliesMode,
-      harmonyShowNoteRing,
-      harmonyCounts,
-      harmonyAvailableCounts,
-      harmonyAllCounts,
-      language,
-      t,
-    ],
-  );
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- Clear a stale selection when harmonic reference settings change.
-    setHarmonySelection(null);
-  }, [harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId, harmonyDiatonicOnly]);
+
+  const {
+    harmonyAllFamiliesMode, harmonyEffectiveDiatonicOnly, harmonyEffectiveHighlightDiatonic,
+    harmonySectors, harmonyAvailableCounts, harmonyCounts,
+    harmonyReferenceFamily, harmonyRelatedName, harmonyScale,
+    harmonyExplanation,
+  } = useHarmonyExplorerResults({
+    harmonyReferenceFamilyId, harmonyRelatedFamilyId, harmonyScaleId,
+    harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyRingVisibility,
+    harmonyShowNoteRing, language, t,
+  });
 
   function harmonyPitchNames(rootPc: number, familyId: ChordFamilyId) {
     return harmonyPitchClassesForChord(rootPc, familyId).map(pitchClassNameFromNumber);
