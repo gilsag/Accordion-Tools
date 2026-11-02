@@ -2,7 +2,7 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction and three Finder-state extractions**; `App.tsx` is not yet just a layout shell.
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, and ABC Player state/results**; `App.tsx` is not yet just a layout shell.
 
 ## Code ownership and data flow
 
@@ -22,6 +22,7 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 | Scale Finder feature | `src/features/scaleFinder/useScaleFinder.ts` | Root/pattern, row limit, path display, active state, and treble/Stradella button-selection memoization (original engines retained) |
 | Treble Chord Finder feature | `src/features/trebleChordFinder/useTrebleChordFinder.ts` | Root/chord type, inversion, octave, voicing preferences, active state, and unchanged treble button-selection delegation |
 | Stradella Chord Finder feature | `src/features/stradellaChordFinder/useStradellaChordFinder.ts` | Finder request and explanation-display state, search-input forwarding, ranked result selection, reset on physical/register changes, and exact progression realization handoff by played button IDs; instrument register model is an input |
+| ABC Player feature | `src/features/abcPlayer/useAbcPlayer.ts` | Editor/file/example state, manifest fetch and validation, tempo and transport state, mapping preferences, notation visibility, and memoized original two-voice parsing and physical-button mapping; audio scheduling stays in App |
 | UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns remaining tool state, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
 | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
 
@@ -30,6 +31,12 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 Maintain three distinct settings operations: `applyStartupSettings` (editable defaults, with the stored-language precedence check), `applyImportedSettings` (valid fields from a partial user file, including explicit language persistence), and `collectCurrentSettings` (exact JSON key order). They intentionally differ. Old `roman` / `tonal-function` chord-label aliases and `bassPatternBarsPerChord` must continue to work; omitted fields must leave the current state unchanged. The separate `SettingsSetters` adapter must reference **stable React state setters** so the initial async defaults effect is not restarted by unrelated renders. Avoid reading snapshot values in asynchronous callbacks when a freshly collected export is required.
 
 The source-of-truth regression is `scripts/settings-controller-compatibility.test.mjs`: fixture traces were captured from the original inline validation logic before extraction and cover seven startup/import scenarios. `scripts/settings-export-keys.json` pins all 118 exported field names and their insertion order; a change to this ordering can affect byte-for-byte JSON exports. Run `npm run test:modules` before merging refactor branches. Do not refactor these historically different paths into one generic setter table without proving identical results.
+
+### ABC Player feature boundary (Phase 3c)
+
+`useAbcPlayerState()` owns the ABC editor text and visibility, loaded filename/example choices, catalog manifest validation and asynchronous example fetch, tempo, transport position/status, active physical button IDs, treble/Stradella voice-mapping preferences and the ABC notation container ref. It returns the original individual setters used by settings JSON import; **do not** modify their defaults, accepted values, or setter identities. `useAbcPlayerResults()` calls the existing `parseAbc`, voice filtering, physical button-mapping, beat counting and missing-note functions in `src/tools/abcPlayerTools.ts`. It preserves their exact `DiagramButton` references and the existing effect that synchronizes score tempo only when playback is not playing. Do not combine treble and Stradella voice streams or transform their original start beats.
+
+`App.tsx` still owns `scheduleAbcPlayback`, pause/stop, timeout refs, cross-tool cancellation, `playButtonSound`, playback-clock calculations, notation rendering via `abcjs`, and shared downloaded-image/export behavior. These operations are intentionally **not migrated in Phase 3c**; moving them requires independently verified sound, notation and lazy-loading steps. The ABC example manifest is still loaded once with `cache: no-store`, its options are validated individually, and a failed example request still produces the original visible diagnostic text. Regression: `scripts/abc-feature-module.test.mjs` (in `test:modules`), plus the existing `test:abc` suite (ties, repeats, two-voice song examples, catalog and localizations).
 
 ### Finder feature boundaries
 

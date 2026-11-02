@@ -1,4 +1,4 @@
-## Unreleased — Architecture migration, Phases 1–3b (toward v0.16.0)
+## Unreleased — Architecture migration, Phases 1–3c (toward v0.16.0)
 
 - Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
 - Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.
@@ -7,7 +7,9 @@
 - Extracted the Scale Finder and Treble Chord Finder state into separate feature hooks, including memoized selection adapters that delegate to the unchanged musical algorithms. Preserved default requests, exact selected button identities and ordering, existing settings setters, and inactive-tool semantics.
 - Extracted Stradella Chord Finder request, search-control and explanation-display state, memoized candidate/result selectors, realization reset, and physical-button-based progression handoff into `src/features/stradellaChordFinder/useStradellaChordFinder.ts`. The original chord-search/ranking engines and `playbackButtons` identity contract are unchanged; instrument register modeling and audio remain separate.
 - Added `scripts/stradella-finder-module.test.mjs` for default state, exact engine arguments, candidate selection/clamping, visual versus sounded button identities, and progression handoff. Extended `test:modules` without changing settings/exports or UI behavior.
-- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Other tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
+- Extracted ABC Player editor, loaded-file/example state, score tempo, transport state, voice-mapping preferences, notation visibility, and manifest/example loading into `src/features/abcPlayer/useAbcPlayer.ts`. Its result hook delegates unchanged two-voice parsing and physical button mapping to `src/tools/abcPlayerTools.ts`, preserving playback events, missing-note reporting and original IDs. Shared playback timers, audio actions and notation rendering remain in App pending separate stages.
+- Added `scripts/abc-feature-module.test.mjs` to verify original defaults, stable settings setters, manifest filtering, example import, parsing branches, playback tempo synchronization and actual button IDs. Extended `test:modules`.
+- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Remaining tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
 - No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
 
 ## v0.15.28 — Documentation maintenance
