@@ -28,6 +28,7 @@ import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, ty
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "./settings/settingsPersistence";
 import { useLanguageSettings } from "./settings/useLanguageSettings";
 import { useInstrumentState } from "./instrument/useInstrumentState";
+import { useAbcPlayerState, useAbcPlayerResults } from "./features/abcPlayer/useAbcPlayer";
 import { useStradellaChordFinderState, useStradellaChordFinderResults } from "./features/stradellaChordFinder/useStradellaChordFinder";
 import { useScaleFinderState, useScaleFinderResults } from "./features/scaleFinder/useScaleFinder";
 import { useTrebleChordFinderState, useTrebleChordFinderButtons } from "./features/trebleChordFinder/useTrebleChordFinder";
@@ -46,7 +47,6 @@ import { abcExampleName, bassPatternName, progressionName } from "./i18n/optionL
 
 import type {
   AbcStradellaMode,
-  AbcTrebleChordSymbolsMode,
   AccidentalMode,
   BassPatternChordVoicing,
   AccidentalStyle,
@@ -120,16 +120,6 @@ import {
   SCALE_FINDER_ROW_LIMIT_OPTIONS,
   getScaleFinderTrebleButtons,
 } from "./tools/scaleFinderTools";
-import {
-  abcEventsForStradellaSide,
-  abcEventsForTrebleSide,
-  abcMissingNotes,
-  mapAbcEventsToStradellaButtons,
-  mapAbcEventsToTrebleButtons,
-  parseAbc,
-  totalAbcBeats,
-  type MappedAbcEvent,
-} from "./tools/abcPlayerTools";
 import {
   bassPatternEventsToAbc,
   chordProgressionSteps,
@@ -218,20 +208,6 @@ const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
   { value: "100", label: "100" },
   { value: "120", label: "120" },
 ];
-
-type AbcExampleOption = {
-  value: string;
-  label: string;
-  file: string;
-};
-
-const ABC_EXAMPLE_PLACEHOLDER: AbcExampleOption = {
-  value: "",
-  label: "Choose example…",
-  file: "",
-};
-
-
 
 /** Dropdown options for treble instrument range presets. */
 const TREBLE_SIZE_OPTIONS: Array<{ value: TrebleSizePreset; label: string }> = [
@@ -525,24 +501,16 @@ function App() {
   } = useTrebleChordFinderState();
 
   /* ABC Player state for file/paste playback and diagram highlighting. */
-  const [abcText, setAbcText] = useState("");
-  const [abcEditorExpanded, setAbcEditorExpanded] = useState(false);
-  const [abcFileName, setAbcFileName] = useState("");
-  const [abcExampleValue, setAbcExampleValue] = useState("");
-  const [abcExampleOptions, setAbcExampleOptions] = useState<AbcExampleOption[]>([ABC_EXAMPLE_PLACEHOLDER]);
-  const [abcTempoBpm, setAbcTempoBpm] = useState(80);
-  const [abcPositionBeat, setAbcPositionBeat] = useState(0);
-  const [abcPlaybackState, setAbcPlaybackState] = useState<
-    "stopped" | "playing" | "paused"
-  >("stopped");
-  const [abcActiveButtonIds, setAbcActiveButtonIds] = useState<string[]>([]);
-  const [abcStradellaMode, setAbcStradellaMode] =
-    useState<AbcStradellaMode>("bass-notes-and-chord-symbols");
-  const [abcTrebleChordSymbolsMode, setAbcTrebleChordSymbolsMode] =
-    useState<AbcTrebleChordSymbolsMode>("ignore");
-  const [abcRenderedNotationVisible, setAbcRenderedNotationVisible] =
-    useState(false);
-  const abcNotationRef = useRef<HTMLDivElement | null>(null);
+  const {
+    abcText, setAbcText, abcEditorExpanded, setAbcEditorExpanded,
+    abcFileName, setAbcFileName, abcExampleValue, setAbcExampleValue,
+    abcExampleOptions, abcTempoBpm, setAbcTempoBpm,
+    abcPositionBeat, setAbcPositionBeat, abcPlaybackState, setAbcPlaybackState,
+    abcActiveButtonIds, setAbcActiveButtonIds, abcStradellaMode, setAbcStradellaMode,
+    abcTrebleChordSymbolsMode, setAbcTrebleChordSymbolsMode,
+    abcRenderedNotationVisible, setAbcRenderedNotationVisible,
+    abcNotationRef, loadAbcExample,
+  } = useAbcPlayerState();
 
   /* Stradella Bass Pattern Player state. */
   const [builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions] =
@@ -659,7 +627,7 @@ function App() {
     if (activeToolSection !== "sequences") {
       setSequenceRenderedNotationVisible(false);
     }
-  }, [activeToolSection]);
+  }, [activeToolSection, setAbcRenderedNotationVisible]);
 
   /* Finder request, presentation, and cross-tool handoff state live in the feature.
      Shared batch-export and mobile diagram state remain in the application shell. */
@@ -920,53 +888,6 @@ function App() {
     setTrebleRows,
     setTrebleSize,
   });
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadAbcExampleManifest() {
-      try {
-        const response = await fetch(`${import.meta.env.BASE_URL}abc/examples.json`, {
-          cache: "no-store",
-        });
-        if (!response.ok) return;
-
-        const manifest = (await response.json()) as unknown;
-        if (cancelled || !Array.isArray(manifest)) return;
-
-        const examples = manifest
-          .map((entry): AbcExampleOption | null => {
-            if (!entry || typeof entry !== "object") return null;
-            const value = (entry as { value?: unknown }).value;
-            const label = (entry as { label?: unknown }).label;
-            const file = (entry as { file?: unknown }).file;
-            if (
-              typeof value !== "string" ||
-              typeof label !== "string" ||
-              typeof file !== "string" ||
-              !value ||
-              !label ||
-              !file
-            ) {
-              return null;
-            }
-            return { value, label, file };
-          })
-          .filter((entry): entry is AbcExampleOption => entry !== null);
-
-        if (examples.length > 0) {
-          setAbcExampleOptions([ABC_EXAMPLE_PLACEHOLDER, ...examples]);
-        }
-      } catch {
-        /* The fallback ABC example list is used when the manifest is unavailable. */
-      }
-    }
-
-    loadAbcExampleManifest();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   /** Applies extended visual/tool defaults that are also user-editable in default-settings.json. */
 
@@ -1428,62 +1349,13 @@ function App() {
     chordFinderInversion, chordFinderOctave, trebleChordVoicingMode,
   });
 
-  const abcParseResult = useMemo(() => parseAbc(abcText), [abcText]);
-
-  useEffect(() => {
-    if (abcPlaybackState !== "playing") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Sync the parsed ABC score tempo while playback is stopped.
-      setAbcTempoBpm(abcParseResult.tempoBpm);
-    }
-  }, [abcParseResult.tempoBpm, abcPlaybackState]);
-
-  const abcPlayableEvents = useMemo(() => {
-    if (!abcText.trim()) return [];
-    if (side === "stradella") {
-      return abcEventsForStradellaSide(abcParseResult.events);
-    }
-    if (isTrebleLikeSide) {
-      return abcEventsForTrebleSide(abcParseResult.events);
-    }
-    return [];
-  }, [abcParseResult.events, abcText, isTrebleLikeSide, side]);
-
-  const abcMappedEvents = useMemo<MappedAbcEvent[]>(() => {
-    if (abcPlayableEvents.length === 0) return [];
-    if (side === "stradella") {
-      return mapAbcEventsToStradellaButtons(
-        buttons,
-        abcPlayableEvents,
-        abcParseResult.keyTonicPitchClass,
-        abcStradellaMode,
-      );
-    }
-    if (isTrebleLikeSide) {
-      return mapAbcEventsToTrebleButtons(
-        buttons,
-        abcPlayableEvents,
-        abcTrebleChordSymbolsMode === "play",
-      );
-    }
-    return [];
-  }, [
-    abcPlayableEvents,
-    abcParseResult.keyTonicPitchClass,
-    abcStradellaMode,
-    abcTrebleChordSymbolsMode,
-    buttons,
-    isTrebleLikeSide,
-    side,
-  ]);
-
-  const abcTotalBeats = useMemo(
-    () => totalAbcBeats(abcPlayableEvents),
-    [abcPlayableEvents],
-  );
-  const abcMissingPitchText = useMemo(
-    () => abcMissingNotes(abcMappedEvents).join(", "),
-    [abcMappedEvents],
-  );
+  const {
+    abcParseResult, abcMappedEvents, abcTotalBeats,
+    abcMissingPitchText, abcActiveButtonIdSet,
+  } = useAbcPlayerResults({
+    abcText, abcPlaybackState, setAbcTempoBpm, abcActiveButtonIds,
+    abcStradellaMode, abcTrebleChordSymbolsMode, side, isTrebleLikeSide, buttons,
+  });
 
   const selectedBassPattern = useMemo(
     () =>
@@ -1777,6 +1649,7 @@ function App() {
   }, [
     abcRenderedNotationVisible,
     abcText,
+    abcNotationRef,
     renderNotationInto,
   ]);
 
@@ -1870,11 +1743,6 @@ function App() {
   const harmonyProgressionActiveButtonIdSet = useMemo(
     () => new Set(harmonyProgressionActiveButtonIds),
     [harmonyProgressionActiveButtonIds],
-  );
-
-  const abcActiveButtonIdSet = useMemo(
-    () => new Set(abcActiveButtonIds),
-    [abcActiveButtonIds],
   );
 
   /* Consolidated sound options passed to the Web Audio helper functions. */
@@ -2606,34 +2474,6 @@ function App() {
       sequenceStepsWithButtons.map((step) => step.button),
       soundOptions,
     );
-  }
-
-  async function loadAbcExample(exampleValue: string) {
-    const example = abcExampleOptions.find(
-      (option) => option.value === exampleValue,
-    );
-    setAbcExampleValue(exampleValue);
-    if (!example || !example.file) return;
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.BASE_URL}${example.file}`,
-      );
-      if (!response.ok) throw new Error(`Could not load ${example.file}`);
-      const text = await response.text();
-      setAbcText(text);
-      setAbcFileName(example.label);
-      setAbcPositionBeat(0);
-      setAbcActiveButtonIds([]);
-      setAbcPlaybackState("stopped");
-    } catch (error) {
-      setAbcText(`% Could not load example: ${example.label}
-% ${String(error)}`);
-      setAbcFileName("");
-      setAbcPositionBeat(0);
-      setAbcActiveButtonIds([]);
-      setAbcPlaybackState("stopped");
-    }
   }
 
   function clearAbcTimers() {
