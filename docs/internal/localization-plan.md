@@ -1,6 +1,6 @@
-# Interface localization — implementation and follow-up
+# Interface localization — historical v0.15.14 implementation and follow-up
 
-**Current:** v0.15.14. English, Spanish, French, Brazilian Portuguese, Italian and German interface catalogs are stored separately in `src/i18n/en.ts`, `es.ts`, `fr.ts`, `pt.ts`, `it.ts` and `de.ts`; `catalog.ts` provides the shared registry, lookup, browser-language detection and English fallback. Bundled help articles remain in English. See [Adding Interface Languages](adding-interface-languages.md) for the extension procedure.
+**Status:** The original localization work was released in v0.15.14. As of the v0.15.28 documentation audit, English, Spanish, French, Brazilian Portuguese, Italian and German interface catalogs remain in `src/i18n/en.ts`, `es.ts`, `fr.ts`, `pt.ts`, `it.ts` and `de.ts`. `catalog.ts` holds the registry, lookup, browser-language detection and English fallback; `context.tsx` supplies `LanguageProvider`, and `useI18n.ts` supplies the context/hook. Bundled help articles remain in English. See [Adding Interface Languages](adding-interface-languages.md) for current extension instructions. The validation notes below are a checklist, not evidence of a completed v0.15.28 multilingual browser review.
 
 ## Scope and invariants
 
@@ -8,7 +8,7 @@ Interface localization covers navigation, settings, buttons, tooltips, accessibi
 
 The Stradella explanatory renderer accepts an optional interface language and uses the same search results. Its four-level notes may be localized in SVG/PNG presentation, but the filename is derived from the canonical English button naming and remains identical. The original English detailed explanation still follows its established rule-by-rule path. Spanish, French, Portuguese, Italian and German provide concise factual equivalents built from the selected realization, omissions and register analysis.
 
-## Validation
+## Validation checklist (rerun for each release)
 
 Local source checks: translation-key parity, parameter-placeholder parity, browser detection, translated static controls, representative dynamic explanation tests and language-invariant filenames. Source-level musical regressions should include ranking, registral notes, Harmony integration, notation and audio tests.
 

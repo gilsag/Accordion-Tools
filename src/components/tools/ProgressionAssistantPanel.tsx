@@ -4,7 +4,7 @@ import type { ChordDisplayStyle } from "../../tools/chordDisplay";
 /* Progression controls and playback display. Selected button recipes must
    come from the global optimizer, not a per-chord greedy reconstruction. */
 
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";

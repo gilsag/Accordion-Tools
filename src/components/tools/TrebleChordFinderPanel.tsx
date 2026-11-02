@@ -13,7 +13,7 @@ import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
 import { isExtendedChord } from "../../music/chordVoicingPolicy";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 
 type TrebleChordFinderPanelProps = {
   isOpen: boolean;

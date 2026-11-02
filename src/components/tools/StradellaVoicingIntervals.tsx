@@ -1,7 +1,7 @@
 import type { FinderChordPattern } from "../../types";
 import { chordToneName } from "../../tools/stradellaChordFinder/chordSpelling";
 import type { ModeledStradellaNote } from "../../tools/stradellaChordFinder/registerModel";
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 import { voicingIntervalLayout } from "../../tools/stradellaChordFinder/voicingIntervalLayout";
 
 type StradellaVoicingIntervalsProps = {

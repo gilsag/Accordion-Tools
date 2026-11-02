@@ -15,7 +15,7 @@ import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { explainStradellaRealization } from "../../tools/stradellaChordFinder/explainRealization";
 import { HelpTip } from "../ui/HelpTip";
 import { BinaryChoiceButton } from "../ui/BinaryChoiceButton";
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 import { analyzeConfiguredStradellaVoicing, formatModeledStradellaNotes, type StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
 import { permittedRequestedBasses } from "../../tools/stradellaChordFinder/harmonicIdentity";
 import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";

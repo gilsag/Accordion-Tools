@@ -24,7 +24,6 @@ assert.deepEqual(voicingIntervalLayout([]).distances, []);
 // Nominal spacing stays readable at every footer slider setting, including
 // adjacent semitones, accidentals, and labels with unison multipliers.
 for (const fontSize of [16, 20, 26, 32, 40]) {
-  const metrics = voicingIntervalMetrics(fontSize);
   const compactCluster = Array.from({ length: 10 }, (_, i) =>
     note(60 + i, ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"][i], 3, `pitch-${i}`));
   compactCluster.push(note(66, "F#", 3, "second-button"));

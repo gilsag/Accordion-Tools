@@ -1,5 +1,5 @@
 import type { ChordDisplayStyle } from "../../chordDisplay";
-import { useI18n } from "../../../i18n/context";
+import { useI18n } from "../../../i18n/useI18n";
 import { familyName, scaleName } from "../../../i18n/musicTerms";
 import { harmonyLegendFamilyText } from "../../../i18n/diagramLabels";
 import { estimateLegendTextWidth, wrapLegendText } from "../legendTextLayout";
@@ -299,6 +299,7 @@ export function HarmonicCircle({
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [selected, setSelected] = useState<SelectedComparison | null>(null);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset stale hover and selection state when sectors change.
     setTooltip(null);
     setSelected(null);
     onSelectionChange?.(null);
@@ -387,12 +388,11 @@ export function HarmonicCircle({
   const referenceBandWidth = radialUnit * referenceWeight;
   const referenceRadius = holeRadius + referenceBandWidth / 2;
 
-  let ringCursor = holeRadius + referenceBandWidth;
   const ringLayouts: RingLayout[] = counts.map((count, index) => {
     const width = radialUnit * relationshipWeights[index];
-    const inner = ringCursor;
+    const inner = holeRadius + referenceBandWidth + radialUnit * relationshipWeights
+      .slice(0, index).reduce((sum, weight) => sum + weight, 0);
     const outer = inner + width;
-    ringCursor = outer;
     return { count, inner, outer, radius: inner + width / 2, width };
   });
   const ringBoundaries = [holeRadius, holeRadius + referenceBandWidth, ...ringLayouts.map((layout) => layout.outer)];

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useI18n } from "../../i18n/context";
+import { useI18n } from "../../i18n/useI18n";
 import { createPortal } from "react-dom";
 import type { ReactNode } from "react";
 import "./DocumentationViewer.css";
@@ -87,7 +87,7 @@ function MarkdownArticle({ source, navigate }: { source: string; navigate: (file
       i++; continue;
     }
     if (/^---+$/.test(line)) { blocks.push(<hr key={blocks.length}/>); i++; continue; }
-    if (line.includes("|") && i + 1 < lines.length && /^\|?[\s|:\-]+\|?$/.test(lines[i+1].trim()) && lines[i+1].includes("-")) {
+    if (line.includes("|") && i + 1 < lines.length && /^\|?[\s|:-]+\|?$/.test(lines[i+1].trim()) && lines[i+1].includes("-")) {
       const splitCells = (s: string) => s.replace(/^\||\|$/g, "").split("|").map(x => x.trim());
       const header = splitCells(line);
       i += 2;

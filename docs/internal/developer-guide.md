@@ -14,6 +14,7 @@ This guide documents the **implementation boundaries and assumptions** that are 
 | Playback | `src/sound.ts`, `src/laMelodiosa.ts` | Convert selected buttons into nominal sounding pitches and render synthesizer/sample audio |
 | Import/notation | `src/tools/abcPlayerTools.ts`, `src/tools/bassPatternPlayerTools.ts` | Parse musical events, choose physical buttons, and create notation/export formats |
 | UI/orchestration | `src/App.tsx`, `src/components/` | Own user state, derived data, SVG rendering, controls, and downloads |
+| Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
 
 **Important separation:** harmonic validity uses pitch classes; ergonomics uses physical button coordinates; sounding pitches/octaves belong to playback; registral explanation describes button roles and may express a *conditional* inversion character. Do not derive one of these directly from a different layer unless the conversion is explicit and reliable.
 
@@ -78,7 +79,7 @@ npm run build
 npm run dev
 ```
 
-Check representative chords including Em7 (E counterbass + G major), Cmaj7 (B counterbass + C major), C11, Cmin11, C13, and the compact/shell/complete Cmaj13 alternatives. Review sampled and synthesized audio, visual root markers, physical hand positions, all Show/Hide controls, and diagram export. See `validation.md` for outstanding acceptance gates and prior test scope.
+Check representative chords including Em7 (E counterbass + G major), Cmaj7 (B counterbass + C major), C11, Cmin11, C13, and the compact/shell/complete Cmaj13 alternatives. Review sampled and synthesized audio, visual root markers, physical hand positions, all Show/Hide controls, and diagram export. Record the results for the **current** release. The [earlier Stradella validation audit](validation.md) (v0.15.0–v0.15.6) and [responsive fixture report](responsive-validation.md) (v0.15.7) provide historical context only; their unverified gates are not evidence of a failed or passed v0.15.28 build.
 
 ### Commenting standard
 
