@@ -1,3 +1,10 @@
+## Unreleased — Architecture migration, initial extraction (toward v0.16.0)
+
+- Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
+- Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.
+- Added `npm run test:modules` for settings I/O and state-ownership contracts; updated developer documentation and the phased [modularization roadmap](docs/internal/modularization-roadmap.md). Remaining tool state, persistence application and collection, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
+- No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
+
 ## v0.15.28 — Documentation maintenance
 
 - Removed the obsolete Text Notes guide: the current diagram-text workflow is documented under **Annotate Diagram**. Removed the duplicate, outdated `docs/validation.md` from user documentation; earlier validation evidence remains in `docs/internal/validation.md`.
