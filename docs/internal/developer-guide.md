@@ -2,7 +2,7 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, ABC Player, Bass Pattern Player, Sequence/Recording, Harmony Explorer and Progression Assistant modules**; `App.tsx` is not yet just a layout shell.
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). The ownership below reflects the **settings/instrument extraction, three Finder-state extractions, ABC Player, Bass Pattern Player, Sequence/Recording, Harmony Explorer, Progression Assistant, and the diagram/annotation state modules**; `App.tsx` is not yet just a layout shell.
 
 ## Code ownership and data flow
 
@@ -27,8 +27,19 @@ For the ongoing, deliberately incremental modularization, see the [modularizatio
 | Sequence/Recording feature | `src/features/sequences/useSequenceState.ts` | Ordered recorded button IDs, path/number display preferences, notation visibility, and current physical-button identity lookups; playback remains in App |
 | Harmony Explorer feature | `src/features/harmonyExplorer/useHarmonyExplorer.ts` | Circle configuration/selection, diatonic and family filters, display options, derived relationships and localized explanations; chord engine remains in tools |
 | Progression Assistant feature | `src/features/progressionAssistant/useProgressionAssistant.ts` | Edited/recorded progression state, stable incremental ID ref, optimization preferences, notation/transport UI state, Stradella-only derived plan, preview and actual sounding-button highlighting; shared audio and cross-tool commands remain in App |
-| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns remaining tool state, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
+| Diagram appearance state | `src/diagram/useDiagramAppearanceState.ts`, `src/instrument/sizePresets.ts` | Shared geometry/display/title settings and unchanged treble/piano size presets, not instrument construction or sound |
+| Diagram overlay/fingering state | `src/diagram/useDiagramOverlays.ts` | Selected physical IDs, fingering draft/placement, mark/toggle/clear actions; renderer and playback remain in App |
+| Annotate Diagram state | `src/features/annotateDiagram/useDiagramAnnotations.ts` | Free and button-anchored text notes, formatting controls, inline editor/ref, SVG-coordinate anchor calculation, original note creation |
+| UI/orchestration (pending extraction) | `src/App.tsx`, `src/components/` | Owns shared tool navigation, supplies typed settings adapters and a current-state snapshot, derived diagrams, controls, playback orchestration, and downloads |
 | Interface localization | `src/i18n/catalog.ts`, `src/i18n/context.tsx`, `src/i18n/useI18n.ts`, `src/i18n/{en,es,fr,pt,it,de}.ts` | Keep typed interface catalogs and language selection separate from musical identities; `LanguageProvider` and the `useI18n()` hook live in separate modules |
+
+### Diagram state and annotation boundary (combined Phase 3f)
+
+`useDiagramAppearanceState()` supplies the same per-field setters used by the settings controller for diagram sizing, spacing, visibility, text styling and titles. The treble size presets now reside in `src/instrument/sizePresets.ts`; this contains exactly the old values. Do not confuse diagram button sizing with construction of the physical Stradella register model or with sample/sound settings.
+
+`useDiagramOverlays()` handles the diagram-local `Record<string, Overlay>` and fingering/selection behavior. It never replaces `DiagramButton` instances, converts IDs to sounding pitch, or invokes audio. `useDiagramAnnotations(buttonSize)` owns text-note drafts and the existing anchor-coordinate formula, including the `Math.min(..., buttonSize * 0.9)` cap. Notes still go through `makeTextNote`, retaining the existing timestamp-based note IDs and the original SVG positions. Keep `svgPointFromMouse`, SVG viewBox composition, the SVG/PNG/ZIP download pipelines and sound commands outside these hooks until separately tested.
+
+Changing physical layout or invoking reset still clears overlays and annotation notes from the App orchestration effect. The settings contract is unchanged: annotation font/color/size, offset, anchor, bold/italic, fingering placement, appearance and title fields must continue to import/export under the same JSON keys and order. `scripts/diagram-annotation-modules.test.mjs` protects state defaults, editing and mark behavior; visual focus, click positioning and exported output require browser smoke testing.
 
 ### Settings compatibility — migration contract
 

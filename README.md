@@ -79,7 +79,7 @@ Create ordered button paths using numbers and arrows for exercises, bass movemen
 
 Optimize Stradella realizations across an entire chord progression, balancing harmonic voice movement and physical button movement. The assistant supports playback, accompaniment patterns, button highlighting, and staff notation.
 
-**Modularization work (unreleased, toward v0.16.0):** Harmony Explorer selection/display state and Progression Assistant planning/recording state now live in separate typed feature hooks, alongside the Finder, ABC, Bass Pattern and Sequence modules. The public app remains at v0.15.28; behavior, settings and musical engines are unchanged. See the [modularization roadmap](docs/internal/modularization-roadmap.md).
+**Modularization work (unreleased, toward v0.16.0):** Finder, ABC, Bass Pattern, Sequence, Harmony and Progression state now live in dedicated feature hooks. Diagram appearance, button overlays/fingering, and Annotate Diagram state have also been extracted, while App still owns SVG rendering, shared playback and exports. The public app remains at v0.15.28; behavior, settings and musical engines are unchanged. See the [modularization roadmap](docs/internal/modularization-roadmap.md).
 
 For contributors and maintainers, see the [Developer Guide](docs/internal/developer-guide.md) for the source architecture, musical and registral assumptions, physical-button invariants, and validation checks.
 
