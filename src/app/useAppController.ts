@@ -5,7 +5,7 @@ import { trebleContextualTitle } from "../tools/contextualTitles";
 import { DEFAULT_CHORD_DISPLAY_STYLE, displayRealizedChord, displayStradellaButtonChord, type ChordDisplayStyle } from "../tools/chordDisplay";
 import { chordToneName, displayRoot, realizedChordName, formatChordFinderTone } from "../tools/stradellaChordFinder/chordSpelling";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { BASS_OPTIONS, TREBLE_SIZE_OPTIONS, PIANO_TREBLE_RANGE_OPTIONS, TREBLE_SIZE_VIEW_WIDTH, COLOR_PRESETS, SEQUENCE_DISPLAY_MODE_OPTIONS, formatProgressionOptionLabel } from "./controllerOptions";
+import { BASS_OPTIONS, TREBLE_SIZE_OPTIONS, PIANO_TREBLE_RANGE_OPTIONS, COLOR_PRESETS, SEQUENCE_DISPLAY_MODE_OPTIONS, formatProgressionOptionLabel } from "./controllerOptions";
 import type { DefaultSettingsFile } from "../settings/settingsSchema";
 import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "../settings/settingsController";
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "../settings/settingsPersistence";
@@ -30,6 +30,7 @@ import { flushSync } from "react-dom";
 import { useSoundSettings } from "../audio/useSoundSettings";
 import { playbackClockMs, clearPlaybackTimers } from "../audio/playbackTransport";
 import { stopAbcTransport, pauseAbcTransport, stopBassPatternTransport } from "../audio/playbackLifecycle";
+import { startAbcTransport, startBassPatternTransport } from "../audio/playbackStart";
 import { scheduleAbcMappedPlayback, scheduleBassPatternEvents } from "../audio/playbackScheduling";
 import { renderNotationInto as renderSharedNotation } from "../notation/notationService";
 import { useNotationSettings } from "../notation/useNotationSettings";
@@ -39,10 +40,11 @@ import type { AccidentalMode, ButtonKind, ChordLabelMode, DiagramButton, Downloa
 import { chordTones, formatPitch, INDEX_TO_PITCH, INTERVALS_FROM_C, isChordKind, rowFunction } from "../music";
 import { generateStradella, stradellaVisibleRoots, stradellaVisibleRows } from "../stradella";
 import { generateTreble } from "../treble";
-import { generatePianoTreble, pianoTrebleWhiteKeyCount } from "../pianoTreble";
+import { generatePianoTreble } from "../pianoTreble";
 
 import { accordionDiagramFilename, harmonyDiagramFilename, downloadDiagram, downloadDiagramBatch, svgPointFromClient } from "../diagram/diagramExport";
 import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
+import { calculateDiagramGeometry } from "../diagram/diagramGeometry";
 import { resetStradellaFinder, resetDiagramWorkState } from "./resetCommands";
 import { activeToolStatusLabel, workspaceGridColumns } from "./workspacePresentation";
 import { sequenceArrowStyleFromMode, sequenceModeShowsArrows, sequenceModeShowsNumbers } from "../tools/sequenceTools";
@@ -1685,23 +1687,19 @@ export function useAppController() {
   }
 
   function scheduleAbcPlayback(startBeat = abcPositionBeat) {
-    if (abcMappedEvents.length === 0) return;
-
-    clearAbcTimers();
-    stopBassPatternPlayback();
-    stopAllSound();
-    setHarmonyProgressionActiveButtonIds([]);
-    setScaleFinderActive(false);
-    setChordFinderActive(false);
-    setStradellaChordFinderActive(false);
-    setAbcPlaybackState("playing");
-    setAbcPositionBeat(startBeat);
-    abcPlaybackStartedAtRef.current = playbackClockMs();
-    abcPlaybackStartBeatRef.current = startBeat;
-
-    scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoBpm,
-      abcTotalBeats, abcPlaybackTimeoutsRef, abcPlaybackStartedAtRef,
-      soundOptions, setAbcPositionBeat, setAbcActiveButtonIds, setAbcPlaybackState});
+    startAbcTransport({
+      eventCount: abcMappedEvents.length, startBeat,
+      clearTimers: clearAbcTimers, stopBassPattern: stopBassPatternPlayback,
+      stopSound: stopAllSound,
+      clearProgressionButtons: () => setHarmonyProgressionActiveButtonIds([]),
+      setScaleFinderActive, setChordFinderActive, setStradellaFinderActive: setStradellaChordFinderActive,
+      setPlaybackState: setAbcPlaybackState, setPosition: setAbcPositionBeat,
+      startedAtRef: abcPlaybackStartedAtRef, startBeatRef: abcPlaybackStartBeatRef,
+      nowMs: playbackClockMs,
+      schedule: () => scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoBpm,
+        abcTotalBeats, abcPlaybackTimeoutsRef, abcPlaybackStartedAtRef,
+        soundOptions, setAbcPositionBeat, setAbcActiveButtonIds, setAbcPlaybackState}),
+    });
   }
 
   function clearBassPatternTimers() {
@@ -1792,23 +1790,18 @@ export function useAppController() {
   }
 
   function scheduleBassPatternPlayback() {
-    if (bassPatternEvents.length === 0) return;
-
-    bassPatternPlaybackRunRef.current += 1;
-    const runId = bassPatternPlaybackRunRef.current;
-    clearBassPatternTimers();
-    stopAbcPlayback();
-    setBassPatternActiveButtonIds([]);
-    stopAllSound();
-    setScaleFinderActive(false);
-    setChordFinderActive(false);
-    setStradellaChordFinderActive(false);
-    setBassPatternPlaybackState("playing");
-
-    scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm,
-      bassPatternTotalBeats, bassPatternLoopMode, bassPatternLoopCount,
-      bassPatternTimeoutsRef, bassPatternPlaybackRunRef, runId, soundOptions,
-      setBassPatternActiveButtonIds, setBassPatternPlaybackState});
+    startBassPatternTransport({
+      eventCount: bassPatternEvents.length, runRef: bassPatternPlaybackRunRef,
+      clearTimers: clearBassPatternTimers, stopAbc: stopAbcPlayback,
+      clearActiveButtons: () => setBassPatternActiveButtonIds([]),
+      stopSound: stopAllSound,
+      setScaleFinderActive, setChordFinderActive, setStradellaFinderActive: setStradellaChordFinderActive,
+      setPlaybackState: setBassPatternPlaybackState,
+      schedule: (runId) => scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm,
+        bassPatternTotalBeats, bassPatternLoopMode, bassPatternLoopCount,
+        bassPatternTimeoutsRef, bassPatternPlaybackRunRef, runId, soundOptions,
+        setBassPatternActiveButtonIds, setBassPatternPlaybackState}),
+    });
   }
 
   /** Stops currently playing notes and any scheduled sequence playback. */
@@ -2132,97 +2125,19 @@ export function useAppController() {
     side === "stradella" ? stradellaVisibleRoots(basses) : [];
   const visibleRows = side === "stradella" ? stradellaVisibleRows(basses) : [];
 
-  const viewWidth =
-    side === "stradella"
-      ? Math.max(1040, 275 + visibleRoots.length * buttonSize * spacing * 1.15)
-      : isPianoTreble
-        ? Math.max(
-            880,
-            185 +
-              pianoTrebleWhiteKeyCount(pianoTrebleRange) *
-                buttonSize *
-                spacing *
-                0.92 *
-                pianoKeyWidthScale,
-          )
-        : ["one-octave", "two-octave"].includes(trebleSize)
-          ? Math.max(420, ...buttons.map((button) => button.x + buttonSize + 96))
-          : TREBLE_SIZE_VIEW_WIDTH[trebleSize];
-
-  // Longer contextual titles (especially selected treble inversions) must
-  // remain within compact one-/two-octave SVG widths and exported PNGs.
-  // Only contextual titles auto-fit; keep the user's custom font size intact.
-  const effectiveTitleSize = titleMode === "contextual"
-    ? Math.min(titleSize, Math.max(10, Math.floor((viewWidth - 64) / (Math.max(1, finalTitle.length) * 0.62))))
-    : titleSize;
-
-  const baseViewHeight =
-    side === "stradella"
-      ? Math.max(
-          320,
-          220 +
-            visibleRows.length * buttonSize * spacing * 0.88 +
-            diagramVerticalSpacing,
-        )
-      : isPianoTreble
-        ? Math.max(
-            360,
-            285 +
-              buttonSize * 5.9 * pianoKeyHeightScale +
-              diagramVerticalSpacing,
-          )
-        : 450 + diagramVerticalSpacing;
-
-  // Keep the Treble Chord Finder note close to the actual keyboard. A fixed
-  // 450px base height leaves a large gap when the layout has only three rows.
-  // Piano and Stradella retain their existing footer positioning.
-  const buttonTrebleFooter = side === "treble" && !isPianoTreble && buttons.length > 0;
-  const trebleFooterY = buttonTrebleFooter
-    ? Math.max(...buttons.map((button) => button.y + buttonSize)) + Math.max(22, buttonSize * 0.8)
-    : baseViewHeight - 21;
-  // Reserve enough room for explanatory notes that wrap on narrow diagrams,
-  // including the one- and two-octave presets.
-  const trebleFooterFontSize = viewWidth < 600 ? 21 : 26;
-  const trebleFooterLineEstimate = Math.max(1, Math.ceil(
-    trebleVoicingNote.length * trebleFooterFontSize * 0.65 * 1.18 / Math.max(1, viewWidth - 64),
-  ));
-  const trebleFooterHeight = Math.max(
-    80,
-    Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
-  );
-  // Match the shared CSS label column using the longest enabled translated label.
-  const finderAnnotationLabelWidth = Math.max(150, ...finderAnnotationDisplayLines.map((line) =>
-    Math.ceil(Math.max(0, line.indexOf(":") + 1) * finderExplanationFontSize * 0.65)));
-  const finderAnnotationContentWidth = Math.max(220, viewWidth - 64 - finderAnnotationLabelWidth - 18);
-  const finderVoicingChartHeight = finderVoicingChartVisible ? finderVoicingLayout!.metrics.height : 0;
-  const finderFooterHeight = (() => {
-    let total = 16;
-    for (const line of finderAnnotationDisplayLines) {
-      const level = annotationLevelForLine(line);
-      if (level === "voicing" && finderVoicingChartVisible) {
-        total += finderVoicingChartHeight + 0.42 * finderExplanationFontSize;
-        continue;
-      }
-      const colon = line.indexOf(":");
-      const value = colon > 0 ? line.slice(colon + 1).trim() : line;
-      const wrappedLines = Math.max(1, Math.ceil(
-        value.length * finderExplanationFontSize * 0.59 / Math.max(1, finderAnnotationContentWidth),
-      ));
-      total += Math.max(finderExplanationFontSize * 1.3, wrappedLines * finderExplanationFontSize * 1.3) +
-        0.42 * finderExplanationFontSize;
-    }
-    return Math.max(82, Math.ceil(total));
-  })();
-  // Place the annotation closer to the lowest physical button, retaining a
-  // clearance for selection outlines and alternate Stradella row configurations.
-  const stradellaFinderFooterY = Math.max(
-    baseViewHeight - 90,
-    Math.max(0, ...buttons.map((button) => button.y + buttonSize * 0.58)) + 24,
-  );
-  const viewHeight = trebleFooterEnabled && buttonTrebleFooter
-    ? trebleFooterY + trebleFooterHeight + 8
-    : finderFooterEnabled ? stradellaFinderFooterY + finderFooterHeight + 12
-      : baseViewHeight + (trebleFooterEnabled ? 112 : 0);
+  const {
+    viewWidth, effectiveTitleSize, buttonTrebleFooter, trebleFooterY, trebleFooterFontSize,
+    trebleFooterHeight, finderFooterHeight, stradellaFinderFooterY, viewHeight,
+  } = calculateDiagramGeometry({
+    side, isPianoTreble, pianoTrebleRange, trebleSize, buttonSize, spacing,
+    pianoKeyWidthScale, pianoKeyHeightScale, diagramVerticalSpacing,
+    visibleRootCount: visibleRoots.length, visibleRowCount: visibleRows.length,
+    buttons, titleMode, titleSize, finalTitle, trebleVoicingNote,
+    finderAnnotationDisplayLines, finderExplanationFontSize,
+    finderVoicingChartVisible,
+    voicingChartHeight: finderVoicingLayout?.metrics.height ?? 0,
+    annotationLevelForLine, trebleFooterEnabled, finderFooterEnabled,
+  });
 
   const appGridColumns = workspaceGridColumns(interfaceDensity, leftPanelMode);
 

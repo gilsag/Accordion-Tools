@@ -59,6 +59,8 @@ assert.match(app, /exact: trebleChordExplanation\.exact/);
 assert.match(app, /inversion: chordFinderInversion/);
 assert.match(app, /finderAnnotation\?\.title/);
 assert.match(app, /finderAnnotation\.filenameKey/);
-assert.match(app, /const effectiveTitleSize = titleMode === "contextual"/);
+// Phase 9: the auto-fit formula is verified against baseline geometry snapshots
+// by phase9-playback-geometry.test.mjs, rather than requiring it inside App.
+assert.match(app, /calculateDiagramGeometry\(\{/);
 assert.match(app, /style=\{\{ fontSize: effectiveTitleSize \}\}/);
 console.log("Contextual title and export-identity tests passed.");
