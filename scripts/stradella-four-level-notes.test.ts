@@ -76,11 +76,13 @@ for (const catalog of [EN, ES]) {
 }
 // Lightweight integration contracts for UI state and exported SVG captions.
 const app = readFileSync("src/App.tsx", "utf8");
+// Settings serialization and import validation moved out of App in Phase 2.
+const settingsController = readFileSync("src/settings/settingsController.ts", "utf8");
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
 const defaults = JSON.parse(readFileSync("public/default-settings.json", "utf8"));
 assert.deepEqual(defaults.stradellaNoteLevels, DEFAULT_STRADELLA_NOTE_LEVELS);
-assert.match(app, /stradellaNoteLevels,\r?\n\s+stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,\r?\n\s+stradellaMinimumNominalGap,\r?\n\s+diagramVerticalSpacing/);
-assert.match(app, /normalizeStradellaNoteLevels\(settings.stradellaNoteLevels\)/);
+assert.match(settingsController, /stradellaNoteLevels,\r?\n\s+stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,\r?\n\s+stradellaMinimumNominalGap,\r?\n\s+diagramVerticalSpacing/);
+assert.match(settingsController, /normalizeStradellaNoteLevels\(settings.stradellaNoteLevels\)/);
 assert.match(app, /finderAnnotationDisplayLines\.map/);
 assert.match(app, /Boolean\(finderAnnotation\?\.lines.length\)/);
 assert.match(panel, /noteLevels\[level\]/);

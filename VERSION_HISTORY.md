@@ -1,8 +1,9 @@
-## Unreleased — Architecture migration, initial extraction (toward v0.16.0)
+## Unreleased — Architecture migration, Phases 1–2 (toward v0.16.0)
 
 - Split instrument/layout and nominal Stradella register state into `src/instrument/useInstrumentState.ts`, retaining independent bass/chord octave models and existing control/setter behavior. Audio and La Melodiosa sample settings remain separate.
 - Introduced `src/settings/settingsSchema.ts`, `settingsPersistence.ts`, and `useLanguageSettings.ts` to own the existing JSON contract, settings file I/O, and language preference persistence without changing its saved key, filename, precedence, or defaults.
-- Added `npm run test:modules` for settings I/O and state-ownership contracts; updated developer documentation and the phased [modularization roadmap](docs/internal/modularization-roadmap.md). Remaining tool state, persistence application and collection, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
+- Extracted settings startup/import validation and ordered JSON export projection into `src/settings/settingsController.ts` with a typed adapter to existing React setters. Preserved user-language precedence, legacy keys, numeric clamping, and partial JSON behavior.
+- Extended `npm run test:modules` with seven golden settings call-order fixtures recorded from the pre-extraction implementation, plus all 118 original exported JSON keys in order. Updated developer documentation and the [modularization roadmap](docs/internal/modularization-roadmap.md). Tool controllers, diagram/export/playback orchestration, and lazy loading are **not yet extracted**.
 - No version identifier has been incremented; these changes are not part of the previously tagged v0.15.28 release.
 
 ## v0.15.28 — Documentation maintenance
