@@ -4,7 +4,7 @@
 
 **Version:** 0.15.28
 
-**Architecture migration (unreleased):** Phase 8 separates ordered transport lifecycle commands, reset operations, synchronous Stradella batch capture and workspace-status presentation from the transitional controller. These changes do not alter the public release or saved settings. See [modularization roadmap](docs/internal/modularization-roadmap.md).
+**Architecture migration (unreleased):** Phase 9 adds a typed start-of-playback command service and a pure diagram-geometry selector, building on Phase 8 transport lifecycle, reset, batch capture and presentation boundaries. These changes do not alter the public release or saved settings. See [modularization roadmap](docs/internal/modularization-roadmap.md).
 
 **Live site:** https://gilsag.github.io/Accordion-Tools/
 
@@ -81,7 +81,7 @@ Create ordered button paths using numbers and arrows for exercises, bass movemen
 
 Optimize Stradella realizations across an entire chord progression, balancing harmonic voice movement and physical button movement. The assistant supports playback, accompaniment patterns, button highlighting, and staff notation.
 
-**Modularization work (unreleased, toward v0.16.0):** Feature state and settings/instrument/sound services remain in their independent hooks and modules. In Phase 6, `src/App.tsx` now only composes the layout and the three typed view groups: `SettingsView`, `ToolsView`, and `WorkspaceView` under `src/app/views/`. Their existing behavior is coordinated by `src/app/useAppController.ts`, which remains a substantial transitional controller, not a new global state store. `src/app/crossToolCommands.ts` centralizes the **ordering** of Harmony/Progression/Stradella destination side effects; chord payloads, exact `playbackButtons` identities and feature state setters still belong to their original modules. Tests that formerly searched App source now inspect the extracted controller and views. Phase 7 now defers heavy tool panels and first-use ABC parsing/notation via dynamic imports; it also extracts notation settings and display constants. Version stays at v0.15.28; see the [modularization roadmap](docs/internal/modularization-roadmap.md).
+**Modularization work (unreleased, toward v0.16.0):** Feature state and settings/instrument/sound services remain in their independent hooks and modules. In Phase 6, `src/App.tsx` now only composes the layout and the three typed view groups: `SettingsView`, `ToolsView`, and `WorkspaceView` under `src/app/views/`. Their existing behavior is coordinated by `src/app/useAppController.ts`, which remains a substantial transitional controller, not a new global state store. `src/app/crossToolCommands.ts` centralizes the **ordering** of Harmony/Progression/Stradella destination side effects; chord payloads, exact `playbackButtons` identities and feature state setters still belong to their original modules. Tests that formerly searched App source now inspect the extracted controller and views. Phase 7 defers heavy tool panels and first-use ABC parsing/notation via dynamic imports; Phase 8 and 9 split transport, reset/export coordination and SVG geometry into independently testable services. Version stays at v0.15.28; see the [modularization roadmap](docs/internal/modularization-roadmap.md).
 
 For contributors and maintainers, see the [Developer Guide](docs/internal/developer-guide.md) for the source architecture, musical and registral assumptions, physical-button invariants, and validation checks.
 

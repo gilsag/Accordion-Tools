@@ -52,15 +52,6 @@ export const PIANO_TREBLE_RANGE_OPTIONS: Array<{
   },
 ];
 
-/** SVG viewBox widths chosen so each treble size has enough horizontal space. */
-export const TREBLE_SIZE_VIEW_WIDTH: Record<TrebleSizePreset, number> = {
-  "one-octave": 500,
-  "two-octave": 650,
-  small: 1080,
-  full: 1220,
-  large: 1460,
-};
-
 /** Named colors used by sequence arrows and sequence numbers. */
 export const COLOR_PRESETS: Record<SequenceColorPreset, string> = {
   red: "#d4553f",

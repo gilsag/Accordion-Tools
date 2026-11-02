@@ -2,7 +2,13 @@
 
 This guide documents the **implementation boundaries and assumptions** that are most important when maintaining the current React/TypeScript/Vite project. It complements the user-facing guides under `docs/` and the inline comments in the source code.
 
-For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). Phase 6 has moved the complete Settings, Tools and Workspace JSX out of `App.tsx`. The controller in `src/app/useAppController.ts` is still large and coordinates state and audio, while the view components are presentational and tool-specific state remains in dedicated feature hooks. This is not a finished modular controller. Phase 7 introduced deferred tool panels and abcjs, and Phase 8 extracted lifecycle, reset, batch-capture and status-label commands; the controller remains transitional. Real bundle and first-use behavior still require Windows/browser validation.
+For the ongoing, deliberately incremental modularization, see the [modularization roadmap](modularization-roadmap.md). Phase 6 has moved the complete Settings, Tools and Workspace JSX out of `App.tsx`. The controller in `src/app/useAppController.ts` is still large and coordinates state and audio, while the view components are presentational and tool-specific state remains in dedicated feature hooks. This is not a finished modular controller. Phase 7 introduced deferred tool panels and abcjs; Phases 8–9 extracted lifecycle/start commands, reset, batch capture, SVG geometry and status-label selectors. The controller remains transitional. Real bundle and first-use behavior still require Windows/browser validation.
+
+### Phase 9 playback-start and SVG geometry contracts
+
+- `src/audio/playbackStart.ts` takes typed callback ports; React state, timers, sound engine and actual playback scheduler stay in their original modules. ABC start must not run for an empty mapped sequence. Bass start must not increment the loop run counter when no events exist. Do not reorder stop/cancel, Finder deactivation, clock capture or scheduling calls; `scripts/phase9-playback-geometry.test.mjs` checks the historical call order.
+- `src/diagram/diagramGeometry.ts` is a pure sizing selector. Pass current instrument layout, rendered physical button coordinates, title text, and footer display flags. Preserve its numeric results because both the SVG viewport and exported PNG dimensions are affected. `scripts/fixtures/diagram-geometry-phase8.json` contains five frozen results evaluated from the original Phase 8 expressions; they check compact treble, piano scaling, and Stradella note/chart footers.
+- Prefer tests of exported commands and numeric outputs over static assumptions that expressions remain in a specific source file. The contextual-title source-location check was migrated during Phase 9, after earlier i18n and PNG-export tests were corrected.
 
 ### Phase 8 reset, transport and export-capture contracts
 
