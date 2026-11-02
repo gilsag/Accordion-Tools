@@ -75,7 +75,7 @@ for (const catalog of [EN, ES]) {
   }
 }
 // Lightweight integration contracts for UI state and exported SVG captions.
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 // Settings serialization and import validation moved out of App in Phase 2.
 const settingsController = readFileSync("src/settings/settingsController.ts", "utf8");
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");

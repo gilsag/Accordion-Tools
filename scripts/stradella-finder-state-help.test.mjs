@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 const viewer = readFileSync("src/components/settings/DocumentationViewer.tsx", "utf8");
 assert.match(panel, /\{isActive && <div className="result-card">/);
 assert.match(panel, /\{isActive && <p className="hint">\{t\("ui\.recFirst"\)/);

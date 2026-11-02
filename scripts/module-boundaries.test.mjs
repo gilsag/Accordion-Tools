@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 import ts from 'typescript';
 
 const source = (path) => readFileSync(path, 'utf8');
-const app = source('src/App.tsx');
+const app = [source('src/App.tsx'), source('src/app/useAppController.ts'), source('src/app/views/SettingsView.tsx'), source('src/app/views/ToolsView.tsx'), source('src/app/views/WorkspaceView.tsx')].join("\n");
 const instrument = source('src/instrument/useInstrumentState.ts');
 const schema = source('src/settings/settingsSchema.ts');
 const controller = source('src/settings/settingsController.ts');

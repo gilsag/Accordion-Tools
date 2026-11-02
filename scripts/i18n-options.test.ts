@@ -39,7 +39,7 @@ for (const row of ["bass-counterbass", "bass-root", "chord-major", "chord-minor"
   assert.notEqual(stradellaDiagramRowLabel(row, english, "es"), english);
 }
 
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 const finder = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
 const assistant = readFileSync("src/components/tools/ProgressionAssistantPanel.tsx", "utf8");
 const css = readFileSync("src/App.css", "utf8");

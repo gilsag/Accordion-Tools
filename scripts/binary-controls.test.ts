@@ -5,7 +5,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const source = (path: string) => readFileSync(path, "utf8");
-const app = source("src/App.tsx");
+const app = [source("src/App.tsx"), source("src/app/useAppController.ts"), source("src/app/views/SettingsView.tsx"), source("src/app/views/ToolsView.tsx"), source("src/app/views/WorkspaceView.tsx")].join("\n");
 const panel = source("src/components/tools/StradellaChordFinderPanel.tsx");
 const toolbar = source("src/app/components/WorkspaceToolbar.tsx");
 const component = source("src/components/ui/BinaryChoiceButton.tsx");

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { EN, ES } from "../src/i18n/catalog";
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 const css = readFileSync("src/App.css", "utf8");
 const workspaceNavigation = readFileSync("src/app/useWorkspaceNavigation.ts", "utf8");
 assert.match(workspaceNavigation, /SettingsSection = "instrument"/);

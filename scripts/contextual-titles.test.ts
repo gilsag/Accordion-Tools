@@ -53,7 +53,7 @@ assert.doesNotMatch(shell.filenameKey, /[/#♯♭\s]/, "Export filename keys mus
 
 assert.deepEqual(Object.values(DEFAULT_STRADELLA_NOTE_LEVELS), [true, true, true, true]);
 
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 assert.match(app, /trebleContextualTitle\(\{/);
 assert.match(app, /exact: trebleChordExplanation\.exact/);
 assert.match(app, /inversion: chordFinderInversion/);

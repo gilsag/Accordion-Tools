@@ -83,7 +83,7 @@ const circle = readFileSync(new URL("../src/tools/harmonyExplorer/components/Har
 assert.match(circle, /legendHeadingWidth/, "legend column fits translated headings");
 assert.doesNotMatch(circle, /rightColumnWidth \* 0\.36/, "no fixed 36%-width legend heading column");
 assert.match(circle, /Math\.max\(44, 8 \+ nameLines.length \* legendValueLineHeight/, "legend rows use tighter vertical spacing when text wraps");
-const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+const app = [readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/useAppController.ts", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/SettingsView.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/ToolsView.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/WorkspaceView.tsx", import.meta.url), "utf8")].join("\n");
 assert.match(app, /finderVoicingChartVisible/, "Stradella footer tracks when the interval chart should replace the registral line text");
 assert.match(app, /<StradellaVoicingIntervals[\s\S]*fontSize=\{finderExplanationFontSize\}/,
   "render the interval chart inside the exported footer using the explanation font size");
