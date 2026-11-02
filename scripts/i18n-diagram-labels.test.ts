@@ -65,7 +65,7 @@ for (const language of ["en", "es", "fr", "pt", "it", "de"] as const) {
 }
 
 // Source bindings: reject a correctly implemented helper that the UI forgets to call.
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 const circle = readFileSync("src/tools/harmonyExplorer/components/HarmonicCircle.tsx", "utf8");
 for (const binding of [
   "const statusBarText = accordionStatusText(",

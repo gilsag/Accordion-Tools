@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-const app = readFileSync('src/App.tsx','utf8');
+const app = [readFileSync('src/App.tsx','utf8'), readFileSync('src/app/useAppController.ts','utf8'), readFileSync('src/app/views/SettingsView.tsx','utf8'), readFileSync('src/app/views/ToolsView.tsx','utf8'), readFileSync('src/app/views/WorkspaceView.tsx','utf8')].join("\n");
 const pkg = JSON.parse(readFileSync('package.json','utf8'));
 const body = app.slice(app.indexOf('activeSettingsSection === "instrument" && ('),app.indexOf('toggleSettingsSection("notation")'));
 assert.match(app, /toggleSettingsSection\("instrument"\)/);

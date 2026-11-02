@@ -84,7 +84,7 @@ for (const [language, expectedIdentity, expectedPhysical, expectedExplanation] o
   assert.ok(relation.length > 100);
   assert.doesNotMatch(relation, /The inner ring|The rings for|No related chords/);
 }
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 assert.match(app, /SUPPORTED_LANGUAGES\.map/);
 const languageSettings = readFileSync("src/settings/useLanguageSettings.ts", "utf8");
 assert.match(app, /useLanguageSettings\(\)/);

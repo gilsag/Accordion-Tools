@@ -43,7 +43,7 @@ for (const file of sources) {
 }
 assert.deepEqual(problems, [], `UI controls must use localized resources:\n${problems.join('\n')}`);
 
-const app = fs.readFileSync('src/App.tsx', 'utf8');
+const app = [fs.readFileSync('src/App.tsx', 'utf8'), fs.readFileSync('src/app/useAppController.ts', 'utf8'), fs.readFileSync('src/app/views/SettingsView.tsx', 'utf8'), fs.readFileSync('src/app/views/ToolsView.tsx', 'utf8'), fs.readFileSync('src/app/views/WorkspaceView.tsx', 'utf8')].join("\n");
 for (const legacy of ['Selection on click', 'Hide scale', 'Stop click-to-label', 'Record sequence',
   'Loads a simple ABC tune.', 'Edit one pattern object', 'Delete annotation ${index',
   'Target notes:', 'Arrow thickness:', 'Number font size:', 'No ABC loaded']) {

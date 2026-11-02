@@ -7,7 +7,7 @@ import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 const source = (file) => readFileSync(file, 'utf8');
-const app = source('src/App.tsx');
+const app = [source('src/App.tsx'), source('src/app/useAppController.ts'), source('src/app/views/SettingsView.tsx'), source('src/app/views/ToolsView.tsx'), source('src/app/views/WorkspaceView.tsx')].join("\n");
 const expSrc = source('src/features/harmonyExplorer/useHarmonyExplorer.ts');
 const progSrc = source('src/features/progressionAssistant/useProgressionAssistant.ts');
 for (const key of ['useHarmonyExplorerState()', 'useHarmonyExplorerResults({',

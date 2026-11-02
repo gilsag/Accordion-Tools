@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const source = (filename) => readFileSync(filename, 'utf8');
-const app = source('src/App.tsx');
+const app = [source('src/App.tsx'), source('src/app/useAppController.ts'), source('src/app/views/SettingsView.tsx'), source('src/app/views/ToolsView.tsx'), source('src/app/views/WorkspaceView.tsx')].join("\n");
 const css = source('src/App.css');
 const treble = source('src/components/tools/TrebleChordFinderPanel.tsx');
 const bass = source('src/components/tools/StradellaChordFinderPanel.tsx');

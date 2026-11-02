@@ -29,7 +29,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
   assert.ok(allFamilies.includes(catalogs[code]["analysis.harmonyNoteRing"]), `${code}: all families`);
 }
 
-const app = readFileSync("src/App.tsx", "utf8");
+const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 const explorer = readFileSync("src/features/harmonyExplorer/useHarmonyExplorer.ts", "utf8");
 // Settings import/serialization contracts live in the Phase 2 settings controller.
 const settingsController = readFileSync("src/settings/settingsController.ts", "utf8");

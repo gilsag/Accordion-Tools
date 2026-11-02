@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const app = readFileSync('src/App.tsx', 'utf8');
+const app = [readFileSync('src/App.tsx', 'utf8'), readFileSync('src/app/useAppController.ts', 'utf8'), readFileSync('src/app/views/SettingsView.tsx', 'utf8'), readFileSync('src/app/views/ToolsView.tsx', 'utf8'), readFileSync('src/app/views/WorkspaceView.tsx', 'utf8')].join("\n");
 const css = readFileSync('src/App.css', 'utf8');
 const settings = readFileSync('docs/settings.md', 'utf8');
 const render = app.slice(app.indexOf('activeSettingsSection === "instrument" && ('), app.indexOf('toggleSettingsSection("notation")'));

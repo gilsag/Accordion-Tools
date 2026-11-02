@@ -8,7 +8,7 @@ import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 
 const source = (path) => readFileSync(path, 'utf8');
-const app = source('src/App.tsx');
+const app = [source('src/App.tsx'), source('src/app/useAppController.ts'), source('src/app/views/SettingsView.tsx'), source('src/app/views/ToolsView.tsx'), source('src/app/views/WorkspaceView.tsx')].join("\n");
 for (const marker of ['useDiagramAppearanceState()', 'useDiagramOverlays()', 'useDiagramAnnotations(buttonSize)',
   'markButtonOverlay(button.id)', 'beginButtonAnnotation(button)', 'beginFreeAnnotation(point.x, point.y)',
   'setTextNotes([])', 'setOverlays({})', 'setIsApplyingFingering(false)'])

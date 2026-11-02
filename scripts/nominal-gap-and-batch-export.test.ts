@@ -41,7 +41,7 @@ assert.equal(zip.type,"application/zip");
 assert.equal(new DataView(buffer.buffer).getUint32(0,true),0x04034b50);
 assert.equal(new DataView(buffer.buffer).getUint32(buffer.length-22,true),0x06054b50);
 assert.equal(new DataView(buffer.buffer).getUint16(buffer.length-12,true),2);
-const app=readFileSync(new URL("../src/App.tsx",import.meta.url),"utf8");
+const app=[readFileSync(new URL("../src/App.tsx",import.meta.url),"utf8"), readFileSync(new URL("../src/app/useAppController.ts",import.meta.url),"utf8"), readFileSync(new URL("../src/app/views/SettingsView.tsx",import.meta.url),"utf8"), readFileSync(new URL("../src/app/views/ToolsView.tsx",import.meta.url),"utf8"), readFileSync(new URL("../src/app/views/WorkspaceView.tsx",import.meta.url),"utf8")].join("\n");
 assert.match(app,/function clearHarmonyWork\(/);
 assert.match(app,/function resetStradellaFinderDefaults\(/);
 const toolbar=readFileSync(new URL("../src/app/components/WorkspaceToolbar.tsx",import.meta.url),"utf8");

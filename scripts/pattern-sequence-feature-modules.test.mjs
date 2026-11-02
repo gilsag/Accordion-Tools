@@ -7,7 +7,7 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 
 const read = (p) => readFileSync(p, "utf8");
-const app = read("src/App.tsx");
+const app = [read("src/App.tsx"), read("src/app/useAppController.ts"), read("src/app/views/SettingsView.tsx"), read("src/app/views/ToolsView.tsx"), read("src/app/views/WorkspaceView.tsx")].join("\n");
 for (const marker of ["useBassPatternState(t)", "useBassPatternResults({", "useSequenceState()", "useSequenceResults(sequenceSteps, buttons)"]) {
   assert.ok(app.includes(marker), `App delegates to ${marker}`);
 }

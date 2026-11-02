@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const app = readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8");
+const app = [readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/useAppController.ts", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/SettingsView.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/ToolsView.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/WorkspaceView.tsx", import.meta.url), "utf8")].join("\n");
 const surface = readFileSync(new URL("../src/diagram/components/DiagramSvgSurface.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../src/App.css", import.meta.url), "utf8");
 const help = readFileSync(new URL("../src/components/ui/HelpTip.tsx", import.meta.url), "utf8");

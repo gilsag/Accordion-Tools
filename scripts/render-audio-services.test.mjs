@@ -144,7 +144,7 @@ assert.equal(soundCalls.length, count);
 
 // Component/DOM boundary contracts (semantic output remains a parent SVG with
 // unchanged keys, class names, viewBox and actual physical button references).
-const app = read("src/App.tsx");
+const app = [read("src/App.tsx"), read("src/app/useAppController.ts"), read("src/app/views/SettingsView.tsx"), read("src/app/views/ToolsView.tsx"), read("src/app/views/WorkspaceView.tsx")].join("\n");
 const surface = read("src/diagram/components/DiagramSvgSurface.tsx");
 const glyphs = read("src/diagram/components/DiagramButtonLayer.tsx");
 assert.match(app, /<DiagramSvgSurface/);

@@ -119,7 +119,7 @@ assert.ok(sideSetCalls.length >= 3);
 // Keep the shell DOM classes and toolbar interactive controls stable.
 const shell = source("src/app/components/AppShell.tsx");
 const toolbar = source("src/app/components/WorkspaceToolbar.tsx");
-const app = source("src/App.tsx");
+const app = [source("src/App.tsx"), source("src/app/useAppController.ts"), source("src/app/views/SettingsView.tsx"), source("src/app/views/ToolsView.tsx"), source("src/app/views/WorkspaceView.tsx")].join("\n");
 assert.match(shell, /className={`app density-\${density}`}/);
 assert.match(shell, /style={{ gridTemplateColumns }}/);
 assert.match(toolbar, /className="topbar"/);
