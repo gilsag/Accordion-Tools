@@ -1,4 +1,4 @@
-/** Phase 8 behavior tests: ordered transport/reset effects and live SVG capture.
+/** Behavior tests: ordered transport/reset effects and live SVG capture.
  * Uses an in-memory TypeScript loader to avoid native Vite/esbuild requirements. */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -89,4 +89,4 @@ assert.equal(ui.activeToolStatusLabel({ ...core, bassPatternPlaybackState:"playi
 assert.equal(ui.activeToolStatusLabel({ ...core, side:"treble", bassPatternPlaybackState:"playing", chordFinderActive:true }), "tools.chordFinder");
 assert.equal(ui.workspaceGridColumns("compact", "hidden"), "minmax(0, 1fr)");
 assert.equal(ui.workspaceGridColumns("compact", "tools"), "clamp(230px, 15vw, 270px) minmax(0, 1fr)");
-console.log("✓ Phase 8 transport, reset, capture and workspace presentation contracts passed");
+console.log("✓ Transport, reset, capture and workspace presentation contracts passed");

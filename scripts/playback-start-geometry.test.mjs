@@ -1,5 +1,4 @@
-/** Phase 9 contracts: transport start ordering and geometry snapshots captured
- * from the unmodified Phase 8 formulas. No native bundler or browser required. */
+/** Transport start ordering and frozen diagram geometry outputs. No native bundler or browser required. */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
@@ -74,7 +73,7 @@ const { calculateDiagramGeometry } = loadTs("src/diagram/diagramGeometry.ts", {
   })[range] },
 
 });
-const fixtures = JSON.parse(readFileSync("scripts/fixtures/diagram-geometry-phase8.json", "utf8"));
+const fixtures = JSON.parse(readFileSync("scripts/fixtures/diagram-geometry-reference.json", "utf8"));
 for (const fixture of fixtures) {
   const actual = calculateDiagramGeometry({
     ...fixture.input,
@@ -82,6 +81,6 @@ for (const fixture of fixtures) {
       : line.startsWith("Identity:") ? "identity" : null,
   });
   assert.deepEqual(JSON.parse(JSON.stringify(actual)), fixture.expected,
-    `Geometry must preserve Phase 8 SVG sizing: ${fixture.name}`);
+    `Geometry must preserve reference SVG sizing: ${fixture.name}`);
 }
-console.log(`✓ Phase 9 playback-start ordering and ${fixtures.length} Phase 8 SVG geometry snapshots passed`);
+console.log(`✓ Playback-start ordering and ${fixtures.length} reference SVG geometry snapshots passed`);

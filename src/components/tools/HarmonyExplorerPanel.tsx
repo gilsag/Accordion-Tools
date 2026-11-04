@@ -158,8 +158,9 @@ export function HarmonyExplorerPanel({
             checked={showNoteRing}
             onChange={(event) => onShowNoteRingChange(event.target.checked)}
           />
-          {t("settings.noteRing")}
-          <HelpTip text={t("tools.noteRingHelp")} />
+          <span className="label-line">{t("settings.noteRing")}
+            <HelpTip text={t("tools.noteRingHelp")} />
+          </span>
         </label>
       </fieldset>
 
@@ -174,8 +175,9 @@ export function HarmonyExplorerPanel({
             disabled={allFamiliesMode}
             onChange={(event) => onDiatonicOnlyChange(event.target.checked)}
           />
-          {t("tools.diatonicOnly")}
-          <HelpTip text={t("ui.diatonicOnlyHelp")} />
+          <span className="label-line">{t("tools.diatonicOnly")}
+            <HelpTip text={t("ui.diatonicOnlyHelp")} />
+          </span>
         </label>
         <label className={`check-row${effectiveDiatonicOnly ? " disabled-row" : ""}`}>
           <input

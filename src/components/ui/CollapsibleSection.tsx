@@ -16,8 +16,8 @@ export function CollapsibleSection({
 }: CollapsibleSectionProps) {
   return (
     <section className="control-section">
-      <button className="section-title" type="button" onClick={onToggle}>
-        {title} <span>{isOpen ? "−" : "+"}</span>
+      <button className="section-title" type="button" aria-expanded={isOpen} onClick={onToggle}>
+        {title} <span aria-hidden="true">{isOpen ? "−" : "+"}</span>
       </button>
 
       {isOpen && <div className="section-content">{children}</div>}

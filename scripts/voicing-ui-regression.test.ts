@@ -104,8 +104,8 @@ assert.match(panel, /\{level === "voicing" && \([\s\S]*finder-voicing-spacing-op
 assert.match(panel, /disabled=\{!noteLevels\.voicing\}/, "spacing control cannot be used with hidden registral note");
 assert.match(panel, /\["physical", t\("tools\.physicalRealization"\)\][\s\S]*?\["voicing", t\("tools\.registralVoicing"\)\]/,
   "physical realization precedes registral voicing in the menu at all times");
-assert.match(app, /const finderAnnotationDisplayLines = finderAnnotation\?\.lines \?\? \[\]/,
-  "diagram uses permanent note-generator ordering, independent of chart setting");
+// Note ordering and visibility are tested against actual generated annotations in
+// stradella-four-level-notes.test.ts and progression-eye-entry.test.cjs.
 assert.match(css, /\.finder-annotation-block \{[\s\S]*?grid-template-columns: max-content minmax\(0, 1fr\)/,
   "all footer lines share the same label/value grid columns");
 assert.match(css, /\.finder-annotation-line \{[\s\S]*?display: contents/, "row wrappers allow shared columns");

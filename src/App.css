@@ -23,6 +23,29 @@ body {
   min-height: 100dvh;
   display: grid;
   overflow: hidden;
+  /* Shared UI hierarchy; stored density preference changes these values. */
+  --ui-control-font: 12px;
+  --ui-support-font: 12px;
+  --ui-section-font: 13px;
+  --ui-heading-font: 18px;
+  --ui-control-leading: 1.4;
+  --ui-dense-font: 11px;
+}
+
+.density-compact {
+  --ui-control-font: 11px;
+  --ui-support-font: 11px;
+  --ui-section-font: 12px;
+  --ui-heading-font: 17px;
+  --ui-dense-font: 10.5px;
+}
+
+.density-comfortable {
+  --ui-control-font: 12.5px;
+  --ui-support-font: 12.5px;
+  --ui-section-font: 14px;
+  --ui-heading-font: 19px;
+  --ui-dense-font: 11.5px;
 }
 
 .left-panel {
@@ -53,8 +76,9 @@ body {
 }
 
 .left-panel h1 {
-  font-size: 19px;
-  line-height: 1.2;
+  font-size: var(--ui-heading-font);
+  line-height: 1.25;
+  font-weight: 750;
   margin: 0 0 10px;
 }
 
@@ -135,8 +159,9 @@ body {
   background: #f5f7fb;
   padding: 9px 10px;
   font: inherit;
-  font-size: 13px;
-  font-weight: 800;
+  font-size: var(--ui-section-font);
+  font-weight: 750;
+  line-height: 1.35;
   color: #172033;
   cursor: pointer;
   display: flex;
@@ -145,9 +170,21 @@ body {
   text-align: left;
 }
 
-.section-title span {
+.section-title > span:last-child {
   font-size: 18px;
   line-height: 1;
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+.section-title[aria-expanded="true"] {
+  background: #eef3ff;
+  color: #173fa6;
+}
+
+.section-title:focus-visible {
+  outline: 2px solid #1746d0;
+  outline-offset: -3px;
 }
 
 .section-content {
@@ -174,7 +211,8 @@ label {
   gap: 5px;
   min-width: 0;
   font-weight: 700;
-  font-size: 12px;
+  font-size: var(--ui-control-font);
+  line-height: var(--ui-control-leading);
 }
 
 label > select,
@@ -187,7 +225,7 @@ select,
 input,
 textarea {
   font: inherit;
-  font-size: 12px;
+  font-size: var(--ui-control-font);
   padding: 7px 8px;
   border: 1px solid #c9d1e3;
   border-radius: 10px;
@@ -204,8 +242,8 @@ input[type="range"] {
 }
 
 .hint {
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: var(--ui-support-font);
+  line-height: 1.45;
   color: #526078;
   margin: 0;
 }
@@ -955,7 +993,7 @@ input[type="range"] {
 .density-compact input,
 .density-compact textarea,
 .density-compact .small-button {
-  font-size: 11px;
+  font-size: var(--ui-control-font);
 }
 
 .density-compact select,
@@ -993,7 +1031,7 @@ input[type="range"] {
 .density-comfortable input,
 .density-comfortable textarea,
 .density-comfortable .small-button {
-  font-size: 12.5px;
+  font-size: var(--ui-control-font);
 }
 
 .density-comfortable select,
@@ -1005,14 +1043,40 @@ input[type="range"] {
 
 .label-line {
   display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  gap: 5px;
   min-width: 0;
   max-width: 100%;
-  line-height: 1.25;
+  line-height: var(--ui-control-leading);
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+/* Keep assistance next to the control text, never as an orphaned flex item. */
+.label-line > .help-tip { align-self: center; }
+.left-panel .tool-fieldset > legend {
+  color: #34425d;
+  font-size: var(--ui-control-font);
+  font-weight: 800;
+  line-height: var(--ui-control-leading);
+  padding: 0;
+  margin: 0 0 3px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.left-panel .section-content > .tool-fieldset + .tool-fieldset {
+  border-top: 1px solid #edf0f6;
+  padding-top: 11px;
+  margin-top: 2px;
+}
+.left-panel .section-content > .hint { max-width: 68ch; }
+.left-panel .check-row,
+.left-panel .checkbox-line { line-height: var(--ui-control-leading); }
+.left-panel .segmented-choice-control > .label-line {
+  font-size: var(--ui-control-font);
+  font-weight: 700;
+}
+.left-panel .result-card { gap: 6px; }
 
 .label-line .help-tip {
   margin-left: 0;
@@ -1079,8 +1143,8 @@ input[type="range"] {
 }
 
 .result-card-title {
-  font-size: 12px;
-  font-weight: 900;
+  font-size: var(--ui-control-font);
+  font-weight: 800;
   color: #172033;
 }
 
@@ -1921,6 +1985,20 @@ input[type="range"] {
   min-width: 48px;
 }
 
+/* Shared catalog selection; collapse before the phone bottom-sheet becomes narrow. */
+.progression-preset-controls {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.75fr);
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+.progression-preset-controls label { min-width: 0; }
+.progression-preset-controls select { max-width: 100%; width: 100%; }
+@media (max-width: 440px) {
+  .progression-preset-controls { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* Harmony progression / Stradella voice-leading assistant. */
 .progression-add-grid {
   display: grid;
@@ -1929,39 +2007,82 @@ input[type="range"] {
   align-items: end;
 }
 
-.progression-add-button {
-  grid-column: 1 / -1;
-  justify-self: start;
+/* One aligned primary action and Clear action for either entry mode. */
+.progression-entry-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  margin: 9px 0 12px;
 }
+.progression-entry-actions > button { flex: 0 1 auto; }
+.progression-chord-name {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+}
+.progression-note-eye { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 30px; height: 30px; }
+.progression-note-eye[aria-pressed="true"] { border-color: var(--accent, #3654ac); }
+.progression-note-eye:focus-visible { outline: 2px solid var(--accent, #3654ac); outline-offset: 2px; }
 
 .harmony-progression-list {
+  list-style: none;
   margin: 8px 0 10px;
-  padding-left: 24px;
+  padding: 0;
 }
 
 .harmony-progression-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 5px 0;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--line, #d9deea);
 }
 
-.harmony-progression-list li > span:first-child {
+.progression-chord-row {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.progression-chord-detail {
+  display: flex;
+  flex: 1 1 95px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   min-width: 0;
 }
 
-.harmony-progression-list small {
+.progression-chord-recipe {
   color: #697386;
+  font-size: 11px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.progression-list-actions,
+.progression-realization-navigation,
+.progression-order-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
 }
 
 .progression-list-actions {
-  display: inline-flex;
-  gap: 3px;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.progression-realization-position {
+  min-width: 36px;
+  max-width: 82px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 .tiny-button {
@@ -2171,14 +2292,26 @@ input[type="range"] {
 @media (max-width: 860px) {
   .mobile-diagram-view-control {
     display: block;
-    flex: 0 0 auto;
-    padding: 7px 10px;
-    background: #f5f7fb;
-    border-bottom: 1px solid #d9deea;
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    z-index: 4;
   }
-  .mobile-diagram-view-control .segmented-choice-control { gap: 4px; }
-  .mobile-diagram-view-control .segmented-choice { max-width: 100%; }
-  .mobile-diagram-view-control .segmented-choice-button { min-height: 40px; }
+  .mobile-diagram-toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #71839d;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #173fa6;
+    box-shadow: 0 2px 10px rgba(20, 30, 50, 0.16);
+    cursor: pointer;
+  }
   .canvas-wrap.diagram-readable > .diagram {
     width: 100%;
     min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
@@ -2188,14 +2321,6 @@ input[type="range"] {
 
 @media (max-width: 620px) {
   .app { overflow-x: hidden; overflow-y: auto; min-width: 0; }
-  /* An expanded tool form should not push the entire diagram below the phone.
-     The controls remain scrollable inside their own panel. */
-  .left-panel {
-    max-height: min(34dvh, 290px);
-    min-height: 100px;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-  }
   .workspace { min-height: 60dvh; }
   .canvas-wrap { min-height: 38dvh; }
   .topbar { gap: 6px; padding: 7px 9px; }
@@ -2321,11 +2446,12 @@ input[type="range"] {
 .stradella-register-intro-help {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 6px;
   color: #526078;
-  font-size: 12px;
-  line-height: 1.3;
+  font-size: var(--ui-support-font);
+  line-height: var(--ui-control-leading);
 }
 .stradella-register-intro-help .help-tip { flex-shrink: 0; }
 .stradella-register-group {
@@ -2383,7 +2509,162 @@ input[type="range"] {
   align-items: center;
   gap: 6px;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: var(--ui-control-font);
+  line-height: var(--ui-control-leading);
   flex-wrap: wrap;
 }
 .notation-stradella-chord-labels { min-width: 0; }
+
+/* Shared workspace inspector frame: independent scroll, no SVG geometry changes. */
+.workspace-inspector {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  box-sizing: border-box;
+  background: #fff;
+  border-left: 1px solid #d9deea;
+  scrollbar-gutter: stable;
+}
+.workspace-inspector h2 { font-size: var(--ui-heading-font); line-height: 1.3; margin: 0 0 12px; }
+.workspace-inspector h3 { font-size: var(--ui-section-font); line-height: 1.35; margin: 12px 0 8px; }
+.inspector-filters { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.inspector-filter-option { display: inline-flex; align-items: center; gap: 2px; }
+.inspector-filters label { display: inline-flex; gap: 5px; align-items: center; font-size: var(--ui-control-font); cursor: pointer; }
+.inspector-filter-option .help-tip { flex-shrink: 0; }
+.inspector-filters input { accent-color: #1746d0; }
+.inspector-meta, .inspector-selection-note, .inspector-empty { font-size: var(--ui-support-font); line-height: 1.45; }
+.inspector-meta { color: #526078; }
+.inspector-selection-note { color: #744608; }
+.inspector-table-scroll { overflow: auto; max-height: min(44dvh, 425px); border: 1px solid #d9deea; border-radius: 9px; }
+.inspector-table { width: 100%; border-collapse: collapse; font-size: var(--ui-dense-font); line-height: 1.4; }
+.inspector-table th { position: sticky; top: 0; background: #eef2fa; color: #27334d; text-align: left; z-index: 1; }
+.inspector-table td, .inspector-table th { padding: 7px 6px; border-bottom: 1px solid #e4e8f0; vertical-align: top; }
+.inspector-table td { overflow-wrap: anywhere; }
+.inspector-table tbody tr { cursor: pointer; }
+.inspector-table tbody tr:hover { background: #f2f6ff; }
+.inspector-table .inspector-row-selected { background: #e3edff; box-shadow: inset 3px 0 #1746d0; }
+.inspector-select { background: transparent; border: 0; font: inherit; color: #1746d0; font-weight: 800; cursor: pointer; min-width: 32px; min-height: 28px; }
+.inspector-select:focus-visible { outline: 2px solid #1746d0; border-radius: 4px; outline-offset: 2px; }
+.inspector-details { border-top: 1px solid #d9deea; margin-top: 12px; padding-top: 4px; }
+.inspector-details p { font-size: var(--ui-support-font); color: #526078; line-height: 1.5; margin: 8px 0; overflow-wrap: anywhere; }
+@media (max-width: 1120px) {
+  .app:has(> .workspace-inspector) { grid-template-columns: 1fr !important; overflow: auto; }
+  .app:has(> .workspace-inspector) > .left-panel { max-height: 40dvh; }
+  .app:has(> .workspace-inspector) > .workspace { min-height: 45dvh; }
+  .workspace-inspector { border-left: 0; border-top: 1px solid #d9deea; overflow: visible; }
+  .inspector-table-scroll { max-height: 48dvh; }
+}
+
+/* Phone workspace: controls are a modal bottom sheet rather than an inline
+   panel. The controller and mounted tool forms retain their existing state. */
+.phone-sheet-backdrop, .phone-sheet-header, .phone-tools-button, .phone-overflow { display: none; }
+.topbar-secondary { display: contents; }
+.diagram-mobile-frame { display: flex; position: relative; flex: 1 1 auto; min-height: 0; min-width: 0; }
+.diagram-mobile-frame > .canvas-wrap { width: 100%; }
+
+@media (max-width: 620px) {
+  .app { display: block; overflow-x: hidden; overflow-y: auto; }
+  .app > .left-panel {
+    display: none;
+    position: fixed;
+    z-index: 101;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: min(82dvh, 740px);
+    max-height: min(82dvh, 740px);
+    min-height: 0;
+    border: 1px solid #ccd5e5;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 35px rgba(15, 23, 42, 0.25);
+    padding: 0 12px max(16px, env(safe-area-inset-bottom));
+    background: white;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .app > .left-panel.phone-sheet-open { display: block; }
+  .app > .left-panel h1 { display: none; }
+  .phone-sheet-backdrop {
+    display: block;
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    background: rgba(19, 30, 49, 0.48);
+    cursor: default;
+  }
+  .phone-sheet-header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-bottom: 1px solid #d9deea;
+    padding: 12px 0;
+    margin-bottom: 10px;
+    font-size: var(--ui-heading-font);
+  }
+  .phone-sheet-close {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    min-height: 44px;
+    border: 1px solid #c9d1e3;
+    border-radius: 9px;
+    padding: 7px 12px;
+    background: white;
+    color: #172033;
+    cursor: pointer;
+  }
+  .phone-sheet-close:focus-visible, .mobile-diagram-toggle:focus-visible,
+  .phone-overflow-toggle:focus-visible { outline: 3px solid #1746d0; outline-offset: 2px; }
+  .app > .workspace { min-height: 56dvh; }
+  .app > .workspace-inspector { min-height: 0; }
+  .topbar { flex-wrap: nowrap; gap: 5px; padding: 6px 7px; min-height: 56px; }
+  .topbar-primary { min-width: 0; flex: 1 1 0; font-size: 11px; padding: 8px 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-secondary { display: none; }
+  .phone-tools-button { display: block; flex: 0 0 auto; padding: 8px 7px; font-size: 12px; }
+  .phone-overflow { display: block; flex: 0 0 auto; position: relative; }
+  .phone-overflow > summary { list-style: none; }
+  .phone-overflow > summary::-webkit-details-marker { display: none; }
+  .phone-overflow-toggle { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; font-size: 24px; padding: 0 6px; }
+  .phone-overflow-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(305px, calc(100vw - 20px));
+    max-height: 73dvh;
+    overflow: auto;
+    z-index: 30;
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    background: white;
+    border: 1px solid #c9d1e3;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 30, 50, 0.22);
+  }
+  .phone-overflow-menu button:not(.segmented-choice-button) {
+    min-height: 44px;
+    padding: 8px 12px;
+    background: #f7f9fc;
+    border: 1px solid #c9d1e3;
+    border-radius: 8px;
+    color: #172033;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+  .phone-overflow-menu button:focus-visible { outline: 2px solid #1746d0; outline-offset: 1px; }
+  .phone-overflow-group { display: grid; gap: 6px; border-top: 1px solid #e1e6f0; padding-top: 9px; }
+  .phone-overflow-group > span { font-weight: 700; font-size: var(--ui-support-font); }
+  .workspace > .status-bar { max-height: 45px; overflow: hidden; }
+  .diagram-mobile-frame { flex: 1 1 auto; min-height: 42dvh; }
+  .workspace > .canvas-wrap { min-height: 0; }
+  .inspector-table-scroll { max-height: 46dvh; }
+}

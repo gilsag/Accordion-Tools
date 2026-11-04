@@ -1,4 +1,4 @@
-/** Comparison fixtures were recorded from the original v0.15.28 Phase 1
+/** Comparison fixtures were recorded from the original v0.15.28 settings
  * settings handlers before moving them out of App.tsx. They assert actual
  * setter calls AND order, including historically distinct startup/import rules.
  */

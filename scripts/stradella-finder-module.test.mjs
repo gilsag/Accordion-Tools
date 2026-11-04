@@ -1,4 +1,4 @@
-/** Phase 3b ownership and forwarding contracts. Heavy chord-search correctness
+/** Stradella Finder ownership and forwarding contracts. Heavy chord-search correctness
  * remains covered by the unchanged Stradella musical regression suite.
  */
 import assert from "node:assert/strict";

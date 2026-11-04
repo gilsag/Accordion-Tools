@@ -1,4 +1,4 @@
-/** Phase 4: behavior-based contract checks for rendering/exports, notation,
+/** Behavior-based contract checks for rendering/exports, notation,
  * and playback scheduling. This module runs with node, no browser or tsx.
  */
 import assert from "node:assert/strict";

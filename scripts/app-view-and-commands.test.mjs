@@ -1,4 +1,4 @@
-/** Phase 6 contracts: layout-only App, typed view boundaries and cross-tool
+/** Layout-only App contracts, typed view boundaries and cross-tool
  * command ordering. Independent of React DOM and platform-native bundlers. */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -60,8 +60,7 @@ const finder = ["navigate","assignChord","resetRealization","enableFinder","disa
   enterHarmonyExplorer(ports);
   assert.deepEqual(trace,names,"Harmony transfer preserves audio-stop order");
 }
-assert.match(controller,/playbackButtons\.map\(\(button\) => button\.id\)\.sort\(\)\.join\("\|"\)/,
-  "Progression handoff still keys by physical playback buttons, not visual highlights");
-assert.match(controller,/setPendingProgressionRealizationKey\(resultKey\)/,
-  "Pending progression realization still set before destination command");
-console.log("✓ Phase 6 layout/view contracts and 5 cross-tool command traces passed");
+assert.ok(/realizationAnnotation\(progressionNoteRoot, progressionNotePattern, harmonyProgressionNoteStep\.result/.test(controller),
+  "Progression notes use the selected step's actual Finder result, not guide highlights");
+// Eye toggle and single-step selection are verified by progression-eye-entry.test.cjs.
+console.log("✓ Layout/view contracts and 5 cross-tool command traces passed");

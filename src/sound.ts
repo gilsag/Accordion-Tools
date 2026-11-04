@@ -1,3 +1,4 @@
+import { progressionPulsePlan } from "./audio/progressionPulsePlan";
 import type {
   DiagramButton,
   SampleRegister,
@@ -615,18 +616,17 @@ type ProgressionPlaybackCallbacks = {
 
 /**
  * Plays optimized Stradella realizations with a small set of idiomatic rhythm
- * patterns. A caller may supply the corresponding root-bass button for each
- * chord; chord-row buttons form the accompaniment pulse. The callbacks are used by the diagram to
- * animate the buttons actually being sounded.
+ * patterns. A caller may supply the exact pulse plan used for score notation.
+ * Otherwise the shared planner derives it from the selected physical recipe.
+ * Callbacks highlight only the physical buttons actually sounding.
  */
-/** Schedule rhythmic bass/chord events from selected physical button IDs.
- * A pitch-class-equivalent bass button may be ergonomically different. */
 export function playButtonRhythmProgression(
   combinations: DiagramButton[][],
   options: SoundOptions,
   pattern: ProgressionRhythmPattern,
   callbacks: ProgressionPlaybackCallbacks = {},
   bassOverrides: DiagramButton[][] = [],
+  pulseOverrides?: DiagramButton[][][],
 ) {
   if (!options.enabled || combinations.length === 0) return;
   stopAllSound();
@@ -635,26 +635,19 @@ export function playButtonRhythmProgression(
   const beatsPerChord = pattern === "march" ? 4 : pattern === "waltz" ? 3 : pattern === "oom-pah" ? 2 : 1;
 
   combinations.forEach((buttons, progressionIndex) => {
-    const bassButtons = buttons.filter(
-      (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
+    const pulses = pulseOverrides?.[progressionIndex] ?? progressionPulsePlan(
+      buttons, bassOverrides[progressionIndex] ?? [], pattern,
+      (button) => Math.min(...notesForButton(button, options).map((note) =>
+        note.octave * 12 + (PITCH_INDEX[note.pitchClass] ?? 0))),
     );
-    const chordButtons = buttons.filter((button) => button.kind.startsWith("chord-"));
-    const bassOverride = bassOverrides[progressionIndex] ?? [];
-    const bassPulse = bassOverride.length > 0 ? bassOverride : bassButtons.length > 0 ? bassButtons : buttons;
-    const chordPulse = chordButtons.length > 0 ? chordButtons : buttons;
-    const pulses =
-      pattern === "march"
-        ? [bassPulse, chordPulse, chordPulse, chordPulse]
-        : pattern === "waltz"
-          ? [bassPulse, chordPulse, chordPulse]
-          : pattern === "oom-pah"
-            ? [bassPulse, chordPulse]
-            : [buttons];
 
     pulses.forEach((pulse, beatIndex) => {
       const delay = (progressionIndex * beatsPerChord + beatIndex) * beatMs;
       const timeoutId = window.setTimeout(() => {
-        if (pulse.length === 0) return;
+        if (pulse.length === 0) {
+          callbacks.onActiveButtons?.([], progressionIndex);
+          return;
+        }
         callbacks.onActiveButtons?.(pulse.map((button) => button.id), progressionIndex);
         playNotes(pulse.flatMap((button) => notesForButton(button, options)), options);
       }, delay);

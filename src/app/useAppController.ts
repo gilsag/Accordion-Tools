@@ -1,4 +1,6 @@
+import { progressionPulsePlan } from "../audio/progressionPulsePlan";
 
+import { convertProgressionPreset } from "../tools/harmonyExplorer/progressionPresets";
 import { accordionStatusText, diagramAutoTitle } from "../i18n/diagramLabels";
 import { type StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "../tools/contextualTitles";
@@ -23,6 +25,7 @@ import { useSequenceState, useSequenceResults } from "../features/sequences/useS
 import { useAbcPlayerState, useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
 import { useHarmonyExplorerState, useHarmonyExplorerResults } from "../features/harmonyExplorer/useHarmonyExplorer";
 import { useHarmonyProgressionState, useHarmonyProgressionResults } from "../features/progressionAssistant/useProgressionAssistant";
+import { progressionNoteStep, toggleProgressionNoteId } from "../features/progressionAssistant/progressionNoteSelection";
 import { useStradellaChordFinderState, useStradellaChordFinderResults } from "../features/stradellaChordFinder/useStradellaChordFinder";
 import { useScaleFinderState, useScaleFinderResults } from "../features/scaleFinder/useScaleFinder";
 import { useTrebleChordFinderState, useTrebleChordFinderButtons } from "../features/trebleChordFinder/useTrebleChordFinder";
@@ -60,9 +63,10 @@ import { playButtonArpeggioThenChord, playButtonCombination, playButtonRhythmPro
 import type { ChordFamilyId } from "../tools/harmonyExplorer/music";
 import { CIRCLE_OF_FIFTHS, DEFAULT_RING_VISIBILITY, chordLabel as harmonyChordLabel, chordMidiNotes as harmonyChordMidiNotes, pitchClassesForChord as harmonyPitchClassesForChord } from "../tools/harmonyExplorer/music";
 import type { HarmonyPlaybackStyle } from "../tools/harmonyExplorer/types";
-import type { HarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
+import type { HarmonyRecordedChord, HarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
+import { progressionFinderPattern } from "../tools/harmonyExplorer/progression";
 import { isHarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
-import { progressionBassPulseButtons } from "../tools/harmonyExplorer/progression";
+import { progressionBassPulseButtons, progressionRealizationKey } from "../tools/harmonyExplorer/progression";
 import { finderPatternForHarmonyFamily, harmonyFamilyForFinderPattern, pitchClassNameFromNumber, pitchClassNumberFromName } from "../tools/harmonyExplorer/integration";
 
 /** Renders the full accordion diagram generator application. */
@@ -302,12 +306,16 @@ export function useAppController() {
     harmonyRecordedNotationVisible, setHarmonyRecordedNotationVisible,
     harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying,
     harmonyProgressionManualRoot, setHarmonyProgressionManualRoot,
-    harmonyProgressionManualFamilyId, setHarmonyProgressionManualFamilyId,
+    harmonyProgressionManualPattern, setHarmonyProgressionManualPattern,
     harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations,
     harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
+    harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight,
     harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,
+    harmonyProgressionRealizationKeys, setHarmonyProgressionRealizationKeys,
     harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex,
+    harmonyProgressionNoteStepId, setHarmonyProgressionNoteStepId,
     harmonyProgressionActiveButtonIds, setHarmonyProgressionActiveButtonIds,
+    harmonyProgressionPulseSilent, setHarmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible,
     harmonyRecordedPlaybackTimeoutsRef, harmonyRecordedNotationRef,
     harmonyProgressionIdRef, harmonyProgressionNotationRef,
@@ -332,8 +340,9 @@ export function useAppController() {
     if (activeToolSection !== "progressionAssistant") {
       setHarmonyProgressionNotationVisible(false);
       setHarmonyProgressionActiveButtonIds([]);
+      setHarmonyProgressionPulseSilent(false);
     }
-  }, [activeToolSection, setHarmonyProgressionNotationVisible, setHarmonyProgressionActiveButtonIds]);
+  }, [activeToolSection, setHarmonyProgressionNotationVisible, setHarmonyProgressionActiveButtonIds, setHarmonyProgressionPulseSilent]);
 
   /* Annotation editor and saved note state live outside the renderer. */
   const {
@@ -763,13 +772,13 @@ export function useAppController() {
     isPianoTreble,
   ]);
 
-  const { harmonyProgressionPlan,
-    progressionPreviewButtonIds, harmonyProgressionActiveButtonIdSet,
+  const { harmonyProgressionPlan, harmonyProgressionRealizationOptions,
+    progressionPreviewButtonIds, harmonyProgressionActiveButtonIdSet, harmonyProgressionNoteStep,
   } = useHarmonyProgressionResults({
     basses, buttonSize, spacing, stradellaAccidental, diagramVerticalSpacing,
-    harmonyProgression, harmonyProgressionAllowApproximations,
-    harmonyProgressionHandMovementWeight, harmonyProgressionPreviewIndex,
-    setHarmonyProgressionPreviewIndex, harmonyProgressionActiveButtonIds,
+    harmonyProgression,
+    harmonyProgressionHandMovementWeight, harmonyProgressionVoiceLeadingWeight, harmonyProgressionRealizationKeys, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId,
+    setHarmonyProgressionRealizationKeys, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, harmonyProgressionActiveButtonIds, harmonyProgressionPulseSilent,
     activeToolSection,
   });
 
@@ -1152,24 +1161,15 @@ export function useAppController() {
     return base;
   }
 
-  const progressionRhythmPulses = useCallback((step: (typeof harmonyProgressionPlan.steps)[number]) => {
-    const realizationButtons = step.result.playbackButtons;
-    const realizationBassButtons = realizationButtons.filter(
-      (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
-    );
-    const chordButtons = realizationButtons.filter((button) => button.kind.startsWith("chord-"));
-    const preferredBassPulse = progressionBassPulseButtons(buttons, step);
-    const bassPulse = preferredBassPulse.length > 0
-      ? preferredBassPulse
-      : realizationBassButtons.length > 0
-        ? realizationBassButtons
-        : realizationButtons;
-    const chordPulse = chordButtons.length > 0 ? chordButtons : realizationButtons;
-    if (harmonyProgressionRhythmPattern === "march") return [bassPulse, chordPulse, chordPulse, chordPulse];
-    if (harmonyProgressionRhythmPattern === "waltz") return [bassPulse, chordPulse, chordPulse];
-    if (harmonyProgressionRhythmPattern === "oom-pah") return [bassPulse, chordPulse];
-    return [realizationButtons];
-  }, [buttons, harmonyProgressionRhythmPattern, harmonyProgressionPlan]);
+  const progressionRhythmPulses = useCallback((step: (typeof harmonyProgressionPlan.steps)[number]) =>
+    progressionPulsePlan(
+      step.result.playbackButtons,
+      progressionBassPulseButtons(buttons, step),
+      harmonyProgressionRhythmPattern,
+      (button) => Math.min(...notesForButton(button, soundOptions).map((note) =>
+        note.octave * 12 + (pitchClassNumberFromName(note.pitchClass) ?? 0))),
+    ),
+  [buttons, harmonyProgressionRhythmPattern, soundOptions, harmonyProgressionPlan]);
 
   const harmonyProgressionRenderedNotationAbc = useMemo(() => {
     if (!harmonyProgressionPlan.playable || harmonyProgressionPlan.steps.length === 0) return "";
@@ -1192,13 +1192,12 @@ export function useAppController() {
           .flatMap((button) => notesForButton(button, soundOptions))
           .map((note) => abcNameForConcreteNote(note.pitchClass, note.octave));
         const unique = [...new Set(notes)];
-        return `${index === 0 ? `"${step.label}"` : ""}[${unique.join("")}]`;
+        return `${index === 0 ? `"${step.label}"` : ""}${unique.length ? `[${unique.join("")}]` : "z"}`;
       });
       return tokens.join(" ");
     });
     return [
       "X:1",
-      "T:Optimized Stradella progression",
       `M:${meter}`,
       "L:1/4",
       `Q:1/4=${soundSequenceTempoBpm}`,
@@ -1311,7 +1310,7 @@ export function useAppController() {
     rootPc: number,
     familyId: ChordFamilyId,
     sectorIndex = harmonyProgressionSectorIndex(rootPc),
-  ): HarmonyProgressionChord {
+  ): HarmonyRecordedChord {
     const id = `harmony-progression-${harmonyProgressionIdRef.current++}`;
     return { id, rootPc, familyId, sectorIndex };
   }
@@ -1422,11 +1421,27 @@ export function useAppController() {
     setHarmonyProgression(recordedChords.map((chord) => ({ ...chord, id: `harmony-progression-${harmonyProgressionIdRef.current++}` })));
     setHarmonyProgressionRecording(false);
     setHarmonyRecordedNotationVisible(false);
+    setHarmonyProgressionNoteStepId(null);
     enterProgressionAssistant(progressionDestinationPorts(), "transfer");
   }
 
   function sameHarmonyProgressionChord(a: HarmonyProgressionChord | undefined, b: HarmonyProgressionChord) {
-    return !!a && a.rootPc === b.rootPc && a.familyId === b.familyId;
+    return !!a && a.rootPc === b.rootPc && progressionFinderPattern(a) === progressionFinderPattern(b);
+  }
+
+  function useHarmonyProgressionPreset(id: string, keyRoot: string) {
+    const definition = chordProgressionDefinitions.find((item) => item.id === id);
+    if (!definition) return;
+    const converted = convertProgressionPreset(definition, keyRoot);
+    if (converted.unsupported.length > 0 || converted.chords.length === 0) return;
+    stopSoundPlayback();
+    setHarmonyProgressionActiveButtonIds([]);
+    setHarmonyProgressionRealizationKeys({});
+    setHarmonyProgressionPreviewIndex(null);
+    setHarmonyProgressionNoteStepId(null);
+    setHarmonyProgression(converted.chords.map(({ rootPc, pattern, sectorIndex }) => ({
+      id: `harmony-progression-${harmonyProgressionIdRef.current++}`, rootPc, pattern, sectorIndex,
+    })));
   }
 
   function addManualHarmonyProgressionChord() {
@@ -1434,7 +1449,9 @@ export function useAppController() {
     if (rootPc === null) return;
     setHarmonyProgression((current) => [
       ...current,
-      makeHarmonyProgressionChord(rootPc, harmonyProgressionManualFamilyId),
+      { id: `harmony-progression-${harmonyProgressionIdRef.current++}`,
+        rootPc, pattern: harmonyProgressionManualPattern,
+        sectorIndex: harmonyProgressionSectorIndex(rootPc) },
     ]);
   }
 
@@ -1473,45 +1490,73 @@ export function useAppController() {
     });
   }
 
+  function cycleHarmonyProgressionRealization(index: number, direction: -1 | 1) {
+    const chord = harmonyProgression[index];
+    if (!chord) return;
+    const available = harmonyProgressionRealizationOptions[chord.id] ?? [];
+    if (available.length === 0) return;
+    // The first position is Auto (global optimized path), followed by every
+    // original-ranked Chord Finder candidate, including ranks beyond five.
+    const choices = [null, ...available.map(({ result }) => progressionRealizationKey(result))];
+    const current = harmonyProgressionRealizationKeys[chord.id] ?? null;
+    const position = Math.max(0, choices.indexOf(current));
+    const selected = choices[(position + direction + choices.length) % choices.length];
+    stopSoundPlayback(); // An old scheduled rhythm must never play against a new visible plan.
+    setHarmonyProgressionActiveButtonIds([]);
+    setHarmonyProgressionRealizationKeys((previous) => {
+      const next = { ...previous };
+      if (selected === null) delete next[chord.id];
+      else next[chord.id] = selected;
+      return next;
+    });
+    // If a different chord owns the eye, its notes must not override the
+    // realization now being navigated with the arrows.
+    if (harmonyProgressionNoteStepId && harmonyProgressionNoteStepId !== chord.id) setHarmonyProgressionNoteStepId(null);
+    setHarmonyProgressionPreviewIndex(index);
+  }
+
   function previewHarmonyProgressionStepOnStradella(index: number) {
     const step = harmonyProgressionPlan.steps[index];
     if (!step) return;
     setHarmonyProgressionPreviewIndex(index);
+    setHarmonyProgressionNoteStepId(step.chord.id);
     enterProgressionAssistant(progressionDestinationPorts(), "preview");
   }
 
-  function openHarmonyProgressionStepInChordFinder(index: number) {
-    const step = harmonyProgressionPlan.steps[index];
-    if (!step) return;
-    const pattern = finderPatternForHarmonyFamily(step.chord.familyId);
-    if (!pattern) return;
-    const resultKey = step.result.playbackButtons.map((button) => button.id).sort().join("|");
-    setPendingProgressionRealizationKey(resultKey);
-    enterStradellaFinder(stradellaFinderDestinationPorts(() => {
-      setStradellaChordFinderRoot(pitchClassNameFromNumber(step.chord.rootPc));
-      setStradellaChordFinderRequestedBass(null);
-      setStradellaChordFinderPattern(pattern);
-      setStradellaChordFinderMode("bass-and-chords");
-    }), "progression-step");
+  function toggleHarmonyProgressionStepNotes(id: string) {
+    if (!progressionNoteStep(harmonyProgressionPlan, id)) return;
+    const index = harmonyProgressionPlan.steps.findIndex((step) => step.chord.id === id);
+    if (index < 0) return;
+    if (toggleProgressionNoteId(harmonyProgressionNoteStepId, id) === null) {
+      setHarmonyProgressionNoteStepId(null);
+      setHarmonyProgressionPreviewIndex(null);
+    } else {
+      stopSoundPlayback();
+      setHarmonyProgressionNoteStepId(id);
+      // Routing retains the tool and the Stradella side; it cannot pin or
+      // change this step's sounding realization.
+      previewHarmonyProgressionStepOnStradella(index);
+    }
   }
 
   function playOptimizedHarmonyProgression() {
     if (!harmonyProgressionPlan.playable) return;
     setHarmonyProgressionActiveButtonIds([]);
+    setHarmonyProgressionPulseSilent(false);
     playButtonRhythmProgression(
       harmonyProgressionPlan.steps.map((step) => step.result.playbackButtons),
       soundOptions,
       harmonyProgressionRhythmPattern,
       {
         onActiveButtons: (buttonIds, progressionIndex) => {
+          setHarmonyProgressionPulseSilent(buttonIds.length === 0);
           setHarmonyProgressionActiveButtonIds(buttonIds);
           setHarmonyProgressionPreviewIndex(progressionIndex);
         },
-        onDone: () => setHarmonyProgressionActiveButtonIds([]),
+        onDone: () => { setHarmonyProgressionActiveButtonIds([]); setHarmonyProgressionPulseSilent(false); },
       },
-      harmonyProgressionPlan.steps.map((step) =>
-        progressionBassPulseButtons(buttons, step),
-      ),
+      harmonyProgressionPlan.steps.map((step) => progressionBassPulseButtons(buttons, step)),
+      harmonyProgressionPlan.steps.map(progressionRhythmPulses),
     );
   }
 
@@ -1810,6 +1855,7 @@ export function useAppController() {
     stopBassPatternPlayback();
     stopAllSound();
     setHarmonyProgressionActiveButtonIds([]);
+    setHarmonyProgressionPulseSilent(false);
   }
 
   /** Clear Harmony selection/recording without discarding user preferences. */
@@ -1820,7 +1866,9 @@ export function useAppController() {
     setHarmonyRecordedProgression([]);
     setHarmonyRecordedNotationVisible(false);
     setHarmonyProgressionPreviewIndex(null);
+    setHarmonyProgressionNoteStepId(null);
     setHarmonyProgressionActiveButtonIds([]);
+    setHarmonyProgressionPulseSilent(false);
     stopAllSound();
   }
 
@@ -1852,6 +1900,7 @@ export function useAppController() {
 
   /** Work reset deliberately leaves preferences (including sample settings) alone. */
   function resetDiagramWork() {
+    setHarmonyProgressionNoteStepId(null);
     resetDiagramWorkState({
       setOverlays, setSequenceSteps, setRecording: setIsRecordingSequence,
       setApplyingFingering: setIsApplyingFingering,
@@ -2071,7 +2120,22 @@ export function useAppController() {
     ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult, stradellaRegisterModel, stradellaChordFinderRequestedBass, stradellaNoteLevels, chordDisplayStyle, language)
     : null;
   const finderAnnotationActive = side === "stradella" && stradellaChordFinderActive && finderAnnotation !== null;
-  const finderFooterEnabled = finderAnnotationActive && showFinderRealizationNote && Boolean(finderAnnotation?.lines.length);
+  const progressionNotePattern = harmonyProgressionNoteStep ? progressionFinderPattern(harmonyProgressionNoteStep.chord) : null;
+  const progressionNoteRoot = harmonyProgressionNoteStep ? pitchClassNameFromNumber(harmonyProgressionNoteStep.chord.rootPc) : null;
+  const progressionAnnotationActive = side === "stradella" && activeToolSection === "progressionAssistant" &&
+    Boolean(harmonyProgressionNoteStep && progressionNotePattern && progressionNoteRoot) &&
+    harmonyProgressionActiveButtonIds.length === 0 && !harmonyProgressionPulseSilent;
+  const progressionAnnotation = progressionAnnotationActive && harmonyProgressionNoteStep && progressionNotePattern && progressionNoteRoot
+    ? realizationAnnotation(progressionNoteRoot, progressionNotePattern, harmonyProgressionNoteStep.result,
+      stradellaRegisterModel, null, stradellaNoteLevels, chordDisplayStyle, language)
+    : null;
+  // One common diagram-note pipeline: Finder annotations or eye-selected
+  // progression realization. Never infer the played buttons from guide markers.
+  const diagramNoteAnnotation = progressionAnnotation ?? (finderAnnotationActive && showFinderRealizationNote ? finderAnnotation : null);
+  const diagramNoteRoot = progressionAnnotation ? progressionNoteRoot! : stradellaChordFinderRoot;
+  const diagramNotePattern = progressionAnnotation ? progressionNotePattern! : stradellaChordFinderPattern;
+  const diagramNotePlaybackButtons = progressionAnnotation ? harmonyProgressionNoteStep!.result.playbackButtons : stradellaChordFinderResult.playbackButtons;
+  const finderFooterEnabled = Boolean(diagramNoteAnnotation?.lines.length);
   const finderLineLabels = {
     identity: `${t("analysis.harmonicIdentity")}:`,
     pitchClasses: `${t("analysis.pitchClassRealization")}:`,
@@ -2080,20 +2144,20 @@ export function useAppController() {
   } satisfies Record<keyof StradellaNoteLevels, string>;
   const annotationLevelForLine = (line: string): keyof StradellaNoteLevels | null =>
     (Object.entries(finderLineLabels).find(([, prefix]) => line.startsWith(prefix))?.[0] as keyof StradellaNoteLevels | undefined) ?? null;
-  const finderVoicingAnalysis = finderAnnotationActive && showFinderRealizationNote && showStradellaVoicingIntervals && stradellaNoteLevels.voicing
+  const finderVoicingAnalysis = finderFooterEnabled && showStradellaVoicingIntervals && stradellaNoteLevels.voicing
     ? analyzeConfiguredStradellaVoicing(
-      stradellaChordFinderResult.playbackButtons,
-      stradellaChordFinderRoot,
+      diagramNotePlaybackButtons,
+      diagramNoteRoot,
       stradellaRegisterModel,
     )
     : null;
   const finderVoicingLayout = finderVoicingAnalysis ? voicingIntervalLayout(finderVoicingAnalysis.notes, {
     fontSize: finderExplanationFontSize,
-    displayLabel: (note, count) => `${chordToneName(stradellaChordFinderRoot, stradellaChordFinderPattern, note.pitchClass)}${note.octave}${count > 1 ? ` ×${count}` : ""}`,
+    displayLabel: (note, count) => `${chordToneName(diagramNoteRoot, diagramNotePattern, note.pitchClass)}${note.octave}${count > 1 ? ` ×${count}` : ""}`,
   }) : null;
   const finderVoicingChartVisible = Boolean(finderVoicingLayout && finderVoicingLayout.positions.length >= 2);
   // The note generator owns the stable ordering, independently of the chart toggle.
-  const finderAnnotationDisplayLines = finderAnnotation?.lines ?? [];
+  const finderAnnotationDisplayLines = diagramNoteAnnotation?.lines ?? [];
   // Report the actual highlighted buttons for every chord family.
   const trebleChordExplanation = describeTrebleChord(
     chordFinderButtons, chordFinderRoot, chordFinderPattern, trebleChordVoicingMode, language,
@@ -2101,6 +2165,7 @@ export function useAppController() {
   const trebleVoicingNote = side === "treble" && chordFinderActive ? trebleChordExplanation.note : "";
   const trebleFooterEnabled = Boolean(showTrebleVoicingNote && trebleVoicingNote);
   const contextualTitle = (() => {
+    if (progressionAnnotationActive && progressionAnnotation) return progressionAnnotation.title;
     if (side === "stradella" && stradellaChordFinderActive) {
       return finderAnnotationActive ? finderAnnotation?.title ?? localizedAutoTitle()
         : `${displayRealizedChord(stradellaChordFinderRoot, stradellaChordFinderPattern, realizedChordName(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderRequestedBass, stradellaChordFinderRequestedBass, `${displayRoot(stradellaChordFinderRoot)}${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern).slice(stradellaChordFinderRoot.length)}`), chordDisplayStyle)} - ${t("ui.titleNoRealization")}`;
@@ -2235,7 +2300,7 @@ export function useAppController() {
       SEQUENCE_DISPLAY_MODE_OPTIONS, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName,
       abcMappedEvents, abcMissingPitchText, abcParseResult, abcPlaybackState, abcPositionBeat,
       abcStradellaMode, abcTempoBpm, abcText, abcTotalBeats, abcTrebleChordSymbolsMode,
-      activeToolSection, addManualHarmonyProgressionChord, addSelectedHarmonyRelationshipToProgression, annotationBold, annotationButtonAnchor,
+      activeToolSection, useHarmonyProgressionPreset, addManualHarmonyProgressionChord, addSelectedHarmonyRelationshipToProgression, annotationBold, annotationButtonAnchor,
       annotationItalic, annotationLocationLabel, annotationOffsetPercent, annotationPreview, applyFingerToSelected,
       bassPatternBarsPerChord, bassPatternChordVoicing, bassPatternDefinitions, bassPatternEditorErrors, bassPatternEditorExpanded,
       bassPatternEditorMessage, bassPatternEditorText, bassPatternEvents, bassPatternExportFormat, bassPatternId,
@@ -2248,11 +2313,11 @@ export function useAppController() {
       finderMaxButtons, finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel,
       formatStradellaFinderPitches, formatStradellaFinderText, formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel,
       harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression, harmonyProgressionAllowApproximations, harmonyProgressionHandMovementWeight,
-      harmonyProgressionManualFamilyId, harmonyProgressionManualRoot, harmonyProgressionPlan, harmonyProgressionPreviewIndex, harmonyProgressionRecording,
+      harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes, harmonyProgressionRecording,
       harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyRecordedProgressionPlaying, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
       harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering,
       isRecordingSequence, isTrebleLikeSide, language, loadAbcExample, loadSelectedPatternIntoEditor,
-      moveHarmonyProgressionChord, openHarmonyProgressionStepInChordFinder, pauseAbcPlayback, playChordFinder, playHarmonyRecordedProgression,
+      moveHarmonyProgressionChord, pauseAbcPlayback, playChordFinder, playHarmonyRecordedProgression,
       playOptimizedHarmonyProgression, playRecordedSequence, playScaleFinder, playSelectedButtons, playStradellaChordFinder,
       previewHarmonyProgressionStepOnStradella, removeHarmonyProgressionChord, removeSelectedCustomBassPattern, resetHarmonyExplorer, saveCustomBassPattern,
       scaleFinderActive, scaleFinderButtons, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
@@ -2267,7 +2332,7 @@ export function useAppController() {
       setChordFinderInversion, setChordFinderOctave, setChordFinderPattern, setChordFinderRoot, setChordProgressionId,
       setFinderExplanationFontSize, setFinderMaxButtons, setFinderSpanColumns, setFingeringDraft, setFingeringPosition,
       setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyProgression, setHarmonyProgressionAllowApproximations, setHarmonyProgressionHandMovementWeight,
-      setHarmonyProgressionManualFamilyId, setHarmonyProgressionManualRoot, setHarmonyProgressionPreviewIndex, setHarmonyProgressionRhythmPattern, setHarmonyReferenceFamilyId,
+      setHarmonyProgressionManualPattern, setHarmonyProgressionManualRoot, setHarmonyProgressionVoiceLeadingWeight, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, setHarmonyProgressionRhythmPattern, setHarmonyReferenceFamilyId,
       setHarmonyRelatedFamilyId, setHarmonyScaleId, setHarmonyShowNoteRing, setIsApplyingFingering, setIsRecordingSequence,
       setScaleFinderActive, setScaleFinderDisplayMode, setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
       setSelectionOnClick, setSequenceArrowheadSize, setSequenceColorPreset, setSequenceDisplayMode, setSequenceNumberColorPreset,
@@ -2290,7 +2355,7 @@ export function useAppController() {
       bellowsEndLabel, bellowsLabelY, bellowsStartLabel, bellowsStripY, buttonSize,
       buttonTrebleFooter, buttons, cancelInlineAnnotation, chordDisplayStyle, chordFinderActive,
       chordFinderButtons, chordLabelMode, clearHarmonyWork, colorTheme, commitInlineAnnotation,
-      downloadCurrentDiagram, downloadFormat, effectiveTitleSize, finalTitle, finderAnnotationDisplayLines,
+      downloadCurrentDiagram, downloadFormat, effectiveTitleSize, finalTitle, diagramNoteRoot, diagramNotePattern, finderAnnotationDisplayLines,
       finderArrowheadMarkerId, finderButtonIds, finderExplanationFontSize, finderFooterEnabled, finderFooterHeight,
       finderVoicingAnalysis, finderVoicingChartVisible, fingeringPosition, getMainLabel, handleHarmonyChordActivated,
       handleSvgClick, harmonyAllFamiliesMode, harmonyAvailableCounts, harmonyColorByFamily, harmonyCounts,
