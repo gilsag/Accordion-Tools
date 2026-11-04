@@ -31,7 +31,7 @@ for (const { code } of SUPPORTED_LANGUAGES) {
 
 const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
 const explorer = readFileSync("src/features/harmonyExplorer/useHarmonyExplorer.ts", "utf8");
-// Settings import/serialization contracts live in the Phase 2 settings controller.
+// Settings import/serialization contracts live in the settings controller.
 const settingsController = readFileSync("src/settings/settingsController.ts", "utf8");
 const circle = readFileSync("src/tools/harmonyExplorer/components/HarmonicCircle.tsx", "utf8");
 const panel = readFileSync("src/components/tools/HarmonyExplorerPanel.tsx", "utf8");

@@ -1,15 +1,43 @@
-import type { DiagramButton } from "../../types";
+import type { DiagramButton, FinderChordPattern } from "../../types";
+import { intervalsForChordFinder, chordFinderLabel } from "../../music/chordDefinitions";
+import { displayFinderChord, type ChordDisplayStyle } from "../chordDisplay";
 import { getStradellaChordFinderResults, type StradellaChordFinderResult } from "../stradellaChordFinderTools";
 import { analyzeVoiceLeading, chordFamily, chordLabel, pitchClassesForChord, type ChordFamilyId } from "./music";
 import { finderPatternForHarmonyFamily, pitchClassNameFromNumber, pitchClassNumberFromName } from "./integration";
 
-export type HarmonyProgressionChord = {
+/** Harmony transfers retain their established family IDs. New Progression
+ * Assistant entries instead retain the exact shared Finder chord identifier.
+ * Neither identity is synthesized from the other's interval set.
+ */
+export type HarmonyRecordedChord = {
   id: string;
   kind?: "chord";
   rootPc: number;
   familyId: ChordFamilyId;
   sectorIndex: number;
 };
+
+export type HarmonyProgressionChord = HarmonyRecordedChord | {
+  id: string;
+  kind?: "chord";
+  rootPc: number;
+  pattern: FinderChordPattern;
+  sectorIndex: number;
+};
+
+/** The only conversion into the search engine: existing Harmony adapters or
+ * the Finder's own canonical pattern. Unsupported Harmony chords stay unknown.
+ */
+export function progressionFinderPattern(chord: HarmonyProgressionChord): FinderChordPattern | null {
+  return "pattern" in chord ? chord.pattern : finderPatternForHarmonyFamily(chord.familyId);
+}
+
+export function progressionChordLabel(chord: HarmonyProgressionChord, style?: ChordDisplayStyle): string {
+  if ("pattern" in chord) {
+    return displayFinderChord(pitchClassNameFromNumber(chord.rootPc), chord.pattern, style ?? "compact");
+  }
+  return chordLabel(chord.rootPc, chord.familyId, chord.sectorIndex, false, style);
+}
 
 export type HarmonyProgressionNote = {
   id: string;
@@ -19,18 +47,22 @@ export type HarmonyProgressionNote = {
 };
 
 /** One event captured by the Harmony recorder. */
-export type HarmonyRecordedEvent = HarmonyProgressionChord | HarmonyProgressionNote;
+export type HarmonyRecordedEvent = HarmonyRecordedChord | HarmonyProgressionNote;
 
 export function isHarmonyProgressionChord(
   event: HarmonyRecordedEvent,
-): event is HarmonyProgressionChord {
+): event is HarmonyRecordedChord {
   return event.kind !== "note";
 }
 
 export type ProgressionOptimizationOptions = {
   allowApproximations: boolean;
   handMovementWeight: number;
+  /** Independent 0..1 transition coefficient, session-owned (not in settings JSON). */
+  voiceLeadingWeight?: number;
   maxRealizationsPerChord?: number;
+  /** Explicit user choices by stable progression-step ID and sounding button IDs. */
+  fixedRealizationKeys?: Readonly<Record<string, string>>;
 };
 
 export type ProgressionTransitionMetrics = {
@@ -63,7 +95,8 @@ type Candidate = {
   realizationIndex: number;
   soundingPcs: number[];
   compactness: number;
-  exactnessPenalty: number;
+  /** Original Finder rank (0-based); the existing Finder owns this preference. */
+  rankCost: number;
 };
 
 type DynamicState = {
@@ -209,7 +242,29 @@ function transitionMetrics(from: Candidate, to: Candidate, spacingUnit: number):
 }
 
 function chordDisplayLabel(chord: HarmonyProgressionChord) {
-  return chordLabel(chord.rootPc, chord.familyId, chord.sectorIndex, false);
+  return progressionChordLabel(chord);
+}
+
+/** Stable physical recipe identity, excluding visually highlighted reference buttons. */
+export function progressionRealizationKey(result: StradellaChordFinderResult) {
+  return result.playbackButtons.map((button) => button.id).sort().join("|");
+}
+
+/** The same full, original-ranked candidates used by the Stradella Chord Finder.
+ * This list is for explicit browsing; automatic optimization still uses its
+ * historical first-five shortlist unless a user pins a specific realization.
+ */
+export function progressionRealizationsForChord(
+  buttons: DiagramButton[],
+  chord: HarmonyProgressionChord,
+  allowApproximations: boolean,
+) {
+  const pattern = progressionFinderPattern(chord);
+  if (!pattern) return [];
+  return getStradellaChordFinderResults(
+    buttons, pitchClassNameFromNumber(chord.rootPc), pattern, "bass-and-chords", true,
+  ).map((result, realizationIndex) => ({ result, realizationIndex }))
+    .filter(({ result }) => result.playable && (allowApproximations || result.exact));
 }
 
 /* Limit each progression layer to usable candidate recipes. The global
@@ -221,20 +276,18 @@ function candidatesForChord(
   spacingUnit: number,
   options: ProgressionOptimizationOptions,
 ): Candidate[] {
-  const pattern = finderPatternForHarmonyFamily(chord.familyId);
+  const pattern = progressionFinderPattern(chord);
   if (!pattern) return [];
   const root = pitchClassNameFromNumber(chord.rootPc);
   const maxResults = options.maxRealizationsPerChord ?? 5;
-  const results = getStradellaChordFinderResults(
-    buttons,
-    root,
-    pattern,
-    "bass-and-chords",
-    true,
-  ).slice(0, maxResults);
-
-  const playable = results
-    .map((result, realizationIndex) => ({ result, realizationIndex }))
+  const allResults = getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true);
+  const pinnedKey = options.fixedRealizationKeys?.[chord.id];
+  // A pinned result may lie well below the automatic top-five candidates.
+  // Never silently replace it with another sounding recipe.
+  const playable = (pinnedKey
+    ? allResults.map((result, realizationIndex) => ({ result, realizationIndex }))
+      .filter(({ result }) => progressionRealizationKey(result) === pinnedKey)
+    : allResults.slice(0, maxResults).map((result, realizationIndex) => ({ result, realizationIndex })))
     .filter(({ result }) => result.playable)
     .filter(({ result }) => options.allowApproximations || result.exact);
 
@@ -244,23 +297,23 @@ function candidatesForChord(
     // Harmonic fidelity and physical ergonomics are deliberately kept separate.
     // Two realizations that sound the same pitch classes (for example the same
     // pitch on fundamental-bass vs counterbass rows) therefore receive the same
-    // harmonic score; compactness is applied only through the physical term.
-    const exactnessPenalty = result.exact ? 0 : 8;
+    // harmonic score; compactness is available for diagnostics, not rescored.
     return {
       result,
       realizationIndex,
       soundingPcs,
       compactness,
-      exactnessPenalty,
+      rankCost: realizationIndex,
     };
   });
 }
 
 /**
- * Optimizes an entire progression with dynamic programming. The harmonic and
- * physical terms are evaluated transition-by-transition; the physical weight
- * is user controlled and the complementary weight is assigned to harmonic
- * pitch-class motion.
+ * Optimizes an entire progression with dynamic programming. Finder rank is the
+ * per-chord cost; two independently controlled transition terms trade against
+ * it. The reference scales normalize typical movement distances, not measured
+ * biomechanics. At zero on both controls, each unpinned step selects Finder #1
+ * (or the best admissible rank when approximations are disabled).
  */
 export function optimizeStradellaProgression(
   buttons: DiagramButton[],
@@ -299,8 +352,12 @@ export function optimizeStradellaProgression(
     };
   }
 
-  const handWeight = Math.max(0, Math.min(1, options.handMovementWeight));
-  const harmonicWeight = 1 - handWeight;
+  // Each 0..1 slider can contribute at most 3 rank-cost units per reference
+  // distance (2 button spacings or 4 semitones). Independent coefficients mean
+  // turning both to zero disables all transition optimization, unlike the old
+  // complementary cross-fade. These constants should be tuned with user tests.
+  const handWeight = 3 * Math.max(0, Math.min(1, options.handMovementWeight)) / 2;
+  const harmonicWeight = 3 * Math.max(0, Math.min(1, options.voiceLeadingWeight ?? 0)) / 4;
   const states: DynamicState[][] = candidateLayers.map((layer) => layer.map(() => ({
     cost: Number.POSITIVE_INFINITY,
     previousIndex: null,
@@ -309,7 +366,7 @@ export function optimizeStradellaProgression(
 
   candidateLayers[0].forEach((candidate, index) => {
     states[0][index] = {
-      cost: candidate.exactnessPenalty + handWeight * candidate.compactness * 0.12,
+      cost: candidate.rankCost,
       previousIndex: null,
       transition: null,
     };
@@ -328,8 +385,7 @@ export function optimizeStradellaProgression(
           harmonicWeight * transition.harmonicMotion;
         const cost = previousState.cost
           + transitionCost
-          + candidate.exactnessPenalty
-          + handWeight * candidate.compactness * 0.12;
+          + candidate.rankCost;
         if (cost < states[layerIndex][currentIndex].cost) {
           states[layerIndex][currentIndex] = {
             cost,
@@ -389,9 +445,11 @@ export function optimizeStradellaProgression(
 }
 
 export function progressionChordFamilyName(chord: HarmonyProgressionChord) {
-  return chordFamily(chord.familyId).name;
+  return "pattern" in chord ? chordFinderLabel(chord.pattern) : chordFamily(chord.familyId).name;
 }
 
 export function progressionTargetPitchClasses(chord: HarmonyProgressionChord) {
-  return pitchClassesForChord(chord.rootPc, chord.familyId);
+  return "pattern" in chord
+    ? [...new Set(intervalsForChordFinder(chord.pattern).map((interval) => (chord.rootPc + interval) % 12))]
+    : pitchClassesForChord(chord.rootPc, chord.familyId);
 }

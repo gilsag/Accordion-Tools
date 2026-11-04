@@ -75,16 +75,18 @@ for (const catalog of [EN, ES]) {
   }
 }
 // Lightweight integration contracts for UI state and exported SVG captions.
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-// Settings serialization and import validation moved out of App in Phase 2.
+// Settings serialization and import validation are owned by settingsController.
 const settingsController = readFileSync("src/settings/settingsController.ts", "utf8");
 const panel = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
 const defaults = JSON.parse(readFileSync("public/default-settings.json", "utf8"));
 assert.deepEqual(defaults.stradellaNoteLevels, DEFAULT_STRADELLA_NOTE_LEVELS);
 assert.match(settingsController, /stradellaNoteLevels,\r?\n\s+stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,\r?\n\s+stradellaMinimumNominalGap,\r?\n\s+diagramVerticalSpacing/);
 assert.match(settingsController, /normalizeStradellaNoteLevels\(settings.stradellaNoteLevels\)/);
-assert.match(app, /finderAnnotationDisplayLines\.map/);
-assert.match(app, /Boolean\(finderAnnotation\?\.lines.length\)/);
+// The four note-level and empty-note cases above assert the generated content.
+// Progression eye selection is exercised by progression-eye-entry.test.cjs.
+// Keep one view-level guard for the SVG footer, not a controller-expression snapshot.
+assert.ok(/\(finderFooterEnabled \|\| trebleFooterEnabled\) && \(/.test(readFileSync("src/app/views/WorkspaceView.tsx", "utf8")),
+  "workspace renders the footer whenever the active diagram note has visible lines");
 assert.match(panel, /noteLevels\[level\]/);
 // UI labels are translated at render time; verify bindings and both language catalogs.
 for (const [level, key] of [

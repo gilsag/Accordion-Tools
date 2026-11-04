@@ -59,7 +59,7 @@ You can customize chord-symbol styles (for example, C/Cm or CM/Cm), instrument r
 - **Practice and diagram tools:** [Bass Pattern Player](docs/bass-pattern-player.md), [ABC Player](docs/abc-player.md), [Sequence](docs/sequence-tool.md), [Fingering](docs/fingering-tool.md), [Selection](docs/selection-tool.md), and [Annotations](docs/annotate-diagram-tool.md).
 - **Configuration and development:** [Settings](docs/settings.md), [Bass Pattern format](docs/bass-pattern-format.md), [Developer Guide](docs/internal/developer-guide.md), and [Modularization Roadmap](docs/internal/modularization-roadmap.md).
 
-The Progression Assistant currently selects its chord realizations automatically; choosing alternative realizations for individual chords is a planned enhancement.
+The Progression Assistant supports automatic global optimization or an explicit Stradella Chord Finder realization for each progression step. Left/right controls preserve original candidate ranks while allowing the remaining steps to be optimized around the chosen ones. It also offers independent physical-movement and pitch-class voice-leading controls, plus progression presets from the existing Bass Pattern Player catalog.
 
 ## Run locally
 
@@ -76,7 +76,7 @@ To run the full regression checks and analyze the production build:
 npm run verify:release
 ```
 
-For a normal production build, run `npm run build`. See the [Developer Guide](docs/internal/developer-guide.md) for architecture and contributor information.
+`npm run verify:release` runs lint, musical and UI regression tests (including responsive checks), release metadata checks, a production build, and the bundle audit. For faster diagnosis, use `npm run test:modules`, `npm run test:responsive`, or a specific `test:*` script. See the [Developer Guide](docs/internal/developer-guide.md) and [Test-suite maintenance guide](docs/internal/test-suite-maintenance-audit.md) for the current test inventory and contributor policy. For a normal production build, run `npm run build`.
 
 ## Acknowledgements and license
 
@@ -86,4 +86,4 @@ The Stradella Chord Finder was informed in part by the [Stradella Explorer](http
 
 The project source and documentation are licensed under **CC BY-NC 4.0**. Diagrams you create with Accordion Tools may be used for any purpose, including commercial use. See [LICENSE](LICENSE) for details. Third-party assets retain their own licenses and attribution requirements.
 
-**Version:** 0.16.0 · [Release history](VERSION_HISTORY.md)
+**Version:** 0.17.0 · [Release history](VERSION_HISTORY.md)

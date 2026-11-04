@@ -1,10 +1,8 @@
 import { translateKnownLabel } from "../../i18n/catalog";
-/* Stradella Chord Finder UI. The tools layer owns candidate generation,
-   ranking, and registral analysis; this panel only displays the selected
-   result and accepts settings/actions from the parent application. */
+/* Left-hand Stradella Finder controls. The inspector presents candidate
+   results; the existing feature hook owns selection, search and rankings. */
 
 import type { FinderChordPattern, StradellaChordFinderMode } from "../../types";
-import { displayRealizedChord, type ChordDisplayStyle } from "../../tools/chordDisplay";
 import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 import {
@@ -12,15 +10,12 @@ import {
   type StradellaChordFinderResult,
 } from "../../tools/stradellaChordFinderTools";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
-import { explainStradellaRealization } from "../../tools/stradellaChordFinder/explainRealization";
 import { HelpTip } from "../ui/HelpTip";
 import { BinaryChoiceButton } from "../ui/BinaryChoiceButton";
 import { useI18n } from "../../i18n/useI18n";
-import { analyzeConfiguredStradellaVoicing, formatModeledStradellaNotes, type StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
 import { permittedRequestedBasses } from "../../tools/stradellaChordFinder/harmonicIdentity";
+import { chordToneName } from "../../tools/stradellaChordFinder/chordSpelling";
 import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
-import { chordToneName, displayRoot, realizedChordName } from "../../tools/stradellaChordFinder/chordSpelling";
-import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
 import type { MinimumNominalGap } from "../../tools/stradellaChordFinder/voicingDensity";
 
 type StradellaChordFinderPanelProps = {
@@ -37,8 +32,6 @@ type StradellaChordFinderPanelProps = {
   markRootBass: boolean;
   onMarkRootBassChange: (value: boolean) => void;
   result: StradellaChordFinderResult;
-  registerModel: StradellaRegisterModel;
-  chordDisplayStyle: ChordDisplayStyle;
   showRealizationNote: boolean;
   noteLevels: StradellaNoteLevels;
   showVoicingIntervals: boolean;
@@ -58,15 +51,12 @@ type StradellaChordFinderPanelProps = {
   onDownloadAll: () => void;
   batchExporting: boolean;
   onSpanColumnsChange: (value: number) => void;
-  buttonCount: number;
   playbackButtonCount: number;
   isActive: boolean;
   onToggleActive: () => void;
   onPlay: () => void;
   canExploreHarmony: boolean;
   onExploreHarmony: () => void;
-  formatPitches: (pitches: string[]) => string;
-  formatText: (text: string) => string;
 };
 
 /** Left-hand chord finder panel for Stradella layouts. */
@@ -84,8 +74,6 @@ export function StradellaChordFinderPanel({
   markRootBass,
   onMarkRootBassChange,
   result,
-  registerModel,
-  chordDisplayStyle,
   showRealizationNote,
   noteLevels,
   showVoicingIntervals,
@@ -105,21 +93,15 @@ export function StradellaChordFinderPanel({
   onDownloadAll,
   batchExporting,
   onSpanColumnsChange,
-  buttonCount,
   playbackButtonCount,
   isActive,
   onToggleActive,
   onPlay,
   canExploreHarmony,
   onExploreHarmony,
-  formatPitches,
-  formatText,
 }: StradellaChordFinderPanelProps) {
   const { t, language } = useI18n();
-  const modeledVoicing = analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel);
   const spell = (pc: string) => chordToneName(root, pattern, pc);
-  const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
-  const statusText = !result.playable ? t("common.notFound") : result.exact ? t("common.exactReady") : t("common.approxReady");
   const noteLevelOptions = [
     ["identity", t("tools.harmonicIdentity")],
     ["pitchClasses", t("tools.pitchClassRealization")],
@@ -225,18 +207,6 @@ export function StradellaChordFinderPanel({
         </label>
 
         {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
-          <label>
-            <span className="label-line">{t("tools.realization")} <HelpTip text={t("ui.realizationHelp")} /></span>
-            <select value={realizationIndex} onChange={(event) => onRealizationChange(Number(event.target.value))}>
-              {realizations.map((candidate, index) => (
-                <option key={`${index}-${candidate.playbackButtons.map((button) => button.id).join("-")}`} value={index}>
-                  {candidate.recommended ? `★ ${t("tools.recommended")} · ` : ""}{index + 1}. {candidate.exact ? t("common.exactReady").split(" /")[0] : t("ui.approxAbbrev")} — {candidate.playbackButtons.map((button) => button.kind.startsWith("bass-") ? `${button.pitchClass} ${t("ui.bass")}` : `${button.chordRoot} ${button.kind.replace("chord-", "")}`).join(" + ")}
-                </option>
-              ))}
-            </select>
-          </label>
-        )}
-        {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
           <div className="realization-navigation" role="group" aria-label={t("ui.browseChordRealizations")}>
             <button type="button" className="small-button" title={t("tools.previous")} aria-label={t("tools.previous")}
               disabled={realizationIndex <= 0}
@@ -255,32 +225,6 @@ export function StradellaChordFinderPanel({
           </button>
         )}
 
-        {isActive && <div className="result-card">
-          <div className="result-card-title">{t("tools.stradellaResult")}</div>
-          <p>{t("tools.requestedChord")}: <strong>{displayRealizedChord(root, pattern, realizedChordName(root, pattern, requestedBass, requestedBass, requestedSymbol), chordDisplayStyle)}</strong></p>
-          <p>{t("tools.status")}: <strong>{statusText}</strong></p>
-          <p>{isActive && !result.playable ? t("common.notFound") : <>{t("tools.buttons")}: <strong>{buttonCount}</strong></>}</p>
-          {isActive && (
-            <>
-              <p><strong>{formatText(result.shortDescription)}</strong></p>
-              <p>{t("tools.target")}: {formatPitches(result.targetPitches)}</p>
-              {modeledVoicing.notes.length > 0 && <p>{t("tools.nominalPitches")}: <strong>{formatModeledStradellaNotes(modeledVoicing.notes, spell)}</strong> <HelpTip text={t("ui.modelPitchesHelp")} /></p>}
-              <p>{t("tools.covered")}: {formatPitches(result.coveredPitches)}</p>
-              {result.missingPitches.length > 0 && <p>{t("tools.missing")}: {formatPitches(result.missingPitches)}</p>}
-              {result.extraPitches.length > 0 && <p>{t("tools.extra")}: {formatPitches(result.extraPitches)}</p>}
-            </>
-          )}
-        </div>}
-
-        {isActive && (
-          <details className="tool-details">
-            <summary>{t("tools.moreExplanation")}</summary>
-            {explainStradellaRealization(root, pattern, result, mode, registerModel, requestedBass, chordDisplayStyle, language).split(/\n\s*\n/).map((paragraph, index) => (
-              <p className="hint" key={index}>{formatText(paragraph)}</p>
-            ))}
-          </details>
-        )}
-
         <div className="button-row">
           <button type="button" className={`small-button ${isActive ? "active-tool" : ""}`} onClick={onToggleActive}>
             {isActive ? t("tools.hideChord") : t("tools.showChord")}
@@ -296,8 +240,9 @@ export function StradellaChordFinderPanel({
           <label className="checkbox-line">
             <input type="checkbox" checked={showRealizationNote}
               onChange={(event) => onShowRealizationNoteChange(event.target.checked)} />
-            <span>{t("tools.showExplanationBelow")}</span>
-            <HelpTip text={t("ui.diagramNoteHelp")} />
+            <span className="label-line">{t("tools.showExplanationBelow")}
+              <HelpTip text={t("ui.diagramNoteHelp")} />
+            </span>
           </label>
           {showRealizationNote && (
             <div className="finder-note-level-options" role="group" aria-label={t("tools.noteLevels")}>
@@ -315,8 +260,9 @@ export function StradellaChordFinderPanel({
                     <label className="checkbox-line finder-voicing-spacing-option">
                       <input type="checkbox" checked={showVoicingIntervals} disabled={!noteLevels.voicing}
                         onChange={(event) => onShowVoicingIntervalsChange(event.target.checked)} />
-                      <span>{t("ui.showVoicingIntervals")}</span>
-                      <HelpTip text={t("ui.voicingIntervalsHelp")} />
+                      <span className="label-line">{t("ui.showVoicingIntervals")}
+                        <HelpTip text={t("ui.voicingIntervalsHelp")} />
+                      </span>
                     </label>
                   )}
                 </div>

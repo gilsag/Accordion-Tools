@@ -24,7 +24,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
   const {
     SEQUENCE_DISPLAY_MODE_OPTIONS, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName, abcMappedEvents,
     abcMissingPitchText, abcParseResult, abcPlaybackState, abcPositionBeat, abcStradellaMode, abcTempoBpm,
-    abcText, abcTotalBeats, abcTrebleChordSymbolsMode, activeToolSection, addManualHarmonyProgressionChord, addSelectedHarmonyRelationshipToProgression,
+    abcText, abcTotalBeats, abcTrebleChordSymbolsMode, activeToolSection, useHarmonyProgressionPreset, addManualHarmonyProgressionChord, addSelectedHarmonyRelationshipToProgression,
     annotationBold, annotationButtonAnchor, annotationItalic, annotationLocationLabel, annotationOffsetPercent, annotationPreview,
     applyFingerToSelected, bassPatternBarsPerChord, bassPatternChordVoicing, bassPatternDefinitions, bassPatternEditorErrors, bassPatternEditorExpanded,
     bassPatternEditorMessage, bassPatternEditorText, bassPatternEvents, bassPatternExportFormat, bassPatternId, bassPatternMissingText,
@@ -33,14 +33,14 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     chordFinderPattern, chordFinderRoot, chordProgressionDefinitions, chordProgressionId, clearAllFingerings, clearFingerForSelected,
     clearHarmonyRecordedProgression, clearSelection, clearSequence, clearTextNotes, customBassPatternDefinitions, deleteTextNote,
     deselectButton, downloadAllStradellaRealizations, exploreCurrentStradellaChordInHarmony, exportSelectedBassPattern, finderExplanationFontSize, finderMaxButtons,
-    finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel, formatStradellaFinderPitches, formatStradellaFinderText,
+    finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel,
     formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel, harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression,
-    harmonyProgressionAllowApproximations, harmonyProgressionHandMovementWeight, harmonyProgressionManualFamilyId, harmonyProgressionManualRoot, harmonyProgressionPlan, harmonyProgressionPreviewIndex,
+    harmonyProgressionHandMovementWeight, harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes,
     harmonyProgressionRecording, harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyRecordedProgressionPlaying, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
     harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering, isRecordingSequence,
-    isTrebleLikeSide, language, loadAbcExample, loadSelectedPatternIntoEditor, moveHarmonyProgressionChord, openHarmonyProgressionStepInChordFinder,
+    isTrebleLikeSide, language, loadAbcExample, loadSelectedPatternIntoEditor, moveHarmonyProgressionChord,
     pauseAbcPlayback, playChordFinder, playHarmonyRecordedProgression, playOptimizedHarmonyProgression, playRecordedSequence, playScaleFinder,
-    playSelectedButtons, playStradellaChordFinder, previewHarmonyProgressionStepOnStradella, removeHarmonyProgressionChord, removeSelectedCustomBassPattern, resetHarmonyExplorer,
+    playSelectedButtons, playStradellaChordFinder, removeHarmonyProgressionChord, removeSelectedCustomBassPattern, resetHarmonyExplorer,
     saveCustomBassPattern, scaleFinderActive, scaleFinderButtons, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
     scaleFinderRowLimit, scheduleAbcPlayback, scheduleBassPatternPlayback, selectedBassPattern, selectedButtons, selectedChordProgression,
     selectionOnClick, sendHarmonyRecordedProgressionToAssistant, sequenceArrowheadSize, sequenceColorPreset, sequenceDisplayMode, sequenceNumberColorPreset,
@@ -50,8 +50,8 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     setBassPatternBarsPerChord, setBassPatternChordVoicing, setBassPatternEditorExpanded, setBassPatternEditorText, setBassPatternExportFormat, setBassPatternId,
     setBassPatternRepeatSelection, setBassPatternRoot, setBassPatternTempoBpm, setChordFinderActive, setChordFinderInversion, setChordFinderOctave,
     setChordFinderPattern, setChordFinderRoot, setChordProgressionId, setFinderExplanationFontSize, setFinderMaxButtons, setFinderSpanColumns,
-    setFingeringDraft, setFingeringPosition, setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyProgression, setHarmonyProgressionAllowApproximations,
-    setHarmonyProgressionHandMovementWeight, setHarmonyProgressionManualFamilyId, setHarmonyProgressionManualRoot, setHarmonyProgressionPreviewIndex, setHarmonyProgressionRhythmPattern, setHarmonyReferenceFamilyId,
+    setFingeringDraft, setFingeringPosition, setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyProgression,
+    setHarmonyProgressionHandMovementWeight, setHarmonyProgressionManualPattern, setHarmonyProgressionManualRoot, setHarmonyProgressionVoiceLeadingWeight, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, setHarmonyProgressionRhythmPattern, setHarmonyReferenceFamilyId,
     setHarmonyRelatedFamilyId, setHarmonyScaleId, setHarmonyShowNoteRing, setIsApplyingFingering, setIsRecordingSequence, setScaleFinderActive,
     setScaleFinderDisplayMode, setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit, setSelectionOnClick, setSequenceArrowheadSize,
     setSequenceColorPreset, setSequenceDisplayMode, setSequenceNumberColorPreset, setSequenceNumberFontSize, setSequenceNumberPosition, setSequenceThickness,
@@ -59,9 +59,9 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     setStradellaChordFinderMode, setStradellaChordFinderPattern, setStradellaChordFinderRealizationIndex, setStradellaChordFinderRequestedBass, setStradellaChordFinderRoot, setStradellaMinimumNominalGap,
     setStradellaNoteLevels, setTextNoteColor, setTextNoteFont, setTextNoteFontSize, setTrebleChordVoicingMode, showFinderRealizationNote,
     showHarmonySelectionOnStradella, showStradellaVoicingIntervals, showTrebleVoicingNote, side, soundSequenceTempoBpm, stopAbcPlayback,
-    stopBassPatternPlayback, stopHarmonyRecordedProgressionPlayback, stopSoundPlayback, stradellaChordFinderActive, stradellaChordFinderButtons, stradellaChordFinderMarkRootBass,
+    stopBassPatternPlayback, stopHarmonyRecordedProgressionPlayback, stopSoundPlayback, stradellaChordFinderActive, stradellaChordFinderMarkRootBass,
     stradellaChordFinderMode, stradellaChordFinderPattern, stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass,
-    stradellaChordFinderResult, stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaRegisterModel, stradellaScaleFinderResult,
+    stradellaChordFinderResult, stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaScaleFinderResult,
     t, textNoteColor, textNoteFont, textNoteFontSize, textNotes, toggleHarmonyProgressionRecording,
     toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
   } = model;
@@ -104,10 +104,11 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                 <section className="control-section">
                   <button
                     className="section-title"
+                    aria-expanded={activeToolSection === "scaleFinder"}
                     onClick={() => toggleToolSection("scaleFinder")}
                   >
                     {t("ui.scaleFinder")}{" "}
-                    <span>
+                    <span aria-hidden="true">
                       {activeToolSection === "scaleFinder" ? "−" : "+"}
                     </span>
                   </button>
@@ -295,8 +296,6 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
                   result={stradellaChordFinderResult}
-                  chordDisplayStyle={chordDisplayStyle}
-                  registerModel={stradellaRegisterModel}
                   maxButtons={finderMaxButtons}
                   onMaxButtonsChange={setFinderMaxButtons}
                   spanColumns={finderSpanColumns}
@@ -316,7 +315,6 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   realizations={stradellaChordFinderRealizations}
                   realizationIndex={Math.min(stradellaChordFinderRealizationIndex, Math.max(0, stradellaChordFinderRealizations.length - 1))}
                   onRealizationChange={setStradellaChordFinderRealizationIndex}
-                  buttonCount={stradellaChordFinderButtons.length}
                   playbackButtonCount={
                     stradellaChordFinderPlaybackButtons.length
                   }
@@ -329,8 +327,6 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onPlay={playStradellaChordFinder}
                   canExploreHarmony={harmonyFamilyForFinderPattern(stradellaChordFinderPattern) !== null}
                   onExploreHarmony={exploreCurrentStradellaChordInHarmony}
-                  formatPitches={formatStradellaFinderPitches}
-                  formatText={formatStradellaFinderText}
                 /></Suspense>
               )}
 
@@ -341,28 +337,34 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onToggle={() => toggleToolSection("progressionAssistant")}
                   progression={harmonyProgression}
                   plan={harmonyProgressionPlan}
+                  presetDefinitions={chordProgressionDefinitions}
+                  onUsePreset={useHarmonyProgressionPreset}
+                  realizationOptions={harmonyProgressionRealizationOptions}
+                  realizationKeys={harmonyProgressionRealizationKeys}
+                  onCycleRealization={cycleHarmonyProgressionRealization}
                   manualRoot={harmonyProgressionManualRoot}
                   onManualRootChange={setHarmonyProgressionManualRoot}
-                  manualFamilyId={harmonyProgressionManualFamilyId}
-                  onManualFamilyChange={setHarmonyProgressionManualFamilyId}
-                  allowApproximations={harmonyProgressionAllowApproximations}
-                  onAllowApproximationsChange={setHarmonyProgressionAllowApproximations}
+                  manualPattern={harmonyProgressionManualPattern}
+                  onManualPatternChange={setHarmonyProgressionManualPattern}
                   handMovementWeight={harmonyProgressionHandMovementWeight}
-                  onHandMovementWeightChange={setHarmonyProgressionHandMovementWeight}
+                  voiceLeadingWeight={harmonyProgressionVoiceLeadingWeight}
+                  onVoiceLeadingWeightChange={(value) => { stopSoundPlayback(); setHarmonyProgressionVoiceLeadingWeight(value); }}
+                  onHandMovementWeightChange={(value) => { stopSoundPlayback(); setHarmonyProgressionHandMovementWeight(value); }}
                   rhythmPattern={harmonyProgressionRhythmPattern}
-                  onRhythmPatternChange={setHarmonyProgressionRhythmPattern}
+                  onRhythmPatternChange={(value) => { stopSoundPlayback(); setHarmonyProgressionRhythmPattern(value); }}
                   tempoBpm={soundSequenceTempoBpm}
-                  onTempoBpmChange={setSoundSequenceTempoBpm}
-                  previewIndex={harmonyProgressionPreviewIndex}
+                  onTempoBpmChange={(value) => { stopSoundPlayback(); setSoundSequenceTempoBpm(value); }}
+                  noteStepId={harmonyProgressionNoteStepId}
+                  onToggleStepNotes={toggleHarmonyProgressionStepNotes}
                   onAddManualChord={addManualHarmonyProgressionChord}
                   onRemoveChord={removeHarmonyProgressionChord}
                   onMoveChord={moveHarmonyProgressionChord}
                   onClear={() => {
+                    stopSoundPlayback();
                     setHarmonyProgression([]);
                     setHarmonyProgressionPreviewIndex(null);
+                    setHarmonyProgressionNoteStepId(null);
                   }}
-                  onPreviewStep={previewHarmonyProgressionStepOnStradella}
-                  onOpenStepInChordFinder={openHarmonyProgressionStepInChordFinder}
                   onPlay={playOptimizedHarmonyProgression}
                   onStop={stopSoundPlayback}
                 /></Suspense>

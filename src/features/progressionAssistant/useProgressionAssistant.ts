@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AccidentalMode, BassCount } from "../../types";
-import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";
+import type { FinderChordPattern } from "../../types";
 import type { HarmonyProgressionChord, HarmonyRecordedEvent } from "../../tools/harmonyExplorer/progression";
-import { optimizeStradellaProgression } from "../../tools/harmonyExplorer/progression";
+import { optimizeStradellaProgression, progressionRealizationsForChord, progressionRealizationKey } from "../../tools/harmonyExplorer/progression";
 import type { ProgressionRhythmPattern } from "../../sound";
 import { generateStradella } from "../../stradella";
+import { progressionNoteStep } from "./progressionNoteSelection";
 
 /** Owns the editable/recorded progression and preview state. The monotonic ID
  * counter must survive renders; imported settings only modify the optimization
@@ -19,12 +20,17 @@ export function useHarmonyProgressionState() {
   const harmonyRecordedPlaybackTimeoutsRef = useRef<number[]>([]);
   const harmonyRecordedNotationRef = useRef<HTMLDivElement | null>(null);
   const [harmonyProgressionManualRoot, setHarmonyProgressionManualRoot] = useState("C");
-  const [harmonyProgressionManualFamilyId, setHarmonyProgressionManualFamilyId] = useState<ChordFamilyId>("major");
+  const [harmonyProgressionManualPattern, setHarmonyProgressionManualPattern] = useState<FinderChordPattern>("major-triad");
   const [harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations] = useState(true);
   const [harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight] = useState(0.65);
+  const [harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight] = useState(0.35);
   const [harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern] = useState<ProgressionRhythmPattern>("block");
+  const [harmonyProgressionRealizationKeys, setHarmonyProgressionRealizationKeys] = useState<Record<string, string>>({});
   const [harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex] = useState<number | null>(null);
+  // The eye owns one optional chord identity, independently of transport position.
+  const [harmonyProgressionNoteStepId, setHarmonyProgressionNoteStepId] = useState<string | null>(null);
   const [harmonyProgressionActiveButtonIds, setHarmonyProgressionActiveButtonIds] = useState<string[]>([]);
+  const [harmonyProgressionPulseSilent, setHarmonyProgressionPulseSilent] = useState(false);
   const [harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible] = useState(false);
   const harmonyProgressionIdRef = useRef(1);
   const harmonyProgressionNotationRef = useRef<HTMLDivElement | null>(null);
@@ -35,12 +41,16 @@ export function useHarmonyProgressionState() {
     harmonyRecordedNotationVisible, setHarmonyRecordedNotationVisible,
     harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying,
     harmonyProgressionManualRoot, setHarmonyProgressionManualRoot,
-    harmonyProgressionManualFamilyId, setHarmonyProgressionManualFamilyId,
+    harmonyProgressionManualPattern, setHarmonyProgressionManualPattern,
     harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations,
     harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
+    harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight,
     harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,
+    harmonyProgressionRealizationKeys, setHarmonyProgressionRealizationKeys,
     harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex,
+    harmonyProgressionNoteStepId, setHarmonyProgressionNoteStepId,
     harmonyProgressionActiveButtonIds, setHarmonyProgressionActiveButtonIds,
+    harmonyProgressionPulseSilent, setHarmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible,
     harmonyRecordedPlaybackTimeoutsRef, harmonyRecordedNotationRef,
     harmonyProgressionIdRef, harmonyProgressionNotationRef,
@@ -53,14 +63,14 @@ export function useHarmonyProgressionState() {
  */
 export function useHarmonyProgressionResults({
   basses, buttonSize, spacing, stradellaAccidental, diagramVerticalSpacing,
-  harmonyProgression, harmonyProgressionAllowApproximations,
-  harmonyProgressionHandMovementWeight, harmonyProgressionPreviewIndex,
-  setHarmonyProgressionPreviewIndex, harmonyProgressionActiveButtonIds,
+  harmonyProgression,
+  harmonyProgressionHandMovementWeight, harmonyProgressionVoiceLeadingWeight, harmonyProgressionRealizationKeys, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId,
+  setHarmonyProgressionRealizationKeys, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, harmonyProgressionActiveButtonIds, harmonyProgressionPulseSilent,
   activeToolSection,
 }: Pick<ReturnType<typeof useHarmonyProgressionState>,
-  "harmonyProgression" | "harmonyProgressionAllowApproximations" |
-  "harmonyProgressionHandMovementWeight" | "harmonyProgressionPreviewIndex" |
-  "setHarmonyProgressionPreviewIndex" | "harmonyProgressionActiveButtonIds"
+  "harmonyProgression" |
+  "harmonyProgressionHandMovementWeight" | "harmonyProgressionVoiceLeadingWeight" | "harmonyProgressionRealizationKeys" | "setHarmonyProgressionRealizationKeys" | "harmonyProgressionPreviewIndex" |
+  "setHarmonyProgressionPreviewIndex" | "harmonyProgressionNoteStepId" | "setHarmonyProgressionNoteStepId" | "harmonyProgressionActiveButtonIds" | "harmonyProgressionPulseSilent"
 > & {
   basses: BassCount; buttonSize: number; spacing: number;
   stradellaAccidental: AccidentalMode; diagramVerticalSpacing: number;
@@ -79,21 +89,50 @@ export function useHarmonyProgressionResults({
     [basses, buttonSize, spacing, stradellaAccidental, diagramVerticalSpacing],
   );
 
+  const harmonyProgressionRealizationOptions = useMemo(() => Object.fromEntries(
+    harmonyProgression.map((chord) => [
+      chord.id,
+      progressionRealizationsForChord(
+        harmonyProgressionStradellaButtons, chord, true,
+      ),
+    ]),
+  ), [harmonyProgression, harmonyProgressionStradellaButtons]);
+
+  // Removing a chord or changing physical layouts may
+  // invalidate a pinned recipe. Return only that step to Auto, never silently
+  // pin an unrelated recipe at the same original rank.
+  useEffect(() => {
+    const valid = new Set(Object.entries(harmonyProgressionRealizationOptions)
+      .flatMap(([id, options]) => options.map(({ result }) => `${id}\n${progressionRealizationKey(result)}`)));
+    const existing = Object.entries(harmonyProgressionRealizationKeys);
+    if (existing.every(([id, key]) => valid.has(`${id}\n${key}`))) return;
+    const next = Object.fromEntries(existing.filter(([id, key]) => valid.has(`${id}\n${key}`)));
+    setHarmonyProgressionRealizationKeys(next);
+  }, [harmonyProgressionRealizationKeys, harmonyProgressionRealizationOptions, setHarmonyProgressionRealizationKeys]);
+
+  const validPinnedKeys = useMemo(() => Object.fromEntries(
+    Object.entries(harmonyProgressionRealizationKeys).filter(([id, key]) =>
+      (harmonyProgressionRealizationOptions[id] ?? []).some(({ result }) => progressionRealizationKey(result) === key)),
+  ), [harmonyProgressionRealizationKeys, harmonyProgressionRealizationOptions]);
+
   const harmonyProgressionPlan = useMemo(
     () => optimizeStradellaProgression(
       harmonyProgressionStradellaButtons,
       harmonyProgression,
       {
-        allowApproximations: harmonyProgressionAllowApproximations,
+        allowApproximations: true,
         handMovementWeight: harmonyProgressionHandMovementWeight,
+        voiceLeadingWeight: harmonyProgressionVoiceLeadingWeight,
         maxRealizationsPerChord: 5,
+        fixedRealizationKeys: validPinnedKeys,
       },
     ),
     [
       harmonyProgressionStradellaButtons,
       harmonyProgression,
-      harmonyProgressionAllowApproximations,
       harmonyProgressionHandMovementWeight,
+      harmonyProgressionVoiceLeadingWeight,
+      validPinnedKeys,
     ],
   );
 
@@ -106,21 +145,30 @@ export function useHarmonyProgressionResults({
       current !== null && current >= harmonyProgressionPlan.steps.length ? null : current,
     );
   }, [harmonyProgressionPlan.playable, harmonyProgressionPlan.steps.length, setHarmonyProgressionPreviewIndex]);
+  // Reordering never changes which chord the eye refers to; deleting it clears
+  // only that presentation selection. No JSON setting is added.
+  useEffect(() => {
+    if (harmonyProgressionNoteStepId && !harmonyProgression.some((chord) => chord.id === harmonyProgressionNoteStepId)) {
+      setHarmonyProgressionNoteStepId(null);
+    }
+  }, [harmonyProgression, harmonyProgressionNoteStepId, setHarmonyProgressionNoteStepId]);
+
+  const harmonyProgressionNoteStep = progressionNoteStep(harmonyProgressionPlan, harmonyProgressionNoteStepId);
   const progressionPreviewButtonIds = useMemo(() => {
     if (
       activeToolSection !== "progressionAssistant" ||
-      harmonyProgressionPreviewIndex === null ||
-      harmonyProgressionActiveButtonIds.length > 0 ||
+      (harmonyProgressionPreviewIndex === null && !harmonyProgressionNoteStep) ||
+      (harmonyProgressionActiveButtonIds.length > 0 || harmonyProgressionPulseSilent) ||
       !harmonyProgressionPlan.playable
     ) {
       return new Set<string>();
     }
-    const step = harmonyProgressionPlan.steps[harmonyProgressionPreviewIndex];
+    const step = harmonyProgressionNoteStep ?? harmonyProgressionPlan.steps[harmonyProgressionPreviewIndex ?? -1];
     return new Set((step?.result.playbackButtons ?? []).map((button) => button.id));
   }, [
     activeToolSection,
-    harmonyProgressionPreviewIndex,
-    harmonyProgressionActiveButtonIds.length,
+    harmonyProgressionPreviewIndex, harmonyProgressionNoteStep,
+    harmonyProgressionActiveButtonIds.length, harmonyProgressionPulseSilent,
     harmonyProgressionPlan,
   ]);
 
@@ -132,6 +180,7 @@ export function useHarmonyProgressionResults({
   );
   return {
     harmonyProgressionStradellaButtons, harmonyProgressionPlan,
+    harmonyProgressionRealizationOptions, harmonyProgressionNoteStep,
     progressionPreviewButtonIds, harmonyProgressionActiveButtonIdSet,
   };
 }

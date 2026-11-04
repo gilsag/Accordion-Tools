@@ -11,6 +11,9 @@ export type WorkspaceToolbarProps = {
   side: Side;
   leftPanelMode: LeftPanelMode;
   activeToolSection: ToolSection;
+  inspectorAvailable?: boolean;
+  inspectorVisible?: boolean;
+  onToggleInspector?: () => void;
   onSelectStradella: () => void;
   onSelectTreble: () => void;
   onSelectHarmony: () => void;
@@ -42,7 +45,7 @@ export type WorkspaceToolbarProps = {
 };
 
 export function WorkspaceToolbar({
-  t, workspaceMode, side, leftPanelMode, activeToolSection,
+  t, workspaceMode, side, leftPanelMode, activeToolSection, inspectorAvailable, inspectorVisible, onToggleInspector,
   onSelectStradella, onSelectTreble, onSelectHarmony, onShowSettings, onShowTools, onToggleFocus,
   bassPatternEvents, bassPatternRenderedNotationVisible, onToggleBassPatternNotation,
   harmonyRecordedProgression, harmonyRecordedNotationVisible, onToggleHarmonyRecordedNotation,
@@ -53,15 +56,22 @@ export function WorkspaceToolbar({
   downloadFormat, setDownloadFormat, onDownloadDiagram,
 }: WorkspaceToolbarProps) {
   const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
+  const overflowRef = useRef<HTMLDetailsElement | null>(null);
   useEffect(() => {
     function closeOnOutside(event: PointerEvent) {
       if (resetMenuRef.current?.open && !resetMenuRef.current.contains(event.target as Node))
         resetMenuRef.current.open = false;
+      if (overflowRef.current?.open && !overflowRef.current.contains(event.target as Node))
+        overflowRef.current.open = false;
     }
     function closeOnEscape(event: KeyboardEvent) {
       if (event.key === "Escape" && resetMenuRef.current?.open) {
         resetMenuRef.current.open = false;
         resetMenuRef.current.querySelector("summary")?.focus();
+      }
+      if (event.key === "Escape" && overflowRef.current?.open) {
+        overflowRef.current.open = false;
+        overflowRef.current.querySelector("summary")?.focus();
       }
     }
     document.addEventListener("pointerdown", closeOnOutside);
@@ -71,29 +81,77 @@ export function WorkspaceToolbar({
       document.removeEventListener("keydown", closeOnEscape);
     };
   }, []);
+  function closeOverflow() { if (overflowRef.current) overflowRef.current.open = false; }
+  const notationAction = workspaceMode === "accordion" && side === "stradella" && activeToolSection === "bassPatternPlayer" && bassPatternEvents.length
+    ? { visible: bassPatternRenderedNotationVisible, toggle: onToggleBassPatternNotation }
+    : workspaceMode === "harmony" && harmonyRecordedProgression.length
+      ? { visible: harmonyRecordedNotationVisible, toggle: onToggleHarmonyRecordedNotation }
+      : workspaceMode === "accordion" && side === "stradella" && activeToolSection === "progressionAssistant" && harmonyProgressionPlayable
+        ? { visible: harmonyProgressionNotationVisible, toggle: onToggleHarmonyProgressionNotation }
+        : workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim()
+          ? { visible: abcRenderedNotationVisible, toggle: onToggleAbcNotation }
+          : workspaceMode === "accordion" && activeToolSection === "sequences" && sequenceStepsWithButtons.length
+            ? { visible: sequenceRenderedNotationVisible, toggle: onToggleSequenceNotation } : null;
   return (
         <div className="topbar">
           <button
-            className={`topbar-button ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
+            className={`topbar-button topbar-primary ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
             onClick={onSelectStradella}
           >
             {t("nav.stradella")}
           </button>
 
           <button
-            className={`topbar-button ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
+            className={`topbar-button topbar-primary ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
             onClick={onSelectTreble}
           >
             {t("nav.treble")}
           </button>
 
           <button
-            className={`topbar-button ${workspaceMode === "harmony" ? "active" : ""}`}
+            className={`topbar-button topbar-primary ${workspaceMode === "harmony" ? "active" : ""}`}
             onClick={onSelectHarmony}
           >
             {t("nav.harmony")}
           </button>
 
+          <button type="button" className="topbar-button phone-tools-button" onClick={onShowTools}>
+            {t("nav.tools")}
+          </button>
+          <details ref={overflowRef} className="phone-overflow">
+            <summary className="topbar-button phone-overflow-toggle" aria-label={t("ui.moreActions")} title={t("ui.moreActions")}>
+              <span aria-hidden="true">⋯</span>
+            </summary>
+            <div className="phone-overflow-menu">
+              {inspectorAvailable && <button type="button" onClick={() => { closeOverflow(); onToggleInspector?.(); }}>
+                {t(inspectorVisible ? "ui.hideResults" : "ui.showResults")}
+              </button>}
+              <button type="button" onClick={() => { closeOverflow(); onShowSettings(); }}>{t("nav.settings")}</button>
+              <button type="button" onClick={() => { closeOverflow(); onToggleFocus(); }}>
+                {leftPanelMode === "hidden" ? t("nav.showControls") : t("nav.focusDiagram")}
+              </button>
+              {notationAction && <button type="button" onClick={() => { closeOverflow(); notationAction.toggle(); }}>
+                {notationAction.visible ? t("ui.hideNotation") : t("ui.showNotation")}
+              </button>}
+              <button type="button" onClick={() => { closeOverflow(); onToggleSound(); }}>
+                {soundEnabled ? t("ui.soundOn") : t("ui.soundOff")}
+              </button>
+              <div className="phone-overflow-group">
+                <span>{t("ui.reset")}</span>
+                <button type="button" onClick={() => { closeOverflow(); onClearWork(); }}>{t("ui.clearCurrentWork")}</button>
+                {(workspaceMode === "harmony" || (side === "stradella" && activeToolSection === "stradellaChordFinder")) &&
+                  <button type="button" onClick={() => { closeOverflow(); onRestoreToolDefaults(); }}>{t("ui.restoreToolDefaults")}</button>}
+              </div>
+              <div className="phone-overflow-group">
+                <SegmentedChoice label={t("ui.downloadFormat")} value={downloadFormat} onChange={setDownloadFormat}
+                  options={[{ value: "svg", label: "SVG" }, { value: "png", label: "PNG" }]} />
+                <button type="button" onClick={() => { closeOverflow(); onDownloadDiagram(); }}>
+                  {t("ui.downloadKind", { kind: downloadFormat.toUpperCase() })}
+                </button>
+              </div>
+            </div>
+          </details>
+          <div className="topbar-secondary">
           <span className="topbar-separator" />
 
           <button
@@ -173,6 +231,10 @@ export function WorkspaceToolbar({
             )}
 
           <span className="topbar-spacer" />
+          {inspectorAvailable && <button type="button" className="topbar-button inspector-visibility-toggle"
+            aria-pressed={inspectorVisible} onClick={onToggleInspector}>
+            {t(inspectorVisible ? "ui.hideResults" : "ui.showResults")}
+          </button>}
 
           <button
             className={`topbar-button ${soundEnabled ? "active" : ""}`}
@@ -212,6 +274,7 @@ export function WorkspaceToolbar({
           >
             {t("ui.downloadKind", { kind: downloadFormat.toUpperCase() })}
           </button>
+          </div>
         </div>
   );
 }

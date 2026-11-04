@@ -1,4 +1,4 @@
-/** Phase 3e: state ownership, musical engine forwarding, and cross-tool invariants.
+/** Harmony/Progression state ownership, musical engine forwarding, and cross-tool invariants.
  * The original harmony and progression algorithm suites independently validate
  * actual chord/voice computations; this test locks down the feature boundary.
  */
@@ -15,12 +15,13 @@ for (const key of ['useHarmonyExplorerState()', 'useHarmonyExplorerResults({',
   assert.ok(app.includes(key), `App uses ${key}`);
 for (const key of ['harmonyReferenceFamilyId','harmonySelection','harmonyProgression','harmonyRecordedProgression'])
   assert.doesNotMatch(app,new RegExp(`\\[${key},\\s*set[A-Z][^\\]]*\\]\\s*=\\s*useState`), `${key} lives in its feature`);
-for (const key of ['sendHarmonyRecordedProgressionToAssistant','openHarmonyProgressionStepInChordFinder',
+for (const key of ['sendHarmonyRecordedProgressionToAssistant','toggleHarmonyProgressionStepNotes',
   'showHarmonySelectionOnStradella','stopHarmonyRecordedProgressionPlayback','playOptimizedHarmonyProgression'])
   assert.ok(app.includes(`function ${key}(`), `Cross-tool/audio command ${key} remains in App`);
-assert.ok(app.includes('step.result.playbackButtons.map((button) => button.id).sort().join("|")'),
-  'Physical playback-button identity still determines finder handoff');
-assert.match(app, /setPendingProgressionRealizationKey\(resultKey\)/);
+assert.ok(app.includes('progressionRealizationKey(result)'),
+  'Selected realization identity still follows the actual playback buttons');
+assert.match(app, /realizationAnnotation\(progressionNoteRoot, progressionNotePattern, harmonyProgressionNoteStep\.result/,
+  'Progression eyes reuse Finder annotation against the selected sounding recipe');
 assert.match(app, /playButtonRhythmProgression\(/);
 
 function reactMock() {
@@ -103,6 +104,8 @@ const physicalButtons=[{id:'bass-C',kind:'bass-root'},{id:'chord-C',kind:'chord-
 let generatedArgs=[],optimizedArgs=[]; let playable=true;
 const playbackButtons=[physicalButtons[0],physicalButtons[1]];
 const progression={
+  progressionRealizationKey(result){return result.playbackButtons.map(button=>button.id).sort().join('|')},
+  progressionRealizationsForChord(){return [{result:{playbackButtons,playable:true,exact:true},realizationIndex:0}]},
   optimizeStradellaProgression(...args){optimizedArgs.push(args);return {
     playable,steps: playable ? [{result:{playbackButtons},chord:{rootPc:0,familyId:'major'}}] : []
   }}
@@ -111,14 +114,15 @@ const ph=reactMock();
 const assistant=load('src/features/progressionAssistant/useProgressionAssistant.ts',ph.react,{
   '../../tools/harmonyExplorer/progression':progression,
   '../../stradella':{generateStradella(...args){generatedArgs.push(args);return physicalButtons}},
+  './progressionNoteSelection':{progressionNoteStep:(plan,id)=>plan.playable?plan.steps.find(step=>step.chord.id===id)??null:null},
 });
 let prog=assistant.useHarmonyProgressionState();
 for(const [field,expected] of Object.entries({
  harmonyProgressionRecording:false,harmonyRecordedNotationVisible:false,
  harmonyRecordedProgressionPlaying:false,harmonyProgressionManualRoot:'C',
- harmonyProgressionManualFamilyId:'major',harmonyProgressionAllowApproximations:true,
+ harmonyProgressionManualPattern:'major-triad',harmonyProgressionAllowApproximations:true,
  harmonyProgressionHandMovementWeight:0.65,harmonyProgressionRhythmPattern:'block',
- harmonyProgressionPreviewIndex:null,harmonyProgressionNotationVisible:false,
+ harmonyProgressionPreviewIndex:null,harmonyProgressionNoteStepId:null,harmonyProgressionNotationVisible:false,
 })) assert.equal(prog[field],expected,`Progression default: ${field}`);
 for(const k of ['harmonyProgression','harmonyRecordedProgression','harmonyProgressionActiveButtonIds'])
  assert.equal(prog[k].length,0,`${k} initially empty`);
@@ -129,6 +133,7 @@ let updates=[];
 const selection={basses:'96',buttonSize:40,spacing:1.2,stradellaAccidental:'sharps',diagramVerticalSpacing:6,
  harmonyProgression:[{id:'p1',rootPc:0,familyId:'major'}],
  harmonyProgressionAllowApproximations:false,harmonyProgressionHandMovementWeight:0.4,
+ harmonyProgressionRealizationKeys:{},setHarmonyProgressionRealizationKeys:()=>{},
  harmonyProgressionPreviewIndex:0,setHarmonyProgressionPreviewIndex:(v)=>updates.push(v),
  harmonyProgressionActiveButtonIds:[],activeToolSection:'progressionAssistant'};
 let result=assistant.useHarmonyProgressionResults(selection);
@@ -136,11 +141,11 @@ assert.deepEqual([...generatedArgs[0]],['96',40,1.2,'sharps',6]);
 assert.strictEqual(optimizedArgs[0][0],physicalButtons);
 assert.strictEqual(optimizedArgs[0][1],selection.harmonyProgression);
 assert.equal(JSON.stringify(optimizedArgs[0][2]),JSON.stringify({
- allowApproximations:false,handMovementWeight:0.4,maxRealizationsPerChord:5}));
+ allowApproximations:true,handMovementWeight:0.4,maxRealizationsPerChord:5,fixedRealizationKeys:{}}));
 assert.strictEqual(result.harmonyProgressionPlan.steps[0].result.playbackButtons,playbackButtons);
 assert.equal(JSON.stringify([...result.progressionPreviewButtonIds]),JSON.stringify(['bass-C','chord-C']));
-assert.equal(ph.effects.length,1);
-ph.effects[0]();assert.equal(updates[0](0),0,'Existing preview-clamping updater retained');
+assert.equal(ph.effects.length,3);
+ph.effects[1]();assert.equal(updates[0](0),0,'Existing preview-clamping updater retained');
 result=assistant.useHarmonyProgressionResults({...selection,activeToolSection:'scaleFinder'});
 assert.equal(result.progressionPreviewButtonIds.size,0,'Preview hidden outside Assistant');
 result=assistant.useHarmonyProgressionResults({...selection,harmonyProgressionActiveButtonIds:['chord-C']});
@@ -150,5 +155,5 @@ playable=false;
 result=assistant.useHarmonyProgressionResults(selection);
 assert.equal(result.harmonyProgressionPlan.playable,false);
 assert.equal(result.progressionPreviewButtonIds.size,0);
-ph.effects.at(-1)();assert.equal(updates.at(-1),null,'Unplayable plan clears stale preview');
-console.log('✓ Phase 3e Harmony and progression defaults, selectors, physical IDs, and commands passed');
+ph.effects.at(-2)();assert.equal(updates.at(-1),null,'Unplayable plan clears stale preview');
+console.log('✓ Harmony and progression defaults, selectors, physical IDs, and commands passed');

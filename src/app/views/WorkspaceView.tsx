@@ -14,19 +14,26 @@ import { fontClass } from "../../music";
 import { stradellaRowLabel } from "../../stradella";
 import { stopAllSound } from "../../sound";
 import { StradellaVoicingIntervals } from "../../components/tools/StradellaVoicingIntervals";
-import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 const HarmonicCircle = lazy(() => import("../../tools/harmonyExplorer/components/HarmonicCircle").then(module => ({ default: module.HarmonicCircle })));
 import type { AppControllerModel } from "../useAppController";
 
 /** View-only component: all state and commands originate in the controller. */
-export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
+export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector }: {
+  model: AppControllerModel["workspace"];
+  isPhone?: boolean;
+  phoneSheetOpen?: boolean;
+  onOpenPhonePanel?: (mode: "tools" | "settings") => void;
+  inspectorAvailable?: boolean;
+  inspectorVisible?: boolean;
+  onToggleInspector?: () => void;
+}) {
   const {
     abcActiveButtonIdSet, abcNotationRef, abcParseResult, abcRenderedNotationVisible, abcText, accidentalStyle,
     activeToolSection, annotationButtonAnchor, annotationEditorRef, annotationLevelForLine, annotationPointForButton, bassPatternActiveButtonIdSet,
     bassPatternEvents, bassPatternNotationRef, bassPatternRenderedNotationVisible, bellowsEndLabel, bellowsLabelY, bellowsStartLabel,
     bellowsStripY, buttonSize, buttonTrebleFooter, buttons, cancelInlineAnnotation, chordDisplayStyle,
     chordFinderActive, chordFinderButtons, chordLabelMode, clearHarmonyWork, colorTheme, commitInlineAnnotation,
-    downloadCurrentDiagram, downloadFormat, effectiveTitleSize, finalTitle, finderAnnotationDisplayLines, finderArrowheadMarkerId,
+    downloadCurrentDiagram, downloadFormat, effectiveTitleSize, finalTitle, diagramNoteRoot, diagramNotePattern, finderAnnotationDisplayLines, finderArrowheadMarkerId,
     finderButtonIds, finderExplanationFontSize, finderFooterEnabled, finderFooterHeight, finderVoicingAnalysis, finderVoicingChartVisible,
     fingeringPosition, getMainLabel, handleHarmonyChordActivated, handleSvgClick, harmonyAllFamiliesMode, harmonyAvailableCounts,
     harmonyColorByFamily, harmonyCounts, harmonyDiameter, harmonyEffectiveDiatonicOnly, harmonyEffectiveHighlightDiatonic, harmonyExplanation,
@@ -42,15 +49,16 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
     setInlineAnnotationEditor, setMobileDiagramView, setPanel, setSoundEnabled, showBellowsGuide, showButtonLabels,
     showScaleFinderArrows, showScaleFinderNumbers, showSequenceArrows, showSequenceNumbers, showStatusBar, showStradellaRowLabels,
     side, soundEnabled, statusBarText, stopAbcPlayback, stopBassPatternPlayback, stradellaChordFinderActive,
-    stradellaChordFinderPattern, stradellaChordFinderRoot, stradellaFinderFooterY, stradellaPrimaryFinderButtonIds, stradellaRootBassFinderButtonIds, svgRef,
+    stradellaFinderFooterY, stradellaPrimaryFinderButtonIds, stradellaRootBassFinderButtonIds, svgRef,
     svgStyle, t, textNotes, titleFont, titleMode, toggleAbcNotation,
     toggleBassPatternNotation, toggleButton, toggleFocusPanel, toggleHarmonyProgressionNotation, toggleHarmonyRecordedNotation, toggleSequenceNotation,
     trebleFooterEnabled, trebleFooterFontSize, trebleFooterHeight, trebleFooterY, trebleVoicingNote, viewHeight,
     viewWidth, visibleRows, workspaceMode,
   } = model;
   return (
-    <section className="workspace">
+    <section className="workspace" inert={phoneSheetOpen}>
         <WorkspaceToolbar
+          inspectorAvailable={inspectorAvailable} inspectorVisible={inspectorVisible} onToggleInspector={onToggleInspector}
           t={t} workspaceMode={workspaceMode} side={side} leftPanelMode={leftPanelMode}
           activeToolSection={activeToolSection}
           onSelectStradella={() => { selectAccordionSide("stradella"); stopAbcPlayback(); }}
@@ -59,8 +67,8 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
             navigateToTool("harmonyExplorer");
             stopAbcPlayback(); stopBassPatternPlayback(); stopAllSound();
           }}
-          onShowSettings={() => setPanel("settings")}
-          onShowTools={() => setPanel("tools")}
+          onShowSettings={() => isPhone ? onOpenPhonePanel?.("settings") : setPanel("settings")}
+          onShowTools={() => isPhone ? onOpenPhonePanel?.("tools") : setPanel("tools")}
           onToggleFocus={toggleFocusPanel}
           bassPatternEvents={bassPatternEvents}
           bassPatternRenderedNotationVisible={bassPatternRenderedNotationVisible}
@@ -100,20 +108,6 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
               scaleEnglishName: harmonyScale.name,
               soundEnabled, language,
             })}
-          </div>
-        )}
-
-        {workspaceMode === "accordion" && (
-          <div className="mobile-diagram-view-control">
-            <SegmentedChoice
-              label={t("ui.mobileDiagram")}
-              value={mobileDiagramView}
-              onChange={setMobileDiagramView}
-              options={[
-                { value: "readable", label: t("ui.readableScroll") },
-                { value: "fit", label: t("ui.fitDiagram") },
-              ]}
-            />
           </div>
         )}
 
@@ -170,6 +164,15 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
             </div>
           </>
         ) : (
+        <div className="diagram-mobile-frame">
+          <div className="mobile-diagram-view-control">
+            <button type="button" className="mobile-diagram-toggle"
+              aria-label={mobileDiagramView === "readable" ? t("ui.fitDiagram") : t("ui.readableScroll")}
+              title={mobileDiagramView === "readable" ? t("ui.fitDiagram") : t("ui.readableScroll")}
+              aria-pressed={mobileDiagramView === "fit"}
+              onClick={() => setMobileDiagramView(current => current === "readable" ? "fit" : "readable")}
+            >{mobileDiagramView === "readable" ? "⤢" : "↔"}</button>
+          </div>
         <div
           className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
           style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
@@ -259,8 +262,8 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
                                 {showVoicingChart ? (
                                   <StradellaVoicingIntervals
                                     notes={finderVoicingAnalysis.notes}
-                                    root={stradellaChordFinderRoot}
-                                    pattern={stradellaChordFinderPattern}
+                                    root={diagramNoteRoot}
+                                    pattern={diagramNotePattern}
                                     fontSize={finderExplanationFontSize}
                                   />
                                 ) : value}
@@ -381,6 +384,7 @@ export function WorkspaceView({model}:{model:AppControllerModel["workspace"]}) {
               annotationPlaceholder={t("ui.annotationPlaceholder")}
             />
           </DiagramSvgSurface>
+        </div>
         </div>
         )}
 

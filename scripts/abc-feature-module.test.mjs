@@ -1,4 +1,4 @@
-/** Phase 3c: behavioral boundary tests for the extracted ABC state/selector.
+/** ABC Player behavioral boundary tests for the extracted ABC state/selector.
  * Musical parsing and timing accuracy are covered separately by test:abc.
  */
 import assert from "node:assert/strict";

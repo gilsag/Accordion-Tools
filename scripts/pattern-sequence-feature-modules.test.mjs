@@ -1,4 +1,4 @@
-/** Phase 3d: behavioral contracts at the Bass Pattern and Sequence boundaries.
+/** Bass Pattern and Sequence behavioral contracts at the Bass Pattern and Sequence boundaries.
  * Real notation/engine/sound algorithms are covered by their existing tests.
  */
 import assert from "node:assert/strict";

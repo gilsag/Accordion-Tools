@@ -86,7 +86,7 @@ for (const [actual, expected] of [
   [chordState.chordFinderPattern, "major-triad"],
   [chordState.chordFinderInversion, "root"],
   [chordState.chordFinderOctave, 4],
-]) assert.equal(actual, expected, "Feature default unchanged from Phase 2");
+]) assert.equal(actual, expected, "Feature default unchanged from verified baseline");
 for (const key of [
   "setScaleFinderActive", "setScaleFinderRoot", "setScaleFinderPattern",
   "setScaleFinderRowLimit", "setScaleFinderDisplayMode",

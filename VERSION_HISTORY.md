@@ -1,3 +1,14 @@
+## v0.17.0 - Workspace and progression enhancements (2026-11-03)
+
+- Added reusable Results Inspector, Stradella realization comparisons and filters.
+- Improved tool typography and responsive phone navigation.
+- Enhanced Progression Assistant with per-chord realizations, independent optimization weights, shared chord types and progression presets.
+- Added progression rhythm planning, explanatory diagram previews and improved entry controls.
+- Modernized regression tests while preserving musical and settings compatibility.
+- Updated tsx and esbuild to address a development-tool security advisory.
+
+Known issues: the Vite chunk-size advisory remains; a moderate minimatch advisory remains in development dependencies.
+
 ## v0.16.0 — Modular architecture and release stabilization (2026-11-02)
 
 This release reorganizes Accordion Tools internally while preserving existing musical algorithms, Stradella chord ranking, physical button identities, nominal register settings, six interface languages, settings file compatibility, and export formats.

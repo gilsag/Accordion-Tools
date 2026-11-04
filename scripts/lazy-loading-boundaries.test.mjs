@@ -1,4 +1,4 @@
-/** Phase 7 build-independent evidence that expensive ABC and feature modules
+/** Build-independent evidence that expensive ABC and feature modules
  * are reached only through dynamic boundaries, not initial static imports. */
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";

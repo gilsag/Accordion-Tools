@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../src/stradella";
-import { estimateStradellaButtonSpacing, optimizeStradellaProgression, physicalButtonMovement, progressionBassPulseButtons, type HarmonyProgressionChord } from "../src/tools/harmonyExplorer/progression";
+import { estimateStradellaButtonSpacing, optimizeStradellaProgression, physicalButtonMovement, progressionBassPulseButtons, progressionRealizationsForChord, progressionRealizationKey, type HarmonyProgressionChord } from "../src/tools/harmonyExplorer/progression";
 import { getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools";
 import { finderPatternForHarmonyFamily, pitchClassNameFromNumber } from "../src/tools/harmonyExplorer/integration";
+import type { ChordFamilyId } from "../src/tools/harmonyExplorer/music";
 
-function chord(id: string, rootPc: number, familyId: HarmonyProgressionChord["familyId"]): HarmonyProgressionChord {
+function chord(id: string, rootPc: number, familyId: ChordFamilyId): HarmonyProgressionChord {
   return { id, rootPc, familyId, sectorIndex: 0 };
 }
 
@@ -34,7 +35,7 @@ assert.ok(plan.steps.every((step) => step.result.playable && step.result.exact))
 // realization of every chord independently for this standard progression.
 const spacing = estimateStradellaButtonSpacing(buttons);
 const independent = progression.map((item) => {
-  const pattern = finderPatternForHarmonyFamily(item.familyId);
+  const pattern = "pattern" in item ? item.pattern : finderPatternForHarmonyFamily(item.familyId);
   assert.ok(pattern);
   return getStradellaChordFinderResults(
     buttons,
@@ -69,6 +70,32 @@ const unsupportedAugMaj7 = optimizeStradellaProgression(buttons, [chord("augMaj7
 assert.equal(unsupportedAugMaj7.playable, false, "unsupported Harmony family should be reported, not guessed");
 assert.deepEqual(unsupportedAugMaj7.unsupportedLabels, ["C+maj7"]);
 
+
+// Browse the entire unchanged Finder ranking (beyond the automatic top-five)
+// and pin the C-major preset chord button rather than bass/counterbass only.
+const cMajorOptions = progressionRealizationsForChord(buttons, progression[0], false);
+const cPreset = cMajorOptions.find(({ result }) => result.playbackButtons.some(
+  (button) => button.kind === "chord-major" && button.chordRoot === "C",
+));
+assert.ok(cPreset, "C-major preset chord must remain an available manual realization");
+const cPresetKey = progressionRealizationKey(cPreset.result);
+const manualPlan = optimizeStradellaProgression(buttons, progression, {
+  allowApproximations: false,
+  handMovementWeight: 0.65,
+  maxRealizationsPerChord: 5,
+  fixedRealizationKeys: { c1: cPresetKey },
+});
+assert.equal(manualPlan.playable, true);
+assert.equal(manualPlan.steps[0].realizationIndex, cPreset.realizationIndex);
+assert.equal(progressionRealizationKey(manualPlan.steps[0].result), cPresetKey);
+assert.ok(manualPlan.steps[0].result.playbackButtons.some((button) =>
+  button.kind === "chord-major" && button.chordRoot === "C",
+));
+assert.ok(manualPlan.steps.slice(1).every((step) => step.result.playable));
+assert.equal(manualPlan.steps[0].transitionFromPrevious, null);
+assert.ok(manualPlan.steps[1].transitionFromPrevious !== null);
+// The other C-major step is still optimized, not constrained by c1's ID.
+assert.ok(manualPlan.steps[4].realizationIndex < 5);
 
 // Rhythmic accompaniment must preserve the bass/counterbass button chosen by
 // the optimized realization. Em7 is idiomatically E counterbass + G major;

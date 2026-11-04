@@ -1,4 +1,4 @@
-/** Phase 3f: verify that relocating diagram/annotation state does not change
+/** Diagram annotation: verify that relocating diagram/annotation state does not change
  * defaults, button identity, SVG coordinates, stored-note data, or overlays.
  * Existing diagram/export tests independently cover the actual SVG output.
  */
