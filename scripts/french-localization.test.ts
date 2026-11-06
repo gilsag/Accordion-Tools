@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { EN, ES, FR, SUPPORTED_LANGUAGES, detectBrowserLanguage, translate } from "../src/i18n/catalog";
+import { EN, ES, FR, SUPPORTED_LANGUAGES, detectBrowserLanguage, translate } from "../src/i18n/allCatalogs";
 import { generateStradella } from "../src/stradella";
 import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../src/tools/stradellaChordFinder/registerModel";
 import { getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools";
@@ -42,8 +42,6 @@ const explanation = buildDiagramExplanation({
 });
 assert.match(explanation, /anneau intérieur/);
 assert.match(explanation, /masqué/);
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-assert.match(app, /SUPPORTED_LANGUAGES\.map/);
 assert.ok(readFileSync("README.md", "utf8").includes(`**Version:** ${JSON.parse(readFileSync("package.json", "utf8")).version}`));
 assert.match(readFileSync("docs/internal/adding-interface-languages.md", "utf8"), /SUPPORTED_LANGUAGES/);
 console.log("✓ French catalog, registry, chord and Harmony explanations, labels, and filename invariants passed");

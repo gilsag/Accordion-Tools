@@ -28,7 +28,7 @@ Numbers are useful when the exact order matters. Arrows are useful when you want
 
 ## Playback
 
-If sound is enabled, the sequence can be played back in order.
+If sound is enabled, the sequence can be played back in order with **Play** in the playback bar under the diagram.
 
 Playback is meant as an audible check of the path rather than a full performance engine.
 

@@ -45,6 +45,8 @@ import type { HarmonyPlaybackStyle, HarmonyVoicingStyle } from "../tools/harmony
 import type { ProgressionRhythmPattern } from "../sound";
 
 export type DefaultSettingsFile = Partial<{
+  /** Format version (see settingsMigrations.ts); absent in files from v0.17.0 and earlier. */
+  settingsVersion: number;
   stradellaNoteLevels: StradellaNoteLevels;
   stradellaShowNominalNoteSpacing: boolean;
   stradellaMinimumNominalGap: MinimumNominalGap;
@@ -149,6 +151,8 @@ export type DefaultSettingsFile = Partial<{
   soundAttackMs: number;
   soundReleaseMs: number;
   soundNoteDurationMs: number;
+  /** Share of each written note that sounds in timed playback (0.3–1). New in version 2. */
+  soundArticulation: number;
   harmonyShowEnharmonics: boolean;
   harmonyShowSeparators: boolean;
   harmonyShowLegend: boolean;
@@ -161,7 +165,6 @@ export type DefaultSettingsFile = Partial<{
   harmonyFontSize: number;
   harmonyPlaybackStyle: HarmonyPlaybackStyle;
   harmonyVoicingStyle: HarmonyVoicingStyle;
-  progressionAllowApproximations: boolean;
   progressionHandMovementWeight: number;
   progressionRhythmPattern: ProgressionRhythmPattern;
 }>;

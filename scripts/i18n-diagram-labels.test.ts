@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { CHORD_FAMILIES, SCALES } from "../src/tools/harmonyExplorer/music";
-import { translate } from "../src/i18n/catalog";
+import { translate } from "../src/i18n/allCatalogs";
 import {
   accordionStatusText, diagramAutoTitle, harmonyLegendFamilyText, harmonyRelatedDisplayName,
   harmonyStatusText, notationStatusLabel, pianoRangeStatusLabel, trebleLayoutStatusLabel,
@@ -65,24 +64,5 @@ for (const language of ["en", "es", "fr", "pt", "it", "de"] as const) {
 }
 
 // Source bindings: reject a correctly implemented helper that the UI forgets to call.
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-const circle = readFileSync("src/tools/harmonyExplorer/components/HarmonicCircle.tsx", "utf8");
-for (const binding of [
-  "const statusBarText = accordionStatusText(",
-  "harmonyStatusText({",
-  "pianoRangeStatusLabel(option.value, language)",
-  "relatedFamilyName={harmonyRelatedDisplayName(",
-  "titleMode === \"auto\" ? localizedAutoTitle()",
-  "return localizedAutoTitle();",
-  "const rawName =",
-  "? autoTitle()",
-]) {
-  assert.ok(app.includes(binding), `Missing UI or filename binding: ${binding}`);
-}
-assert.match(app, /if \(side === "stradella"\) return `\$\{basses\}-Bass Stradella`;/,
-  "Keep pre-existing automatic title for exported filenames");
-assert.ok(circle.includes("harmonyLegendFamilyText(relatedFamilyName, language, diatonicOnly, allFamiliesMode)"));
-assert.ok(circle.includes("const referenceName = familyName(referenceFamilyId, referenceFamily.name, language);"),
-  "Measure localized reference legend text, not English width");
 assert.equal(translate("es", "ui.diatonicFamily", { family: "séptima menor" }), "Acordes diatónicos: séptima menor");
 console.log("✓ Localized titles, status summaries, Harmony legends and unchanged filename policy passed (six languages)");

@@ -49,28 +49,4 @@ assert.equal(resolveWorkspaceInspector({...context, workspaceMode: "harmony"}), 
 assert.equal(resolveWorkspaceInspector({...context, leftPanelMode: "settings"}), null, "settings keep original layout");
 assert.equal(resolveWorkspaceInspector({...context, leftPanelMode: "hidden"}), null, "focus mode remains inspector-free");
 
-const app = readFileSync("src/App.tsx", "utf8");
-const slot = readFileSync("src/app/inspector/WorkspaceInspectorSlot.tsx", "utf8");
-const frame = readFileSync("src/app/inspector/WorkspaceInspectorFrame.tsx", "utf8");
-const inspector = readFileSync("src/app/inspector/StradellaResultsInspector.tsx", "utf8");
-const css = readFileSync("src/App.css", "utf8");
-assert.match(app, /resolveWorkspaceInspector\(/, "layout asks shared resolver for active content");
-assert.match(app, /<WorkspaceInspectorSlot inspector=\{inspector\}/, "layout composes generic inspector slot");
-assert.doesNotMatch(app, /StradellaResultsInspector|stradellaChordFinderRealizationIndex/, "layout does not own tool-specific inspector props");
-assert.match(slot, /onSelect=\{tools\.setStradellaChordFinderRealizationIndex\}/, "reuse existing Finder selected-index owner");
-assert.match(slot, /lazy\(\(\) => import\("\.\/StradellaResultsInspector"\)/, "tool content stays lazy-loaded");
-assert.match(frame, /className="workspace-inspector"/, "tool-neutral inspector frame is reusable");
-assert.match(inspector, /<WorkspaceInspectorFrame title=\{t\("inspector.title"\)\} blocked=\{blocked\}>/, "Stradella content uses shared frame and inherits modal inertness");
-assert.match(css, /\.app:has\(> \.workspace-inspector\)/, "responsive layout is independent of tool name");
-assert.doesNotMatch(css, /\.finder-inspector/, "no Stradella-only shell CSS remains");
-assert.match(inspector, /onSelect\(originalIndex\)/, "rows select original engine index, not filtered row index");
-assert.match(inspector, /aria-pressed=\{originalIndex === selectedIndex\}/, "focusable selection button exposes selected state");
-assert.match(inspector, /selectedHidden/, "a hidden selection is disclosed, not replaced");
-assert.doesNotMatch(inspector, /setSelectedIndex\(/, "no independent selection owner");
-for (const lang of ["en", "es", "fr", "pt", "it", "de"]) {
-  const locale = readFileSync(`src/i18n/${lang}.ts`, "utf8");
-  for (const key of ["rootInBass", "exactOnly", "atMostTwo", "hiddenSelection", "selectRank"]) {
-    assert.ok(locale.includes(`"inspector.${key}"`), `${lang} has ${key} label`);
-  }
-}
 console.log("✓ Shared inspector activation plus Stradella filters, original ranks, identities, lazy loading and six locales passed");

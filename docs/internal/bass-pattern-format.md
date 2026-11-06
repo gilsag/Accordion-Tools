@@ -544,7 +544,7 @@ The ABC export includes:
 
 - `M:` from the pattern meter,
 - `L:` from the meter denominator,
-- `Q:` from the Bass Pattern Player tempo,
+- `Q:` from the Bass Pattern Player tempo, stated in its beat (`Q:1/4=` in 4/4, `Q:3/8=` in 6/8 and 12/8),
 - `K:` from the selected root,
 - quoted resolved chord labels such as `"C"`, `"G7"`, or `"Am"`,
 - bass-note events where a bass or counterbass button is played,

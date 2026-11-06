@@ -39,8 +39,4 @@ Selected buttons are included in SVG/PNG diagram exports because they are part o
 
 ## Related settings
 
-See [`settings.md`](settings.md) for:
-
-- `selectionOnClick`
-- `soundEnabled`
-- `downloadFormat`
+Under [Settings](settings.md), **Sound** sets what you hear when you click a button. The **Download** menu in the top bar saves the diagram, including your selection, as SVG or PNG.

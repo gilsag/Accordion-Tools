@@ -53,8 +53,9 @@ type ProgressionAssistantPanelProps = {
   onRemoveChord: (index: number) => void;
   onMoveChord: (index: number, direction: -1 | 1) => void;
   onClear: () => void;
-  onPlay: () => void;
-  onStop: () => void;
+  /** Draw the optimized path (numbered steps and arrows) on the diagram. */
+  pathVisible: boolean;
+  onPathVisibleChange: (visible: boolean) => void;
 };
 
 export function ProgressionAssistantPanel({
@@ -86,8 +87,8 @@ export function ProgressionAssistantPanel({
   onRemoveChord,
   onMoveChord,
   onClear,
-  onPlay,
-  onStop,
+  pathVisible,
+  onPathVisibleChange,
 }: ProgressionAssistantPanelProps) {
   const { t, language } = useI18n();
   const [presetId, setPresetId] = useState("i-iv-v-i");
@@ -100,7 +101,7 @@ export function ProgressionAssistantPanel({
   );
 
   return (
-    <CollapsibleSection title={t("ui.progressionAssistant")} isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("ui.progressionAssistant")} summary={t("tools.summary.progressionAssistant")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
         {t("ui.progressionIntro")}
       </p>
@@ -198,9 +199,9 @@ export function ProgressionAssistantPanel({
                         <button className="tiny-button" type="button" disabled={available.length === 0} onClick={() => onCycleRealization(index, 1)} aria-label={t("ui.progressionNextRealization")}>→</button>
                       </div>
                       <div className="progression-order-actions">
-                        <button type="button" className="tiny-button" disabled={index === 0} onClick={() => onMoveChord(index, -1)} aria-label={t("ui.moveChordEarlier")}>↑</button>
-                        <button type="button" className="tiny-button" disabled={index === progression.length - 1} onClick={() => onMoveChord(index, 1)} aria-label={t("ui.moveChordLater")}>↓</button>
-                        <button type="button" className="tiny-button" onClick={() => onRemoveChord(index)} aria-label={t("ui.removeChord")}>×</button>
+                        <button type="button" className="tiny-button" disabled={index === 0} onClick={() => onMoveChord(index, -1)} aria-label={t("ui.moveChordEarlier")} title={t("ui.moveChordEarlier")}>↑</button>
+                        <button type="button" className="tiny-button" disabled={index === progression.length - 1} onClick={() => onMoveChord(index, 1)} aria-label={t("ui.moveChordLater")} title={t("ui.moveChordLater")}>↓</button>
+                        <button type="button" className="tiny-button" onClick={() => onRemoveChord(index)} aria-label={t("ui.removeChord")} title={t("ui.removeChord")}>×</button>
                       </div>
                     </div>
                   </div>
@@ -265,15 +266,13 @@ export function ProgressionAssistantPanel({
             onChange={(event) => onTempoBpmChange(Number(event.target.value))}
           />
         </label>
+        <label className="checkbox-line">
+          <input type="checkbox" checked={pathVisible} onChange={(event) => onPathVisibleChange(event.target.checked)} />
+          {t("ui.progressionShowPath")}
+        </label>
         <p className="hint">{t("ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram")}</p>
+        <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
       </fieldset>
-
-      {plan.playable && (
-        <div className="button-row progression-transport-actions">
-          <button type="button" className="small-button active-tool" onClick={onPlay}>{t("ui.progressionPlay")}</button>
-          <button type="button" className="small-button" onClick={onStop}>{t("ui.stop")}</button>
-        </div>
-      )}
 
     </CollapsibleSection>
   );

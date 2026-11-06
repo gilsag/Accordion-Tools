@@ -48,9 +48,16 @@ export function usePhonePanel(activeTool: string | null, workspaceMode: string) 
     return () => document.removeEventListener("keydown", onEscape);
   }, [isPhone, open, close]);
 
-  // Navigation to another tool should expose its diagram immediately.
+  // Expanding a tool inside the sheet must keep the sheet open: that is where
+  // its controls are. A tool change made from elsewhere (a cross-tool command,
+  // the toolbar) dismisses the sheet so the diagram is visible.
+  useEffect(() => {
+    if (panelRef.current?.contains(document.activeElement)) return;
+    setOpen(false);
+  }, [activeTool]);
+  // Switching workspace (Stradella, Treble, Harmony) always shows the new diagram.
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Navigation-driven dismissal, not derived application state.
-  useEffect(() => { setOpen(false); }, [activeTool, workspaceMode]);
+  useEffect(() => { setOpen(false); }, [workspaceMode]);
   // eslint-disable-next-line react-hooks/set-state-in-effect -- A desktop sidebar is never a modal sheet.
   useEffect(() => { if (!isPhone) setOpen(false); }, [isPhone]);
 

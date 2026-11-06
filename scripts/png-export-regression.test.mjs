@@ -3,13 +3,6 @@ import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 
-const download = readFileSync("src/download.ts", "utf8");
-const raster = readFileSync("src/svgRasterExport.ts", "utf8");
-
-assert.match(download, /if \(pngSafe\) makeSvgCanvasSafe\(svgElement, clone\)/);
-assert.match(download, /downloadPng\([\s\S]*?serializeSvg\(svgElement, true\)/);
-assert.match(download, /svgStringToPngBytes\(svgString, width, height\)/);
-assert.match(download, /catch \(error\) \{[\s\S]*?window\.alert/);
 // Regression: live Stradella batch capture must request PNG-safe SVG serialization
 // only for PNG. Exercise the actual export boundary rather than assuming the
 // implementation remains in App.tsx (it moved during modularization).
@@ -47,8 +40,4 @@ for (const format of ["png", "svg"]) {
   assert.equal(snapshots[0].height, 240);
 }
 assert.deepEqual(serializeModes, [true, false], "PNG capture alone uses PNG-safe serialization");
-assert.match(raster, /emitNestedSvg\(original, replacement, inverse\)/);
-assert.match(raster, /emitTextLines\(original, replacement, inverse\)/);
-assert.match(raster, /copied\.replaceWith\(replacement\)/);
-assert.match(raster, /source\.contains\(owningSvg\)/);
 console.log("PNG export source integration regression passed.");

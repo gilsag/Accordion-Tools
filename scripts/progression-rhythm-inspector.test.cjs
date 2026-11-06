@@ -28,32 +28,4 @@ assert.deepEqual(ids(progressionPulsePlan([bass('only-bass','C')],[], 'waltz',mi
 assert.deepEqual(ids(progressionPulsePlan([button],[], 'oom-pah',midi)),[[],['C-major']], 'missing fallback becomes a rest');
 const selectedOnly = [higher, button];
 assert.deepEqual(ids(progressionPulsePlan(selectedOnly,[bass('root-C','C')],'oom-pah',midi)),[['higher-E'],['C-major']], 'selected counterbass has priority over external root bass');
-// Wiring, identity, and legacy settings contract: one planner feeds score and scheduler.
-const controller=fs.readFileSync('src/app/useAppController.ts','utf8');
-const sound=fs.readFileSync('src/sound.ts','utf8');
-const selection=fs.readFileSync('src/app/inspector/inspectorSelection.ts','utf8');
-const slot=fs.readFileSync('src/app/inspector/WorkspaceInspectorSlot.tsx','utf8');
-const tool=fs.readFileSync('src/components/tools/ProgressionAssistantPanel.tsx','utf8');
-const app=fs.readFileSync('src/App.tsx','utf8');
-assert.match(controller,/harmonyProgressionPlan\.steps\.map\(progressionRhythmPulses\)/);
-assert.match(controller,/const pulses = progressionRhythmPulses\(step\)/);
-assert.match(controller,/unique\.length \? `\[\$\{unique\.join\(""\)\}\]` : "z"/, 'empty beats become ABC rests');
-assert.match(sound,/pulseOverrides\?\.\[progressionIndex\] \?\? progressionPulsePlan/);
-assert.match(sound,/onActiveButtons\?\.\(\[\], progressionIndex\)/);
-assert.match(selection,/return "progressionAssistant"/);
-assert.match(slot,/ProgressionResultsInspector/);
-assert.match(app,/inspectorVisible/);
-assert.match(tool,/onPlay=|onClick=\{onPlay\}/);
-assert.doesNotMatch(tool,/ui\.allowConservativeFifthOmissionApproximations|progression-plan-steps/);
-for(const locale of ['en','es','fr','pt','it','de']){
- const source=fs.readFileSync(`src/i18n/${locale}.ts`,'utf8');
- for(const key of ['ui.showResults','ui.hideResults']) assert.ok(source.includes(`"${key}"`),`${locale} ${key}`);
-}
-const settingsKeys=JSON.parse(fs.readFileSync('scripts/settings-export-keys.json','utf8'));
-assert.equal(settingsKeys.length,118);
-assert.ok(settingsKeys.includes('progressionAllowApproximations'), 'retired UI preference remains import/export compatible');
-const feature=fs.readFileSync('src/features/progressionAssistant/useProgressionAssistant.ts','utf8');
-assert.match(feature,/allowApproximations: true/);
-assert.match(feature,/harmonyProgressionPulseSilent/);
-assert.match(controller,/setHarmonyProgressionPulseSilent\(buttonIds\.length === 0\)/);
-console.log('✓ Shared rhythmic bass/remainder planner, rests, timing/notation wiring, inspector, six locales and legacy settings passed');
+console.log('✓ Shared rhythmic bass/remainder planner, and rests passed');

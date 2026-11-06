@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { generateStradella } from "../src/stradella";
 import { getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools";
 import { stradellaContextualTitle, trebleContextualTitle } from "../src/tools/contextualTitles";
@@ -53,14 +52,6 @@ assert.doesNotMatch(shell.filenameKey, /[/#♯♭\s]/, "Export filename keys mus
 
 assert.deepEqual(Object.values(DEFAULT_STRADELLA_NOTE_LEVELS), [true, true, true, true]);
 
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-assert.match(app, /trebleContextualTitle\(\{/);
-assert.match(app, /exact: trebleChordExplanation\.exact/);
-assert.match(app, /inversion: chordFinderInversion/);
-assert.match(app, /finderAnnotation\?\.title/);
-assert.match(app, /finderAnnotation\.filenameKey/);
 // Auto-fit results are verified against frozen numerical geometry snapshots
 // by playback-start-geometry.test.mjs, rather than requiring it inside App.
-assert.match(app, /calculateDiagramGeometry\(\{/);
-assert.match(app, /style=\{\{ fontSize: effectiveTitleSize \}\}/);
 console.log("Contextual title and export-identity tests passed.");

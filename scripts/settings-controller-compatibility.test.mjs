@@ -21,6 +21,7 @@ new Function('require', 'exports', compiled)((id) => {
   if (id.includes('i18n/catalog')) return { isInterfaceLanguagePreference: (v) =>
     ['auto', 'en', 'es', 'fr', 'pt', 'it', 'de'].includes(v) };
   if (id.includes('diagramAnnotations')) return { normalizeStradellaNoteLevels };
+  if (id.includes('settingsMigrations')) return { SETTINGS_VERSION: 2 };
   if (id.includes('harmonyExplorer/music')) return { DEFAULT_RING_VISIBILITY: {0:false,1:true,2:true,3:true,4:true} };
   throw new Error(`Unexpected settings controller import: ${id}`);
 }, controller);
@@ -45,6 +46,15 @@ try {
     get(_t, key) {return (value) => calls.push([key, value]);},
   }));
   assert.deepEqual(calls, [['setLanguagePreference', 'fr']]);
+  // Note length in players is clamped to 30–100% and ignored when not a number.
+  for (const [value, expected] of [[0.1, [['setSoundArticulation', 0.3]]], [1.4, [['setSoundArticulation', 1]]],
+    [0.666, [['setSoundArticulation', 0.67]]], ['loud', []]]) {
+    const articulationCalls = [];
+    controller.applyImportedSettings({ soundArticulation: value }, new Proxy({}, {
+      get(_t, key) {return (v) => articulationCalls.push([key, v]);},
+    }));
+    assert.deepEqual(articulationCalls, expected, `soundArticulation ${value}`);
+  }
 } finally {
   globalThis.window = oldWindow;
 }
@@ -55,6 +65,8 @@ const snapshot = new Proxy({
 }, {get(target, key) {return key in target ? target[key] : key;}});
 const exported = controller.collectCurrentSettings(snapshot);
 assert.deepEqual(Object.keys(exported), expectedKeys, 'Historical settings key set and JSON order');
+assert.equal(exported.settingsVersion, 2, 'Exports carry the settings format version');
+assert.equal(exported.soundArticulation, 'soundArticulation');
 assert.equal(exported.language, 'languagePreference');
 assert.equal(exported.buttonSpacing, 'spacing');
 assert.equal(exported.bassPatternRepeatsPerChord, 'bassPatternBarsPerChord');

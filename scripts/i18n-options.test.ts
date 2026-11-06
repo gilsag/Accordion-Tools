@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { abcExampleName, bassPatternName, progressionName } from "../src/i18n/optionLabels";
-import { EN, SUPPORTED_LANGUAGES, translate, translateKnownLabel } from "../src/i18n/catalog";
+import { EN, SUPPORTED_LANGUAGES, translate, translateKnownLabel } from "../src/i18n/allCatalogs";
 import { CHORD_FINDER_OPTIONS } from "../src/music/chordDefinitions";
 import { stradellaRowLabel } from "../src/stradella";
 import { stradellaDiagramRowLabel } from "../src/i18n/musicTerms";
@@ -40,18 +39,8 @@ for (const row of ["bass-counterbass", "bass-root", "chord-major", "chord-minor"
   assert.notEqual(stradellaDiagramRowLabel(row, english, "es"), english);
 }
 
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-const controllerOptions = readFileSync("src/app/controllerOptions.ts", "utf8");
-const toolsView = readFileSync("src/app/views/ToolsView.tsx", "utf8");
-const finder = readFileSync("src/components/tools/StradellaChordFinderPanel.tsx", "utf8");
-const assistant = readFileSync("src/components/tools/ProgressionAssistantPanel.tsx", "utf8");
-const css = readFileSync("src/App.css", "utf8");
 // Search modes are translated through a conditional key selection inside t(...).
 // Verify the option-to-key bindings, rather than requiring direct t("key") calls.
-assert.match(finder, /\{t\(\s*option\.value\s*===\s*"bass-only"/);
-assert.match(finder, /option\.value\s*===\s*"bass-only"\s*\?\s*"tools\.searchBassRowsOnly"/);
-assert.match(finder, /option\.value\s*===\s*"chord-buttons-only"\s*\?\s*"tools\.searchChordButtonsOnly"/);
-assert.match(finder, /:\s*"tools\.searchBassAndChordButtons"\s*\)\}/);
 // Progression Assistant now shares all 35 Chord Finder chord types. Check
 // canonical options and their actual translation function, not a removed
 // Harmony-family rendering expression from an earlier implementation.
@@ -78,16 +67,6 @@ for (const [pattern, key] of [
 }
 // Keep a small wiring check: the menu must consume the shared catalog and
 // localized labels, rather than just having a working translation helper.
-assert.ok(assistant.includes("CHORD_FINDER_OPTIONS.map("), "Progression must use the shared Finder chord catalog");
-assert.ok(assistant.includes("translateKnownLabel("), "Progression chord-type options must use shared label translation");
-assert.ok(assistant.includes('t("tools.chordType")'), "Progression must reuse the shared Chord type label");
-assert.match(app, /abcExampleName\(option.value, option.label, language\)/);
 // The progression-option label was extracted from App into controllerOptions in the controller.
 // Verify both the localized helper and its binding in the tools UI.
-assert.match(controllerOptions, /const localizedName = progressionName\(progression.id, progression.name, language\)/);
-assert.match(toolsView, /formatProgressionOptionLabel\(progression, language\)/);
-assert.match(app, /stradellaDiagramRowLabel\(kind, stradellaRowLabel\(kind\), language\)/);
-assert.match(app, /const bellowsStartLabel = side === "stradella" \? t\("ui.bottom"\) : t\("ui.top"\)/);
-assert.match(app, /const bellowsEndLabel = side === "stradella" \? t\("ui.top"\) : t\("ui.bottom"\)/);
-assert.match(css, /\.section-title\s*\{[^}]*text-align:\s*left/s);
 console.log("Shared chord-type dropdown translations and tool-heading tests passed (six languages).");

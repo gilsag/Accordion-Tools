@@ -5,7 +5,8 @@ import { realizationText } from "../../components/tools/progressionRealizationTe
 import { WorkspaceInspectorFrame } from "./WorkspaceInspectorFrame";
 
 /** Result-only view. Preview state and the optimized plan remain feature-owned;
- * playback, stop and chord editing remain in the left-side tool panel. */
+ * chord editing stays in the left-side tool panel and playback in the shared
+ * playback bar under the diagram. Step numbers match the path drawn there. */
 export function ProgressionResultsInspector({ plan, hasProgression, previewIndex, onPreviewStep, blocked = false }: {
   plan: OptimizedProgressionPlan;
   hasProgression: boolean;

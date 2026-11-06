@@ -313,6 +313,12 @@ export function renderMusicLabel(label: string) {
   return parts;
 }
 
+/** Plain-text form of a diagram label, with the same accidental glyphs as
+ * renderMusicLabel(); used for accessible names. */
+export function musicLabelText(label: string): string {
+  return label.replace(/##/g, "𝄪").replace(/#/g, "♯").replace(/b/g, "♭");
+}
+
 /** Returns true when a normalized pitch class contains a sharp accidental. */
 export function isAccidentalPitch(pitch: string | undefined): boolean {
   return Boolean(pitch && pitch.includes("#"));

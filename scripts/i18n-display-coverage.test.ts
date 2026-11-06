@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { EN, ES, FR, PT, IT, DE, translateKnownLabel, type TranslationKey } from "../src/i18n/catalog";
+import { EN, ES, FR, PT, IT, DE, translateKnownLabel, type TranslationKey } from "../src/i18n/allCatalogs";
 import { generateStradella } from "../src/stradella";
 import { getStradellaChordFinderResults } from "../src/tools/stradellaChordFinderTools";
 import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../src/tools/stradellaChordFinder/registerModel";

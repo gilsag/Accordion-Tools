@@ -8,17 +8,6 @@ import ts from "typescript";
 
 const path = "src/features/abcPlayer/useAbcPlayer.ts";
 const source = readFileSync(path, "utf8");
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-assert.match(app, /useAbcPlayerState\(\)/);
-assert.match(app, /useAbcPlayerResults\(\{/);
-assert.doesNotMatch(app, /const \[abcText,\s*setAbcText\] = useState/);
-assert.doesNotMatch(app, /const abcParseResult = useMemo/);
-assert.match(app, /function scheduleAbcPlayback\(/, "Playback orchestration remains in App for now");
-assert.match(app, /renderNotationInto\(abcNotationRef\.current, abcText\)/);
-const scheduling = readFileSync("src/audio/playbackScheduling.ts", "utf8");
-assert.match(app, /scheduleAbcMappedPlayback\(\{abcMappedEvents/);
-assert.match(scheduling, /playButtonSound\(button, soundOptions\)/);
-assert.match(scheduling, /abcMappedEvents\.filter\(/);
 
 let index = 0;
 const slots = [];

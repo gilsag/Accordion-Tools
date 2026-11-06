@@ -1,99 +1,84 @@
 # Stradella Progression Assistant
 
-The **Progression Assistant** is a separate Stradella-side tool for choosing a coherent sequence of chord realizations across a progression. It is not part of the Harmony Explorer panel, although Harmony Explorer can send selected relationships into it.
+The **Progression Assistant** finds a good way to play a chord progression on the Stradella bass: for each chord it picks a combination of buttons, and it chooses them so that your hand moves as little as possible and the harmony flows smoothly from chord to chord.
 
 ## Opening the tool
 
-Choose **Stradella** in the top bar, then open **Tools → Progression Assistant**.
-
-The tool is shown only for the Stradella side because its optimization uses the physical geometry of Stradella bass/counterbass and chord buttons.
+Choose **Stradella** in the top bar, then open **Tools → Progression Assistant**. The tool is only available on the Stradella side, because it works with the positions of the bass and chord buttons.
 
 ## Building a progression
 
-Use the **Manual / Use preset** choice to select an entry method. **Manual** shows Root and Chord type; **Add chord** appends the chosen chord. **Use preset** shows the shared Bass Pattern Player progression catalog and key, with **Load preset** replacing the list. Both modes place their primary action next to **Clear**. Switching modes does not erase the current progression or draft selections. Alternatively, select a relationship in Harmony Explorer and choose **Add relationship to Progression**.
+Choose how to enter chords with **Manual / Use preset**:
 
-The list is left-aligned and shows the chord symbol without repeating the chord-type name. Its up/down buttons reorder chords; × removes a chord. **Clear** removes the complete sequence. The eye next to a chord toggles its diagram explanation: at most one chord (or none) can have its eye selected. The notes use the currently optimized or manually pinned realization, never a theoretical chord or a purely visual reference marker.
+- **Manual:** pick a **Root** and a **Chord type**, then **Add chord**. All 35 chord types of the Chord Finder are available, including add9, 9th, 11th and 13th chords.
+- **Use preset:** pick one of the progressions also used by the Bass Pattern Player and a key, then **Load preset**. This replaces the current list. Presets that use chords the assistant cannot place yet (such as secondary dominants or minor-key numerals) are marked as unsupported and cannot be loaded.
 
-### Chord-type catalog and Harmony compatibility
+You can also send chords from Harmony Explorer: select a relationship there and choose **Add relationship to Progression**.
 
-Progression Assistant and both Chord Finder panels use the same **35-option** `CHORD_FINDER_OPTIONS` list in `src/music/chordDefinitions.ts`; its selection is consistently labeled **Chord type** in all six interface languages. This includes add9, altered sevenths, 9ths, 11ths and 13ths. Requests store the exact `FinderChordPattern` identity and use the existing Stradella search/ranking engine. Some chords have no realizations on a particular physical bass layout; the result is reported as unavailable rather than substituted with a simpler chord. In the current UI, the automatic optimizer still examines up to five available ranked candidates, while arrows expose all playable candidates.
+Switching between Manual and Use preset keeps your current progression.
 
-Harmony Explorer retains its existing 16-family graph. Chords transferred from Harmony retain their original `ChordFamilyId` and are converted via the explicit Harmony-to-Finder adapter when searching. The unsupported augmented-major-seventh family is not silently mapped. Harmony Explorer's ring mathematics and chord-family display remain unchanged.
+### Editing the list
 
-## Optimization
+Each chord row has:
 
-For each chord, Accordion Tools generates ranked **Bass + chord buttons** realizations using the same Stradella Chord Finder engine. **Auto** uses global dynamic programming over the original first-five candidate shortlist. Individual Finder rankings are unchanged; the transition objective has been revised as described below.
+- **↑** and **↓** to move the chord earlier or later, and **×** to remove it;
+- **← / →** to choose how that chord is played (see below);
+- an **eye** button that shows the chord's explanation on the diagram.
 
-### Choosing a realization for an individual chord
+**Clear** removes the whole progression.
 
-Each chord row has **← / →** controls. They cycle from **Auto** through every playable Chord Finder realization and display its **original rank**, including choices below the optimizer's first five. In Auto, the optimizer chooses the chord's sounding recipe; choosing a rank **pins that chord** to the selected `playbackButtons` recipe and recomputes the globally optimized choices for the other steps. The original ranks do not change.
+Some chords cannot be played at all on a given bass layout. They are reported as unavailable; the assistant never swaps in a simpler chord.
 
-Manual choices belong to stable progression-step IDs, not list positions; rearranging chords keeps the right choice with each chord. If the selected recipe disappears because the physical layout changes, that step returns to Auto. Removing a step clears its choice. These choices are temporary session state and do **not** add keys to the 118-field settings JSON.
+## How the assistant chooses
 
-Changing a realization stops any scheduled playback. The eye-selected diagram notes, preview highlights, rhythmic playback and generated notation all read the same resulting progression plan. The previous **Open preview in Chord Finder** button has been removed; the arrow controls and shared Results Inspector already expose the available recipes.
+For every chord, the assistant starts from the Chord Finder's ranked list of ways to play it. In **Auto**, it then looks at the whole progression at once and picks the combination with the best balance of:
 
-**Example:** If automatic optimization chooses bass/counterbass notes to form C major, browse to a candidate using the **C major chord button**. Auto now begins with the original Finder rank and trades rank against user-weighted transitions; a bass-only realization still produces bass-only pulses under existing waltz rules unless explicitly replaced. The rhythmic layer now separates the lowest selected bass/counterbass from the remaining selected buttons. Independent per-chord bass-pulse override and rhythm editing remain future work.
+- how highly the Chord Finder ranks each choice;
+- **Hand movement:** how far your hand travels between chords;
+- **Harmonic voice leading:** how few notes change between chords.
 
-The automatic objective is now
+The two sliders set how much the last two matter. At 0% for both, every chord simply uses its top-ranked option. Raising **Hand movement** favours choices close to the previous chord; raising **Harmonic voice leading** favours choices that keep notes in common. These are practical rules of thumb, not measurements of real hands or reeds.
 
-`J = Σ (original Finder rank − 1) + 1.5 × physicalSlider × Σ(physical movement in button spacings) + 0.75 × voiceSlider × Σ(harmonic pitch-class motion in semitones)`.
+### Choosing a realization yourself
 
-Both independent sliders range from 0 to 100%, represented as 0–1 coefficients. The numerical scales (2 button spacings and 4 semitones for a 3-rank tradeoff at 100%) are starting heuristics, **not biomechanical or acoustic measurements**. The original Stradella Chord Finder ranking handles physical button economy, musical completeness, and ergonomic preferences; no secondary fixed exactness penalty or compactness penalty is applied. Conservative omissions approved by the Chord Finder are always eligible. The former approximation checkbox has been removed: it duplicated the Finder’s eligibility policy rather than defining a separate progression preference. The legacy `progressionAllowApproximations` JSON field is still accepted and round-tripped but no longer filters these results. The 5-candidate automatic shortlist remains in place; explicit arrows can pin any available ranked recipe.
+Use **← / →** on a chord row to step from **Auto** through every playable option for that chord. Each option shows its original Chord Finder rank. Picking one fixes that chord; the assistant then re-plans the other chords around it. Go back to **Auto** to release it.
 
-At **0% physical / 0% harmonic**, Auto chooses the first eligible Finder realization independently at each unpinned step. The sliders can independently favor physical continuity or minimum pitch-class motion; user-pinned steps always win. The existing `progressionHandMovementWeight` settings key retains its original value for import/export compatibility but is now interpreted as a physical coefficient, not as a complementary cross-fade. The new harmonic weight defaults to 35% and is session-only; the 118-key settings export is unchanged. A future version could add opt-in persistence with an explicit schema migration.
+Your choice stays with the chord when you reorder the list. It is cleared when you remove the chord, load a new progression, or change the bass layout so that the option no longer exists. These choices are not saved in the settings file.
 
-### Preset progressions
+## Explanations on the diagram
 
-The preset selector reads the **same 29-entry JSON catalog already loaded by the Bass Pattern Player**; there is no second catalog fetch or copy. Switch to **Use preset**, select a progression and key, then **Load preset** to replace the editable list (with fresh stable IDs and cleared realization pins). Roman numerals are resolved using the existing Bass Pattern Player helper. Supported Roman-numeral templates resolve directly to shared Finder chord-type IDs. Unsupported Roman-numeral syntax (including secondary dominants), and minor-tonic entries that require a separate minor-mode resolver are **marked unsupported** and cannot be loaded; none are silently reduced or omitted. Catalog names remain as defined in the shared JSON. The key refers to the common major-scale mapping for supported templates. A future extension can implement a proper minor-mode and secondary-dominant bridge.
+Press the **eye** next to a chord to show the same explanation lines as the Chord Finder (harmonic identity, pitch classes, physical buttons and registral voicing) under the diagram, and in downloaded images. Press it again to hide them; pressing another chord's eye moves the explanation there. Only one chord shows its explanation at a time, and it is hidden while the progression plays so it does not get confused with the buttons sounding.
 
-## Stradella preview and explanatory notes
-
-Select the **eye icon** beside any progression chord to display the same four levels of explanatory notes available in Stradella Chord Finder (harmonic identity, realized pitch classes, nominal registral voicing, and physical played buttons). Its pressed state indicates the selected chord; pressing it again turns the notes off. Selecting a different eye automatically replaces the previous selection. The choice is stored by the chord's stable ID, so reordering a sequence does not transfer its notes to a different chord. Deleting that chord, replacing the progression, or clearing it removes the eye selection.
-
-The explanatory lines come directly from `realizationAnnotation()` using the step's `result.playbackButtons`, current nominal Stradella register model, chord-display style, interface language, and the **existing four note-level preferences**. Optional interval charts reuse the same diagram footer and SVG/PNG rendering pipeline as Chord Finder. This is an explanatory preview, not a change to the selected realization, audio pitches, or rank. An eye is suppressed during sounding pulses so a static chord explanation is not mistaken for the currently sounding subset; playback highlighting takes priority.
-
-A result clicked in the shared Results Inspector also selects that chord's preview and notes. With no eye selected, the previous arrow-based preview still works, but does not force explanatory text. The former **Open preview in Chord Finder** command has been removed; use the per-chord realization arrows for all ranked options.
+Clicking a chord in the Results panel also selects it.
 
 ## Results
 
-The optimized plan reports:
+The Results panel shows, for the chosen plan:
 
-- the selected physical realization for each chord;
-- total harmonic voice motion;
-- total physical hand movement;
-- whether any approximate realizations were used;
-- per-transition voice motion;
-- per-transition physical movement;
-- shared pitch classes.
+- the buttons used for each chord;
+- the total and per-step harmonic motion and hand movement;
+- whether any chord leaves out a note;
+- the notes shared between neighbouring chords.
 
-**Play progression** and **Stop** stay in the left controls panel; the extra Finder-opening control has been removed. The Results Inspector shows the chosen steps and transition metrics. The top toolbar provides **Show results / Hide results** for either the Stradella Chord Finder or the Progression Assistant.
+With **Show path on diagram** turned on, the diagram numbers each chord's button (a button used by several chords shows, for example, **1·4**) and draws dashed arrows from step to step. The numbers match the Results panel. The path is off by default and is included in downloads when shown.
 
-**Play progression** uses the current Accordion Tools sound settings, including La Melodiosa when selected. The buttons sounding on each pulse are highlighted directly on the Stradella diagram during playback.
+## Playback
 
-### Rhythmic playback
+**Play** and **Stop** are in the playback bar under the diagram. Playback uses your sound settings, including La Melodiosa, and lights up the buttons as they sound. The tool has its own tempo control and four rhythms:
 
-The Progression Assistant provides four intentionally simple accompaniment patterns:
+- **All buttons together:** each chord as a single block.
+- **Basic oom-pah (2/4):** the lowest bass on beat 1, the rest of the chord on beat 2.
+- **Waltz (3/4):** the lowest bass on beat 1, the rest on beats 2 and 3.
+- **March (4/4):** the lowest bass on beat 1, the rest on beats 2, 3 and 4.
 
-- **All buttons together** — plays the complete selected realization as a block.
-- **Basic oom-pah (2/4)** — the lowest selected bass/counterbass on beat 1, followed by every other button from that realization on beat 2.
-- **Waltz (3/4)** — the lowest selected bass/counterbass on beat 1, then all remaining selected buttons on beats 2 and 3.
-- **March (4/4)** — the lowest selected bass/counterbass on beat 1, then all remaining selected buttons on beats 2, 3 and 4.
+"Lowest bass" means the lowest bass or counterbass button in the chosen option, according to the register model in **Settings → Instrument**. If an option has several bass buttons, the others join the chord on the later beats. If an option uses only chord buttons, the root bass is added on beat 1. If it uses only bass buttons, the later beats are silent rather than repeating the bass. For Em7 played as **E counterbass + G major**, for example, E counterbass sounds on beat 1 and G major on the following beats.
 
-The lowest bass is determined by the **configured nominal sound mapping**, not by physically measured accordion reed voicing. If several bass/counterbass buttons are selected, only the lowest sounds on beat 1; the higher bass/counterbass buttons join the remaining selected buttons for the following beats. For chord-only realizations, the existing fallback fundamental root bass supplies beat 1 without altering the chosen realization. For bass-only realizations with no remaining buttons, the other beats are **rests**, not repetitions of the bass or invented preset-chord tones.
-
-For mixed realizations such as **E counterbass + G major** for Em7, E counterbass is the first-beat event and G major sounds subsequently. All rhythm pulses share a single pure planner (`src/audio/progressionPulsePlan.ts`) used for scheduled audio, active-button highlighting, and generated ABC notation. Changing the rhythm or tempo cancels the previous schedule; silent pulses clear sounding highlights.
-
-The tool includes its own tempo control. Unlike the former behavior, a bass-only realization is not repeated as a bass cluster on every beat; choose a realization containing other buttons to hear chord pulses. This is intentional and does not alter the Chord Finder result.
+**Note length in players** in **Settings → Sound** sets how long each beat sounds.
 
 ### Staff notation
 
-When a playable plan is available, the top toolbar offers **Show notation**, following the same workflow as the Bass Pattern Player. The notation reflects the selected rhythmic pattern and selected button realizations and can be downloaded as SVG. Its ABC export no longer forces the redundant heading “Optimized Stradella progression”; chord labels and staff content are preserved.
+When there is something to play, the top toolbar offers **Show notation**, which draws the progression in the chosen rhythm as staff notation below the diagram. It can be downloaded as SVG.
 
-## Relationship to Harmony Explorer
+## Progression Assistant and Harmony Explorer
 
-
-Pitch-class voice-leading and physical button choice are intentionally separate: E fundamental and E counterbass are harmonically identical, while the ergonomic optimizer decides which physical E is preferable.
-
-Harmony Explorer answers **which chords are harmonically related and why**. The Progression Assistant answers **how a sequence of those chords can be realized efficiently on the Stradella manual**.
-
-Keeping them separate makes both tools simpler while preserving a direct handoff between them.
+Harmony Explorer shows **which chords are related and why**. The Progression Assistant shows **how to play a sequence of them efficiently on the Stradella bass**. Harmonically, an E bass and an E counterbass are the same note; the assistant decides which of the two is more convenient.

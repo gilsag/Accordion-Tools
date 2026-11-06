@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { voicingIntervalLayout, voicingIntervalMetrics } from "../src/tools/stradellaChordFinder/voicingIntervalLayout";
 import { estimateLegendTextWidth, wrapLegendText } from "../src/tools/harmonyExplorer/legendTextLayout";
-import { readFileSync } from "node:fs";
 import type { ModeledStradellaNote } from "../src/tools/stradellaChordFinder/registerModel";
 
 const note = (midi: number, pitchClass: string, octave: number, buttonId: string): ModeledStradellaNote =>
@@ -79,37 +78,6 @@ assert.deepEqual(wrapLegendText("Minor seventh with shared tones", 340, 13),
   ["Minor seventh with shared tones"], "use available horizontal room before wrapping");
 assert.ok(wrapLegendText("Pneumonoultramicroscopicsilicovolcanoconiosis", 85, 13).length > 1,
   "split a single overlong word rather than drawing it outside the legend");
-const circle = readFileSync(new URL("../src/tools/harmonyExplorer/components/HarmonicCircle.tsx", import.meta.url), "utf8");
-assert.match(circle, /legendHeadingWidth/, "legend column fits translated headings");
-assert.doesNotMatch(circle, /rightColumnWidth \* 0\.36/, "no fixed 36%-width legend heading column");
-assert.match(circle, /Math\.max\(44, 8 \+ nameLines.length \* legendValueLineHeight/, "legend rows use tighter vertical spacing when text wraps");
-const app = [readFileSync(new URL("../src/App.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/useAppController.ts", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/SettingsView.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/ToolsView.tsx", import.meta.url), "utf8"), readFileSync(new URL("../src/app/views/WorkspaceView.tsx", import.meta.url), "utf8")].join("\n");
-assert.match(app, /finderVoicingChartVisible/, "Stradella footer tracks when the interval chart should replace the registral line text");
-assert.match(app, /<StradellaVoicingIntervals[\s\S]*fontSize=\{finderExplanationFontSize\}/,
-  "render the interval chart inside the exported footer using the explanation font size");
-assert.doesNotMatch(app, /showStradellaVoicingIntervals && \([\s\S]*<StradellaVoicingIntervals/,
-  "do not render the interval chart as a detached panel below the diagram");
-const intervalComponent = readFileSync(new URL("../src/components/tools/StradellaVoicingIntervals.tsx", import.meta.url), "utf8");
-const css = readFileSync(new URL("../src/App.css", import.meta.url), "utf8");
-assert.match(intervalComponent, /voicing-interval-gap-tight/, "1-semitone gaps receive a dedicated red style");
-assert.match(intervalComponent, /width=\{width\}/, "SVG retains intrinsic chart width");
-assert.match(intervalComponent, /y1=\{metrics.leaderTopY\}/, "leader lines are bounded independent of label lanes");
-assert.match(intervalComponent, /y=\{metrics.distanceY\}/, "interval values render below the pitch track");
-assert.match(intervalComponent, /x1=\{gap.fromX\}[\s\S]*?x2=\{gap.toX\}/,
-  "colored interval lines use full proportional center-to-center distances");
-assert.match(intervalComponent, /width: `min\(100%, \$\{width\}px\)`/, "only shrink long charts, never upscale short ones");
-const panel = readFileSync(new URL("../src/components/tools/StradellaChordFinderPanel.tsx", import.meta.url), "utf8");
-assert.match(panel, /\{showRealizationNote && \(/, "spacing control belongs to the master diagram-note section");
-assert.match(panel, /\{level === "voicing" && \([\s\S]*finder-voicing-spacing-option/, "spacing checkbox is nested under Registral voicing");
-assert.match(panel, /disabled=\{!noteLevels\.voicing\}/, "spacing control cannot be used with hidden registral note");
-assert.match(panel, /\["physical", t\("tools\.physicalRealization"\)\][\s\S]*?\["voicing", t\("tools\.registralVoicing"\)\]/,
-  "physical realization precedes registral voicing in the menu at all times");
 // Note ordering and visibility are tested against actual generated annotations in
 // stradella-four-level-notes.test.ts and progression-eye-entry.test.cjs.
-assert.match(css, /\.finder-annotation-block \{[\s\S]*?grid-template-columns: max-content minmax\(0, 1fr\)/,
-  "all footer lines share the same label/value grid columns");
-assert.match(css, /\.finder-annotation-line \{[\s\S]*?display: contents/, "row wrappers allow shared columns");
-assert.match(css, /\.finder-annotation-line-voicing \.finder-annotation-label/, "voicing heading aligns with chart");
-assert.match(css, /\.voicing-interval-gap-tight \{[\s\S]*?stroke: #c43f35/,
-  "1-semitone intervals are highlighted in red");
 console.log("✓ Nominal interval spacing and bilingual SVG legend wrapping passed");

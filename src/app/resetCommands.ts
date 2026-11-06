@@ -1,3 +1,4 @@
+import { ROOT_POSITION_BASS } from "../tools/stradellaChordFinder/harmonicIdentity";
 import { DEFAULT_STRADELLA_NOTE_LEVELS, type StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
 import type { FinderChordPattern, StradellaChordFinderMode, Overlay, SequenceStep, TextNote } from "../types";
 import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
@@ -26,7 +27,7 @@ export function resetStradellaFinder(ports: StradellaFinderResetPorts) {
   ports.setRoot("C");
   ports.setPattern("major-triad");
   ports.setMode("bass-and-chords");
-  ports.setRequestedBass(null);
+  ports.setRequestedBass(ROOT_POSITION_BASS);
   ports.setRealizationIndex(0);
   ports.setMaxButtons(3);
   ports.setSpanColumns(4.3);

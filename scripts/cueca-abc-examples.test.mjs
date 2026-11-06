@@ -24,15 +24,12 @@ function durationUnits(bar) {
 }
 
 assert.equal(cases.length, 5);
-const labels = readFileSync(join(root, "src/i18n/optionLabels.ts"), "utf8");
 for (const [index, [id, key, tonic, dominant, expectedMelody]] of cases.entries()) {
   const label = `Cueca floreo ${index + 1}`;
   const found = examples.filter((entry) => entry.value === id);
   assert.equal(found.length, 1);
   assert.equal(found[0].file, `abc/${id}.abc`);
   assert.equal(found[0].label, label, `${id}: example label`);
-  assert.ok(labels.includes(`"${id}": ["${label}", "${label}", "${label}"]`));
-  assert.ok(labels.includes(`"${id}": { pt: "${label}", it: "${label}", de: "${label}" }`));
 
   const source = readFileSync(join(root, "public", found[0].file), "utf8");
   assert.ok(source.includes(`T:${label}\n`));

@@ -11,7 +11,7 @@ It combines:
 - a tempo,
 - optional repeat/loop playback.
 
-The detailed pattern-file syntax is documented in [`bass-pattern-format.md`](bass-pattern-format.md).
+The patterns and progressions are built into the app. How to write new ones is described in the [bass pattern format reference](https://github.com/gilsag/Accordion-Tools/blob/main/docs/internal/bass-pattern-format.md).
 
 ## Basic workflow
 
@@ -19,39 +19,17 @@ The detailed pattern-file syntax is documented in [`bass-pattern-format.md`](bas
 2. Choose a root.
 3. Choose a bass pattern.
 4. Choose the chord voicing mode.
-5. Set repeats per chord and tempo.
+5. Set repeats per chord and tempo. The tempo is in beats per minute, and the label shows which note is the beat: the quarter note in 2/4, 3/4 and 4/4, the dotted quarter in 6/8 and 12/8, the eighth note in other x/8 meters.
 6. Choose playback repeat: `1 time`, `2 times`, `4 times`, or `Loop until stopped`.
-7. Press **Play pattern**.
+7. Press **Play** in the playback bar under the diagram (**Stop** ends a loop).
 
 ## Chord progressions
 
-Chord progressions use compact Roman-numeral strings in:
-
-```text
-public/chord-progressions/chord-progressions.json
-```
-
-Example:
-
-```json
-{
-  "id": "i-iv-v-i",
-  "name": "I–IV–V–I progression",
-  "progression": "I IV V I"
-}
-```
-
-The selected root resolves the Roman numerals to real chord labels. In root `C`, `I IV V I` becomes `C F G C`.
+Progressions are written in Roman numerals, so each one works in any key. The root you choose turns the numerals into chords: with root C, **I IV V I** becomes C F G C.
 
 ## Bass patterns
 
-Bass patterns are stored in:
-
-```text
-public/bass-patterns/bass-patterns.json
-```
-
-Patterns may use compact pattern strings or explicit timed `steps`. Use compact strings for common repeated rhythms and explicit steps for tuplets, overlapping events, ties, or more exact timing.
+Each pattern is one or more bars of bass and chord buttons in a rhythm, such as an oom-pah or a waltz. The pattern repeats for every chord of the progression, moving to that chord's buttons.
 
 ## Repeats per chord
 
@@ -79,7 +57,7 @@ Repeat affects playback and rendered notation repeat signs. The notation does no
 
 ## Rendered staff notation
 
-When the Bass Pattern Player is active and has playable events, the top toolbar shows **Show notation**. This renders a staff-notation view below the diagram using `abcjs`.
+When the Bass Pattern Player is active and has playable events, the top toolbar shows **Show notation**. This draws the accompaniment as staff notation below the diagram.
 
 The rendered notation title names the selected pattern and progression. The notation is generated from the full current state:
 

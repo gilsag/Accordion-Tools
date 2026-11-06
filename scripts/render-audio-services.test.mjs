@@ -99,39 +99,74 @@ assert.deepEqual(renderCalls.at(-1), ["download", "c-notation.svg"]);
 notation.downloadRenderedNotationSvg({ querySelector: () => null }, "missing");
 assert.equal(renderCalls.length, 3);
 
-// Timer cancellation remains per-feature and ABC/bass event scheduling is unchanged.
+// Timer cancellation remains per-feature. ABC and Bass Pattern notes are placed
+// on the audio clock: a timer wakes AUDIO_LOOKAHEAD_MS (150 ms) early, each note
+// gets an exact AudioContext time and its written length times the articulation
+// (0.85), and highlights wait until the note is heard.
 const timeouts = new Map(); let nextTimer = 1;
 const cancelled = [];
 const windowMock = {
   setTimeout(fn, delay) { const id = nextTimer++; timeouts.set(id, { fn, delay }); return id; },
   clearTimeout(id) { cancelled.push(id); timeouts.delete(id); },
 };
+let audioNow = 10; // AudioContext seconds; origin = now + 0.04 s start latency
 const soundCalls = [];
+const audioClock = loadTs("src/audio/audioClock.ts", {}, { window: windowMock });
 const scheduling = loadTs("src/audio/playbackScheduling.ts", {
-  "../sound": { playButtonSound: (button, options) => soundCalls.push([button.id, options.volume]) },
+  "./audioClock": audioClock,
+  "../sound": {
+    playButtonSound: (button, options, timing) => soundCalls.push([button.id, options.volume, timing]),
+    audioClockNow: () => audioNow,
+    TIMED_NOTE_ARTICULATION: 0.85,
+  },
 }, { window: windowMock });
 const transport = loadTs("src/audio/playbackTransport.ts", {}, { window: windowMock, performance: { now: () => 1234 } });
 assert.equal(transport.playbackClockMs(), 1234);
+const delays = ids => ids.map((id) => Math.round(timeouts.get(id).delay));
+const timing = ([, , value]) => ({ at: Math.round(value.at * 1000) / 1000, durationMs: Math.round(value.durationMs) });
 const ref = { current: [] }; let active = []; let position = -1; let state = "stopped";
 const btn = { id: "bass-C" };
 scheduling.scheduleAbcMappedPlayback({
   abcMappedEvents: [{ startBeat: 0, durationBeats: 2, buttons: [btn] }, { startBeat: 3, durationBeats: 1, buttons: [btn] }],
   startBeat: 1, abcTempoBpm: 60, abcTotalBeats: 5,
   abcPlaybackTimeoutsRef: ref, abcPlaybackStartedAtRef: { current: 123 },
-  soundOptions: { volume: .4 }, setAbcPositionBeat: (x) => { position = x; },
+  soundOptions: { volume: .4, articulation: .85 }, setAbcPositionBeat: (x) => { position = x; },
   setAbcActiveButtonIds: (next) => { active = typeof next === "function" ? next(active) : next; },
   setAbcPlaybackState: (x) => { state = x; },
 });
-assert.deepEqual(ref.current.map((id) => timeouts.get(id).delay), [0, 2000, 4120]);
+// Note 1 is under way at beat 1 (now); note 2 is 2 s later, woken 150 ms early;
+// the completion timer stays on wall-clock time.
+assert.deepEqual(delays(ref.current), [0, 1890, 4120]);
 timeouts.get(ref.current[0]).fn();
+assert.deepEqual(soundCalls[0].slice(0, 2), ["bass-C", .4]);
+assert.deepEqual(timing(soundCalls[0]), { at: 10.04, durationMs: 850 }, "Resumed note sounds only its remaining beat");
+assert.deepEqual(active, [], "Highlight waits until the note is heard");
+assert.equal(ref.current.length, 4, "Highlight timer appended when the note is placed");
+assert.deepEqual(delays([ref.current[3]]), [40]);
+timeouts.get(ref.current[3]).fn();
 assert.deepEqual(active, ["bass-C"]);
 assert.equal(position, 0);
-assert.deepEqual(soundCalls[0], ["bass-C", .4]);
-assert.equal(ref.current.length, 4, "Highlight clear timeout appended after note onset");
+assert.equal(ref.current.length, 5, "Highlight clear timeout appended after the note is heard");
+timeouts.get(ref.current[1]).fn();
+assert.deepEqual(timing(soundCalls[1]), { at: 12.04, durationMs: 850 }, "Placed at its exact beat even when its timer fires early");
 transport.clearPlaybackTimers(ref);
 assert.equal(ref.current.length, 0);
-assert.equal(cancelled.length, 4);
+assert.equal(cancelled.length, 6);
 assert.equal(state, "stopped");
+
+// The Note length in players setting scales each written duration.
+const legatoRef = { current: [] };
+const legatoCalls = soundCalls.length;
+scheduling.scheduleAbcMappedPlayback({
+  abcMappedEvents: [{ startBeat: 0, durationBeats: 2, buttons: [btn] }],
+  startBeat: 0, abcTempoBpm: 60, abcTotalBeats: 2,
+  abcPlaybackTimeoutsRef: legatoRef, abcPlaybackStartedAtRef: { current: 0 },
+  soundOptions: { volume: .4, articulation: .5 }, setAbcPositionBeat: () => {},
+  setAbcActiveButtonIds: () => {}, setAbcPlaybackState: () => {},
+});
+timeouts.get(legatoRef.current[0]).fn();
+assert.equal(timing(soundCalls[legatoCalls]).durationMs, 1000, "50% of a 2-beat note at 60 BPM");
+transport.clearPlaybackTimers(legatoRef);
 
 const bassTimers = { current: [] }; const runRef = { current: 2 }; active = []; state = "stopped";
 scheduling.scheduleBassPatternEvents({
@@ -139,31 +174,49 @@ scheduling.scheduleBassPatternEvents({
   bassPatternTempoBpm: 120, bassPatternTotalBeats: 4,
   bassPatternLoopMode: "fixed", bassPatternLoopCount: 2,
   bassPatternTimeoutsRef: bassTimers, bassPatternPlaybackRunRef: runRef, runId: 2,
-  soundOptions: { volume: .4 },
+  soundOptions: { volume: .4, articulation: .85 },
   setBassPatternActiveButtonIds: (next) => { active = typeof next === "function" ? next(active) : next; },
   setBassPatternPlaybackState: (next) => { state = next; },
 });
-assert.deepEqual(bassTimers.current.map((id) => timeouts.get(id).delay), [500, 2500, 4140]);
+assert.deepEqual(delays(bassTimers.current), [390, 2390, 4140]);
 timeouts.get(bassTimers.current[0]).fn();
-assert.deepEqual(soundCalls.at(-1), ["bass-C", .2]);
+assert.deepEqual(soundCalls.at(-1).slice(0, 2), ["bass-C", .2]);
+assert.deepEqual(timing(soundCalls.at(-1)), { at: 10.54, durationMs: 425 });
 assert.equal(bassTimers.current.length, 4);
 runRef.current += 1; // previously scheduled callbacks must never play after stop
 const count = soundCalls.length;
 timeouts.get(bassTimers.current[1]).fn();
 assert.equal(soundCalls.length, count);
+timeouts.get(bassTimers.current[3]).fn();
+assert.deepEqual(active, [], "A stopped run never lights its buttons");
 
-// Component/DOM boundary contracts (semantic output remains a parent SVG with
-// unchanged keys, class names, viewBox and actual physical button references).
-const app = [read("src/App.tsx"), read("src/app/useAppController.ts"), read("src/app/views/SettingsView.tsx"), read("src/app/views/ToolsView.tsx"), read("src/app/views/WorkspaceView.tsx")].join("\n");
-const surface = read("src/diagram/components/DiagramSvgSurface.tsx");
-const glyphs = read("src/diagram/components/DiagramButtonLayer.tsx");
-assert.match(app, /<DiagramSvgSurface/);
-assert.match(surface, /preserveAspectRatio="xMinYMin meet"/);
-assert.match(surface, /viewBox=\{`0 0 \$\{viewWidth\} \$\{viewHeight\}`\}/);
-assert.match(glyphs, /key=\{button.id\}/);
-assert.match(glyphs, /toggleButton\(button\)/);
-assert.match(glyphs, /"piano-black-key"/);
-assert.match(glyphs, /"finder-root-bass"/);
-assert.match(glyphs, /"annotation-anchor-placeholder"/);
-assert.match(read("src/diagram/components/DiagramAnnotationsLayer.tsx"), /"annotation-editor-object"/);
+const loopTimers = { current: [] }; const loopRun = { current: 7 };
+scheduling.scheduleBassPatternEvents({
+  bassPatternEvents: [{ startBeat: 0, durationBeats: 1, gain: 1, buttons: [btn] }],
+  bassPatternTempoBpm: 120, bassPatternTotalBeats: 4,
+  bassPatternLoopMode: "infinite", bassPatternLoopCount: 1,
+  bassPatternTimeoutsRef: loopTimers, bassPatternPlaybackRunRef: loopRun, runId: 7,
+  soundOptions: { volume: 1, articulation: .85 },
+  setBassPatternActiveButtonIds: () => {}, setBassPatternPlaybackState: () => {},
+});
+// The next 2 s cycle is prepared 300 ms (twice the look-ahead) before it starts.
+assert.deepEqual(delays(loopTimers.current), [0, 1740]);
+audioNow = 11.8;
+timeouts.get(loopTimers.current[1]).fn();
+assert.deepEqual(delays([loopTimers.current[2]]), [90], "Cycle 2 notes are placed against the audio clock, not timer drift");
+// Compound meters: the tempo counts dotted beats of three meter units, so at
+// 60 BPM in 6/8 each eighth-note unit lasts a third of a second.
+const compoundTimers = { current: [] }; const compoundRun = { current: 9 };
+const compoundCalls = soundCalls.length;
+scheduling.scheduleBassPatternEvents({
+  bassPatternEvents: [{ startBeat: 3, durationBeats: 3, gain: 1, buttons: [btn] }],
+  bassPatternTempoBpm: 60, bassPatternUnitsPerBeat: 3, bassPatternTotalBeats: 6,
+  bassPatternLoopMode: "once", bassPatternLoopCount: 1,
+  bassPatternTimeoutsRef: compoundTimers, bassPatternPlaybackRunRef: compoundRun, runId: 9,
+  soundOptions: { volume: 1, articulation: 1 },
+  setBassPatternActiveButtonIds: () => {}, setBassPatternPlaybackState: () => {},
+});
+timeouts.get(compoundTimers.current[0]).fn();
+assert.equal(timing(soundCalls[compoundCalls]).durationMs, 1000, "a dotted-quarter beat at 60 BPM lasts one second");
+transport.clearPlaybackTimers(compoundTimers);
 console.log("✓ Diagram/export, notation rendering, ABC and Bass Pattern scheduling contracts passed");

@@ -1,4 +1,5 @@
 import type { DefaultSettingsFile } from "./settingsSchema";
+import { SETTINGS_VERSION } from "./settingsMigrations";
 import { isInterfaceLanguagePreference } from "../i18n/catalog";
 import { normalizeStradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
 import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
@@ -45,7 +46,6 @@ export interface SettingsSetters {
   setHarmonyDiameter: (value: NonNullable<DefaultSettingsFile["harmonyDiameter"]>) => void;
   setHarmonyFontSize: (value: NonNullable<DefaultSettingsFile["harmonyFontSize"]>) => void;
   setHarmonyPlaybackStyle: (value: NonNullable<DefaultSettingsFile["harmonyPlaybackStyle"]>) => void;
-  setHarmonyProgressionAllowApproximations: (value: NonNullable<DefaultSettingsFile["progressionAllowApproximations"]>) => void;
   setHarmonyProgressionHandMovementWeight: (value: NonNullable<DefaultSettingsFile["progressionHandMovementWeight"]>) => void;
   setHarmonyProgressionRhythmPattern: (value: NonNullable<DefaultSettingsFile["progressionRhythmPattern"]>) => void;
   setHarmonyRingVisibility: (value: Record<number, boolean>) => void;
@@ -102,6 +102,7 @@ export interface SettingsSetters {
   setSoundEnabled: (value: NonNullable<DefaultSettingsFile["soundEnabled"]>) => void;
   setSoundMusetteDetuneCents: (value: NonNullable<DefaultSettingsFile["soundMusetteDetuneCents"]>) => void;
   setSoundNoteDurationMs: (value: NonNullable<DefaultSettingsFile["soundNoteDurationMs"]>) => void;
+  setSoundArticulation: (value: NonNullable<DefaultSettingsFile["soundArticulation"]>) => void;
   setSoundReleaseMs: (value: NonNullable<DefaultSettingsFile["soundReleaseMs"]>) => void;
   setSoundSequenceTempoBpm: (value: NonNullable<DefaultSettingsFile["soundSequenceTempoBpm"]>) => void;
   setSoundSource: (value: NonNullable<DefaultSettingsFile["soundSource"]>) => void;
@@ -458,7 +459,7 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
         if (typeof defaults.bassPatternTempoBpm === "number") {
           setBassPatternTempoBpm(
             Math.max(
-              50,
+              30,
               Math.min(220, Math.round(defaults.bassPatternTempoBpm)),
             ),
           );
@@ -562,7 +563,6 @@ function applyExtendedDefaultSettings(settings: DefaultSettingsFile, setters: Se
     setHarmonyDiameter,
     setHarmonyFontSize,
     setHarmonyPlaybackStyle,
-    setHarmonyProgressionAllowApproximations,
     setHarmonyProgressionHandMovementWeight,
     setHarmonyProgressionRhythmPattern,
     setHarmonyRingVisibility,
@@ -593,6 +593,7 @@ function applyExtendedDefaultSettings(settings: DefaultSettingsFile, setters: Se
     setSoundAttackMs,
     setSoundMusetteDetuneCents,
     setSoundNoteDurationMs,
+    setSoundArticulation,
     setSoundReleaseMs,
     setSoundSource,
     setSoundVoicePreset,
@@ -696,6 +697,8 @@ function applyExtendedDefaultSettings(settings: DefaultSettingsFile, setters: Se
       setSoundReleaseMs(Math.max(10, Math.min(1000, Math.round(settings.soundReleaseMs))));
     if (typeof settings.soundNoteDurationMs === "number")
       setSoundNoteDurationMs(Math.max(60, Math.min(2000, Math.round(settings.soundNoteDurationMs))));
+    if (typeof settings.soundArticulation === "number" && Number.isFinite(settings.soundArticulation))
+      setSoundArticulation(Math.max(0.3, Math.min(1, Math.round(settings.soundArticulation * 100) / 100)));
     if (typeof settings.harmonyShowEnharmonics === "boolean")
       setHarmonyShowEnharmonics(settings.harmonyShowEnharmonics);
     if (typeof settings.harmonyShowSeparators === "boolean")
@@ -726,8 +729,6 @@ function applyExtendedDefaultSettings(settings: DefaultSettingsFile, setters: Se
       setHarmonyPlaybackStyle(settings.harmonyPlaybackStyle);
     if (isOneOf(settings.harmonyVoicingStyle, ["root", "smooth"] as const))
       setHarmonyVoicingStyle(settings.harmonyVoicingStyle);
-    if (typeof settings.progressionAllowApproximations === "boolean")
-      setHarmonyProgressionAllowApproximations(settings.progressionAllowApproximations);
     if (typeof settings.progressionHandMovementWeight === "number")
       setHarmonyProgressionHandMovementWeight(Math.max(0, Math.min(1, settings.progressionHandMovementWeight)));
     if (isOneOf(settings.progressionRhythmPattern, ["block", "oom-pah", "waltz", "march"] as const))
@@ -978,7 +979,7 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
       );
     if (typeof settings.bassPatternTempoBpm === "number")
       setBassPatternTempoBpm(
-        Math.max(50, Math.min(220, Math.round(settings.bassPatternTempoBpm))),
+        Math.max(30, Math.min(220, Math.round(settings.bassPatternTempoBpm))),
       );
     if (
       isOneOf(settings.bassPatternLoopMode, [
@@ -1142,6 +1143,7 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   "soundAttackMs" |
   "soundReleaseMs" |
   "soundNoteDurationMs" |
+  "soundArticulation" |
   "harmonyShowEnharmonics" |
   "harmonyShowSeparators" |
   "harmonyShowLegend" |
@@ -1162,7 +1164,6 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   textNoteColor: NonNullable<DefaultSettingsFile["annotationTextColor"]>;
   textNoteFont: NonNullable<DefaultSettingsFile["annotationFont"]>;
   harmonyRingVisibility: Record<number, boolean>;
-  harmonyProgressionAllowApproximations: NonNullable<DefaultSettingsFile["progressionAllowApproximations"]>;
   harmonyProgressionHandMovementWeight: NonNullable<DefaultSettingsFile["progressionHandMovementWeight"]>;
   harmonyProgressionRhythmPattern: NonNullable<DefaultSettingsFile["progressionRhythmPattern"]>;
 };
@@ -1205,7 +1206,6 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     harmonyDiameter,
     harmonyFontSize,
     harmonyPlaybackStyle,
-    harmonyProgressionAllowApproximations,
     harmonyProgressionHandMovementWeight,
     harmonyProgressionRhythmPattern,
     harmonyRingVisibility,
@@ -1262,6 +1262,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     soundEnabled,
     soundMusetteDetuneCents,
     soundNoteDurationMs,
+    soundArticulation,
     soundReleaseMs,
     soundSequenceTempoBpm,
     soundSource,
@@ -1290,6 +1291,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     trebleSize,
   } = snapshot;
     return {
+      settingsVersion: SETTINGS_VERSION,
       language: languagePreference,
       side,
       notation,
@@ -1393,6 +1395,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       soundAttackMs,
       soundReleaseMs,
       soundNoteDurationMs,
+      soundArticulation,
       harmonyShowEnharmonics,
       harmonyShowSeparators,
       harmonyShowLegend,
@@ -1407,7 +1410,6 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       harmonyFontSize,
       harmonyPlaybackStyle,
       harmonyVoicingStyle,
-      progressionAllowApproximations: harmonyProgressionAllowApproximations,
       progressionHandMovementWeight: harmonyProgressionHandMovementWeight,
       progressionRhythmPattern: harmonyProgressionRhythmPattern,
     };

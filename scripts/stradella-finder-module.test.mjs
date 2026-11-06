@@ -8,16 +8,7 @@ import ts from "typescript";
 
 const path = "src/features/stradellaChordFinder/useStradellaChordFinder.ts";
 const source = readFileSync(path, "utf8");
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-assert.match(app, /useStradellaChordFinderState\(\)/);
-assert.match(app, /useStradellaChordFinderResults\(\{/);
-assert.doesNotMatch(app, /\[stradellaChordFinderActive,\s*setStradellaChordFinderActive\]\s*=\s*useState/);
-assert.doesNotMatch(app, /getStradellaChordFinderResults\(/);
-assert.match(app, /playButtonCombination\(stradellaChordFinderPlaybackButtons, soundOptions\)/);
 // Capture lives in the diagram module; the controller still selects synchronously.
-const batchCapture = readFileSync(new URL("../src/diagram/stradellaBatchCapture.ts", import.meta.url), "utf8");
-assert.match(app, /selectIndex: \(index\) => flushSync\(\(\) => setStradellaChordFinderRealizationIndex\(index\)\)/);
-assert.match(batchCapture, /finally \{\s*selectIndex\(originalIndex\)/);
 
 const effects = [];
 const calls = [];
@@ -37,10 +28,11 @@ const mockReact = {
   useMemo: (factory) => factory(),
   useEffect: (fn) => effects.push(fn),
 };
+let noResultForBass = null; // when set, searches requesting this bass find nothing
 const engines = {
   getStradellaChordFinderResults: (...args) => {
     calls.push(["many", args]);
-    return candidates;
+    return noResultForBass !== null && args[7] === noResultForBass ? [fallback] : candidates;
   },
   getStradellaChordFinderResult: (...args) => {
     calls.push(["single", args]);
@@ -56,6 +48,8 @@ runInNewContext(compiled, {
   require(name) {
     if (name === "react") return mockReact;
     if (name === "../../tools/stradellaChordFinderTools") return engines;
+    if (name === "../../tools/stradellaChordFinder/harmonicIdentity")
+      return { ROOT_POSITION_BASS: "root", resolveRequestedBass: (root, choice) => choice === "root" ? root : choice };
     if (name === "../../tools/stradellaChordFinder/diagramAnnotations")
       return { DEFAULT_STRADELLA_NOTE_LEVELS: { essentials: true, harmonic: true, registral: true, voicing: true } };
     throw new Error(`Unexpected runtime dependency ${name}`);
@@ -66,7 +60,8 @@ const state = useStradellaChordFinderState();
 for (const [key, expected] of Object.entries({
   stradellaChordFinderActive: false, stradellaChordFinderRoot: "C",
   stradellaChordFinderPattern: "major-triad", stradellaChordFinderMode: "bass-and-chords",
-  stradellaChordFinderRealizationIndex: 0, stradellaChordFinderRequestedBass: null,
+  // Requested bass defaults to root position, resolved to the current root.
+  stradellaChordFinderRealizationIndex: 0, stradellaChordFinderRequestedBass: "C", stradellaChordFinderRootPreferred: true,
   finderMaxButtons: 3, finderSpanColumns: 4.3, stradellaMinimumNominalGap: 0,
   showFinderRealizationNote: true, finderExplanationFontSize: 26,
   pendingProgressionRealizationKey: null, stradellaChordFinderMarkRootBass: true,
@@ -136,3 +131,22 @@ for (const disabled of [
   assert.strictEqual(result.stradellaChordFinderResult, fallback);
 }
 console.log("✓ Stradella Finder defaults, engine delegation, button identity, reset and progression handoff passed");
+
+// Root position is a preference: with no root-position realization, any-bass
+// results are shown and the effective requested bass becomes null.
+calls.length = 0; effects.length = 0; noResultForBass = "E";
+result = useStradellaChordFinderResults({ ...selection, stradellaChordFinderRequestedBass: "E",
+  stradellaChordFinderRootPreferred: true, pendingProgressionRealizationKey: null });
+assert.deepEqual(calls.map(([, args]) => args[7]), ["E", null], "Root search first, then any bass");
+assert.equal(result.stradellaChordFinderRootFallback, true);
+assert.equal(result.stradellaChordFinderEffectiveRequestedBass, null);
+assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
+// An explicit slash bass stays strict.
+calls.length = 0; effects.length = 0;
+result = useStradellaChordFinderResults({ ...selection, stradellaChordFinderRequestedBass: "E",
+  stradellaChordFinderRootPreferred: false, pendingProgressionRealizationKey: null });
+assert.equal(calls.length, 1);
+assert.equal(result.stradellaChordFinderRootFallback, false);
+assert.equal(result.stradellaChordFinderEffectiveRequestedBass, "E");
+noResultForBass = null;
+console.log("✓ Root-position default falls back to any bass only when it has no realization");

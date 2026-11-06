@@ -5,7 +5,7 @@ import type { DiagramButton, FinderChordPattern } from "../../types";
 import { transpose } from "../../music";
 import { isExtendedChord, permittedMissingTones, omissionPenalty, suspendedStyleOmission } from "../../music/chordVoicingPolicy";
 import { notPlayableResult, resultFromButtons, summarizeResult, type StradellaChordFinderResult } from "./results";
-import { buttonTones, chordKindLabel, combinationTones, isBassButton } from "./voicings";
+import { buttonToneMask, buttonTones, chordKindLabel, combinationTones, isBassButton } from "./voicings";
 import {
   chooseRootReference,
   chordButtonPool,
@@ -94,11 +94,9 @@ function practicalCombination(buttons: DiagramButton[], limit: number) {
 // Removing any selected button must lose at least one pitch class. Otherwise
 // duplicated chord buttons inflate counts without adding any musical value.
 function hasRedundantButton(buttons: DiagramButton[]) {
-  const all = new Set(combinationTones(buttons));
-  return buttons.some((_, i) => {
-    const without = new Set(combinationTones(buttons.filter((__, j) => i !== j)));
-    return all.size === without.size && [...all].every((tone) => without.has(tone));
-  });
+  const masks = buttons.map(buttonToneMask);
+  const all = masks.reduce((acc, mask) => acc | mask, 0);
+  return masks.some((_, i) => masks.reduce((acc, mask, j) => (j === i ? acc : acc | mask), 0) === all);
 }
 
 // A single root bass (or explicitly requested bass) can reinforce a pitch
@@ -358,8 +356,10 @@ export function bassAndChordResults(
   /* Generate useful reduced voicings without adding foreign pitches. A cluster
      can be augmented by multiple bass notes, or none, as long as each button
      contributes a tone and the full selection fits the user's hand span. */
-  for (const chordButtons of chordCombinations(pool, Math.min(3, maxButtons))) {
-    if (hasRedundantButton(chordButtons) || !practicalCombination(chordButtons, reachLimit)) continue;
+  // Buttons with a foreign pitch class can never pass the subset test below,
+  // so enumerating them only costs time. Filtering first preserves order.
+  for (const chordButtons of chordCombinations(exactChordPool, Math.min(3, maxButtons))) {
+    if (!practicalCombination(chordButtons, reachLimit) || hasRedundantButton(chordButtons)) continue;
     const baseTones = combinationTones(chordButtons);
     if (baseTones.some((pitch) => !targetSet.has(pitch))) continue;
     const missing = targetPitches.filter((pitch) => !baseTones.includes(pitch));

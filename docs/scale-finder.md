@@ -53,13 +53,7 @@ Scale Finder markings are included in SVG/PNG downloads.
 
 ## Related settings
 
-See [`settings.md`](settings.md) for:
-
-- `scaleFinderDisplayMode`
-- `soundEnabled`
-- `notation`
-- `accidental`
-
+Under [Settings](settings.md), **Notation** sets how notes are named and spelled, and **Sound** sets what you hear.
 ## Contextual title and compact treble range
 
 When Settings → Title is **Contextual**, the diagram title contains the selected scale root and scale name. For chromatic-button treble diagrams, the new one- and two-octave sizes expand to the smallest larger preset containing all highlighted scale buttons as needed. Existing size presets remain available.

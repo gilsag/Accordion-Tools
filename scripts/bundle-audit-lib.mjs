@@ -1,5 +1,6 @@
 /** Inspect Vite's production manifest without depending on chunk hash names.
- * This is a release gate for feature splitting, not a bundle-size budget. */
+ * It is a release gate for feature splitting; the size budgets below are
+ * enforced by audit-production-bundle.mjs. */
 import assert from 'node:assert/strict';
 
 const LAZY_MODULES = [
@@ -9,7 +10,23 @@ const LAZY_MODULES = [
   'src/components/tools/ProgressionAssistantPanel.tsx',
   'src/tools/harmonyExplorer/components/HarmonicCircle.tsx',
   'src/tools/abcPlayerTools.ts',
+  // Opened only from Settings -> About; carries every guide as raw Markdown.
+  'src/components/settings/DocumentationViewer.tsx',
+  // Only English is bundled at startup; the other catalogs load on demand.
+  'src/i18n/es.ts',
+  'src/i18n/fr.ts',
+  'src/i18n/pt.ts',
+  'src/i18n/it.ts',
+  'src/i18n/de.ts',
 ];
+
+/** Gzip budget for the JavaScript and CSS a first visit must download before
+ * the diagram appears. Measured at 177 KiB after deferring the guides and five
+ * language catalogs (317 KiB in v0.17.0); the headroom is for ordinary growth,
+ * not for another eager catalog or guide bundle. */
+export const INITIAL_GZIP_BUDGET_KIB = 200;
+/** Startup public assets (favicon) should stay icon-sized. */
+export const STARTUP_ASSET_BUDGET_KIB = 16;
 
 export function auditBundleManifest(manifest) {
   assert.ok(manifest && typeof manifest === 'object' && !Array.isArray(manifest), 'Invalid Vite manifest');

@@ -287,6 +287,16 @@ input[type="range"] {
   cursor: pointer;
 }
 
+/* Keyboard focus on a diagram button (arrow keys move it, Enter plays it). */
+.button-group:focus {
+  outline: none;
+}
+
+.button-group:focus-visible .button {
+  stroke: #f59e0b;
+  stroke-width: calc(var(--button-stroke-width) + 3px);
+}
+
 .button {
   fill: #ffffff;
   stroke: #1746d0;
@@ -400,8 +410,15 @@ input[type="range"] {
   pointer-events: none;
 }
 
+/* System UI fonts draw the flat and sharp glyphs small and thin, and the old
+   downward shift made them read as subscripts ("E♭" looked like "E,"). Prefer
+   a symbol font, enlarge and embolden, and keep them on the letter baseline.
+   CSS overrides the baselineShift attribute set in renderMusicLabel(). */
 .accidental-symbol {
-  font-size: 86%;
+  font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", "Noto Music", "DejaVu Sans", sans-serif;
+  font-size: 128%;
+  font-weight: 900;
+  baseline-shift: 2%;
 }
 
 .double-sharp-symbol {
@@ -2668,3 +2685,171 @@ input[type="range"] {
   .workspace > .canvas-wrap { min-height: 0; }
   .inspector-table-scroll { max-height: 46dvh; }
 }
+
+/* Panel consistency. These sub-headings inherited the 18px body size and read
+   as larger than the section titles above them; they now use the panel tokens. */
+.finder-note-level-options > .label-line,
+.tool-details summary,
+.inline-section-toggle {
+  font-size: var(--ui-section-font);
+  line-height: var(--ui-control-leading, 1.3);
+}
+.finder-note-level-options > .label-line {
+  font-weight: 800;
+}
+
+/* Action buttons share each line of the narrow side panel instead of keeping
+   their text widths, so wrapped rows line up. */
+.left-panel .button-row > .small-button {
+  flex: 1 1 auto;
+}
+
+/* Export format and Download: the button takes its own line, so a long
+   translated label is never clipped at the panel edge. */
+.compact-export-row {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+.compact-export-row .compact-export-download {
+  grid-column: 1 / -1;
+}
+
+/* Realization status stays one short badge instead of wrapping mid-word. */
+.inspector-table .inspector-status {
+  white-space: nowrap;
+}
+.inspector-status-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+.inspector-status-badge.exact {
+  background: #e3f3e5;
+  color: #1d5e2a;
+}
+.inspector-status-badge.approx {
+  background: #fbefd9;
+  color: #7a4a06;
+}
+
+/* Toolbar: one Download menu (SVG / PNG) and an icon-only sound toggle. */
+.export-menu .reset-menu-options { min-width: 170px; }
+.topbar-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 10px;
+}
+
+/* One-line tool descriptions under collapsed tool titles. */
+.section-summary {
+  margin: 0;
+  padding: 0 10px 8px;
+  background: #f5f7fb;
+  color: #5b6880;
+  font-size: var(--ui-support-font);
+  line-height: 1.35;
+}
+
+/* Shared playback bar under the diagram. */
+.playback-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border: 1px solid #d9deea;
+  border-radius: 12px;
+  background: #f8faff;
+}
+.playback-bar-label {
+  font-size: var(--ui-section-font);
+  font-weight: 800;
+  color: #172033;
+}
+.playback-bar-status {
+  font-size: var(--ui-support-font);
+  color: #7a4a06;
+  font-weight: 700;
+}
+.playback-bar-buttons {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+.playback-bar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid #c9d1e3;
+  border-radius: 999px;
+  background: #fff;
+  color: #172033;
+  font: inherit;
+  font-size: var(--ui-control-font);
+  font-weight: 800;
+  cursor: pointer;
+}
+.playback-bar-button:hover:not(:disabled) { background: #eef3ff; }
+.playback-bar-button:disabled { opacity: 0.45; cursor: not-allowed; }
+.playback-bar-play { border-color: #1746d0; color: #1746d0; }
+.playback-bar-play.active { background: #1746d0; color: #fff; opacity: 1; }
+@media (max-width: 620px) {
+  .playback-bar { margin: 6px 6px 0; }
+  .playback-bar-buttons { margin-left: 0; width: 100%; }
+  .playback-bar-button { flex: 1 1 0; justify-content: center; min-height: 44px; }
+}
+
+/* Progression Assistant path: numbered steps and arrows on the diagram. */
+.progression-path-arrow {
+  fill: none;
+  stroke: #c2410c;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-dasharray: 6 4;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.progression-path-arrowhead { fill: #c2410c; }
+.progression-path-badge { pointer-events: none; }
+.progression-path-badge rect { fill: #c2410c; stroke: #fff; stroke-width: 1.5; }
+.progression-path-badge text { fill: #fff; font-weight: 900; font-family: system-ui, sans-serif; }
+
+/* Tighter toolbar so it fits on one row beside the results panel at 1440 px. */
+.topbar { gap: 6px; }
+.topbar-separator { width: 4px; }
+.topbar-after-reset-space { flex-basis: 4px; }
+.reset-menu-options button:disabled { opacity: 0.45; cursor: not-allowed; background: transparent; }
+
+/* Toolbar: Settings, Tools, Show notation, Reset and Download carry a label
+   and an icon. On wider screens the toolbar is laid out on one row; when that
+   row overflows (the Results panel open on a 1280 px screen, or a long
+   language), WorkspaceToolbar adds .topbar-compact: the labels are hidden
+   visually but still read by screen readers and shown as tooltips, the
+   icons appear and spacing tightens. Compact mode may still wrap as a last
+   resort on very narrow windows. */
+.topbar-labelled-icon-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.topbar-labelled-icon-button svg { flex: none; }
+.topbar-compact-icon { display: none; }
+@media (min-width: 621px) {
+  .topbar:not(.topbar-compact) { flex-wrap: nowrap; }
+  .topbar > *:not(.topbar-spacer), .topbar-secondary > *:not(.topbar-spacer) { flex-shrink: 0; }
+}
+.topbar-compact { gap: 4px; }
+.topbar-compact .topbar-compact-icon { display: block; }
+.topbar-compact .topbar-button { padding-inline: 9px; }
+.topbar-compact .topbar-icon-button,
+.topbar-compact .topbar-labelled-icon-button { padding-inline: 8px; gap: 2px; }
+.topbar-compact .topbar-labelled-icon-button .topbar-label {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}
+.topbar-compact .topbar-after-reset-space { display: none; }

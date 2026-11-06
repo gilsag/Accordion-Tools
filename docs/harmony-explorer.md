@@ -37,7 +37,7 @@ Secondary display and playback preferences are under **Settings → Harmony** so
 - block/arpeggio playback;
 - selected-chord-only or reference→related playback.
 
-These settings are included in saved settings JSON and can also be set in `public/default-settings.json`.
+These settings are kept when you save your settings (Settings → About → Save settings JSON).
 
 ## Tooltips and voice leading
 
@@ -91,15 +91,11 @@ The legend identifies the reference chord ring and, when enabled, the twelve-not
 
 The top-bar SVG/PNG download control exports the active Harmony Explorer diagram when the Harmony workspace is selected. Temporary tooltips, selection marks, and navigation highlights are excluded from exported diagrams.
 
-## Architecture
-
-Harmony Explorer remains modular inside `src/tools/harmonyExplorer/`. Its harmonic engine returns pitch-class relationships; the Accordion Tools integration layer handles audio rendering, Stradella Chord Finder translation, and progression optimization. This keeps harmonic relationships independent from physical keyboard coordinates.
-
 ## Record a progression from the circle
 
 Use **Start recording** in Harmony Explorer, then click chords in the diagram in the order you want them to occur. Reference-ring and related-chord clicks are both recorded, and repeated clicks remain repeated events. **Stop recording** pauses capture without deleting the sequence; **Clear** removes it.
 
-Once at least one event has been recorded, **Show notation** appears in the top bar. The recorded sequence is rendered as simple staff notation and can be downloaded as SVG. Use **Play recording** to audition the captured note/chord sequence locally; **Stop** cancels scheduled playback.
+Once at least one event has been recorded, **Show notation** appears in the top bar. The recorded sequence is rendered as simple staff notation and can be downloaded as SVG. Use **Play** in the playback bar under the circle to audition the captured note/chord sequence locally; **Stop** cancels scheduled playback.
 
 Choose **Send to Progression Assistant** to transfer the recorded chord events to the Stradella-side assistant, where physical realizations and accompaniment patterns can be optimized. If the Harmony recording also contains single-note events, Accordion Tools shows a brief warning before transfer because those note events are not exported to the chord-oriented Progression Assistant.
 

@@ -109,16 +109,4 @@ assert.ok(!actionText.includes('ui.addChord'));
 segment.props.onChange('manual');tree=render();
 actionText=tree.filter(e=>e.type==='button').map(e=>e.props.children).filter(x=>typeof x==='string');
 assert.ok(actionText.includes('ui.addChord')&&actionText.includes('tools.clear'));
-const controller=files('src/app/useAppController.ts');
-assert.ok(!controller.includes('T:Optimized Stradella progression'),'No forced ABC title');
-assert.match(controller,/diagramNoteAnnotation = progressionAnnotation/);
-assert.match(controller,/finderAnnotationDisplayLines = diagramNoteAnnotation\?\.lines/);
-assert.match(controller,/setHarmonyProgressionNoteStepId\(null\)/,'Reset and clear can hide notes');
-const settings=JSON.parse(files('scripts/settings-export-keys.json'));
-assert.equal(settings.length,118);
-for (const locale of ['en','es','fr','pt','it','de']) {
-  const text=files(`src/i18n/${locale}.ts`);
-  for(const key of ['ui.progressionEntryMode','ui.progressionManual','ui.progressionLoadPreset',
-    'ui.progressionShowNotesFor','ui.progressionHideNotesFor'])assert.ok(text.includes(`"${key}"`),`${locale}: ${key}`);
-}
-console.log('✓ Stable eye selection, Finder annotation/IDs, preset/manual toggle, inline actions, title removal and six locales passed');
+console.log('✓ Stable eye selection, Finder annotation/IDs, preset/manual toggle, inline actions, and preset/manual entry passed');

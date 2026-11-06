@@ -613,10 +613,6 @@
         "root"
       ],
       [
-        "setHarmonyProgressionAllowApproximations",
-        true
-      ],
-      [
         "setHarmonyProgressionHandMovementWeight",
         0.65
       ],

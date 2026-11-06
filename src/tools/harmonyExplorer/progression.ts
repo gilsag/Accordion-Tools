@@ -250,6 +250,28 @@ export function progressionRealizationKey(result: StradellaChordFinderResult) {
   return result.playbackButtons.map((button) => button.id).sort().join("|");
 }
 
+/* Chord Finder results depend only on the physical layout, root and chord
+   type here (default limits, register model and gap filter), so they are
+   cached per layout. Moving a weight slider or re-ordering chords then reuses
+   them instead of searching again. The WeakMap releases a layout's entries
+   when its button array is no longer used. */
+const finderResultCache = new WeakMap<DiagramButton[], Map<string, StradellaChordFinderResult[]>>();
+
+function progressionFinderResults(buttons: DiagramButton[], root: string, pattern: FinderChordPattern) {
+  let byChord = finderResultCache.get(buttons);
+  if (!byChord) {
+    byChord = new Map();
+    finderResultCache.set(buttons, byChord);
+  }
+  const key = `${root}|${pattern}`;
+  let results = byChord.get(key);
+  if (!results) {
+    results = getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true);
+    byChord.set(key, results);
+  }
+  return results;
+}
+
 /** The same full, original-ranked candidates used by the Stradella Chord Finder.
  * This list is for explicit browsing; automatic optimization still uses its
  * historical first-five shortlist unless a user pins a specific realization.
@@ -261,9 +283,7 @@ export function progressionRealizationsForChord(
 ) {
   const pattern = progressionFinderPattern(chord);
   if (!pattern) return [];
-  return getStradellaChordFinderResults(
-    buttons, pitchClassNameFromNumber(chord.rootPc), pattern, "bass-and-chords", true,
-  ).map((result, realizationIndex) => ({ result, realizationIndex }))
+  return progressionFinderResults(buttons, pitchClassNameFromNumber(chord.rootPc), pattern).map((result, realizationIndex) => ({ result, realizationIndex }))
     .filter(({ result }) => result.playable && (allowApproximations || result.exact));
 }
 
@@ -280,7 +300,7 @@ function candidatesForChord(
   if (!pattern) return [];
   const root = pitchClassNameFromNumber(chord.rootPc);
   const maxResults = options.maxRealizationsPerChord ?? 5;
-  const allResults = getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true);
+  const allResults = progressionFinderResults(buttons, root, pattern);
   const pinnedKey = options.fixedRealizationKeys?.[chord.id];
   // A pinned result may lie well below the automatic top-five candidates.
   // Never silently replace it with another sounding recipe.

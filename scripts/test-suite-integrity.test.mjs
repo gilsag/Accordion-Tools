@@ -16,8 +16,11 @@ const unlisted = testFiles.filter(path => !references.has(path));
 const missing = [...references].filter(path => !existsSync(path));
 assert.deepEqual(unlisted, [], `Automated tests missing from npm scripts: ${unlisted.join(", ")}`);
 assert.deepEqual(missing, [], `npm scripts reference missing tests: ${missing.join(", ")}`);
-assert.match(scripts["test:all"], /npm run test:responsive/,
-  "Responsive regressions must run as part of the full test suite");
+// Browser tests need a browser download, so they run on their own.
+assert.ok(scripts["test:e2e"], "The browser suite needs its own npm entry");
+assert.doesNotMatch(scripts["test:all"], /test:e2e/, "test:all must run without a browser");
+const specs = readdirSync("e2e").filter(name => name.endsWith(".spec.ts"));
+assert.ok(specs.length > 0, "Browser specs missing from e2e/");
 assert.match(scripts["verify:release"], /npm run test:all/,
   "Release verification must include the complete regression suite");
-console.log(`Test-suite integrity passed: ${testFiles.length} discoverable tests, no missing paths, responsive checks included.`);
+console.log(`Test-suite integrity passed: ${testFiles.length} discoverable tests, no missing paths, ${specs.length} browser specs under test:e2e.`);

@@ -1,13 +1,11 @@
 /** Interface localization registry and API. Musical identifiers and downloaded
  * filenames are independent of the interface locale. */
 import { EN, type TranslationKey } from "./en";
-import { ES } from "./es";
-import { FR } from "./fr";
-import { PT } from "./pt";
-import { IT } from "./it";
-import { DE } from "./de";
 
-export { EN, ES, FR, PT, IT, DE };
+/* Only English is bundled at startup: it is the fallback for every key. The
+ * other catalogs are separate chunks loaded by loadInterfaceCatalog(). Code
+ * that needs every catalog synchronously (the tests) imports ./allCatalogs. */
+export { EN };
 export type { TranslationKey };
 
 export const SUPPORTED_LANGUAGES = [
@@ -22,14 +20,40 @@ export const SUPPORTED_LANGUAGES = [
 export type InterfaceLanguage = (typeof SUPPORTED_LANGUAGES)[number]["code"];
 export type InterfaceLanguagePreference = InterfaceLanguage | "auto";
 
-const catalogs: Record<InterfaceLanguage, Readonly<Partial<Record<TranslationKey, string>>>> = {
-  en: EN,
-  es: ES,
-  fr: FR,
-  pt: PT,
-  it: IT,
-  de: DE,
+type Catalog = Readonly<Partial<Record<TranslationKey, string>>>;
+
+const catalogs: Partial<Record<InterfaceLanguage, Catalog>> = { en: EN };
+
+const catalogLoaders: Record<Exclude<InterfaceLanguage, "en">, () => Promise<Catalog>> = {
+  es: () => import("./es").then((module) => module.ES),
+  fr: () => import("./fr").then((module) => module.FR),
+  pt: () => import("./pt").then((module) => module.PT),
+  it: () => import("./it").then((module) => module.IT),
+  de: () => import("./de").then((module) => module.DE),
 };
+const pendingCatalogs = new Map<InterfaceLanguage, Promise<void>>();
+
+/** Makes a catalog available to translate(); used by the loader and by ./allCatalogs. */
+export function registerInterfaceCatalog(language: InterfaceLanguage, catalog: Catalog) {
+  catalogs[language] = catalog;
+}
+
+export function isInterfaceCatalogLoaded(language: InterfaceLanguage) {
+  return catalogs[language] !== undefined;
+}
+
+/** Loads a language's catalog chunk once. A failed load can be retried; until
+ * it succeeds, translate() falls back to English for that language. */
+export function loadInterfaceCatalog(language: InterfaceLanguage): Promise<void> {
+  if (language === "en" || isInterfaceCatalogLoaded(language)) return Promise.resolve();
+  const pending = pendingCatalogs.get(language);
+  if (pending) return pending;
+  const request = catalogLoaders[language]()
+    .then((catalog) => registerInterfaceCatalog(language, catalog))
+    .finally(() => pendingCatalogs.delete(language));
+  pendingCatalogs.set(language, request);
+  return request;
+}
 
 export function isInterfaceLanguage(value: unknown): value is InterfaceLanguage {
   return SUPPORTED_LANGUAGES.some(({ code }) => code === value);
@@ -63,7 +87,7 @@ export function isInterfaceLanguagePreference(value: unknown): value is Interfac
 }
 
 export function translate(language: InterfaceLanguage, key: TranslationKey, params?: Record<string, string | number>): string {
-  const template = catalogs[language][key] ?? EN[key];
+  const template = catalogs[language]?.[key] ?? EN[key];
   return template.replace(/\{([a-zA-Z][a-zA-Z0-9]*)\}/g, (original, name: string) =>
     params && Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : original);
 }

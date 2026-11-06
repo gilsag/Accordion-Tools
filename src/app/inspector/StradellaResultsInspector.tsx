@@ -84,7 +84,11 @@ export function StradellaResultsInspector({ root, pattern, requestedBass, mode, 
               </button></td>
               <td>{candidate.playbackButtons.map(buttonName).join(" + ")}</td>
               <td>{bassName(candidate)}</td>
-              <td>{candidate.exact ? t("inspector.exact") : t("inspector.approx")}</td>
+              <td className="inspector-status">
+                <span className={`inspector-status-badge ${candidate.exact ? "exact" : "approx"}`}>
+                  {candidate.exact ? t("inspector.exact") : t("inspector.approx")}
+                </span>
+              </td>
               <td>{candidate.missingPitches.length ? formatPitches(candidate.missingPitches) : "—"}</td>
               <td>{candidate.playbackButtons.length}</td>
             </tr>
