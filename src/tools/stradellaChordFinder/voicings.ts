@@ -30,7 +30,18 @@ export function chordKindLabel(kind: DiagramButton["kind"]) {
   return "";
 }
 
-export function buttonTones(button: DiagramButton) {
+const buttonToneCache = new WeakMap<DiagramButton, string[]>();
+
+/** Cached per-button pitch classes (buttons are immutable during a search). */
+export function buttonTones(button: DiagramButton): string[] {
+  const cached = buttonToneCache.get(button);
+  if (cached) return cached;
+  const tones = computeButtonTones(button);
+  buttonToneCache.set(button, tones);
+  return tones;
+}
+
+function computeButtonTones(button: DiagramButton) {
   if (isBassButton(button)) return button.pitchClass ? [button.pitchClass] : [];
 
   const root = button.chordRoot;
@@ -50,4 +61,21 @@ export function buttonTones(button: DiagramButton) {
 
 export function combinationTones(buttons: DiagramButton[]) {
   return Array.from(new Set(buttons.flatMap(buttonTones)));
+}
+
+const toneBits = new Map<string, number>();
+function toneBit(tone: string) {
+  let bit = toneBits.get(tone);
+  if (bit === undefined) { bit = 2 ** toneBits.size; toneBits.set(tone, bit); }
+  return bit;
+}
+const buttonMaskCache = new WeakMap<DiagramButton, number>();
+/** Bitmask of the exact pitch-class strings a button contributes. */
+export function buttonToneMask(button: DiagramButton) {
+  let mask = buttonMaskCache.get(button);
+  if (mask === undefined) {
+    mask = buttonTones(button).reduce((acc, tone) => acc | toneBit(tone), 0);
+    buttonMaskCache.set(button, mask);
+  }
+  return mask;
 }

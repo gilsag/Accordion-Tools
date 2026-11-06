@@ -1,4 +1,5 @@
 [
+  "settingsVersion",
   "language",
   "side",
   "notation",
@@ -102,6 +103,7 @@
   "soundAttackMs",
   "soundReleaseMs",
   "soundNoteDurationMs",
+  "soundArticulation",
   "harmonyShowEnharmonics",
   "harmonyShowSeparators",
   "harmonyShowLegend",
@@ -114,7 +116,6 @@
   "harmonyFontSize",
   "harmonyPlaybackStyle",
   "harmonyVoicingStyle",
-  "progressionAllowApproximations",
   "progressionHandMovementWeight",
   "progressionRhythmPattern"
 ]

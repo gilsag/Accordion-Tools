@@ -43,6 +43,7 @@ assert.deepEqual(trace, ["clearTimers", "state:stopped", "buttons:0", "stopSound
 trace.length = 0;
 const reset = load("src/app/resetCommands.ts", {
   "../tools/stradellaChordFinder/diagramAnnotations": { DEFAULT_STRADELLA_NOTE_LEVELS: {identity:true,pitchClasses:true,voicing:true,physical:true} },
+  "../tools/stradellaChordFinder/harmonicIdentity": { ROOT_POSITION_BASS: "root" },
 });
 const finderMethods = ["setRoot","setPattern","setMode","setRequestedBass","setRealizationIndex", "setMaxButtons", "setSpanColumns", "setMinimumNominalGap", "setMarkRootBass", "setShowRealizationNote", "setShowVoicingIntervals", "setNoteLevels", "setExplanationFontSize"];
 const finderArgs = {};
@@ -50,6 +51,7 @@ for (const method of finderMethods) finderArgs[method] = value => trace.push([me
 reset.resetStradellaFinder(finderArgs);
 assert.deepEqual(trace.map(([method])=>method), finderMethods);
 assert.equal(trace[0][1], "C"); assert.equal(trace[7][1], 0); assert.equal(trace[10][1], true);
+assert.equal(trace[3][1], "root", "Restoring Finder defaults returns to root position");
 trace.length = 0;
 const workMethods = ["setOverlays", "setSequenceSteps", "setRecording", "setApplyingFingering", "setTextNotes", "setScaleFinderActive", "setChordFinderActive", "setStradellaChordFinderActive", "setProgressionPreview", "stopAbc", "stopBassPattern", "stopSound", "setProgressionActiveButtons"];
 reset.resetDiagramWorkState(Object.fromEntries(workMethods.map(method => [method, () => trace.push(method)])));

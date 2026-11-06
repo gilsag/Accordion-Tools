@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { SoundSource, SoundVoicePreset, SoundWaveform, SampleRegister, StradellaBassVoicing } from "../types";
 import type { StradellaRegisterModel } from "../tools/stradellaChordFinder/registerModel";
-import type { SoundOptions } from "../sound";
+import { DEFAULT_NOTE_ARTICULATION, type SoundOptions } from "../sound";
 
 /** Owns audio preferences independently of instrument geometry and registers.
  * The opt-in La Melodiosa register adapter is applied in SoundOptions, never
@@ -24,6 +24,9 @@ export function useSoundSettings(stradellaRegisterModel: StradellaRegisterModel)
   const [soundAttackMs, setSoundAttackMs] = useState(14);
   const [soundReleaseMs, setSoundReleaseMs] = useState(120);
   const [soundNoteDurationMs, setSoundNoteDurationMs] = useState(420);
+  // Share of each written note that sounds in the ABC, Bass Pattern, Progression
+  // and Harmony players (also how long its button stays highlighted).
+  const [soundArticulation, setSoundArticulation] = useState(DEFAULT_NOTE_ARTICULATION);
   const [soundSequenceTempoBpm, setSoundSequenceTempoBpm] = useState(80);
   const [stradellaBassVoicing, setStradellaBassVoicing] =
     useState<StradellaBassVoicing>("single-low");
@@ -42,13 +45,14 @@ export function useSoundSettings(stradellaRegisterModel: StradellaRegisterModel)
     attackMs: soundAttackMs,
     releaseMs: soundReleaseMs,
     noteDurationMs: soundNoteDurationMs,
+    articulation: soundArticulation,
     sequenceTempoBpm: soundSequenceTempoBpm,
     stradellaBassVoicing,
   }), [
     soundEnabled, soundVolume, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister,
     laMelodiosaFollowStradellaRegisters, stradellaRegisterModel, soundVoicePreset, soundWaveform, soundMusetteDetuneCents,
-    soundAttackMs, soundReleaseMs, soundNoteDurationMs, soundSequenceTempoBpm, stradellaBassVoicing,
+    soundAttackMs, soundReleaseMs, soundNoteDurationMs, soundArticulation, soundSequenceTempoBpm, stradellaBassVoicing,
   ]);
 
-  return { soundEnabled, setSoundEnabled, soundVolume, setSoundVolume, soundSource, setSoundSource, laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister, laMelodiosaBassRegister, setLaMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters, soundVoicePreset, setSoundVoicePreset, soundWaveform, setSoundWaveform, soundMusetteDetuneCents, setSoundMusetteDetuneCents, soundAttackMs, setSoundAttackMs, soundReleaseMs, setSoundReleaseMs, soundNoteDurationMs, setSoundNoteDurationMs, soundSequenceTempoBpm, setSoundSequenceTempoBpm, stradellaBassVoicing, setStradellaBassVoicing, soundOptions };
+  return { soundEnabled, setSoundEnabled, soundVolume, setSoundVolume, soundSource, setSoundSource, laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister, laMelodiosaBassRegister, setLaMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters, soundVoicePreset, setSoundVoicePreset, soundWaveform, setSoundWaveform, soundMusetteDetuneCents, setSoundMusetteDetuneCents, soundAttackMs, setSoundAttackMs, soundReleaseMs, setSoundReleaseMs, soundNoteDurationMs, setSoundNoteDurationMs, soundArticulation, setSoundArticulation, soundSequenceTempoBpm, setSoundSequenceTempoBpm, stradellaBassVoicing, setStradellaBassVoicing, soundOptions };
 }

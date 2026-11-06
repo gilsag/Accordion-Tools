@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import {
   EN, ES, FR, PT, IT, DE, SUPPORTED_LANGUAGES, detectBrowserLanguage, resolveInterfaceLanguage,
   isInterfaceLanguagePreference, translate,
-} from "../src/i18n/catalog";
+} from "../src/i18n/allCatalogs";
 
 assert.equal(detectBrowserLanguage(["es-CL", "en-US"]), "es");
 assert.equal(detectBrowserLanguage(["es_ES"]), "es");

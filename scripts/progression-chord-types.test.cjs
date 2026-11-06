@@ -79,20 +79,4 @@ assert.deepEqual(converted.unsupported, []);
 assert.deepEqual(converted.chords.map((chord) => chord.pattern),
   ['minor-triad', 'dominant7', 'major7'], 'Presets use the same pattern IDs as manual selection');
 
-const panel = fs.readFileSync('src/components/tools/ProgressionAssistantPanel.tsx', 'utf8');
-const controller = fs.readFileSync('src/app/useAppController.ts', 'utf8');
-assert.match(panel, /CHORD_FINDER_OPTIONS\.map\(/);
-assert.match(panel, /t\("tools\.chordType"\)/);
-assert.doesNotMatch(panel, /CHORD_FAMILIES\.map\(/);
-assert.match(controller, /progressionFinderPattern\(harmonyProgressionNoteStep\.chord\)/,
-  'Diagram notes preserve the exact Finder type of the chosen step');
-assert.match(controller, /harmonyProgressionNoteStep\.result/,
-  'Diagram notes use the actual optimized or pinned sounding recipe');
-assert.match(controller, /converted\.chords\.map\(\(\{ rootPc, pattern, sectorIndex \}\)/);
-const settingsKeys = JSON.parse(fs.readFileSync('scripts/settings-export-keys.json', 'utf8'));
-assert.equal(settingsKeys.length, 118, 'No new settings key');
-for (const locale of ['en', 'es', 'fr', 'pt', 'it', 'de']) {
-  const source = fs.readFileSync(`src/i18n/${locale}.ts`, 'utf8');
-  assert.ok(source.includes('tools.chordType'), `Existing chord-type translation reused: ${locale}`);
-}
 console.log('✓ All 35 chord types, legacy Harmony mapping, ranked candidates, pins, presets and UI terminology passed');

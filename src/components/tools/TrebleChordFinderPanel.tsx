@@ -65,7 +65,7 @@ export function TrebleChordFinderPanel({
 }: TrebleChordFinderPanelProps) {
   const { t, language } = useI18n();
   return (
-    <CollapsibleSection title={t("tools.chordFinder")} isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("tools.chordFinder")} summary={t("tools.summary.trebleChordFinder")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
         {t("tools.trebleIntro")}
       </p>

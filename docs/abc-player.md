@@ -1,6 +1,6 @@
 # ABC Player
 
-The ABC Player loads or pastes ABC notation and animates the diagram during playback. It uses `abcjs` for the main parsing and sequencing step, then applies Accordion Tools' own treble, piano, and Stradella button-mapping logic.
+The ABC Player plays tunes written in ABC notation, a plain-text music format, and lights up the buttons on the diagram as each note sounds.
 
 It is useful for:
 
@@ -11,19 +11,9 @@ It is useful for:
 
 ## Loading ABC
 
-ABC can be loaded from a file or pasted into the player.
+Choose a tune from **Example tune**, open an `.abc` file from your computer with **Load .abc file**, or paste ABC text into the editor. The menu shows each tune's title (its `T:` line).
 
-Built-in example files are stored in:
-
-```text
-public/abc/
-```
-
-The example list is generated automatically by Vite from the `.abc` files in `public/abc/`. The browser fetches the generated `abc/examples.json`; you should **not edit or create this manifest manually**.
-
-To add a song, copy its `.abc` file into `public/abc/`, with a `T:` title in the ABC header. Restart/reload the development page if needed. When building for GitHub Pages, commit the file and redeploy (`npm run build`); a static deployed website cannot detect new server files without a rebuild. The menu uses `T:` as the display name, or the filename if no title is present. Identical duplicate files are listed only once. Existing built-in names have localized overrides where available; otherwise the ABC title is used as written.
-
-Examples include:
+The examples include:
 
 - `c-major-scale.abc`
 - `happy-birthday.abc` (F-major melody and accordion bass/chord accompaniment)
@@ -69,7 +59,7 @@ The player supports:
 - simple repeat expansion
 - simple note ties and whole-chord ties
 - common tuplet/duration handling through abcjs sequencing
-- Play, Pause, Continue, and Stop controls
+- Play, Pause, Continue, and Stop controls, in the playback bar under the diagram
 
 Some advanced ABC features are still limited or future work, including ornaments, simultaneous two-hand playback on both manuals, custom ABC directives that do not affect abcjs sequencing, and advanced partial ties inside chords.
 
@@ -104,15 +94,10 @@ ABC playback uses the same browser sound engine as the other tools. It is synthe
 
 ## Related settings
 
-See [`settings.md`](settings.md) for:
-
-- `abcStradellaMode`
-- `abcTrebleChordSymbolsMode`
-- `soundEnabled`
-
+The ABC Player's own controls choose how notes map to Stradella buttons and whether quoted chord symbols play on the Treble side. Under [Settings](settings.md), **Sound** sets the instrument sound and **Note length in players**, and **Music notation** sets the look of the staff.
 ## Rendered notation view
 
-When the ABC Player has ABC text loaded, the top toolbar can show a `Show notation` button. This renders the current ABC source below the diagram with `abcjs`, so the same source can be heard, highlighted on the accordion diagram, and read as staff notation.
+When the ABC Player has ABC text loaded, the top toolbar can show a `Show notation` button. This draws the current tune as staff notation below the diagram, so the same source can be heard, highlighted on the accordion diagram, and read as staff notation.
 
 The notation title uses the tune title from the ABC `T:` field when available. The notation panel includes **Download SVG** for saving the rendered staff notation.
 
@@ -122,6 +107,8 @@ A collapsible **Notation help** section is available in the tool area.
 
 
 ## Ties
+
+Each note sounds for its written length (85% of it by default, the same time its button stays highlighted; change it with **Note length in players** in the sound settings), so half notes ring longer than eighths; the **Note duration** sound setting applies only to clicks and previews. Notes are placed on the browser's audio clock, so timing stays steady while the page is busy, and Play waits until the needed La Melodiosa samples have loaded.
 
 Simple ABC ties are merged during playback after abcjs sequencing. For example, `A-A2` is treated as one sustained A event with the combined duration, so the diagram does not retrigger the same button on the continuation note. Whole-chord ties such as `[CE]-[CE]` are handled similarly when the tied chord contains the same notes.
 

@@ -43,9 +43,6 @@ type HarmonyExplorerPanelProps = {
   onToggleProgressionRecording: () => void;
   onClearRecordedProgression: () => void;
   onSendRecordedProgressionToAssistant: () => void;
-  isRecordedProgressionPlaying: boolean;
-  onPlayRecordedProgression: () => void;
-  onStopRecordedProgression: () => void;
   onReset: () => void;
 };
 
@@ -74,9 +71,6 @@ export function HarmonyExplorerPanel({
   onToggleProgressionRecording,
   onClearRecordedProgression,
   onSendRecordedProgressionToAssistant,
-  isRecordedProgressionPlaying,
-  onPlayRecordedProgression,
-  onStopRecordedProgression,
   onReset,
 }: HarmonyExplorerPanelProps) {
   const allFamiliesMode = relatedFamilyId === "all";
@@ -105,7 +99,7 @@ export function HarmonyExplorerPanel({
   };
 
   return (
-    <CollapsibleSection title={t("tools.harmonyExplorer")} isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("tools.harmonyExplorer")} summary={t("tools.summary.harmonyExplorer")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
         {t("tools.harmonyIntro")}
       </p>
@@ -209,14 +203,6 @@ export function HarmonyExplorerPanel({
             onClick={onClearRecordedProgression}
           >
             {t("tools.clear")}
-          </button>
-          <button
-            type="button"
-            className="small-button"
-            disabled={recordedProgression.length === 0}
-            onClick={isRecordedProgressionPlaying ? onStopRecordedProgression : onPlayRecordedProgression}
-          >
-            {isRecordedProgressionPlaying ? t("tools.stop") : t("tools.playRecording")}
           </button>
           <button
             type="button"

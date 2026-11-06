@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { EN, ES, FR, PT, IT, DE, SUPPORTED_LANGUAGES, translate, translateKnownLabel, detectBrowserLanguage, isInterfaceLanguagePreference, resolveInterfaceLanguage } from "../src/i18n/catalog";
+import { EN, ES, FR, PT, IT, DE, SUPPORTED_LANGUAGES, translate, translateKnownLabel, detectBrowserLanguage, isInterfaceLanguagePreference, resolveInterfaceLanguage } from "../src/i18n/allCatalogs";
 import { abcExampleName, bassPatternName, progressionName } from "../src/i18n/optionLabels";
 import { chordRole, familyName, scaleName, stradellaButtonFunction, stradellaDiagramRowLabel } from "../src/i18n/musicTerms";
 import { generateStradella } from "../src/stradella";
@@ -84,17 +84,10 @@ for (const [language, expectedIdentity, expectedPhysical, expectedExplanation] o
   assert.ok(relation.length > 100);
   assert.doesNotMatch(relation, /The inner ring|The rings for|No related chords/);
 }
-const app = [readFileSync("src/App.tsx", "utf8"), readFileSync("src/app/useAppController.ts", "utf8"), readFileSync("src/app/views/SettingsView.tsx", "utf8"), readFileSync("src/app/views/ToolsView.tsx", "utf8"), readFileSync("src/app/views/WorkspaceView.tsx", "utf8")].join("\n");
-assert.match(app, /SUPPORTED_LANGUAGES\.map/);
-const languageSettings = readFileSync("src/settings/useLanguageSettings.ts", "utf8");
-assert.match(app, /useLanguageSettings\(\)/);
-assert.match(languageSettings, /document\.documentElement\.lang/);
-assert.match(languageSettings, /accordionTools\.interfaceLanguage\.v1/);
 const version = JSON.parse(readFileSync("package.json", "utf8")).version;
 const lock = JSON.parse(readFileSync("package-lock.json", "utf8"));
 assert.equal(lock.version, version);
 assert.equal(lock.packages[""].version, version);
-assert.ok(readFileSync("src/config/appInfo.ts", "utf8").includes(`version: "${version}"`));
 assert.ok(readFileSync("README.md", "utf8").includes(`**Version:** ${version}`));
 const history = readFileSync("VERSION_HISTORY.md", "utf8");
 assert.match(history, /^## (?:Unreleased|v\d+)/);

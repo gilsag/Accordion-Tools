@@ -31,12 +31,12 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
     setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription, setMusicNotationIncludeSummary, setMusicNotationIncludeTitle, setMusicNotationScale,
     setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine, setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale,
     setPianoKeyHeightScale, setPianoKeyWidthScale, setReferenceStrokeWidth, setShowBellowsGuide, setShowButtonLabels, setShowStatusBar,
-    setShowStradellaRowLabels, setShowTrebleOctaves, setSoundAttackMs, setSoundMusetteDetuneCents, setSoundNoteDurationMs, setSoundReleaseMs,
+    setShowStradellaRowLabels, setShowTrebleOctaves, setSoundAttackMs, setSoundMusetteDetuneCents, setSoundNoteDurationMs, setSoundArticulation, setSoundReleaseMs,
     setSoundSequenceTempoBpm, setSoundSource, setSoundVoicePreset, setSoundVolume, setSoundWaveform, setSpacing,
     setStradellaBassRegisterGrouping, setStradellaBassRegisterOctave, setStradellaBassVoicing, setStradellaChordRegisterGrouping, setStradellaChordRegisterOctave, setTitleFont,
     setTitleMode, setTitleSize, setTrebleAngle, setTrebleRows, showBellowsGuide, showButtonLabels,
     showStatusBar, showStradellaRowLabels, showTrebleOctaves, side, soundAttackMs, soundMusetteDetuneCents,
-    soundNoteDurationMs, soundReleaseMs, soundSequenceTempoBpm, soundSource, soundVoicePreset, soundVolume,
+    soundArticulation, soundNoteDurationMs, soundReleaseMs, soundSequenceTempoBpm, soundSource, soundVoicePreset, soundVolume,
     soundWaveform, spacing, stradellaBassRegisterGrouping, stradellaBassRegisterOctave, stradellaBassVoicing, stradellaChordRegisterGrouping,
     stradellaChordRegisterOctave, stradellaRegisterModel, t, titleFont, titleMode, titleSize,
     toggleSettingsSection, trebleAngle, trebleLayout, trebleRows, trebleSize, workspaceMode,
@@ -62,6 +62,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                               <button
                                 className="section-title"
+                                aria-expanded={activeSettingsSection === "instrument"}
                                 onClick={() => toggleSettingsSection("instrument")}
                               >
                                 {t("settings.instrument")}{" "}
@@ -221,6 +222,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                               <button
                                 className="section-title"
+                                aria-expanded={activeSettingsSection === "notation"}
                                 onClick={() => toggleSettingsSection("notation")}
                               >
                                 {t("settings.notation")}{" "}
@@ -310,6 +312,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                               <button
                                 className="section-title"
+                                aria-expanded={activeSettingsSection === "musicNotation"}
                                 onClick={() => toggleSettingsSection("musicNotation")}
                               >
                                 {t("settings.musicNotation")}{" "}
@@ -455,6 +458,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                               <button
                                 className="section-title"
+                                aria-expanded={activeSettingsSection === "appearance"}
                                 onClick={() => toggleSettingsSection("appearance")}
                               >
                                 {t("settings.appearance")}{" "}
@@ -784,6 +788,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                 <button
                   className="section-title"
+                  aria-expanded={activeSettingsSection === "appearance"}
                   onClick={() => toggleSettingsSection("appearance")}
                 >
                   {t("settings.appearance")} <span>{activeSettingsSection === "appearance" ? "−" : "+"}</span>
@@ -814,6 +819,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                 <button
                   className="section-title"
+                  aria-expanded={activeSettingsSection === "sound"}
                   onClick={() => toggleSettingsSection("sound")}
                 >
                   {t("settings.sound")}{" "}
@@ -1014,6 +1020,20 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
                       />
                     </label>
 
+                    <label title={t("ui.noteArticulationHint")}>
+                      {t("ui.noteArticulation")}: {Math.round(soundArticulation * 100)}%
+                      <input
+                        type="range"
+                        min={30}
+                        max={100}
+                        step={5}
+                        value={Math.round(soundArticulation * 100)}
+                        onChange={(event) =>
+                          setSoundArticulation(Number(event.target.value) / 100)
+                        }
+                      />
+                    </label>
+
                     <label>
                       {t("ui.sequenceTempo")}: {soundSequenceTempoBpm} BPM
                       <input
@@ -1035,6 +1055,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
               <section className="control-section">
                               <button
                                 className="section-title"
+                                aria-expanded={activeSettingsSection === "title"}
                                 onClick={() => toggleSettingsSection("title")}
                               >
                                 {t("settings.title")}{" "}
@@ -1114,6 +1135,7 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
                   <section className="control-section">
                     <button
                       className="section-title"
+                      aria-expanded={activeSettingsSection === "harmony"}
                       onClick={() => toggleSettingsSection("harmony")}
                     >
                       {t("nav.harmony")} <span>{activeSettingsSection === "harmony" ? "−" : "+"}</span>

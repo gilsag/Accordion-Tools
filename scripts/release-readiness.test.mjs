@@ -3,16 +3,21 @@
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import ts from 'typescript';
 
 const read = path => readFileSync(path, 'utf8');
 const pkg = JSON.parse(read('package.json'));
 const lock = JSON.parse(read('package-lock.json'));
-const info = read('src/config/appInfo.ts');
 const readme = read('README.md');
 assert.equal(pkg.version, lock.version, 'package.json and package-lock.json disagree');
 assert.equal(pkg.version, lock.packages?.['']?.version, 'root package-lock version differs');
-assert.match(info, new RegExp(`version: ["']${pkg.version.replace(/\./g, '\\.')}["']`));
 assert.ok(readme.includes(`**Version:** ${pkg.version}`), 'README version differs');
+// Evaluate the About-panel metadata module instead of reading its text.
+const appInfoJs = ts.transpileModule(read('src/config/appInfo.ts'), {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const { APP_INFO } = await import(`data:text/javascript;charset=utf-8,${encodeURIComponent(appInfoJs)}`);
+assert.equal(APP_INFO.version, pkg.version, 'About panel version differs from package.json');
 assert.match(read('vite.config.ts'), /base:\s*["']\/Accordion-Tools\/["']/,
   'GitHub Pages base path changed');
 assert.ok(existsSync('docs/internal/release-v0.16.0-validation.md'), 'Release acceptance checklist missing');

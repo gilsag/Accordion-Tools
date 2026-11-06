@@ -1,6 +1,7 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { SoundOptions } from "../sound";
-import { playButtonSound } from "../sound";
+import { audioClockNow, playButtonSound } from "../sound";
+import { AUDIO_LOOKAHEAD_MS, audioTimelineOrigin, msUntilAudioTime, scheduleAtAudioOffset } from "./audioClock";
 import type { MappedAbcEvent } from "../tools/abcPlayerTools";
 import type { BassPatternPlaybackEvent } from "../tools/bassPatternPlayerTools";
 
@@ -16,41 +17,50 @@ type AbcScheduleArgs = {
   setAbcActiveButtonIds: Dispatch<SetStateAction<string[]>>;
   setAbcPlaybackState: Dispatch<SetStateAction<"stopped" | "paused" | "playing">>;
 };
-/** Schedules identical ABC note-on, highlight-clear and completion timeouts.
- * App still controls transport exclusivity and stop/seek transitions.
+/** Schedules ABC notes on the audio clock: each sounds at its exact beat for
+ * its written length (times soundOptions.articulation), and its highlight and
+ * position update when it is heard. App still controls transport exclusivity
+ * and stop/seek transitions; the completion timer stays on wall-clock time.
  */
 export function scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoBpm,
   abcTotalBeats, abcPlaybackTimeoutsRef, abcPlaybackStartedAtRef,
   soundOptions, setAbcPositionBeat, setAbcActiveButtonIds, setAbcPlaybackState,
 }: AbcScheduleArgs) {
     const beatMs = 60000 / Math.max(20, abcTempoBpm);
+    // A note that ends exactly at the resume point has nothing left to play.
     const eventsToSchedule = abcMappedEvents.filter(
-      (event) => event.startBeat + event.durationBeats >= startBeat,
+      (event) => event.startBeat + event.durationBeats > startBeat,
     );
+    const ports = {
+      now: audioClockNow,
+      push: (id: number) => abcPlaybackTimeoutsRef.current.push(id),
+    };
+    const origin = audioTimelineOrigin(ports.now);
 
     eventsToSchedule.forEach((event) => {
-      const delayMs = Math.max(0, (event.startBeat - startBeat) * beatMs);
-      const onTimeout = window.setTimeout(() => {
-        setAbcPositionBeat(event.startBeat);
-        setAbcActiveButtonIds(event.buttons.map((button) => button.id));
-        event.buttons.forEach((button) =>
-          playButtonSound(button, soundOptions),
-        );
-
-        const clearTimeoutId = window.setTimeout(
-          () => {
-            setAbcActiveButtonIds((current) => {
-              const eventIds = new Set(
-                event.buttons.map((button) => button.id),
-              );
-              return current.filter((id) => !eventIds.has(id));
-            });
-          },
-          Math.max(80, event.durationBeats * beatMs * 0.85),
-        );
-        abcPlaybackTimeoutsRef.current.push(clearTimeoutId);
-      }, delayMs);
-      abcPlaybackTimeoutsRef.current.push(onTimeout);
+      const offsetMs = Math.max(0, (event.startBeat - startBeat) * beatMs);
+      // When resuming mid-note, only the remainder of that note sounds.
+      const remainingBeats = event.startBeat + event.durationBeats - Math.max(startBeat, event.startBeat);
+      const durationMs = remainingBeats * beatMs * soundOptions.articulation;
+      scheduleAtAudioOffset(ports, origin, offsetMs,
+        (when) => event.buttons.forEach((button) =>
+          playButtonSound(button, soundOptions, { at: when, durationMs })),
+        () => {
+          setAbcPositionBeat(event.startBeat);
+          setAbcActiveButtonIds(event.buttons.map((button) => button.id));
+          const clearTimeoutId = window.setTimeout(
+            () => {
+              setAbcActiveButtonIds((current) => {
+                const eventIds = new Set(
+                  event.buttons.map((button) => button.id),
+                );
+                return current.filter((id) => !eventIds.has(id));
+              });
+            },
+            Math.max(80, event.durationBeats * beatMs * soundOptions.articulation),
+          );
+          abcPlaybackTimeoutsRef.current.push(clearTimeoutId);
+        });
     });
 
     const stopTimeout = window.setTimeout(
@@ -68,6 +78,8 @@ export function scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoB
 type BassPatternScheduleArgs = {
   bassPatternEvents: BassPatternPlaybackEvent[];
   bassPatternTempoBpm: number;
+  /** Meter units in one tempo beat: 3 in compound meters such as 6/8, else 1. */
+  bassPatternUnitsPerBeat?: number;
   bassPatternTotalBeats: number;
   bassPatternLoopMode: "once" | "fixed" | "infinite";
   bassPatternLoopCount: number;
@@ -78,40 +90,50 @@ type BassPatternScheduleArgs = {
   setBassPatternActiveButtonIds: Dispatch<SetStateAction<string[]>>;
   setBassPatternPlaybackState: Dispatch<SetStateAction<"stopped" | "playing">>;
 };
-/** Preserve loop cadence, gain, cancellation generation, and button
- * highlight lifetime in one playback service shared by pattern controllers.
+/** Schedules Bass Pattern events on the audio clock, preserving loop cadence,
+ * per-event gain, cancellation by run ID and button highlight lifetime. Each
+ * note sounds for its written length times soundOptions.articulation.
  */
-export function scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm,
+export function scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm, bassPatternUnitsPerBeat = 1,
   bassPatternTotalBeats, bassPatternLoopMode, bassPatternLoopCount,
   bassPatternTimeoutsRef, bassPatternPlaybackRunRef, runId, soundOptions,
   setBassPatternActiveButtonIds, setBassPatternPlaybackState,
 }: BassPatternScheduleArgs) {
-    const beatMs = 60000 / Math.max(30, bassPatternTempoBpm);
+    // Event times are meter units; the tempo counts beats of unitsPerBeat units.
+    const beatMs = 60000 / Math.max(30, bassPatternTempoBpm) / Math.max(1, bassPatternUnitsPerBeat);
     const cycleBeats = Math.max(0, bassPatternTotalBeats);
     const repeats =
       bassPatternLoopMode === "fixed"
         ? Math.max(1, Math.min(64, Math.round(bassPatternLoopCount)))
         : 1;
+    const ports = {
+      now: audioClockNow,
+      push: (id: number) => bassPatternTimeoutsRef.current.push(id),
+    };
+    const origin = audioTimelineOrigin(ports.now);
 
     const scheduleCycle = (cycleIndex: number) => {
       if (bassPatternPlaybackRunRef.current !== runId) return;
       const cycleOffsetMs = cycleIndex * cycleBeats * beatMs;
 
       bassPatternEvents.forEach((event) => {
-        const onTimeout = window.setTimeout(
+        const eventSoundOptions = {
+          ...soundOptions,
+          volume: Math.min(1, soundOptions.volume * event.gain),
+        };
+        const durationMs = event.durationBeats * beatMs * soundOptions.articulation;
+        scheduleAtAudioOffset(ports, origin, Math.max(0, cycleOffsetMs + event.startBeat * beatMs),
+          (when) => {
+            if (bassPatternPlaybackRunRef.current !== runId) return;
+            event.buttons.forEach((button) =>
+              playButtonSound(button, eventSoundOptions, { at: when, durationMs }),
+            );
+          },
           () => {
             if (bassPatternPlaybackRunRef.current !== runId) return;
             setBassPatternActiveButtonIds(
               event.buttons.map((button) => button.id),
             );
-            const eventSoundOptions = {
-              ...soundOptions,
-              volume: Math.min(1, soundOptions.volume * event.gain),
-            };
-            event.buttons.forEach((button) =>
-              playButtonSound(button, eventSoundOptions),
-            );
-
             const clearTimeoutId = window.setTimeout(
               () => {
                 if (bassPatternPlaybackRunRef.current !== runId) return;
@@ -122,25 +144,24 @@ export function scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBp
                   return current.filter((id) => !eventIds.has(id));
                 });
               },
-              Math.max(80, event.durationBeats * beatMs * 0.85),
+              Math.max(80, event.durationBeats * beatMs * soundOptions.articulation),
             );
             bassPatternTimeoutsRef.current.push(clearTimeoutId);
-          },
-          Math.max(0, cycleOffsetMs + event.startBeat * beatMs),
-        );
-        bassPatternTimeoutsRef.current.push(onTimeout);
+          });
       });
     };
 
     if (bassPatternLoopMode === "infinite") {
+      const cycleMs = Math.max(120, cycleBeats * beatMs);
       const scheduleInfiniteCycle = (cycleIndex: number) => {
         if (bassPatternPlaybackRunRef.current !== runId) return;
         scheduleCycle(cycleIndex);
+        // Wake early enough to place the next cycle's first notes on time.
         const nextCycleTimeout = window.setTimeout(
           () => {
             scheduleInfiniteCycle(cycleIndex + 1);
           },
-          Math.max(120, cycleBeats * beatMs),
+          msUntilAudioTime(ports, origin + ((cycleIndex + 1) * cycleMs) / 1000, 2 * AUDIO_LOOKAHEAD_MS),
         );
         bassPatternTimeoutsRef.current.push(nextCycleTimeout);
       };

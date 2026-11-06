@@ -9,6 +9,10 @@ function cloneSvgWithEmbeddedStyles(svgElement: SVGSVGElement, pngSafe = false) 
   const clone = svgElement.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
   clone.querySelectorAll("[data-export-ignore='true'], .annotation-editor-object").forEach((element) => element.remove());
+  // Keyboard and screen-reader attributes belong to the live page, not the file.
+  clone.querySelectorAll(".button-group").forEach((element) => {
+    for (const name of ["role", "tabindex", "aria-label", "data-focus", "data-button-id"]) element.removeAttribute(name);
+  });
   clone.querySelectorAll(".selected-chord, .selected-reference, .focused-reference").forEach((element) => {
     element.classList.remove("selected-chord", "selected-reference", "focused-reference");
   });

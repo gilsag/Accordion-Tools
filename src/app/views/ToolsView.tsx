@@ -1,11 +1,18 @@
+import { ROOT_POSITION_BASS } from "../../tools/stradellaChordFinder/harmonicIdentity";
 import { lazy, Suspense } from "react";
 
 import { translateKnownLabel } from "../../i18n/catalog";
 import { abcExampleName, bassPatternName, progressionName } from "../../i18n/optionLabels";
+import type { TranslationKey } from "../../i18n/catalog";
+
+const BEAT_LABEL_KEYS: Record<BassPatternBeatName, TranslationKey> = {
+  "half": "ui.beatHalf", "quarter": "ui.beatQuarter", "dotted-quarter": "ui.beatDottedQuarter",
+  "eighth": "ui.beatEighth", "dotted-eighth": "ui.beatDottedEighth", "sixteenth": "ui.beatSixteenth",
+};
 import type { AbcStradellaMode, DiagramAnnotationAnchor, FinderScalePattern, FontFamily, NumberPosition, SequenceColorPreset, SequenceDisplayMode } from "../../types";
 import { stradellaRowLabel } from "../../stradella";
 import { FINDER_ROOT_OPTIONS, SCALE_FINDER_OPTIONS, SCALE_FINDER_ROW_LIMIT_OPTIONS } from "../../tools/scaleFinderTools";
-import { patternBarCount } from "../../tools/bassPatternPlayerTools";
+import { bassPatternBeat, patternBarCount, type BassPatternBeatName } from "../../tools/bassPatternPlayerTools";
 // The panel is fetched on first render; its state stays in its feature hook.
 const TrebleChordFinderPanel = lazy(() => import("../../components/tools/TrebleChordFinderPanel").then(module => ({ default: module.TrebleChordFinderPanel })));
 // The panel is fetched on first render; its state stays in its feature hook.
@@ -23,12 +30,12 @@ import type { AppControllerModel } from "../useAppController";
 export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
   const {
     SEQUENCE_DISPLAY_MODE_OPTIONS, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName, abcMappedEvents,
-    abcMissingPitchText, abcParseResult, abcPlaybackState, abcPositionBeat, abcStradellaMode, abcTempoBpm,
+    abcMissingPitchText, abcParseResult, abcPositionBeat, abcStradellaMode, abcTempoBpm,
     abcText, abcTotalBeats, abcTrebleChordSymbolsMode, activeToolSection, useHarmonyProgressionPreset, addManualHarmonyProgressionChord, addSelectedHarmonyRelationshipToProgression,
     annotationBold, annotationButtonAnchor, annotationItalic, annotationLocationLabel, annotationOffsetPercent, annotationPreview,
     applyFingerToSelected, bassPatternBarsPerChord, bassPatternChordVoicing, bassPatternDefinitions, bassPatternEditorErrors, bassPatternEditorExpanded,
     bassPatternEditorMessage, bassPatternEditorText, bassPatternEvents, bassPatternExportFormat, bassPatternId, bassPatternMissingText,
-    bassPatternPlaybackState, bassPatternRepeatSelection, bassPatternRoot, bassPatternTempoBpm, bassPatternTotalBeats, bassPatternValidationErrors,
+    bassPatternRepeatSelection, bassPatternRoot, bassPatternTempoBpm, bassPatternTotalBeats, bassPatternValidationErrors,
     batchExporting, chordDisplayStyle, chordFinderActive, chordFinderButtons, chordFinderInversion, chordFinderOctave,
     chordFinderPattern, chordFinderRoot, chordProgressionDefinitions, chordProgressionId, clearAllFingerings, clearFingerForSelected,
     clearHarmonyRecordedProgression, clearSelection, clearSequence, clearTextNotes, customBassPatternDefinitions, deleteTextNote,
@@ -36,13 +43,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel,
     formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel, harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression,
     harmonyProgressionHandMovementWeight, harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes,
-    harmonyProgressionRecording, harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyRecordedProgressionPlaying, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
+    harmonyProgressionRecording, harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
     harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering, isRecordingSequence,
     isTrebleLikeSide, language, loadAbcExample, loadSelectedPatternIntoEditor, moveHarmonyProgressionChord,
-    pauseAbcPlayback, playChordFinder, playHarmonyRecordedProgression, playOptimizedHarmonyProgression, playRecordedSequence, playScaleFinder,
+    pauseAbcPlayback, playChordFinder, playScaleFinder,
     playSelectedButtons, playStradellaChordFinder, removeHarmonyProgressionChord, removeSelectedCustomBassPattern, resetHarmonyExplorer,
     saveCustomBassPattern, scaleFinderActive, scaleFinderButtons, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
-    scaleFinderRowLimit, scheduleAbcPlayback, scheduleBassPatternPlayback, selectedBassPattern, selectedButtons, selectedChordProgression,
+    scaleFinderRowLimit, selectedBassPattern, selectedButtons, selectedChordProgression,
     selectionOnClick, sendHarmonyRecordedProgressionToAssistant, sequenceArrowheadSize, sequenceColorPreset, sequenceDisplayMode, sequenceNumberColorPreset,
     sequenceNumberFontSize, sequenceNumberPosition, sequenceSteps, sequenceThickness, setAbcActiveButtonIds, setAbcEditorExpanded,
     setAbcExampleValue, setAbcFileName, setAbcPlaybackState, setAbcPositionBeat, setAbcStradellaMode, setAbcTempoBpm,
@@ -59,11 +66,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     setStradellaChordFinderMode, setStradellaChordFinderPattern, setStradellaChordFinderRealizationIndex, setStradellaChordFinderRequestedBass, setStradellaChordFinderRoot, setStradellaMinimumNominalGap,
     setStradellaNoteLevels, setTextNoteColor, setTextNoteFont, setTextNoteFontSize, setTrebleChordVoicingMode, showFinderRealizationNote,
     showHarmonySelectionOnStradella, showStradellaVoicingIntervals, showTrebleVoicingNote, side, soundSequenceTempoBpm, stopAbcPlayback,
-    stopBassPatternPlayback, stopHarmonyRecordedProgressionPlayback, stopSoundPlayback, stradellaChordFinderActive, stradellaChordFinderMarkRootBass,
+    stopBassPatternPlayback, stopSoundPlayback, stradellaChordFinderActive, stradellaChordFinderMarkRootBass,
     stradellaChordFinderMode, stradellaChordFinderPattern, stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass,
     stradellaChordFinderResult, stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaScaleFinderResult,
     t, textNoteColor, textNoteFont, textNoteFontSize, textNotes, toggleHarmonyProgressionRecording,
     toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
+    progressionPathVisible, setProgressionPathVisible,
+    stradellaChordFinderRootFallback,
   } = model;
   return (
     <>
@@ -93,9 +102,6 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   onToggleProgressionRecording={toggleHarmonyProgressionRecording}
                   onClearRecordedProgression={clearHarmonyRecordedProgression}
                   onSendRecordedProgressionToAssistant={sendHarmonyRecordedProgressionToAssistant}
-                  isRecordedProgressionPlaying={harmonyRecordedProgressionPlaying}
-                  onPlayRecordedProgression={playHarmonyRecordedProgression}
-                  onStopRecordedProgression={stopHarmonyRecordedProgressionPlayback}
                   onReset={resetHarmonyExplorer}
                 /></Suspense>
               ) : (
@@ -112,6 +118,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                       {activeToolSection === "scaleFinder" ? "−" : "+"}
                     </span>
                   </button>
+                  {activeToolSection !== "scaleFinder" && <p className="section-summary">{t("tools.summary.scaleFinder")}</p>}
 
                   {activeToolSection === "scaleFinder" && (
                     <div className="section-content">
@@ -286,11 +293,14 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   isOpen={activeToolSection === "stradellaChordFinder"}
                   onToggle={() => toggleToolSection("stradellaChordFinder")}
                   root={stradellaChordFinderRoot}
-                  onRootChange={(next) => { setStradellaChordFinderRoot(next); setStradellaChordFinderRequestedBass(null); }}
+                  // A specific slash bass belongs to the old chord, so it falls back to
+                  // root position; "Any" stays "Any".
+                  onRootChange={(next) => { setStradellaChordFinderRoot(next); setStradellaChordFinderRequestedBass((choice) => choice === null ? null : ROOT_POSITION_BASS); }}
                   pattern={stradellaChordFinderPattern}
-                  onPatternChange={(next) => { setStradellaChordFinderPattern(next); setStradellaChordFinderRequestedBass(null); }}
+                  onPatternChange={(next) => { setStradellaChordFinderPattern(next); setStradellaChordFinderRequestedBass((choice) => choice === null ? null : ROOT_POSITION_BASS); }}
                   requestedBass={stradellaChordFinderRequestedBass}
                   onRequestedBassChange={setStradellaChordFinderRequestedBass}
+                  rootFallback={stradellaChordFinderRootFallback}
                   mode={stradellaChordFinderMode}
                   onModeChange={setStradellaChordFinderMode}
                   markRootBass={stradellaChordFinderMarkRootBass}
@@ -365,19 +375,21 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                     setHarmonyProgressionPreviewIndex(null);
                     setHarmonyProgressionNoteStepId(null);
                   }}
-                  onPlay={playOptimizedHarmonyProgression}
-                  onStop={stopSoundPlayback}
+                  pathVisible={progressionPathVisible}
+                  onPathVisibleChange={setProgressionPathVisible}
                 /></Suspense>
               )}
 
               <section className="control-section">
                 <button
                   className="section-title"
+                  aria-expanded={activeToolSection === "selection"}
                   onClick={() => toggleToolSection("selection")}
                 >
                   {t("ui.selection")}{" "}
                   <span>{activeToolSection === "selection" ? "−" : "+"}</span>
                 </button>
+                {activeToolSection !== "selection" && <p className="section-summary">{t("tools.summary.selection")}</p>}
 
                 {activeToolSection === "selection" && (
                   <div className="section-content">
@@ -440,11 +452,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
               <section className="control-section">
                 <button
                   className="section-title"
+                  aria-expanded={activeToolSection === "fingering"}
                   onClick={() => toggleToolSection("fingering")}
                 >
                   {t("ui.fingering")}{" "}
                   <span>{activeToolSection === "fingering" ? "−" : "+"}</span>
                 </button>
+                {activeToolSection !== "fingering" && <p className="section-summary">{t("tools.summary.fingering")}</p>}
 
                 {activeToolSection === "fingering" && (
                   <div className="section-content">
@@ -519,11 +533,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
               <section className="control-section">
                 <button
                   className="section-title"
+                  aria-expanded={activeToolSection === "sequences"}
                   onClick={() => toggleToolSection("sequences")}
                 >
                   {t("ui.sequence")}{" "}
                   <span>{activeToolSection === "sequences" ? "−" : "+"}</span>
                 </button>
+                {activeToolSection !== "sequences" && <p className="section-summary">{t("tools.summary.sequences")}</p>}
 
                 {activeToolSection === "sequences" && (
                   <div className="section-content">
@@ -657,21 +673,9 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                     <p className="hint">
                       {t("ui.sequenceLength")} <strong>{sequenceSteps.length}</strong>
                     </p>
+                    <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
 
                     <div className="button-row">
-                      <button
-                        className="small-button"
-                        onClick={playRecordedSequence}
-                        disabled={sequenceSteps.length === 0}
-                      >
-                        {t("ui.playSequence")}
-                      </button>
-                      <button
-                        className="small-button"
-                        onClick={stopSoundPlayback}
-                      >
-                        {t("ui.stop")}
-                      </button>
                       <button className="small-button" onClick={clearSequence}>
                         {t("ui.clearSequence")}
                       </button>
@@ -690,11 +694,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
               <section className="control-section">
                 <button
                   className="section-title"
+                  aria-expanded={activeToolSection === "annotateDiagram"}
                   onClick={() => toggleToolSection("annotateDiagram")}
                 >
                   {t("ui.annotateDiagram")}{" "}
                   <span>{activeToolSection === "annotateDiagram" ? "−" : "+"}</span>
                 </button>
+                {activeToolSection !== "annotateDiagram" && <p className="section-summary">{t("tools.summary.annotateDiagram")}</p>}
 
                 {activeToolSection === "annotateDiagram" && (
                   <div className="section-content">
@@ -843,6 +849,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                 <section className="control-section">
                   <button
                     className="section-title"
+                    aria-expanded={activeToolSection === "bassPatternPlayer"}
                     onClick={() => toggleToolSection("bassPatternPlayer")}
                   >
                     {t("ui.bassPatternPlayer")}{" "}
@@ -850,6 +857,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                       {activeToolSection === "bassPatternPlayer" ? "−" : "+"}
                     </span>
                   </button>
+                  {activeToolSection !== "bassPatternPlayer" && <p className="section-summary">{t("tools.summary.bassPatternPlayer")}</p>}
 
                   {activeToolSection === "bassPatternPlayer" && (
                     <div className="section-content">
@@ -929,10 +937,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                         </label>
 
                         <label>
-                          {t("ui.tempo")}: {bassPatternTempoBpm} {t("ui.tempoUnits")}
+                          {t("ui.tempo")}: {t("ui.tempoBeats", {
+                            tempo: bassPatternTempoBpm,
+                            beat: t(BEAT_LABEL_KEYS[bassPatternBeat(selectedBassPattern?.meter ?? "4/4").beat]),
+                          })}
                           <input
                             type="range"
-                            min={50}
+                            min={30}
                             max={220}
                             step={1}
                             value={bassPatternTempoBpm}
@@ -1009,22 +1020,8 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                         </p>
                       </details>
 
+                      <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
                       <div className="button-row">
-                        <button
-                          type="button"
-                          className={`small-button ${bassPatternPlaybackState === "playing" ? "active-tool" : ""}`}
-                          onClick={scheduleBassPatternPlayback}
-                          disabled={bassPatternEvents.length === 0}
-                        >
-                          {t("ui.playPattern")}
-                        </button>
-                        <button
-                          type="button"
-                          className="small-button"
-                          onClick={stopBassPatternPlayback}
-                        >
-                          {t("ui.stop")}
-                        </button>
                         <div className="compact-export-row">
                           <span>{t("ui.export")}</span>
                           <select
@@ -1138,11 +1135,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                 <section className="control-section">
                   <button
                     className="section-title"
+                    aria-expanded={activeToolSection === "abcPlayer"}
                     onClick={() => toggleToolSection("abcPlayer")}
                   >
                     {t("ui.abcDefault")}{" "}
                     <span>{activeToolSection === "abcPlayer" ? "−" : "+"}</span>
                   </button>
+                  {activeToolSection !== "abcPlayer" && <p className="section-summary">{t("tools.summary.abcPlayer")}</p>}
 
                   {activeToolSection === "abcPlayer" && (
                     <div className="section-content abc-player-panel">
@@ -1281,7 +1280,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                             : t("ui.noAbcLoaded")}
                         </div>
                         {abcParseResult.errors.length > 0 ? (
-                          <p>{abcParseResult.errors.join(" ")}</p>
+                          <p>{abcParseResult.errors.map((error) => translateKnownLabel(language, error)).join(" ")}</p>
                         ) : (
                           <p>
                             {t("ui.events")}: {abcMappedEvents.length} · {t("ui.key")}: {" "}
@@ -1297,35 +1296,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                         )}
                       </div>
 
-                      <div className="button-row">
-                        <button
-                          className={`small-button ${abcPlaybackState === "playing" ? "active-tool" : ""}`}
-                          type="button"
-                          onClick={() => scheduleAbcPlayback(abcPositionBeat)}
-                          disabled={abcMappedEvents.length === 0}
-                        >
-                          {abcPlaybackState === "paused" ? t("ui.continue") : t("tools.play")}
-                        </button>
-                        <button
-                          className="small-button"
-                          type="button"
-                          onClick={pauseAbcPlayback}
-                          disabled={abcPlaybackState !== "playing"}
-                        >
-                          {t("ui.pause")}
-                        </button>
-                        <button
-                          className="small-button"
-                          type="button"
-                          onClick={stopAbcPlayback}
-                          disabled={
-                            abcPlaybackState === "stopped" &&
-                            abcPositionBeat === 0
-                          }
-                        >
-                          {t("ui.stop")}
-                        </button>
-                      </div>
+                      <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
 
                       <details className="compact-help-details">
                         <summary>{t("ui.notationHelp")}</summary>

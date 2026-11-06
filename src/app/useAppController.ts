@@ -1,3 +1,5 @@
+import { audioTimelineOrigin, msUntilAudioTime, scheduleAtAudioOffset } from "../audio/audioClock";
+import { ROOT_POSITION_BASS } from "../tools/stradellaChordFinder/harmonicIdentity";
 import { progressionPulsePlan } from "../audio/progressionPulsePlan";
 
 import { convertProgressionPreset } from "../tools/harmonyExplorer/progressionPresets";
@@ -52,14 +54,14 @@ import { resetStradellaFinder, resetDiagramWorkState } from "./resetCommands";
 import { activeToolStatusLabel, workspaceGridColumns } from "./workspacePresentation";
 import { sequenceArrowStyleFromMode, sequenceModeShowsArrows, sequenceModeShowsNumbers } from "../tools/sequenceTools";
 import { SCALE_FINDER_OPTIONS, getScaleFinderTrebleButtons } from "../tools/scaleFinderTools";
-import { bassPatternEventsToAbc, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond, bassPatternEventsToStradellaNotationAbc, type StradellaNotationAbcOptions } from "../tools/bassPatternPlayerTools";
+import { bassPatternBeat, bassPatternEventsToAbc, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond, bassPatternEventsToStradellaNotationAbc, type StradellaNotationAbcOptions } from "../tools/bassPatternPlayerTools";
 import { getChordFinderTrebleButtons } from "../tools/chordFinderTools";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
 import { realizationAnnotation, finderChordSymbol } from "../tools/stradellaChordFinder/diagramAnnotations";
 import { analyzeConfiguredStradellaVoicing } from "../tools/stradellaChordFinder/registerModel";
 import { voicingIntervalLayout } from "../tools/stradellaChordFinder/voicingIntervalLayout";
 import { describeTrebleChord } from "../tools/trebleChordExplanation";
-import { playButtonArpeggioThenChord, playButtonCombination, playButtonRhythmProgression, playButtonSequence, playButtonSound, stopAllSound, preloadLaMelodiosa, playHarmonyPitchClassChord, playHarmonyRelationship, notesForButton } from "../sound";
+import { playButtonArpeggioThenChord, playButtonCombination, playButtonRhythmProgression, playButtonSequence, playButtonSound, stopAllSound, preloadLaMelodiosa, unlockAudio, audioClockNow, samplesReadyFor, prepareSamplesFor, currentPlaybackGeneration, playHarmonyPitchClassChord, playHarmonyRelationship, notesForButton, onStopAllSound } from "../sound";
 import type { ChordFamilyId } from "../tools/harmonyExplorer/music";
 import { CIRCLE_OF_FIFTHS, DEFAULT_RING_VISIBILITY, chordLabel as harmonyChordLabel, chordMidiNotes as harmonyChordMidiNotes, pitchClassesForChord as harmonyPitchClassesForChord } from "../tools/harmonyExplorer/music";
 import type { HarmonyPlaybackStyle } from "../tools/harmonyExplorer/types";
@@ -262,7 +264,7 @@ export function useAppController() {
     stradellaChordFinderPattern, setStradellaChordFinderPattern,
     stradellaChordFinderMode, setStradellaChordFinderMode,
     stradellaChordFinderRealizationIndex, setStradellaChordFinderRealizationIndex,
-    stradellaChordFinderRequestedBass, setStradellaChordFinderRequestedBass,
+    stradellaChordFinderRequestedBass, setStradellaChordFinderRequestedBass, stradellaChordFinderRootPreferred,
     finderMaxButtons, setFinderMaxButtons,
     finderSpanColumns, setFinderSpanColumns,
     stradellaMinimumNominalGap, setStradellaMinimumNominalGap,
@@ -307,7 +309,6 @@ export function useAppController() {
     harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying,
     harmonyProgressionManualRoot, setHarmonyProgressionManualRoot,
     harmonyProgressionManualPattern, setHarmonyProgressionManualPattern,
-    harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations,
     harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
     harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight,
     harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,
@@ -359,7 +360,7 @@ export function useAppController() {
 
   /* Audio settings are separate from the nominal physical register model. */
   const {
-    soundEnabled, setSoundEnabled, soundVolume, setSoundVolume, soundSource, setSoundSource, laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister, laMelodiosaBassRegister, setLaMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters, soundVoicePreset, setSoundVoicePreset, soundWaveform, setSoundWaveform, soundMusetteDetuneCents, setSoundMusetteDetuneCents, soundAttackMs, setSoundAttackMs, soundReleaseMs, setSoundReleaseMs, soundNoteDurationMs, setSoundNoteDurationMs, soundSequenceTempoBpm, setSoundSequenceTempoBpm, stradellaBassVoicing, setStradellaBassVoicing,
+    soundEnabled, setSoundEnabled, soundVolume, setSoundVolume, soundSource, setSoundSource, laMelodiosaTrebleRegister, setLaMelodiosaTrebleRegister, laMelodiosaBassRegister, setLaMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, setLaMelodiosaFollowStradellaRegisters, soundVoicePreset, setSoundVoicePreset, soundWaveform, setSoundWaveform, soundMusetteDetuneCents, setSoundMusetteDetuneCents, soundAttackMs, setSoundAttackMs, soundReleaseMs, setSoundReleaseMs, soundNoteDurationMs, setSoundNoteDurationMs, soundArticulation, setSoundArticulation, soundSequenceTempoBpm, setSoundSequenceTempoBpm, stradellaBassVoicing, setStradellaBassVoicing,
     soundOptions,
   } = useSoundSettings(stradellaRegisterModel);
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
@@ -404,7 +405,6 @@ export function useAppController() {
     setHarmonyDiameter,
     setHarmonyFontSize,
     setHarmonyPlaybackStyle,
-    setHarmonyProgressionAllowApproximations,
     setHarmonyProgressionHandMovementWeight,
     setHarmonyProgressionRhythmPattern,
     setHarmonyRingVisibility,
@@ -461,6 +461,7 @@ export function useAppController() {
     setSoundEnabled,
     setSoundMusetteDetuneCents,
     setSoundNoteDurationMs,
+    setSoundArticulation,
     setSoundReleaseMs,
     setSoundSequenceTempoBpm,
     setSoundSource,
@@ -556,7 +557,6 @@ export function useAppController() {
       harmonyDiameter,
       harmonyFontSize,
       harmonyPlaybackStyle,
-      harmonyProgressionAllowApproximations,
       harmonyProgressionHandMovementWeight,
       harmonyProgressionRhythmPattern,
       harmonyRingVisibility,
@@ -613,6 +613,7 @@ export function useAppController() {
       soundEnabled,
       soundMusetteDetuneCents,
       soundNoteDurationMs,
+      soundArticulation,
       soundReleaseMs,
       soundSequenceTempoBpm,
       soundSource,
@@ -1127,12 +1128,14 @@ export function useAppController() {
     stradellaChordFinderPlaybackButtons,
     stradellaRootBassFinderButtonIds,
     stradellaPrimaryFinderButtonIds,
+    stradellaChordFinderRootFallback,
+    stradellaChordFinderEffectiveRequestedBass,
   } = useStradellaChordFinderResults({
     buttons, side, stradellaRegisterModel,
     stradellaChordFinderActive,
     stradellaChordFinderRoot, stradellaChordFinderPattern,
     stradellaChordFinderMode, stradellaChordFinderRealizationIndex,
-    stradellaChordFinderRequestedBass, finderMaxButtons, finderSpanColumns,
+    stradellaChordFinderRequestedBass, stradellaChordFinderRootPreferred, finderMaxButtons, finderSpanColumns,
     stradellaMinimumNominalGap, stradellaChordFinderMarkRootBass,
     pendingProgressionRealizationKey, setPendingProgressionRealizationKey,
     setStradellaChordFinderRealizationIndex,
@@ -1352,29 +1355,34 @@ export function useAppController() {
     stopHarmonyRecordedProgressionPlayback();
     setHarmonyRecordedProgressionPlaying(true);
     const beatMs = 60000 / Math.max(40, soundSequenceTempoBpm);
+    // One recorded event per beat, placed on the audio clock like the other players.
+    const ports = { now: audioClockNow, push: (id: number) => harmonyRecordedPlaybackTimeoutsRef.current.push(id) };
+    const origin = audioTimelineOrigin(ports.now);
+    const durationMs = beatMs * soundOptions.articulation;
 
     harmonyRecordedProgression.forEach((event, index) => {
-      const timeoutId = window.setTimeout(() => {
+      scheduleAtAudioOffset(ports, origin, index * beatMs, (when) => {
         if (event.kind === "note") {
           playHarmonyPitchClassChord(
             [pitchClassNameFromNumber(event.pitchClass)],
             soundOptions,
             "block",
+            { at: when, durationMs },
           );
         } else {
           playHarmonyPitchClassChord(
             harmonyPitchNames(event.rootPc, event.familyId),
             soundOptions,
             harmonyPlaybackStyle,
+            { at: when, durationMs },
           );
         }
-      }, index * beatMs);
-      harmonyRecordedPlaybackTimeoutsRef.current.push(timeoutId);
+      });
     });
 
     const stopTimeout = window.setTimeout(
       () => stopHarmonyRecordedProgressionPlayback(),
-      harmonyRecordedProgression.length * beatMs + Math.min(600, beatMs),
+      msUntilAudioTime(ports, origin + (harmonyRecordedProgression.length * beatMs + Math.min(600, beatMs)) / 1000),
     );
     harmonyRecordedPlaybackTimeoutsRef.current.push(stopTimeout);
   }
@@ -1543,21 +1551,30 @@ export function useAppController() {
     if (!harmonyProgressionPlan.playable) return;
     setHarmonyProgressionActiveButtonIds([]);
     setHarmonyProgressionPulseSilent(false);
-    playButtonRhythmProgression(
-      harmonyProgressionPlan.steps.map((step) => step.result.playbackButtons),
-      soundOptions,
-      harmonyProgressionRhythmPattern,
-      {
-        onActiveButtons: (buttonIds, progressionIndex) => {
-          setHarmonyProgressionPulseSilent(buttonIds.length === 0);
-          setHarmonyProgressionActiveButtonIds(buttonIds);
-          setHarmonyProgressionPreviewIndex(progressionIndex);
+    const pulses = harmonyProgressionPlan.steps.map(progressionRhythmPulses);
+    startWhenSamplesReady(pulses.flat(2), () => {
+      playButtonRhythmProgression(
+        harmonyProgressionPlan.steps.map((step) => step.result.playbackButtons),
+        soundOptions,
+        harmonyProgressionRhythmPattern,
+        {
+          onActiveButtons: (buttonIds, progressionIndex) => {
+            setHarmonyProgressionPulseSilent(buttonIds.length === 0);
+            setHarmonyProgressionActiveButtonIds(buttonIds);
+            setHarmonyProgressionPreviewIndex(progressionIndex);
+          },
+          onDone: () => {
+            setHarmonyProgressionActiveButtonIds([]);
+            setHarmonyProgressionPulseSilent(false);
+            setSoundEnginePlayer(null);
+          },
         },
-        onDone: () => { setHarmonyProgressionActiveButtonIds([]); setHarmonyProgressionPulseSilent(false); },
-      },
-      harmonyProgressionPlan.steps.map((step) => progressionBassPulseButtons(buttons, step)),
-      harmonyProgressionPlan.steps.map(progressionRhythmPulses),
-    );
+        harmonyProgressionPlan.steps.map((step) => progressionBassPulseButtons(buttons, step)),
+        pulses,
+      );
+      // Set after the player's own stopAllSound(), which clears this state.
+      if (soundOptions.enabled) setSoundEnginePlayer("progression");
+    });
   }
 
   function resetHarmonyExplorer() {
@@ -1591,7 +1608,7 @@ export function useAppController() {
     if (!pattern) return;
     enterStradellaFinder(stradellaFinderDestinationPorts(() => {
       setStradellaChordFinderRoot(pitchClassNameFromNumber(harmonySelection.candidate.rootPc));
-      setStradellaChordFinderRequestedBass(null);
+      setStradellaChordFinderRequestedBass(ROOT_POSITION_BASS);
       setStradellaChordFinderPattern(pattern);
       setStradellaChordFinderMode("bass-and-chords");
     }), "harmony-selection");
@@ -1622,16 +1639,67 @@ export function useAppController() {
     });
   }
 
+  // Sample preloading waits for the first user gesture, so a visit that never
+  // plays anything downloads no audio and no AudioContext starts before
+  // interaction. It also fetches only the side the workspace plays: Stradella
+  // and Harmony use bass samples, Treble uses treble samples.
+  const [audioGestureSeen, setAudioGestureSeen] = useState(false);
+  // True while a transport waits for its samples; the playback bar says so.
+  const [samplesLoading, setSamplesLoading] = useState(false);
+  // The Progression Assistant and Sequence players run entirely inside the
+  // sound engine, so their playing state ends when they finish or when any
+  // stopAllSound() runs (Stop, Reset, or another player starting).
+  const [soundEnginePlayer, setSoundEnginePlayer] = useState<"progression" | "sequence" | null>(null);
+  useEffect(() => onStopAllSound(() => setSoundEnginePlayer(null)), []);
+  // Session-only: draw the Progression Assistant path (numbered steps) on the diagram. Off by default.
+  const [progressionPathVisible, setProgressionPathVisible] = useState(false);
   useEffect(() => {
-    if (soundEnabled && soundSource === "la-melodiosa") {
-      void preloadLaMelodiosa(laMelodiosaTrebleRegister, laMelodiosaBassRegister);
-    }
-  }, [soundEnabled, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister]);
+    if (audioGestureSeen) return;
+    const onFirstGesture = () => {
+      unlockAudio();
+      setAudioGestureSeen(true);
+    };
+    const options = { capture: true } as const;
+    window.addEventListener("pointerdown", onFirstGesture, options);
+    window.addEventListener("keydown", onFirstGesture, options);
+    return () => {
+      window.removeEventListener("pointerdown", onFirstGesture, options);
+      window.removeEventListener("keydown", onFirstGesture, options);
+    };
+  }, [audioGestureSeen]);
+  const sampleSide = workspaceMode === "harmony" || side === "stradella" ? "bass" : "treble";
+  useEffect(() => {
+    if (!audioGestureSeen || !soundEnabled || soundSource !== "la-melodiosa") return;
+    void preloadLaMelodiosa(
+      sampleSide === "treble" ? laMelodiosaTrebleRegister : null,
+      sampleSide === "bass" ? laMelodiosaBassRegister : null,
+    );
+  }, [audioGestureSeen, sampleSide, soundEnabled, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister]);
 
   /** Tool-specific side effects remain explicit until the command service is extracted.
    * Navigation itself is owned by the workspace controller, not by tool state. */
   function toggleToolSection(section: Exclude<ToolSection, null>) {
+    const opening = activeToolSection !== section;
     toggleWorkspaceToolSection(section);
+    // Opening a Chord Finder shows its current chord at once; "Hide chord"
+    // remains the explicit way to clear it. Finder highlights stay exclusive.
+    // Opening any other tool hides both Chord Finders' highlights and the
+    // Results panel; their chord and selected realization are kept, so
+    // reopening the Chord Finder shows the same result again.
+    if (opening && section !== "stradellaChordFinder" && section !== "chordFinder") {
+      setStradellaChordFinderActive(false);
+      setChordFinderActive(false);
+    }
+    if (opening && section === "stradellaChordFinder") {
+      setStradellaChordFinderActive(true);
+      setScaleFinderActive(false);
+      setChordFinderActive(false);
+    }
+    if (opening && section === "chordFinder") {
+      setChordFinderActive(true);
+      setScaleFinderActive(false);
+      setStradellaChordFinderActive(false);
+    }
     if (section === "progressionAssistant") {
       setStradellaChordFinderActive(false);
       setScaleFinderActive(false);
@@ -1699,10 +1767,12 @@ export function useAppController() {
 
   /** Plays the current recorded sequence using the sound settings. */
   function playRecordedSequence() {
-    playButtonSequence(
-      sequenceStepsWithButtons.map((step) => step.button),
-      soundOptions,
-    );
+    const sequenceButtons = sequenceStepsWithButtons.map((step) => step.button);
+    startWhenSamplesReady(sequenceButtons, () => {
+      playButtonSequence(sequenceButtons, soundOptions, () => setSoundEnginePlayer(null));
+      // Set after the player's own stopAllSound(), which clears this state.
+      if (soundOptions.enabled && sequenceButtons.length > 0) setSoundEnginePlayer("sequence");
+    });
   }
 
   function clearAbcTimers() {
@@ -1731,8 +1801,26 @@ export function useAppController() {
     });
   }
 
+  /**
+   * Starts a transport once the samples it needs are decoded, so the first
+   * notes are not late. Usually they already are (see the preload effect). A
+   * Stop, or any other playback start, while they load cancels this start.
+   */
+  function startWhenSamplesReady(buttonsToPlay: DiagramButton[], start: () => void) {
+    if (samplesReadyFor(buttonsToPlay, soundOptions)) {
+      start();
+      return;
+    }
+    const generation = currentPlaybackGeneration();
+    setSamplesLoading(true);
+    void prepareSamplesFor(buttonsToPlay, soundOptions).then(() => {
+      setSamplesLoading(false);
+      if (currentPlaybackGeneration() === generation) start();
+    });
+  }
+
   function scheduleAbcPlayback(startBeat = abcPositionBeat) {
-    startAbcTransport({
+    startWhenSamplesReady(abcMappedEvents.flatMap((event) => event.buttons), () => startAbcTransport({
       eventCount: abcMappedEvents.length, startBeat,
       clearTimers: clearAbcTimers, stopBassPattern: stopBassPatternPlayback,
       stopSound: stopAllSound,
@@ -1744,7 +1832,7 @@ export function useAppController() {
       schedule: () => scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoBpm,
         abcTotalBeats, abcPlaybackTimeoutsRef, abcPlaybackStartedAtRef,
         soundOptions, setAbcPositionBeat, setAbcActiveButtonIds, setAbcPlaybackState}),
-    });
+    }));
   }
 
   function clearBassPatternTimers() {
@@ -1796,6 +1884,7 @@ export function useAppController() {
     const bytes = bassPatternEventsToMidiBytes(
       bassPatternEvents,
       bassPatternTempoBpm,
+      selectedBassPattern.meter,
     );
     const blob = new Blob([bytes], { type: "audio/midi" });
     const url = URL.createObjectURL(blob);
@@ -1835,7 +1924,7 @@ export function useAppController() {
   }
 
   function scheduleBassPatternPlayback() {
-    startBassPatternTransport({
+    startWhenSamplesReady(bassPatternEvents.flatMap((event) => event.buttons), () => startBassPatternTransport({
       eventCount: bassPatternEvents.length, runRef: bassPatternPlaybackRunRef,
       clearTimers: clearBassPatternTimers, stopAbc: stopAbcPlayback,
       clearActiveButtons: () => setBassPatternActiveButtonIds([]),
@@ -1843,10 +1932,11 @@ export function useAppController() {
       setScaleFinderActive, setChordFinderActive, setStradellaFinderActive: setStradellaChordFinderActive,
       setPlaybackState: setBassPatternPlaybackState,
       schedule: (runId) => scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm,
+        bassPatternUnitsPerBeat: bassPatternBeat(selectedBassPattern?.meter ?? "4/4").unitsPerBeat,
         bassPatternTotalBeats, bassPatternLoopMode, bassPatternLoopCount,
         bassPatternTimeoutsRef, bassPatternPlaybackRunRef, runId, soundOptions,
         setBassPatternActiveButtonIds, setBassPatternPlaybackState}),
-    });
+    }));
   }
 
   /** Stops currently playing notes and any scheduled sequence playback. */
@@ -2056,7 +2146,7 @@ export function useAppController() {
         currentSvg: () => svgRef.current,
         filenameKey: (candidate) => realizationAnnotation(
           stradellaChordFinderRoot, stradellaChordFinderPattern, candidate,
-          stradellaRegisterModel, stradellaChordFinderRequestedBass,
+          stradellaRegisterModel, stradellaChordFinderEffectiveRequestedBass,
           stradellaNoteLevels, chordDisplayStyle, language,
         )?.filenameKey,
         format: downloadFormat,
@@ -2071,11 +2161,11 @@ export function useAppController() {
 
   /** The application determines musical titles; the diagram export service
    * owns filename normalization, format dispatch and viewBox coordinate mapping. */
-  function downloadCurrentDiagram() {
+  function downloadCurrentDiagram(format: DownloadFormat = downloadFormat) {
     if (workspaceMode === "harmony") {
       if (!harmonySvgRef.current) return;
       const name = harmonyDiagramFilename(harmonyReferenceFamily.shortName, harmonyRelatedName, harmonyScale.name);
-      downloadDiagram(harmonySvgRef.current, name, downloadFormat);
+      downloadDiagram(harmonySvgRef.current, name, format);
       return;
     }
     if (!svgRef.current) return;
@@ -2093,7 +2183,7 @@ export function useAppController() {
         : (titleMode === "auto" ||
            (titleMode === "contextual" && !stradellaChordFinderActive && !(side === "treble" && chordFinderActive) && !scaleFinderActive))
           ? autoTitle() : displayedTitle;
-    downloadDiagram(svgRef.current, accordionDiagramFilename(rawName, layoutName), downloadFormat);
+    downloadDiagram(svgRef.current, accordionDiagramFilename(rawName, layoutName), format);
   }
 
   function svgPointFromMouse(event: ReactMouseEvent<SVGSVGElement>) {
@@ -2117,7 +2207,7 @@ export function useAppController() {
 
   /* Derived values used by rendering. */
   const finderAnnotation = stradellaChordFinderResult.playable
-    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult, stradellaRegisterModel, stradellaChordFinderRequestedBass, stradellaNoteLevels, chordDisplayStyle, language)
+    ? realizationAnnotation(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderResult, stradellaRegisterModel, stradellaChordFinderEffectiveRequestedBass, stradellaNoteLevels, chordDisplayStyle, language)
     : null;
   const finderAnnotationActive = side === "stradella" && stradellaChordFinderActive && finderAnnotation !== null;
   const progressionNotePattern = harmonyProgressionNoteStep ? progressionFinderPattern(harmonyProgressionNoteStep.chord) : null;
@@ -2168,7 +2258,7 @@ export function useAppController() {
     if (progressionAnnotationActive && progressionAnnotation) return progressionAnnotation.title;
     if (side === "stradella" && stradellaChordFinderActive) {
       return finderAnnotationActive ? finderAnnotation?.title ?? localizedAutoTitle()
-        : `${displayRealizedChord(stradellaChordFinderRoot, stradellaChordFinderPattern, realizedChordName(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderRequestedBass, stradellaChordFinderRequestedBass, `${displayRoot(stradellaChordFinderRoot)}${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern).slice(stradellaChordFinderRoot.length)}`), chordDisplayStyle)} - ${t("ui.titleNoRealization")}`;
+        : `${displayRealizedChord(stradellaChordFinderRoot, stradellaChordFinderPattern, realizedChordName(stradellaChordFinderRoot, stradellaChordFinderPattern, stradellaChordFinderEffectiveRequestedBass, stradellaChordFinderEffectiveRequestedBass, `${displayRoot(stradellaChordFinderRoot)}${finderChordSymbol(stradellaChordFinderRoot, stradellaChordFinderPattern).slice(stradellaChordFinderRoot.length)}`), chordDisplayStyle)} - ${t("ui.titleNoRealization")}`;
     }
     if (side === "treble" && chordFinderActive) return trebleContextualTitle({
       root: chordFinderRoot,
@@ -2284,7 +2374,7 @@ export function useAppController() {
       setMusicNotationScale, setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine, setNotation,
       setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale, setPianoKeyHeightScale, setPianoKeyWidthScale, setReferenceStrokeWidth,
       setShowBellowsGuide, setShowButtonLabels, setShowStatusBar, setShowStradellaRowLabels, setShowTrebleOctaves,
-      setSoundAttackMs, setSoundMusetteDetuneCents, setSoundNoteDurationMs, setSoundReleaseMs, setSoundSequenceTempoBpm,
+      setSoundAttackMs, setSoundMusetteDetuneCents, setSoundNoteDurationMs, setSoundArticulation, soundArticulation, setSoundReleaseMs, setSoundSequenceTempoBpm,
       setSoundSource, setSoundVoicePreset, setSoundVolume, setSoundWaveform, setSpacing,
       setStradellaBassRegisterGrouping, setStradellaBassRegisterOctave, setStradellaBassVoicing, setStradellaChordRegisterGrouping, setStradellaChordRegisterOctave,
       setTitleFont, setTitleMode, setTitleSize, setTrebleAngle, setTrebleRows,
@@ -2298,6 +2388,7 @@ export function useAppController() {
     },
     tools: {
       SEQUENCE_DISPLAY_MODE_OPTIONS, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName,
+      progressionPathVisible, setProgressionPathVisible,
       abcMappedEvents, abcMissingPitchText, abcParseResult, abcPlaybackState, abcPositionBeat,
       abcStradellaMode, abcTempoBpm, abcText, abcTotalBeats, abcTrebleChordSymbolsMode,
       activeToolSection, useHarmonyProgressionPreset, addManualHarmonyProgressionChord, addSelectedHarmonyRelationshipToProgression, annotationBold, annotationButtonAnchor,
@@ -2312,7 +2403,7 @@ export function useAppController() {
       deselectButton, downloadAllStradellaRealizations, exploreCurrentStradellaChordInHarmony, exportSelectedBassPattern, finderExplanationFontSize,
       finderMaxButtons, finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel,
       formatStradellaFinderPitches, formatStradellaFinderText, formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel,
-      harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression, harmonyProgressionAllowApproximations, harmonyProgressionHandMovementWeight,
+      harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression, harmonyProgressionHandMovementWeight,
       harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes, harmonyProgressionRecording,
       harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyRecordedProgressionPlaying, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
       harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering,
@@ -2331,7 +2422,7 @@ export function useAppController() {
       setBassPatternId, setBassPatternRepeatSelection, setBassPatternRoot, setBassPatternTempoBpm, setChordFinderActive,
       setChordFinderInversion, setChordFinderOctave, setChordFinderPattern, setChordFinderRoot, setChordProgressionId,
       setFinderExplanationFontSize, setFinderMaxButtons, setFinderSpanColumns, setFingeringDraft, setFingeringPosition,
-      setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyProgression, setHarmonyProgressionAllowApproximations, setHarmonyProgressionHandMovementWeight,
+      setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyProgression, setHarmonyProgressionHandMovementWeight,
       setHarmonyProgressionManualPattern, setHarmonyProgressionManualRoot, setHarmonyProgressionVoiceLeadingWeight, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, setHarmonyProgressionRhythmPattern, setHarmonyReferenceFamilyId,
       setHarmonyRelatedFamilyId, setHarmonyScaleId, setHarmonyShowNoteRing, setIsApplyingFingering, setIsRecordingSequence,
       setScaleFinderActive, setScaleFinderDisplayMode, setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
@@ -2343,7 +2434,7 @@ export function useAppController() {
       showFinderRealizationNote, showHarmonySelectionOnStradella, showStradellaVoicingIntervals, showTrebleVoicingNote, side,
       soundSequenceTempoBpm, stopAbcPlayback, stopBassPatternPlayback, stopHarmonyRecordedProgressionPlayback, stopSoundPlayback,
       stradellaChordFinderActive, stradellaChordFinderButtons, stradellaChordFinderMarkRootBass, stradellaChordFinderMode, stradellaChordFinderPattern,
-      stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass, stradellaChordFinderResult,
+      stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass, stradellaChordFinderEffectiveRequestedBass, stradellaChordFinderRootFallback, stradellaChordFinderResult,
       stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaRegisterModel, stradellaScaleFinderResult,
       t, textNoteColor, textNoteFont, textNoteFontSize, textNotes,
       toggleHarmonyProgressionRecording, toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
@@ -2380,6 +2471,11 @@ export function useAppController() {
       toggleFocusPanel, toggleHarmonyProgressionNotation, toggleHarmonyRecordedNotation, toggleSequenceNotation, trebleFooterEnabled,
       trebleFooterFontSize, trebleFooterHeight, trebleFooterY, trebleVoicingNote, viewHeight,
       viewWidth, visibleRows, workspaceMode,
+      // Shared playback bar under the diagram (one transport for every player).
+      abcMappedEvents, abcPlaybackState, abcPositionBeat, bassPatternPlaybackState,
+      harmonyRecordedProgressionPlaying, pauseAbcPlayback, playHarmonyRecordedProgression, playOptimizedHarmonyProgression,
+      playRecordedSequence, samplesLoading, scheduleAbcPlayback, scheduleBassPatternPlayback, soundEnginePlayer,
+      stopHarmonyRecordedProgressionPlayback, stopSoundPlayback, progressionPathVisible,
     },
   };}
 

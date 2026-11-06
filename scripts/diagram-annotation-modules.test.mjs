@@ -8,17 +8,6 @@ import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 
 const source = (path) => readFileSync(path, 'utf8');
-const app = [source('src/App.tsx'), source('src/app/useAppController.ts'), source('src/app/views/SettingsView.tsx'), source('src/app/views/ToolsView.tsx'), source('src/app/views/WorkspaceView.tsx')].join("\n");
-for (const marker of ['useDiagramAppearanceState()', 'useDiagramOverlays()', 'useDiagramAnnotations(buttonSize)',
-  'markButtonOverlay(button.id)', 'beginButtonAnnotation(button)', 'beginFreeAnnotation(point.x, point.y)',
-  'setTextNotes([])', 'setOverlays({})', 'setIsApplyingFingering(false)'])
-  assert.ok(app.includes(marker), `Application delegates: ${marker}`);
-for (const name of ['overlays','textNotes','diagramScale','buttonSize','annotationButtonAnchor','fingeringDraft'])
-  assert.doesNotMatch(app,new RegExp(`\\[${name},\\s*set[A-Z][^\\]]*\\]\\s*=\\s*useState`), `${name} owned by feature`);
-for (const marker of ['function svgPointFromMouse(', 'function handleSvgClick(', 'function downloadCurrentDiagram(', '<DiagramSvgSurface'])
-  assert.ok(app.includes(marker), `SVG conversion/export/rendering delegated by App: ${marker}`);
-assert.match(source('src/diagram/components/DiagramSvgSurface.tsx'),/ref=\{ref\}/);
-assert.match(source('src/diagram/diagramExport.ts'),/svgPointFromClient/);
 
 function hookFixture() {
   const slots=[]; let cursor=0; let effects=[];

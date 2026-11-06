@@ -1,4 +1,5 @@
 {
+  "settingsVersion": 2,
   "chordDisplayStyle": "letter",
   "side": "stradella",
   "notation": "english",
@@ -92,6 +93,7 @@
   "soundAttackMs": 14,
   "soundReleaseMs": 120,
   "soundNoteDurationMs": 420,
+  "soundArticulation": 0.85,
   "harmonyShowEnharmonics": false,
   "harmonyShowSeparators": true,
   "harmonyShowLegend": true,
@@ -109,7 +111,6 @@
   "harmonyFontSize": 18,
   "harmonyPlaybackStyle": "block",
   "harmonyVoicingStyle": "root",
-  "progressionAllowApproximations": true,
   "progressionHandMovementWeight": 0.65,
   "progressionRhythmPattern": "block",
   "harmonyShowNoteRing": true,

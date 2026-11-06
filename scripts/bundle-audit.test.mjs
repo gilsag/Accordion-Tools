@@ -8,6 +8,12 @@ const paths = [
   'src/components/tools/ProgressionAssistantPanel.tsx',
   'src/tools/harmonyExplorer/components/HarmonicCircle.tsx',
   'src/tools/abcPlayerTools.ts',
+  'src/components/settings/DocumentationViewer.tsx',
+  'src/i18n/es.ts',
+  'src/i18n/fr.ts',
+  'src/i18n/pt.ts',
+  'src/i18n/it.ts',
+  'src/i18n/de.ts',
 ];
 const manifest = {
   'index.html': { file: 'assets/main.js', isEntry: true, imports: ['_shared.js'], dynamicImports: paths },
@@ -18,7 +24,7 @@ for (const [index, path] of paths.entries()) manifest[path] = {
   file: `assets/lazy-${index}.js`, src: path, isDynamicEntry: true,
 };
 const result = auditBundleManifest(manifest);
-assert.equal(result.deferred.length, 6);
+assert.equal(result.deferred.length, paths.length);
 assert.deepEqual(result.eagerKeys.sort(), ['_shared.js', 'index.html'].sort());
 assert.equal(result.abcjsKeys.length, 1);
 

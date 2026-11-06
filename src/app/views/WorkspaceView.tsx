@@ -1,4 +1,7 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
+import type { DiagramButton } from "../../types";
+import { PlaybackBar, type PlaybackTransport } from "../components/PlaybackBar";
+import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
 
 import { stradellaDiagramRowLabel } from "../../i18n/musicTerms";
 import { harmonyRelatedDisplayName, harmonyStatusText } from "../../i18n/diagramLabels";
@@ -10,10 +13,36 @@ import { DiagramSvgSurface } from "../../diagram/components/DiagramSvgSurface";
 import { downloadRenderedNotationSvg } from "../../notation/notationService";
 import type { CSSProperties } from "react";
 import { bassPatternName, progressionName } from "../../i18n/optionLabels";
-import { fontClass } from "../../music";
+import { fontClass, musicLabelText } from "../../music";
 import { stradellaRowLabel } from "../../stradella";
 import { stopAllSound } from "../../sound";
 import { StradellaVoicingIntervals } from "../../components/tools/StradellaVoicingIntervals";
+/**
+ * In the scrollable (Readable) phone view, bring the highlighted buttons into
+ * view, or the C reference button when nothing is highlighted. Targets that are
+ * already visible are left alone so manual panning is not undone.
+ */
+function scrollDiagramToFocus(wrap: HTMLElement | null) {
+  if (!wrap || wrap.scrollWidth <= wrap.clientWidth + 1) return;
+  const active = wrap.querySelectorAll('[data-focus="active"]');
+  const targets = active.length ? active : wrap.querySelectorAll('[data-focus="home"]');
+  if (!targets.length) {
+    if (wrap.scrollLeft === 0) wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+    return;
+  }
+  const box = wrap.getBoundingClientRect();
+  let left = Infinity;
+  let right = -Infinity;
+  targets.forEach((element) => {
+    const rect = element.getBoundingClientRect();
+    left = Math.min(left, rect.left);
+    right = Math.max(right, rect.right);
+  });
+  if (left >= box.left && right <= box.right) return;
+  const centre = (left + right) / 2 - box.left + wrap.scrollLeft;
+  wrap.scrollTo({ left: Math.max(0, centre - wrap.clientWidth / 2), behavior: "smooth" });
+}
+
 const HarmonicCircle = lazy(() => import("../../tools/harmonyExplorer/components/HarmonicCircle").then(module => ({ default: module.HarmonicCircle })));
 import type { AppControllerModel } from "../useAppController";
 
@@ -54,7 +83,49 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
     toggleBassPatternNotation, toggleButton, toggleFocusPanel, toggleHarmonyProgressionNotation, toggleHarmonyRecordedNotation, toggleSequenceNotation,
     trebleFooterEnabled, trebleFooterFontSize, trebleFooterHeight, trebleFooterY, trebleVoicingNote, viewHeight,
     viewWidth, visibleRows, workspaceMode,
+    abcMappedEvents, abcPlaybackState, abcPositionBeat, bassPatternPlaybackState,
+    harmonyRecordedProgressionPlaying, pauseAbcPlayback, playHarmonyRecordedProgression, playOptimizedHarmonyProgression,
+    playRecordedSequence, samplesLoading, scheduleAbcPlayback, scheduleBassPatternPlayback, soundEnginePlayer,
+    stopHarmonyRecordedProgressionPlayback, stopSoundPlayback, progressionPathVisible,
   } = model;
+  // The one transport under the diagram follows the active player.
+  const transport: PlaybackTransport | null = workspaceMode === "harmony"
+    ? harmonyRecordedProgression.length > 0
+      ? { label: t("tools.harmonyExplorer"), state: harmonyRecordedProgressionPlaying ? "playing" : "stopped", canPlay: true,
+          onPlay: playHarmonyRecordedProgression, onStop: stopHarmonyRecordedProgressionPlayback }
+      : null
+    : activeToolSection === "abcPlayer"
+      ? { label: t("ui.abcDefault"), state: abcPlaybackState, canPlay: abcMappedEvents.length > 0,
+          onPlay: () => scheduleAbcPlayback(abcPositionBeat), onPause: pauseAbcPlayback, onStop: stopAbcPlayback }
+      : activeToolSection === "bassPatternPlayer" && side === "stradella"
+        ? { label: t("ui.bassPatternPlayer"), state: bassPatternPlaybackState === "playing" ? "playing" : "stopped",
+            canPlay: bassPatternEvents.length > 0, onPlay: scheduleBassPatternPlayback, onStop: stopBassPatternPlayback }
+        : activeToolSection === "progressionAssistant" && side === "stradella"
+          ? { label: t("ui.progressionAssistant"), state: soundEnginePlayer === "progression" ? "playing" : "stopped", canPlay: harmonyProgressionPlan.playable,
+              onPlay: playOptimizedHarmonyProgression, onStop: stopSoundPlayback }
+          : activeToolSection === "sequences"
+            ? { label: t("ui.sequence"), state: soundEnginePlayer === "sequence" ? "playing" : "stopped", canPlay: sequenceSteps.length > 0,
+                onPlay: playRecordedSequence, onStop: stopSoundPlayback }
+            : null;
+  const showProgressionPath = workspaceMode === "accordion" && side === "stradella"
+    && activeToolSection === "progressionAssistant" && progressionPathVisible && harmonyProgressionPlan.playable;
+  const progressionArrowheadMarkerId = `${finderArrowheadMarkerId}-progression`;
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+  // Re-centre when the view mode, layout or highlighted buttons change, not
+  // during playback (those highlights move too fast to follow).
+  const diagramFocusKey = [mobileDiagramView, side, buttons.length, [...finderButtonIds].join(),
+    [...progressionPreviewButtonIds].join(), scaleFinderButtons.map((button) => button.id).join(),
+    sequenceSteps.length].join("|");
+  useEffect(() => {
+    scrollDiagramToFocus(canvasWrapRef.current);
+  }, [diagramFocusKey]);
+  const accessibleButtonLabel = (button: DiagramButton) => {
+    const name = musicLabelText(getMainLabel(button));
+    if (button.kind === "treble-note") {
+      return button.octave !== undefined && !/\d$/.test(name) ? `${name}${button.octave}` : name;
+    }
+    return `${name}, ${stradellaDiagramRowLabel(button.kind, stradellaRowLabel(button.kind), language)}`;
+  };
   return (
     <section className="workspace" inert={phoneSheetOpen}>
         <WorkspaceToolbar
@@ -174,6 +245,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
             >{mobileDiagramView === "readable" ? "⤢" : "↔"}</button>
           </div>
         <div
+          ref={canvasWrapRef}
           className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
           style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
         >
@@ -209,6 +281,10 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
                 markerUnits="userSpaceOnUse"
               >
                 <path d="M 0 0 L 5 2.5 L 0 5 z" className="finder-arrowhead" />
+              </marker>
+              <marker id={progressionArrowheadMarkerId} markerWidth="9" markerHeight="9" refX="8" refY="4.5"
+                orient="auto" markerUnits="userSpaceOnUse">
+                <path d="M 0 0 L 9 4.5 L 0 9 z" className="progression-path-arrowhead" />
               </marker>
             </defs>
 
@@ -351,7 +427,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
               stradellaChordFinderActive={stradellaChordFinderActive}
               stradellaPrimaryFinderButtonIds={stradellaPrimaryFinderButtonIds}
               stradellaRootBassFinderButtonIds={stradellaRootBassFinderButtonIds}
-              getMainLabel={getMainLabel} toggleButton={toggleButton}
+              getMainLabel={getMainLabel} getAccessibleLabel={accessibleButtonLabel} toggleButton={toggleButton}
               buttonSize={buttonSize} chordLabelMode={chordLabelMode}
               showScaleFinderNumbers={showScaleFinderNumbers} labelFontSize={labelFontSize}
               showButtonLabels={showButtonLabels} labelFont={labelFont}
@@ -374,6 +450,11 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
               sequenceArrowheadMarkerId={sequenceArrowheadMarkerId}
             />
 
+            {showProgressionPath && (
+              <ProgressionPathLayer steps={harmonyProgressionPlan.steps.map((step) => step.result.playbackButtons)}
+                buttonSize={buttonSize} arrowheadMarkerId={progressionArrowheadMarkerId} />
+            )}
+
             <DiagramAnnotationsLayer
               textNotes={textNotes} inlineAnnotationEditor={inlineAnnotationEditor}
               setInlineAnnotationEditor={setInlineAnnotationEditor}
@@ -387,6 +468,8 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
         </div>
         </div>
         )}
+
+        {transport && <PlaybackBar transport={transport} loading={samplesLoading} t={t} />}
 
         {workspaceMode === "harmony" &&
           harmonyRecordedProgression.length > 0 &&

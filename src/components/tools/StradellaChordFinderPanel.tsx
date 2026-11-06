@@ -13,7 +13,7 @@ import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import { BinaryChoiceButton } from "../ui/BinaryChoiceButton";
 import { useI18n } from "../../i18n/useI18n";
-import { permittedRequestedBasses } from "../../tools/stradellaChordFinder/harmonicIdentity";
+import { permittedRequestedBasses, ROOT_POSITION_BASS } from "../../tools/stradellaChordFinder/harmonicIdentity";
 import { chordToneName } from "../../tools/stradellaChordFinder/chordSpelling";
 import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
 import type { MinimumNominalGap } from "../../tools/stradellaChordFinder/voicingDensity";
@@ -27,6 +27,8 @@ type StradellaChordFinderPanelProps = {
   onPatternChange: (value: FinderChordPattern) => void;
   requestedBass: string | null;
   onRequestedBassChange: (value: string | null) => void;
+  /** Root position was preferred but no realization puts the root lowest. */
+  rootFallback?: boolean;
   mode: StradellaChordFinderMode;
   onModeChange: (value: StradellaChordFinderMode) => void;
   markRootBass: boolean;
@@ -69,6 +71,7 @@ export function StradellaChordFinderPanel({
   onPatternChange,
   requestedBass,
   onRequestedBassChange,
+  rootFallback = false,
   mode,
   onModeChange,
   markRootBass,
@@ -110,7 +113,7 @@ export function StradellaChordFinderPanel({
   ] as const;
 
   return (
-    <CollapsibleSection title={t("tools.chordFinder")} isOpen={isOpen} onToggle={onToggle}>
+    <CollapsibleSection title={t("tools.chordFinder")} summary={t("tools.summary.stradellaChordFinder")} isOpen={isOpen} onToggle={onToggle}>
       <p className="hint">
         {t("tools.stradellaIntro")}
       </p>
@@ -143,13 +146,17 @@ export function StradellaChordFinderPanel({
 
         <label>
           <span className="label-line">{t("tools.requestedBass")} <HelpTip text={t("tools.requestedBassHelp")} /></span>
-          <select value={requestedBass ?? ""} onChange={(event) => onRequestedBassChange(event.target.value || null)}>
+          <select value={requestedBass ?? ""} onChange={(event) => {
+            const value = event.target.value || null;
+            onRequestedBassChange(value === root ? ROOT_POSITION_BASS : value);
+          }}>
             <option value="">{t("tools.anyBass")}</option>
             {permittedRequestedBasses(root, pattern).map((tone) => (
               <option key={tone} value={tone}>{spell(tone)}{tone === root ? t("tools.rootPosition") : ""}</option>
             ))}
           </select>
         </label>
+        {rootFallback && <p className="hint" role="status">{t("tools.rootPositionUnavailable")}</p>}
 
         <label>
           <span className="label-line">{t("tools.searchMode")} <HelpTip text={t("ui.stradellaSearchHelp")} /></span>

@@ -1,51 +1,47 @@
-# Automated test suite — maintenance and coverage policy
+# Automated tests — structure and policy
 
-**Baseline for this update:** reconstructed v0.16.0 source with the Stradella/Progression UI patches, eye-note preview, lint correction, and test/localization hotfixes already applied. The real Windows checkout HEAD and remote publication state have **not** been independently inspected.
+## Two suites
 
-## Current structure
-
-The repository currently has **70 automated `*.test.ts`, `*.test.mjs` or `*.test.cjs` files**, including the new test-inventory guard. They are grouped under npm scripts rather than migration milestones. No existing behavioral tests have been deleted or disabled. The `test:all` command now includes `test:responsive`; consequently `npm run verify:release` covers the responsive regression check without needing a separate command.
+**Unit and integration tests** live in `scripts/` and run with `tsx` and Node, without a browser. They import the real modules, or transpile and execute them with mocked dependencies, and check results, call order and state transitions.
 
 | Command | Coverage |
 | --- | --- |
-| `npm run test:chords` | Harmony, Finder ranking, nominal/register rules, omissions, chord configurations, diagram notes, treble chords |
-| `npm run test:notation`, `npm run test:abc` | Notation, ABC parsing and examples, timing and mapped button events |
-| `npm run test:harmony` | Harmony Explorer, transfer adapters, progression optimizer |
-| `npm run test:controls`, `npm run test:display` | UI contracts, settings grouping, text/diagram geometry and exports |
-| `npm run test:audio` | Sample and nominal register mapping |
-| `npm run test:i18n` | Six languages, translated options and UI bindings |
-| `npm run test:modules` | Hook ownership, cross-tool command ordering, settings round trips, lazy-load boundaries, audio/export orchestration, inspector and progression behavior |
-| `npm run test:responsive` | Existing responsive layout assertions |
-| `npm run test:release` | Metadata and bundle audit fixtures, plus `test-suite-integrity` |
-| `npm run build:analyze` | TypeScript semantic compilation, Vite production build and initial/lazy chunk manifest audit |
+| `npm run test:chords` | Chord formulas, Stradella ranking, registers, omissions, configurations, inversions, diagram notes, treble chords, search-time budget |
+| `npm run test:notation`, `npm run test:abc` | Notation export, ABC parsing, ties, repeats and the bundled examples |
+| `npm run test:harmony` | Harmony Explorer engine and integration, progression optimizer |
+| `npm run test:audio` | Sample and register pitch mapping |
+| `npm run test:display` | Chord symbols, voicing chart layout, PNG export conversion |
+| `npm run test:i18n` | Six catalogs, language detection, translated options, explanations and diagram labels |
+| `npm run test:modules` | Settings I/O, migrations and import traces; feature hooks; cross-tool command order; audio scheduling and export services; inspector rows; progression selection and rhythms |
+| `npm run test:all` | All of the above |
+| `npm run test:release` | Release metadata, documentation links, bundle-audit logic and test-suite integrity |
 
-The `scripts/test-suite-integrity.test.mjs` guard verifies that **every checked-in test file** is referenced by an npm script, that referenced test files exist, and that the full suite includes responsive coverage. It automatically counts files rather than assuming a fixed inventory. The test runner remains the existing `tsx`/Node workflow; the test scripts have not been replaced by an incompatible framework.
+**Browser tests** live in `e2e/` and run with Playwright against the production build served by `vite preview`, at 1440 × 900 and at a 390 px phone size. Run `npx playwright install chromium` once, then `npm run test:e2e`. Every test fails on a console error or uncaught exception.
 
-## What was modernized
+| Spec | Coverage |
+| --- | --- |
+| `smoke.spec.ts` | Every tool of every workspace and every settings section opens; no sideways scrolling; the documentation viewer opens and closes |
+| `chord-finder.spec.ts` | Root-position default, wider results with Any bass, the 6/9 fallback note, Cmaj7 on the diagram |
+| `progression.spec.ts` | ↑ ↓ × row buttons; playback and Stop |
+| `performance.spec.ts` | Loading a preset without main-thread tasks over 400 ms. Runs in its own `performance` project after the others finish, so parallel workers do not inflate the timing |
+| `harmony.spec.ts` | Recording chords on the circle and playing the recording on the audio clock |
+| `players.spec.ts` | ABC Player Play, Pause, Continue and Stop; Bass Pattern Player Play and Stop |
+| `files.spec.ts` | SVG, PNG and ZIP downloads; settings save with version and note length; loading a v0.17.0 settings file |
+| `interaction.spec.ts` | Keyboard navigation of the diagram; the phone Tools sheet; readable button size on phones |
+| `translation.spec.ts` | The Spanish interface shows no English labels in any tool or settings section |
 
-- The transport-start/geometry regression and its frozen fixture have descriptive, purpose-based filenames: `playback-start-geometry.test.mjs` and `fixtures/diagram-geometry-reference.json`. The **five numerical expectations are unchanged**.
-- Historical milestone wording was removed from the test-file headings, assertions, output messages, and test/fixture filenames, without removing or weakening their regression coverage. Historical documentation under `modularization-roadmap.md` remains an archive of the original work.
-- Duplicate source-expression assertions for the diagram-note footer were removed; the generated four-level notes are checked by `stradella-four-level-notes.test.ts`, while the Progression eye selection and shared annotation are exercised by `progression-eye-entry.test.cjs`.
-- The view/command test no longer relies on the exact name of the eye-toggle controller function; the eye-button integration has its own test. The remaining architecture checks deliberately verify module boundaries and command ordering.
-- Chord-label localization uses the shared 35-type Finder catalog in all six languages. Its UI binding test now checks the translation mechanism rather than an exact expression from an obsolete implementation.
+`e2e/fixtures.ts` holds the shared helpers: opening tools and settings in any language, closing the phone sheet, and counting notes started on the Web Audio clock (`recordAudioStarts`), which is how the tests know a player really made sound.
 
-## Preserve these invariants
+`scripts/test-suite-integrity.test.mjs` fails if a test file in `scripts/` is not referenced by an npm script, if a script references a missing file, or if `test:all` would need a browser.
 
-1. **Musical:** actual Chord Finder results, ranking order, physical and sounded `playbackButtons` identities, extended-chord omissions, pitch-class and registral distinctions, and manually pinned progression realizations.
-2. **Settings:** exact 118-key export order, partial-import semantics, default/startup behavior, aliases and persistence. The captured settings traces remain reference data.
-3. **Audio and notation:** pulse ordering, sample/register mapping, cancel/stop precedence, ABC timing and first-use lazy parser, MIDI/LilyPond/notation exports.
-4. **Diagrams:** frozen SVG sizing, note/footer rendering, PNG/ZIP capture, filenames and annotations. Snapshot names are not evidence of an obsolete test.
-5. **UI:** six locales, phone navigation, keyboard selection, shared inspector state, eye-note preview, accessible descriptions and consistent controls.
-6. **Bundle:** the manifest must continue to detect eager imports of optional heavy panels and `abcjs`.
+## Policy
 
-## Rules for further cleanup
+- **Test behaviour, not source text.** Do not read a source file and match its contents with regular expressions or substring checks: such tests break on harmless refactors and stay green through real regressions. They were all retired. Test exported functions, rendered output, state transitions or browser behaviour instead. Reading a source file in order to transpile and execute it is fine.
+- Translation keys are checked by the compiler (`t()` takes a `TranslationKey`); untranslated text is caught by `translation.spec.ts`.
+- Keep frozen reference data (diagram geometry, settings import traces, exported key order): it pins numbers and file formats users depend on.
+- When a test fails after an intended change, update the expectation to the new contract and say why in the commit.
+- Name tests after what they protect, not after the release that introduced them.
 
-Keep a test when it protects a current regression contract even if written years ago. Replace brittle string or file-location assertions with tested exports, DOM/render behavior or state transitions whenever possible. Some architectural source checks remain useful for module ownership and lazy loading; they should use precise, concise failure messages instead of dumping whole source files. Do not remove such checks unless an equivalent safeguard is in place. Avoid renaming frozen data keys or changing numerical fixtures merely for cosmetic reasons.
+## Before a release
 
-For browser-sensitive features, source and unit tests are not a substitute for testing audio, SVG/PNG exports, note text, focus behavior, phone sheets, initial network transfers and first-use lazy imports in a browser.
-
-## Validation and publication
-
-Run `npm run verify:release` in Windows CMD. The command includes `npm run lint`, `npm run test:all` (with responsive coverage), `npm run test:release`, and `npm run build:analyze`. A successful build may still report the existing nonfatal large-chunk advisory; do not alter warning thresholds merely to silence it. Inspect changed files with `git diff --check` and `git diff --cached --check` before committing. GitHub deployment, tag and Release remain separate actions.
-
-This guide documents the test-suite policy; it does **not** claim that the complete Windows release pipeline or real-device browser checks were executed by the author of this update.
+Run `npm run verify:release` (lint, `test:all`, `test:release`, `build:analyze`) and `npm run test:e2e`. The browser suite does not judge how things sound; listen to the players in a real browser before publishing.

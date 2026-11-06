@@ -21,7 +21,6 @@ export function useHarmonyProgressionState() {
   const harmonyRecordedNotationRef = useRef<HTMLDivElement | null>(null);
   const [harmonyProgressionManualRoot, setHarmonyProgressionManualRoot] = useState("C");
   const [harmonyProgressionManualPattern, setHarmonyProgressionManualPattern] = useState<FinderChordPattern>("major-triad");
-  const [harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations] = useState(true);
   const [harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight] = useState(0.65);
   const [harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight] = useState(0.35);
   const [harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern] = useState<ProgressionRhythmPattern>("block");
@@ -42,7 +41,6 @@ export function useHarmonyProgressionState() {
     harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying,
     harmonyProgressionManualRoot, setHarmonyProgressionManualRoot,
     harmonyProgressionManualPattern, setHarmonyProgressionManualPattern,
-    harmonyProgressionAllowApproximations, setHarmonyProgressionAllowApproximations,
     harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
     harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight,
     harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,

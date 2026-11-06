@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { ReactNode } from "react";
-import { DocumentationViewer } from "./DocumentationViewer";
+
+// The viewer bundles every user guide as raw Markdown (about 200 KB), so it is
+// loaded only when someone opens the documentation.
+const DocumentationViewer = lazy(() => import("./DocumentationViewer").then((module) => ({ default: module.DocumentationViewer })));
 import { APP_INFO } from "../../config/appInfo";
 import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { useI18n } from "../../i18n/useI18n";
@@ -46,7 +49,11 @@ export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
         </a>
       </p>
       {children}
-      {docsOpen && <DocumentationViewer onClose={() => setDocsOpen(false)} />}
+      {docsOpen && (
+        <Suspense fallback={null}>
+          <DocumentationViewer onClose={() => setDocsOpen(false)} />
+        </Suspense>
+      )}
     </CollapsibleSection>
   );
 }

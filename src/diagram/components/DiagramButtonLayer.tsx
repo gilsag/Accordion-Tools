@@ -1,3 +1,4 @@
+import { useState, type KeyboardEvent } from "react";
 import type { DiagramButton, Overlay, SequenceStep, ChordLabelMode, FontFamily, NumberPosition, DiagramAnnotationAnchor } from "../../types";
 import { fontClass, isChordKind, isAccidentalPitch, renderMusicLabel } from "../../music";
 import { getSequenceLabelsForButton } from "../../tools/sequenceTools";
@@ -20,6 +21,8 @@ type DiagramButtonLayerProps = {
   stradellaPrimaryFinderButtonIds: ReadonlySet<string>;
   stradellaRootBassFinderButtonIds: ReadonlySet<string>;
   getMainLabel: (button: DiagramButton) => string;
+  /** Spoken name for assistive technology, e.g. "C, Root note". */
+  getAccessibleLabel: (button: DiagramButton) => string;
   toggleButton: (button: DiagramButton) => void;
   buttonSize: number;
   chordLabelMode: ChordLabelMode;
@@ -34,6 +37,23 @@ type DiagramButtonLayerProps = {
   annotationButtonAnchor: DiagramAnnotationAnchor;
   fingeringPosition: NumberPosition;
 };
+
+/** Button reached by an arrow key: the neighbour in the same row, or the
+ * horizontally nearest button in the row above or below. */
+function neighbourButton(buttons: DiagramButton[], from: DiagramButton, key: string) {
+  if (key === "ArrowLeft" || key === "ArrowRight") {
+    const step = key === "ArrowRight" ? 1 : -1;
+    return buttons
+      .filter((button) => button.row === from.row && Math.sign(button.x - from.x) === step)
+      .sort((a, b) => Math.abs(a.x - from.x) - Math.abs(b.x - from.x))[0];
+  }
+  const rows = [...new Set(buttons.map((button) => button.row))].sort((a, b) => a - b);
+  const targetRow = rows[rows.indexOf(from.row) + (key === "ArrowDown" ? 1 : -1)];
+  if (targetRow === undefined) return undefined;
+  return buttons
+    .filter((button) => button.row === targetRow)
+    .sort((a, b) => Math.abs(a.x - from.x) - Math.abs(b.x - from.x))[0];
+}
 
 function finderLabelsForButton(buttons: DiagramButton[], buttonId: string) {
   return buttons
@@ -68,10 +88,28 @@ export function DiagramButtonLayer({ buttons, overlays, sequenceSteps, scaleFind
   progressionPreviewButtonIds, abcActiveButtonIdSet, bassPatternActiveButtonIdSet,
   harmonyProgressionActiveButtonIdSet, stradellaChordFinderActive,
   stradellaPrimaryFinderButtonIds, stradellaRootBassFinderButtonIds,
-  getMainLabel, toggleButton, buttonSize, chordLabelMode, showScaleFinderNumbers,
+  getMainLabel, getAccessibleLabel, toggleButton, buttonSize, chordLabelMode, showScaleFinderNumbers,
   labelFontSize, showButtonLabels, labelFont, showSequenceNumbers,
   sequenceNumberPosition, annotationActive, annotationPointForButton,
   annotationButtonAnchor, fingeringPosition }: DiagramButtonLayerProps) {
+  // Roving tab stop: Tab reaches the diagram once, arrow keys move between
+  // buttons, Enter or Space acts like a click.
+  const [focusedId, setFocusedId] = useState<string | null>(null);
+  const tabStopId = buttons.some((button) => button.id === focusedId) ? focusedId : buttons[0]?.id;
+  function onButtonKeyDown(event: KeyboardEvent<SVGGElement>, button: DiagramButton) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleButton(button);
+      return;
+    }
+    if (!event.key.startsWith("Arrow")) return;
+    const next = neighbourButton(buttons, button, event.key);
+    if (!next) return;
+    event.preventDefault();
+    setFocusedId(next.id);
+    const element = event.currentTarget.ownerSVGElement?.querySelector<SVGGElement>(`[data-button-id="${next.id}"]`);
+    element?.focus();
+  }
   return <>
             {buttons.map((button) => {
               const overlay = overlays[button.id] ?? {};
@@ -111,6 +149,15 @@ export function DiagramButtonLayer({ buttons, overlays, sequenceSteps, scaleFind
                 <g
                   key={button.id}
                   className="button-group"
+                  data-button-id={button.id}
+                  data-focus={finderMatch || abcMatch || overlay.selected || sequenceLabels || scaleFinderLabels
+                    ? "active"
+                    : button.isReference && button.pitchClass === "C" ? "home" : undefined}
+                  role="button"
+                  tabIndex={button.id === tabStopId ? 0 : -1}
+                  aria-label={getAccessibleLabel(button)}
+                  onFocus={() => setFocusedId(button.id)}
+                  onKeyDown={(event) => onButtonKeyDown(event, button)}
                   onClick={(event) => {
                     event.stopPropagation();
                     toggleButton(button);

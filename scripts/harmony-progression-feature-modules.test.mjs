@@ -7,22 +7,6 @@ import {readFileSync} from 'node:fs';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 const source = (file) => readFileSync(file, 'utf8');
-const app = [source('src/App.tsx'), source('src/app/useAppController.ts'), source('src/app/views/SettingsView.tsx'), source('src/app/views/ToolsView.tsx'), source('src/app/views/WorkspaceView.tsx')].join("\n");
-const expSrc = source('src/features/harmonyExplorer/useHarmonyExplorer.ts');
-const progSrc = source('src/features/progressionAssistant/useProgressionAssistant.ts');
-for (const key of ['useHarmonyExplorerState()', 'useHarmonyExplorerResults({',
-  'useHarmonyProgressionState()', 'useHarmonyProgressionResults({'])
-  assert.ok(app.includes(key), `App uses ${key}`);
-for (const key of ['harmonyReferenceFamilyId','harmonySelection','harmonyProgression','harmonyRecordedProgression'])
-  assert.doesNotMatch(app,new RegExp(`\\[${key},\\s*set[A-Z][^\\]]*\\]\\s*=\\s*useState`), `${key} lives in its feature`);
-for (const key of ['sendHarmonyRecordedProgressionToAssistant','toggleHarmonyProgressionStepNotes',
-  'showHarmonySelectionOnStradella','stopHarmonyRecordedProgressionPlayback','playOptimizedHarmonyProgression'])
-  assert.ok(app.includes(`function ${key}(`), `Cross-tool/audio command ${key} remains in App`);
-assert.ok(app.includes('progressionRealizationKey(result)'),
-  'Selected realization identity still follows the actual playback buttons');
-assert.match(app, /realizationAnnotation\(progressionNoteRoot, progressionNotePattern, harmonyProgressionNoteStep\.result/,
-  'Progression eyes reuse Finder annotation against the selected sounding recipe');
-assert.match(app, /playButtonRhythmProgression\(/);
 
 function reactMock() {
   const slots=[]; let index=0; const effects=[];
@@ -120,7 +104,7 @@ let prog=assistant.useHarmonyProgressionState();
 for(const [field,expected] of Object.entries({
  harmonyProgressionRecording:false,harmonyRecordedNotationVisible:false,
  harmonyRecordedProgressionPlaying:false,harmonyProgressionManualRoot:'C',
- harmonyProgressionManualPattern:'major-triad',harmonyProgressionAllowApproximations:true,
+ harmonyProgressionManualPattern:'major-triad',
  harmonyProgressionHandMovementWeight:0.65,harmonyProgressionRhythmPattern:'block',
  harmonyProgressionPreviewIndex:null,harmonyProgressionNoteStepId:null,harmonyProgressionNotationVisible:false,
 })) assert.equal(prog[field],expected,`Progression default: ${field}`);
@@ -132,7 +116,7 @@ assert.equal(prog.harmonyRecordedNotationRef.current,null);
 let updates=[];
 const selection={basses:'96',buttonSize:40,spacing:1.2,stradellaAccidental:'sharps',diagramVerticalSpacing:6,
  harmonyProgression:[{id:'p1',rootPc:0,familyId:'major'}],
- harmonyProgressionAllowApproximations:false,harmonyProgressionHandMovementWeight:0.4,
+ harmonyProgressionHandMovementWeight:0.4,
  harmonyProgressionRealizationKeys:{},setHarmonyProgressionRealizationKeys:()=>{},
  harmonyProgressionPreviewIndex:0,setHarmonyProgressionPreviewIndex:(v)=>updates.push(v),
  harmonyProgressionActiveButtonIds:[],activeToolSection:'progressionAssistant'};

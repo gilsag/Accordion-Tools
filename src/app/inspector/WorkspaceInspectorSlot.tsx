@@ -27,7 +27,7 @@ export function WorkspaceInspectorSlot({ inspector, tools, blocked = false }: {
       blocked={blocked}
       root={tools.stradellaChordFinderRoot}
       pattern={tools.stradellaChordFinderPattern}
-      requestedBass={tools.stradellaChordFinderRequestedBass}
+      requestedBass={tools.stradellaChordFinderEffectiveRequestedBass}
       mode={tools.stradellaChordFinderMode}
       selectedIndex={Math.min(tools.stradellaChordFinderRealizationIndex,
         Math.max(0, tools.stradellaChordFinderRealizations.length - 1))}

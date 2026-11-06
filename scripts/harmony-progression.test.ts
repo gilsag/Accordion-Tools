@@ -112,4 +112,14 @@ assert.ok(
   "Em7 accompaniment should preserve the optimized E counterbass rather than force E fundamental bass",
 );
 
+// Finder results are cached per layout: a second request returns the same
+// result objects, and a fresh layout (a new button array) is searched again.
+const g7Again = progressionRealizationsForChord(buttons, chord("g7b", 7, "dominant7"), true);
+const g7Once = progressionRealizationsForChord(buttons, chord("g7c", 7, "dominant7"), true);
+assert.ok(g7Again.length > 0 && g7Again.every((entry, index) => entry.result === g7Once[index].result), "cached results are reused");
+const freshLayout = generateStradella("120", 24, 6, "natural", 0);
+const g7Fresh = progressionRealizationsForChord(freshLayout, chord("g7d", 7, "dominant7"), true);
+assert.notEqual(g7Fresh[0].result, g7Once[0].result, "a new layout is searched again");
+assert.deepEqual(g7Fresh.map(({ result }) => progressionRealizationKey(result)), g7Once.map(({ result }) => progressionRealizationKey(result)));
+
 console.log("Harmony progression optimization tests passed.");

@@ -1,4 +1,5 @@
 import { progressionPulsePlan } from "./audio/progressionPulsePlan";
+import { audioTimelineOrigin, msUntilAudioTime, scheduleAtAudioOffset, type AudioClockPorts } from "./audio/audioClock";
 import type {
   DiagramButton,
   SampleRegister,
@@ -34,6 +35,8 @@ export type SoundOptions = {
   waveform: SoundWaveform;
   voicePreset: SoundVoicePreset;
   noteDurationMs: number;
+  /** Share of a written note's length that sounds in timed playback (0.3–1). */
+  articulation: number;
   sequenceTempoBpm: number;
   musetteDetuneCents: number;
   attackMs: number;
@@ -440,28 +443,57 @@ async function scheduleSampleNote(
   };
 }
 
-/** Preloads the currently selected La Melodiosa register samples. */
+/**
+ * Creates or resumes the shared AudioContext. Call it from a user-gesture
+ * handler: browsers (Safari in particular) only start audio inside one, and
+ * creating the context earlier only produces autoplay warnings.
+ */
+export function unlockAudio() {
+  try {
+    getAudioContext();
+  } catch {
+    // No Web Audio support; playback reports its own error when used.
+  }
+}
+
+/**
+ * Preloads La Melodiosa samples for the selected registers. Pass `null` for a
+ * side the current workspace does not play, so it is not downloaded (the treble
+ * registers are about 11 to 13 MB each, the bass registers about 2 MB).
+ * Decoding needs an AudioContext, so call this only after a user gesture.
+ */
 export async function preloadLaMelodiosa(
-  trebleRegister: SampleRegister,
-  bassRegister: SampleRegister,
+  trebleRegister: SampleRegister | null,
+  bassRegister: SampleRegister | null,
 ) {
   const files = new Set<string>();
   LA_MELODIOSA_REGIONS.forEach((region) => {
     const wanted =
-      (region.side === "treble" && region.register === trebleRegister) ||
-      (region.side === "bass" && region.register === bassRegister);
+      (trebleRegister !== null && region.side === "treble" && region.register === trebleRegister) ||
+      (bassRegister !== null && region.side === "bass" && region.register === bassRegister);
     if (wanted) region.samples.forEach((sample) => files.add(sample.file));
   });
 
   await Promise.allSettled(Array.from(files, (file) => loadSample(file)));
 }
 
-function playNotes(notes: SoundNote[], options: SoundOptions, delayMs = 0) {
+/**
+ * Optional timing for a played note. `at` is an AudioContext time (see
+ * audio/audioClock.ts); `durationMs` overrides the button-click note duration,
+ * so timed players can sound each note for its written length.
+ */
+export type NoteTiming = { at?: number; durationMs?: number };
+
+/** Default share of a written note's length that sounds in timed playback
+ * (Settings → Sound → Note length in players). The highlight lasts as long. */
+export const DEFAULT_NOTE_ARTICULATION = 0.85;
+
+function playNotes(notes: SoundNote[], options: SoundOptions, delayMs = 0, timing: NoteTiming = {}) {
   if (!options.enabled || notes.length === 0) return;
 
   const context = getAudioContext();
-  const startTime = context.currentTime + delayMs / 1000;
-  const durationSeconds = Math.max(40, options.noteDurationMs) / 1000;
+  const startTime = timing.at ?? context.currentTime + delayMs / 1000;
+  const durationSeconds = Math.max(40, timing.durationMs ?? options.noteDurationMs) / 1000;
   const perNoteGain = 1 / Math.sqrt(notes.length);
 
   notes.forEach((note) => {
@@ -560,24 +592,69 @@ export function notesForButton(
   });
 }
 
-export function playButtonSound(button: DiagramButton, options: SoundOptions) {
-  playNotes(notesForButton(button, options), options);
+export function playButtonSound(button: DiagramButton, options: SoundOptions, timing?: NoteTiming) {
+  playNotes(notesForButton(button, options), options, 0, timing);
+}
+
+/** Current AudioContext time in seconds, the clock timed players schedule on. */
+export function audioClockNow() {
+  return getAudioContext().currentTime;
+}
+
+/** Changes whenever stopAllSound() runs; lets a deferred start detect a Stop. */
+export function currentPlaybackGeneration() {
+  return playbackGeneration;
+}
+
+function sampleFilesForButtons(buttons: DiagramButton[], options: SoundOptions) {
+  const files = new Set<string>();
+  if (!options.enabled || options.source !== "la-melodiosa") return files;
+  const seen = new Set<string>();
+  for (const button of buttons) {
+    if (seen.has(button.id)) continue;
+    seen.add(button.id);
+    for (const note of notesForButton(button, options)) {
+      findLaMelodiosaRegion(note, options)?.samples.forEach((sample) => files.add(sample.file));
+    }
+  }
+  return files;
+}
+
+/** True when every sample these buttons need is decoded (always true for the synth). */
+export function samplesReadyFor(buttons: DiagramButton[], options: SoundOptions) {
+  return [...sampleFilesForButtons(buttons, options)].every((file) => sampleBuffers.has(file));
+}
+
+/** Loads the samples these buttons need, so a transport can start on time.
+ * Failed files are skipped here; playback reports them when it reaches them. */
+export async function prepareSamplesFor(buttons: DiagramButton[], options: SoundOptions) {
+  await Promise.allSettled([...sampleFilesForButtons(buttons, options)].map((file) => loadSample(file)));
+}
+
+function soundClockPorts(): AudioClockPorts {
+  return { now: audioClockNow, push: (id) => activeTimeouts.push(id) };
 }
 
 export function playButtonSequence(
   buttons: DiagramButton[],
   options: SoundOptions,
+  onDone?: () => void,
 ) {
   if (!options.enabled || buttons.length === 0) return;
   stopAllSound();
   const stepDelayMs = 60000 / Math.max(20, options.sequenceTempoBpm);
+  const ports = soundClockPorts();
+  const origin = audioTimelineOrigin(ports.now);
 
   buttons.forEach((button, index) => {
-    const timeoutId = window.setTimeout(() => {
-      playButtonSound(button, options);
-    }, index * stepDelayMs);
-    activeTimeouts.push(timeoutId);
+    scheduleAtAudioOffset(ports, origin, index * stepDelayMs, (when) =>
+      playButtonSound(button, options, { at: when }));
   });
+  if (onDone) {
+    // The sequence ends one step after its last note starts.
+    activeTimeouts.push(window.setTimeout(onDone,
+      msUntilAudioTime(ports, origin + (buttons.length * stepDelayMs) / 1000)));
+  }
 }
 
 export function playButtonCombination(
@@ -597,13 +674,13 @@ export function playButtonProgression(
   if (!options.enabled || combinations.length === 0) return;
   stopAllSound();
   const stepDelayMs = Math.max(240, 60000 / Math.max(20, options.sequenceTempoBpm));
+  const ports = soundClockPorts();
+  const origin = audioTimelineOrigin(ports.now);
 
   combinations.forEach((buttons, index) => {
-    const timeoutId = window.setTimeout(() => {
-      if (buttons.length === 0) return;
-      playNotes(buttons.flatMap((button) => notesForButton(button, options)), options);
-    }, index * stepDelayMs);
-    activeTimeouts.push(timeoutId);
+    if (buttons.length === 0) return;
+    scheduleAtAudioOffset(ports, origin, index * stepDelayMs, (when) =>
+      playNotes(buttons.flatMap((button) => notesForButton(button, options)), options, 0, { at: when }));
   });
 }
 
@@ -633,6 +710,10 @@ export function playButtonRhythmProgression(
 
   const beatMs = Math.max(240, 60000 / Math.max(20, options.sequenceTempoBpm));
   const beatsPerChord = pattern === "march" ? 4 : pattern === "waltz" ? 3 : pattern === "oom-pah" ? 2 : 1;
+  const ports = soundClockPorts();
+  const origin = audioTimelineOrigin(ports.now);
+  // Each pulse lasts one beat; "block" holds the whole chord for its beat.
+  const pulseDurationMs = beatMs * options.articulation;
 
   combinations.forEach((buttons, progressionIndex) => {
     const pulses = pulseOverrides?.[progressionIndex] ?? progressionPulsePlan(
@@ -642,16 +723,18 @@ export function playButtonRhythmProgression(
     );
 
     pulses.forEach((pulse, beatIndex) => {
-      const delay = (progressionIndex * beatsPerChord + beatIndex) * beatMs;
-      const timeoutId = window.setTimeout(() => {
-        if (pulse.length === 0) {
-          callbacks.onActiveButtons?.([], progressionIndex);
-          return;
-        }
-        callbacks.onActiveButtons?.(pulse.map((button) => button.id), progressionIndex);
-        playNotes(pulse.flatMap((button) => notesForButton(button, options)), options);
-      }, delay);
-      activeTimeouts.push(timeoutId);
+      const offsetMs = (progressionIndex * beatsPerChord + beatIndex) * beatMs;
+      scheduleAtAudioOffset(ports, origin, offsetMs,
+        (when) => {
+          if (pulse.length === 0) return;
+          playNotes(pulse.flatMap((button) => notesForButton(button, options)), options, 0,
+            { at: when, durationMs: pulseDurationMs });
+        },
+        () => {
+          // A silent pulse (rest) clears the highlight when its beat is reached.
+          if (pulse.length === 0) callbacks.onActiveButtons?.([], progressionIndex);
+          else callbacks.onActiveButtons?.(pulse.map((button) => button.id), progressionIndex);
+        });
     });
   });
 
@@ -659,7 +742,7 @@ export function playButtonRhythmProgression(
   const doneTimeout = window.setTimeout(() => {
     callbacks.onActiveButtons?.([], Math.max(0, combinations.length - 1));
     callbacks.onDone?.();
-  }, totalDuration);
+  }, msUntilAudioTime(ports, origin + totalDuration / 1000));
   activeTimeouts.push(doneTimeout);
 }
 
@@ -670,20 +753,25 @@ export function playButtonArpeggioThenChord(
   if (!options.enabled || buttons.length === 0) return;
   stopAllSound();
   const stepDelayMs = 60000 / Math.max(20, options.sequenceTempoBpm);
+  const ports = soundClockPorts();
+  const origin = audioTimelineOrigin(ports.now);
 
   buttons.forEach((button, index) => {
-    const timeoutId = window.setTimeout(() => {
-      playButtonSound(button, options);
-    }, index * stepDelayMs);
-    activeTimeouts.push(timeoutId);
+    scheduleAtAudioOffset(ports, origin, index * stepDelayMs, (when) =>
+      playButtonSound(button, options, { at: when }));
   });
 
-  const fullChordDelayMs = buttons.length * stepDelayMs;
-  const chordTimeoutId = window.setTimeout(() => {
-    const notes = buttons.flatMap((button) => notesForButton(button, options));
-    playNotes(notes, options);
-  }, fullChordDelayMs);
-  activeTimeouts.push(chordTimeoutId);
+  scheduleAtAudioOffset(ports, origin, buttons.length * stepDelayMs, (when) =>
+    playNotes(buttons.flatMap((button) => notesForButton(button, options)), options, 0, { at: when }));
+}
+
+const stopListeners = new Set<() => void>();
+
+/** Calls the listener after every stopAllSound(), including the one each new
+ * playback start makes. Returns a function that removes the listener. */
+export function onStopAllSound(listener: () => void) {
+  stopListeners.add(listener);
+  return () => { stopListeners.delete(listener); };
 }
 
 /** Stops scheduled playback and any currently ringing synth/sample voices. */
@@ -709,6 +797,7 @@ export function stopAllSound() {
     }
   });
   activeSampleSources = [];
+  stopListeners.forEach((listener) => listener());
 }
 
 declare global {
@@ -721,13 +810,21 @@ declare global {
  * octave (C3-B3). This is used by Harmony Explorer so its audio follows the
  * same sampled/synth engine and bass register as the physical Stradella view.
  */
+/**
+ * Plays pitch classes in the Harmony Explorer's C3–B3 octave. Without `timing`
+ * it is an immediate preview and silences anything already sounding. With
+ * `timing` it is one step of a scheduled run: it starts at `timing.at` on the
+ * audio clock, does not cut earlier steps, and block chords last
+ * `timing.durationMs`.
+ */
 export function playHarmonyPitchClassChord(
   pitchClasses: string[],
   options: SoundOptions,
   style: "block" | "arpeggio" = "block",
+  timing?: { at: number; durationMs?: number },
 ) {
   if (!options.enabled || pitchClasses.length === 0) return;
-  stopAllSound();
+  if (!timing) stopAllSound();
   const unique = [...new Set(pitchClasses)].sort(
     (a, b) => (PITCH_INDEX[a] ?? 0) - (PITCH_INDEX[b] ?? 0),
   );
@@ -738,12 +835,13 @@ export function playHarmonyPitchClassChord(
   }));
 
   if (style === "block") {
-    playNotes(notes, options);
+    playNotes(notes, options, 0, timing ? { at: timing.at, durationMs: timing.durationMs } : {});
     return;
   }
 
   const stepMs = Math.max(90, Math.min(260, 60000 / Math.max(40, options.sequenceTempoBpm) / 2));
-  notes.forEach((note, index) => playNotes([note], options, index * stepMs));
+  notes.forEach((note, index) => playNotes([note], options, index * stepMs,
+    timing ? { at: timing.at + (index * stepMs) / 1000 } : {}));
 }
 
 /**

@@ -614,6 +614,33 @@ function isKnownPlayToken(token: BassPatternPlayToken) {
   );
 }
 
+export type BassPatternBeatName = "half" | "quarter" | "dotted-quarter" | "eighth" | "dotted-eighth" | "sixteenth";
+
+/** The note value one tempo beat counts in a meter, and how it relates to the
+ * meter's own unit (its denominator). Compound meters (6/8, 9/8, 12/8, and the
+ * same over 16) count dotted beats of three units; every other meter counts
+ * its denominator. The Bass Pattern tempo is in these beats per minute. */
+export function bassPatternBeat(meter: string): {
+  beat: BassPatternBeatName;
+  unitsPerBeat: number;
+  quarterNotesPerUnit: number;
+  abcLength: string;
+  lilypondDuration: string;
+} {
+  const [numeratorText, denominatorText] = meter.split("/");
+  const numerator = Number(numeratorText) || 4;
+  const denominator = Number(denominatorText) || 4;
+  const compound = denominator >= 8 && numerator > 3 && numerator % 3 === 0;
+  const quarterNotesPerUnit = 4 / denominator;
+  if (compound) {
+    return denominator === 8
+      ? { beat: "dotted-quarter", unitsPerBeat: 3, quarterNotesPerUnit, abcLength: "3/8", lilypondDuration: "4." }
+      : { beat: "dotted-eighth", unitsPerBeat: 3, quarterNotesPerUnit, abcLength: "3/16", lilypondDuration: "8." };
+  }
+  const beat: BassPatternBeatName = denominator <= 2 ? "half" : denominator === 4 ? "quarter" : denominator === 8 ? "eighth" : "sixteenth";
+  return { beat, unitsPerBeat: 1, quarterNotesPerUnit, abcLength: `1/${denominator}`, lilypondDuration: String(denominator) };
+}
+
 function isValidMeter(meter: string) {
   const match = meter.match(/^(\d+)\/(\d+)$/);
   if (!match) return false;
@@ -1144,7 +1171,7 @@ export function bassPatternEventsToAbc(
     `% Pattern: ${pattern.id}`,
     `M:${pattern.meter}`,
     `L:${unitLength}`,
-    `Q:1/4=${Math.max(30, Math.round(tempoBpm))}`,
+    `Q:${bassPatternBeat(pattern.meter).abcLength}=${Math.max(30, Math.round(tempoBpm))}`,
     `K:${keyRootPitchClass}`,
     bodyLines.join("\n") || "z",
     "",
@@ -1564,7 +1591,7 @@ export function bassPatternEventsToLilyPond(
     ``,
     `patternRhythm = {`,
     `  \\time ${pattern.meter}`,
-    `  \\tempo 4 = ${Math.max(30, Math.round(tempoBpm))}`,
+    `  \\tempo ${bassPatternBeat(pattern.meter).lilypondDuration} = ${Math.max(30, Math.round(tempoBpm))}`,
     `  ${rhythmBars.join("\n  ") || `r${lilypondDurationForMeterUnits(meterUnitsPerBar, meterDenominator)}`}`,
     `}`,
     ``,
@@ -1603,9 +1630,14 @@ function midiPitchForButton(button: DiagramButton) {
 export function bassPatternEventsToMidiBytes(
   events: BassPatternPlaybackEvent[],
   tempoBpm: number,
+  meter = "4/4",
 ) {
   const ppq = 480;
-  const microsecondsPerQuarter = Math.round(60000000 / Math.max(30, tempoBpm));
+  // Event times are meter units; MIDI ticks count quarter notes.
+  const { unitsPerBeat, quarterNotesPerUnit } = bassPatternBeat(meter);
+  const ticksPerUnit = ppq * quarterNotesPerUnit;
+  const quarterNotesPerMinute = Math.max(30, tempoBpm) * unitsPerBeat * quarterNotesPerUnit;
+  const microsecondsPerQuarter = Math.round(60000000 / quarterNotesPerMinute);
   const track: number[] = [];
   track.push(
     0x00,
@@ -1625,8 +1657,8 @@ export function bassPatternEventsToMidiBytes(
     velocity: number;
   }> = [];
   events.forEach((event) => {
-    const startTick = Math.round(event.startBeat * ppq);
-    const endTick = Math.round((event.startBeat + event.durationBeats) * ppq);
+    const startTick = Math.round(event.startBeat * ticksPerUnit);
+    const endTick = Math.round((event.startBeat + event.durationBeats) * ticksPerUnit);
     const velocity = Math.max(20, Math.min(127, Math.round(82 * event.gain)));
     event.buttons.forEach((button) => {
       const pitch = midiPitchForButton(button);
