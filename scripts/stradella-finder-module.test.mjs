@@ -29,10 +29,15 @@ const mockReact = {
   useEffect: (fn) => effects.push(fn),
 };
 let noResultForBass = null; // when set, searches requesting this bass find nothing
+let onlyWithoutBassButton = false; // when set, that bass is found only without the bass-button rule
+let onlyAtSpan = null; // when set, that bass is found on a bass button only at this hand span
 const engines = {
+  nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
   getStradellaChordFinderResults: (...args) => {
     calls.push(["many", args]);
-    return noResultForBass !== null && args[7] === noResultForBass ? [fallback] : candidates;
+    const blocked = noResultForBass !== null && args[7] === noResultForBass &&
+      (!onlyWithoutBassButton || args[10] === true) && (onlyAtSpan === null || args[6] !== onlyAtSpan);
+    return blocked ? [fallback] : candidates;
   },
   getStradellaChordFinderResult: (...args) => {
     calls.push(["single", args]);
@@ -86,15 +91,15 @@ const selection = {
   stradellaChordFinderPattern: "minor7", stradellaChordFinderMode: "bass-and-chords",
   stradellaChordFinderRealizationIndex: 1, stradellaChordFinderRequestedBass: "G",
   finderMaxButtons: 4, finderSpanColumns: 5.5, stradellaMinimumNominalGap: 2,
-  stradellaChordFinderMarkRootBass: false,
+  stradellaChordFinderMarkRootBass: false, stradellaRequestedBassOnBassButton: true,
   pendingProgressionRealizationKey: "chord-G|counterbass-E",
   setPendingProgressionRealizationKey: (value) => updates.push(["pending", value]),
   setStradellaChordFinderRealizationIndex: (value) => updates.push(["index", value]),
 };
 let result = useStradellaChordFinderResults(selection);
 assert.deepEqual(calls.at(-1), ["many", [
-  buttons, "E", "minor7", "bass-and-chords", false, 4, 5.5, "G", registerModel, 2,
-]], "Original finder parameters, order and exact instrument object forwarded");
+  buttons, "E", "minor7", "bass-and-chords", false, 4, 5.5, "G", registerModel, 2, true,
+]], "Finder parameters, order, exact instrument object and bass-button rule forwarded");
 assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
 assert.strictEqual(result.stradellaChordFinderResult, candidates[1]);
 assert.strictEqual(result.stradellaChordFinderButtons, alt);
@@ -137,7 +142,8 @@ console.log("✓ Stradella Finder defaults, engine delegation, button identity, 
 calls.length = 0; effects.length = 0; noResultForBass = "E";
 result = useStradellaChordFinderResults({ ...selection, stradellaChordFinderRequestedBass: "E",
   stradellaChordFinderRootPreferred: true, pendingProgressionRealizationKey: null });
-assert.deepEqual(calls.map(([, args]) => args[7]), ["E", null], "Root search first, then any bass");
+assert.deepEqual(calls.map(([, args]) => [args[7], args[10]]), [["E", true], ["E", false], [null, true]],
+  "Root on a bass button first, then root as the lowest note, then any bass");
 assert.equal(result.stradellaChordFinderRootFallback, true);
 assert.equal(result.stradellaChordFinderEffectiveRequestedBass, null);
 assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
@@ -145,8 +151,24 @@ assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
 calls.length = 0; effects.length = 0;
 result = useStradellaChordFinderResults({ ...selection, stradellaChordFinderRequestedBass: "E",
   stradellaChordFinderRootPreferred: false, pendingProgressionRealizationKey: null });
-assert.equal(calls.length, 1);
+assert.equal(calls.length, 2, "an explicit bass only relaxes the bass-button rule");
 assert.equal(result.stradellaChordFinderRootFallback, false);
 assert.equal(result.stradellaChordFinderEffectiveRequestedBass, "E");
-noResultForBass = null;
-console.log("✓ Root-position default falls back to any bass only when it has no realization");
+// When only the bass-button rule fails, the requested bass is kept as the lowest note.
+calls.length = 0; effects.length = 0; onlyWithoutBassButton = true;
+result = useStradellaChordFinderResults({ ...selection, stradellaChordFinderRequestedBass: "E",
+  stradellaChordFinderRootPreferred: true, pendingProgressionRealizationKey: null });
+assert.deepEqual(calls.map(([, args]) => [args[7], args[10]]), [["E", true], ["E", false]]);
+assert.equal(result.stradellaChordFinderBassButtonFallback, true);
+assert.equal(result.stradellaChordFinderRootFallback, false);
+assert.equal(result.stradellaChordFinderEffectiveRequestedBass, "E");
+// One step more reach is tried before giving up the bass button.
+calls.length = 0; effects.length = 0; onlyWithoutBassButton = false; onlyAtSpan = 5.5;
+result = useStradellaChordFinderResults({ ...selection, finderSpanColumns: 4.3, stradellaChordFinderRequestedBass: "E",
+  stradellaChordFinderRootPreferred: true, pendingProgressionRealizationKey: null });
+assert.deepEqual(calls.map(([, args]) => [args[7], args[10], args[6]]), [["E", true, 4.3], ["E", true, 5.5]]);
+assert.equal(result.stradellaChordFinderReachExtendedTo, 5.5);
+assert.equal(result.stradellaChordFinderBassButtonFallback, false);
+assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
+noResultForBass = null; onlyWithoutBassButton = false; onlyAtSpan = null;
+console.log("✓ Requested bass tries one step more reach, then falls back from bass button to lowest note, and the root default then to any bass");

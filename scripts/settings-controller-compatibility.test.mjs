@@ -67,6 +67,16 @@ const exported = controller.collectCurrentSettings(snapshot);
 assert.deepEqual(Object.keys(exported), expectedKeys, 'Historical settings key set and JSON order');
 assert.equal(exported.settingsVersion, 2, 'Exports carry the settings format version');
 assert.equal(exported.soundArticulation, 'soundArticulation');
+assert.equal(exported.stradellaRequestedBassOnBassButton, 'stradellaRequestedBassOnBassButton');
+assert.equal(exported.progressionRootPosition, 'harmonyProgressionRootPosition');
+// Both are plain booleans on import; other values are ignored.
+for (const [key, setter] of [['stradellaRequestedBassOnBassButton', 'setStradellaRequestedBassOnBassButton'], ['progressionRootPosition', 'setHarmonyProgressionRootPosition']]) {
+  for (const [value, expected] of [[false, [[setter, false]]], ['yes', []]]) {
+    const seen = [];
+    controller.applyImportedSettings({ [key]: value }, new Proxy({}, { get(_t, name) { return (v) => seen.push([name, v]); } }));
+    assert.deepEqual(seen, expected, `${key} ${value}`);
+  }
+}
 assert.equal(exported.language, 'languagePreference');
 assert.equal(exported.buttonSpacing, 'spacing');
 assert.equal(exported.bassPatternRepeatsPerChord, 'bassPatternBarsPerChord');

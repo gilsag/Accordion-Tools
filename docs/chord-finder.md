@@ -30,7 +30,7 @@ Many chords have more notes than you can play at once, so a practical version ma
 - Triads are always complete, and notes that give a chord its name (an altered fifth or ninth, a suspension, an added ninth) are always kept.
 - A version never adds a note that is not in the chord.
 
-A complete version is marked **Exact**; one that leaves notes out is **Approximate**, with the missing notes listed. These are cautious rules, not the only valid voicings.
+A complete version is marked **Exact**; one that leaves notes out is **Approximate**, with the missing notes listed. These are cautious rules, not the only valid voicings. Being complete is only one factor in the ranking: leaving out just the plain fifth costs very little, so C bass + C7 (whose seventh button has no fifth) ranks as the usual first choice for C7.
 
 ## Stradella Chord Finder
 
@@ -51,6 +51,8 @@ Remember that the Stradella chord buttons have only three notes: the seventh and
 - Choose **Any (no specified bass)** to see all inversions together. This choice stays when you change the chord.
 - Choose another note of the chord to ask for that note in the bass, for example G for Em7/G.
 
+**Play lowest note on bass button** (on by default) asks for the requested lowest note to be played on a bass or counterbass button, the way the left hand is usually played. Without it, chord buttons alone can count as root position, because their lowest note may be the root. If no combination within your limits plays that note on a bass button, the finder first tries the next wider **Maximum hand span** (Compact to Moderate, Moderate to Extended) and says so: C6 with Moderate reach becomes C counterbass + A minor. Only if that also fails does it show results where the note is only the lowest one, and says that instead.
+
 "Lowest" is worked out from the register model in **Settings → Instrument → Stradella registers**, which gives each button one pitch. Real accordions may add octave reeds, so the note you hear lowest can differ; adjust the model to match your instrument if you know how it is built.
 
 ### Comparing realizations
@@ -67,7 +69,7 @@ Three filters narrow the table without changing the ranking:
 
 If the selected realization is filtered out, it stays on the diagram and a note says it is hidden.
 
-The ranking weighs the number of buttons, how compact the shape is, which notes are left out, and, for chords of five or more notes, how crowded the low notes would sound. Distances are measured in buttons, so changing the diagram's size or spacing does not change the order.
+The ranking weighs the number of buttons, how compact the shape is, which notes are left out (the plain fifth hardly counts), whether a bass button supports the bass note, and how crowded the low notes would sound. Distances are measured in buttons, so changing the diagram's size or spacing does not change the order.
 
 **Minimum nominal note gap** can leave out realizations whose neighbouring notes are very close: **Allow all gaps** (default), **Exclude 1-semitone gaps** or **Exclude 1- and 2-semitone gaps**. This is a matter of taste for the low register, not of correct harmony.
 

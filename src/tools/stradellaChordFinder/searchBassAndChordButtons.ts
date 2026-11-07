@@ -3,6 +3,7 @@
 
 import type { DiagramButton, FinderChordPattern } from "../../types";
 import { transpose } from "../../music";
+import { intervalsForChordFinder } from "../../music/chordDefinitions";
 import { isExtendedChord, permittedMissingTones, omissionPenalty, suspendedStyleOmission } from "../../music/chordVoicingPolicy";
 import { notPlayableResult, resultFromButtons, summarizeResult, type StradellaChordFinderResult } from "./results";
 import { buttonToneMask, buttonTones, chordKindLabel, combinationTones, isBassButton } from "./voicings";
@@ -32,6 +33,8 @@ type RankedRealization = {
 // balances physical reach against button count and harmonic completeness;
 // scaling the diagram must not change a musical recommendation.
 const COMPACTNESS_WEIGHT_PER_COLUMN = 2.58;
+// Leaving out only the plain fifth: a small tie-break, well below one button (3).
+const FIFTH_OMISSION_COST = 0.25;
 // Float rounding in scaled x/y coordinates must not break genuine geometric ties.
 const GEOMETRY_EPSILON = 1e-9;
 
@@ -241,6 +244,9 @@ export function bassAndChordResults(
   requestedBass: string | null = null,
   registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
   minimumNominalGap: MinimumNominalGap = 0,
+  /** Require the requested bass to be played on a bass or counterbass button,
+   * not only to be the lowest modelled note (which chord buttons alone can be). */
+  requestedBassOnBassButton = false,
 ): StradellaChordFinderResult[] {
   const rootReference = chooseRootReference(buttons, root);
   const targetSet = new Set(targetPitches);
@@ -432,7 +438,9 @@ export function bassAndChordResults(
      matches the requested bass. Do this BEFORE choosing Recommended items. */
   const eligible = validRanked.filter((item) => {
     const voicing = analyzeConfiguredStradellaVoicing(item.result.playbackButtons, root, registerModel);
-    return (requestedBass === null || voicing.lowestPitchClass === requestedBass) &&
+    const bassButtonOk = !requestedBassOnBassButton || requestedBass === null ||
+      item.result.playbackButtons.some((button) => isBassButton(button) && button.pitchClass === requestedBass);
+    return (requestedBass === null || voicing.lowestPitchClass === requestedBass) && bassButtonOk &&
       passesNominalGapFilter(voicing.notes, minimumNominalGap);
   });
 
@@ -453,18 +461,25 @@ export function bassAndChordResults(
       item.result.registral.chordButtonCount > 0 ? -1 : 0;
   };
   const extended = isExtendedChord(pattern);
+  const fifth = intervalsForChordFinder(pattern).includes(7) ? transpose(root, 7) : null;
   const preferenceScore = (item: RankedRealization) => {
-    // Three/four tones retain completeness-first evaluation; extended chords
-    // can prefer a clearer permitted reduction to a crowded exact voicing.
+    // Completeness is one cost among others, not a rule that ranks every
+    // complete realization first. Leaving out only the plain fifth is the
+    // conventional Stradella reduction (the seventh and diminished buttons
+    // lack it by construction), so it costs little; other omissions keep
+    // their musical cost. Extended chords may also prefer a clearer
+    // permitted reduction to a crowded complete voicing.
+    const omitsFifth = fifth !== null && item.result.missingPitches.includes(fifth);
     const cost = item.buttonCount * 3 + item.compactness * COMPACTNESS_WEIGHT_PER_COLUMN +
-      item.approximationPenalty * 0.9 + (!extended && item.exact ? -1 : 0);
+      (item.approximationPenalty - (omitsFifth ? 1 : 0)) * 0.9 + (omitsFifth ? FIFTH_OMISSION_COST : 0);
     const modeledNotes = analyzeConfiguredStradellaVoicing(
       item.result.playbackButtons, root, registerModel,
     ).notes;
     const densityCost = extended ? extendedVoicingDensityPenalty(modeledNotes)
       : analyzeVoicingDensity(modeledNotes).penalty;
+    const otherOmissions = item.result.missingPitches.length - (omitsFifth ? 1 : 0);
     const reductionCost = item.exact || isConventionalShell(item) ? 0 :
-      item.result.missingPitches.length * (extended ? 0.45 : 1.25);
+      otherOmissions * (extended ? 0.45 : 1.25);
     return cost + densityCost + reductionCost - (isConventionalShell(item) ? 0.75 : 0) +
       registralAdjustment(item);
   };
@@ -525,23 +540,12 @@ export function bassAndChordResults(
       }
     }
   }
+  // One weighted score for every chord: buttons, reach, omissions, density
+  // and bass support all trade against each other (see preferenceScore).
   distinct.sort((a, b) => {
     if (Boolean(a.recommended) !== Boolean(b.recommended)) return a.recommended ? -1 : 1;
-    if (a.recommended && b.recommended) return comparePreference(a, b);
-    if (extended) return comparePreference(a, b);
-    if (a.exact !== b.exact) return a.exact ? -1 : 1;
-    if (a.approximationPenalty !== b.approximationPenalty) return a.approximationPenalty - b.approximationPenalty;
-    if (a.buttonCount !== b.buttonCount) return a.buttonCount - b.buttonCount;
-    if (a.mixed !== b.mixed) return a.mixed ? -1 : 1;
-    // In nonextended chords, preserve exactness, fewer buttons, and mixed-mode
-    // preferences before the limited root-support tie-break. Using the same
-    // normalized score keeps this independent of the diagram's pixel size.
-    return compareMetric(
-      a.compactness * COMPACTNESS_WEIGHT_PER_COLUMN + registralAdjustment(a) +
-        analyzeVoicingDensity(analyzeConfiguredStradellaVoicing(a.result.playbackButtons, root, registerModel).notes).penalty,
-      b.compactness * COMPACTNESS_WEIGHT_PER_COLUMN + registralAdjustment(b) +
-        analyzeVoicingDensity(analyzeConfiguredStradellaVoicing(b.result.playbackButtons, root, registerModel).notes).penalty,
-    ) || key(a).localeCompare(key(b));
+    return compareMetric(preferenceScore(a), preferenceScore(b)) ||
+      (a.mixed !== b.mixed ? (a.mixed ? -1 : 1) : 0) || key(a).localeCompare(key(b));
   });
 
   /* One most-ergonomic physical button set per musical recipe. Keep all

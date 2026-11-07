@@ -43,3 +43,34 @@ test("the playback bar plays and stops the progression", async ({ page }) => {
   await page.waitForTimeout(1500);
   expect(await audioStarts()).toBe(afterStop);
 });
+
+test("presets with secondary dominants and minor-key numerals load", async ({ page }) => {
+  await openApp(page);
+  await openTool(page, "Progression Assistant");
+  await page.getByRole("button", { name: "Use preset" }).click();
+  const preset = page.locator("select:has(option[value='bird-blues'])");
+  for (const [id, chords] of [["bird-blues", 12], ["coltrane-changes", 7], ["andalusian-cadence", 4], ["folia", 9]] as const) {
+    await preset.selectOption(id);
+    await expect(page.getByText(/Unsupported/i)).toHaveCount(0);
+    await page.getByRole("button", { name: /Load preset/i }).click();
+    await expect(rows(page)).toHaveCount(chords);
+  }
+  // Bird Blues in C: the fifth chord is V7/IV, which is C7.
+  await preset.selectOption("bird-blues");
+  await page.getByRole("button", { name: /Load preset/i }).click();
+  await expect(chordName(page, 4)).toHaveText("C7");
+});
+
+test("in root position every chord has its root on a bass button", async ({ page }) => {
+  await openApp(page);
+  await openTool(page, "Progression Assistant");
+  await page.getByRole("button", { name: "Use preset" }).click();
+  await page.locator("select:has(option[value='fifties'])").selectOption("fifties");
+  await page.getByRole("button", { name: /Load preset/i }).click();
+  await expect(page.locator(".progression-chord-recipe")).toHaveText([
+    "C bass + C major", "A bass + A minor", "F bass + F major", "G bass + G major",
+  ]);
+  await page.getByRole("button", { name: "Any bass", exact: true }).click();
+  await expect(page.locator(".progression-chord-recipe").first()).not.toHaveText("C bass + C major");
+});
+

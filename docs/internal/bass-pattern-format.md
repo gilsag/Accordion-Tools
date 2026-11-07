@@ -643,6 +643,14 @@ Examples:
 { "id": "twelve-bar-blues", "name": "Twelve-bar blues", "progression": "I I I I IV IV I I V IV I V" }
 ```
 
+A secondary chord is written `chord/target`, both as Roman numerals: `V7/IV` is the dominant seventh of IV (C7 in the key of C), `V/bVI` the dominant of the lowered sixth (E♭ in C). Uppercase numerals are major and lowercase minor; an accidental in front (`bVII`) moves the root but does not change that.
+
+Numerals count from the major scale unless the entry says `"mode": "minor"`. Then they count from the natural minor scale, so `III`, `VI` and `VII` are a minor third, minor sixth and minor seventh above the key root, and the key root is the minor tonic:
+
+```json
+{ "id": "romanesca", "name": "Romanesca", "progression": "III VII i V III VII i V i", "mode": "minor" }
+```
+
 Use ASCII accidentals in the compact `progression` string:
 
 ```text

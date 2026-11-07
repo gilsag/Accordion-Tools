@@ -59,6 +59,14 @@ export function getStradellaChordFinderResult(
   return result;
 }
 
+/** The Maximum hand span choices, in columns: Compact, Moderate, Extended. */
+export const HAND_SPAN_STEPS = [3.2, 4.3, 5.5] as const;
+
+/** The next wider Maximum hand span choice, or null at Extended. */
+export function nextWiderHandSpan(spanColumns: number): number | null {
+  return HAND_SPAN_STEPS.find((step) => step > spanColumns + 1e-9) ?? null;
+}
+
 /** Enumerate alternatives only for mixed search; single-mode results are
  * wrapped in an array for a consistent public interface. */
 export function getStradellaChordFinderResults(
@@ -72,6 +80,8 @@ export function getStradellaChordFinderResults(
   requestedBass: string | null = null,
   registerModel: StradellaRegisterModel = DEFAULT_STRADELLA_REGISTER_MODEL,
   minimumNominalGap: MinimumNominalGap = 0,
+  /** Mixed mode only: the requested bass must sound on a bass or counterbass button. */
+  requestedBassOnBassButton = false,
 ): StradellaChordFinderResult[] {
   const targetPitches = orderedTargetPitches(root, pattern);
   if (targetPitches.length === 0) {
@@ -80,7 +90,7 @@ export function getStradellaChordFinderResults(
   if (!validRequestedBass(root, pattern, requestedBass)) {
     return [notPlayableResult(targetPitches, "Invalid requested bass.", "The requested bass must be a chord tone.")];
   }
-  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern, maxButtons, spanColumns, requestedBass, registerModel, minimumNominalGap);
+  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern, maxButtons, spanColumns, requestedBass, registerModel, minimumNominalGap, requestedBassOnBassButton);
   const result = getStradellaChordFinderResult(buttons, root, pattern, mode, markRootBass, requestedBass, registerModel);
   if (!result.playable || passesNominalGapFilter(
     analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel).notes, minimumNominalGap,

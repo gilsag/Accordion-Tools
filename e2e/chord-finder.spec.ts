@@ -40,7 +40,8 @@ test("a chord with no root-position fingering falls back to any bass", async ({ 
   await findChord(page, "C", "major6add9");
   await expect(page.getByRole("status").filter({ hasText: "Root position isn't available" })).toBeVisible();
   await showResults(page);
-  expect(await realizations(page).count()).toBeGreaterThan(0);
+  // The Results panel loads on demand: wait for its first row, don't sample.
+  await expect(realizations(page).first()).toBeVisible();
 });
 
 test("Cmaj7 is shown on the diagram as C bass + E minor", async ({ page }) => {
@@ -71,3 +72,19 @@ test("opening another tool hides the Chord Finder result; reopening restores it"
   await expect(selectedRow.locator("td:nth-child(2)")).toHaveText(chosen);
   await expect(lit).toHaveCount(litCount);
 });
+
+test("root position plays the root on a bass button, with the usual C7 fingering first", async ({ page }) => {
+  await findChord(page, "C", "dominant7");
+  const bassOption = page.getByLabel("Play lowest note on bass button");
+  await expect(bassOption).toBeChecked();
+  await showResults(page);
+  await expect(realizations(page).first()).toHaveText("C bass + C 7th");
+  // C6 at the default (Moderate) reach cannot put C on the bass rows, so the
+  // next hand span is used, and the panel says so.
+  await openTool(page, "Chord Finder");
+  await page.getByLabel("Chord type").selectOption("major6");
+  await expect(page.getByRole("status").filter({ hasText: "use the next hand span: Extended" })).toBeVisible();
+  await showResults(page);
+  await expect(realizations(page).first()).toHaveText(/C (counter)?bass \+ A minor/);
+});
+

@@ -86,4 +86,4 @@ The Stradella Chord Finder was informed in part by the [Stradella Explorer](http
 
 The project source and documentation are licensed under **CC BY-NC 4.0**. Diagrams you create with Accordion Tools may be used for any purpose, including commercial use. See [LICENSE](LICENSE) for details. Third-party assets retain their own licenses and attribution requirements.
 
-**Version:** 0.18.0 · [Release history](VERSION_HISTORY.md)
+**Version:** 0.18.1 · [Release history](VERSION_HISTORY.md)

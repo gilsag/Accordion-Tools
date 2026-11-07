@@ -89,7 +89,13 @@ export type ChordProgressionDefinition = {
   symbols?: string[];
   /** Expanded format, still supported internally for future per-chord bar overrides. */
   steps?: ChordProgressionStep[];
+  /** Scale the Roman numerals count from. "major" (default): III, VI and VII
+   * are the major-scale degrees. "minor": natural minor, so III, VI and VII
+   * are a minor third, minor sixth and minor seventh above the key root. */
+  mode?: RomanNumeralMode;
 };
+
+export type RomanNumeralMode = "major" | "minor";
 
 export type BassPatternPlaybackEvent = {
   index: number;
@@ -115,6 +121,8 @@ export type BassPatternPlaybackEvent = {
 };
 
 const MAJOR_SCALE_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+const NATURAL_MINOR_SCALE_INTERVALS = [0, 2, 3, 5, 7, 8, 10];
+const ROMAN_NUMERAL = /^(b|#)?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)(.*)$/;
 
 export function chordProgressionSteps(
   progression: ChordProgressionDefinition,
@@ -233,7 +241,9 @@ function closestBassButton(
 }
 
 function chordPatternFromRoman(symbol: string): FinderChordPattern {
-  const compact = normalizeRomanSymbol(symbol).replace(/\s+/g, "");
+  // The case of the numeral itself decides major or minor, so a leading
+  // accidental (bVII, #iv) is set aside first.
+  const compact = normalizeRomanSymbol(symbol).replace(/\s+/g, "").replace(/^[b#]/, "");
   if (/dim/i.test(compact) || /°/.test(compact))
     return /7/.test(compact) ? "diminished7" : "diminished-triad";
   if (/m7b5|ø/i.test(compact)) return "minor7b5";
@@ -256,11 +266,26 @@ function chordPatternFromRoman(symbol: string): FinderChordPattern {
     : "major-triad";
 }
 
-export function resolveRomanChord(symbol: string, keyRootPitchClass: string) {
+/**
+ * Resolves a Roman-numeral chord to a root and chord type in a key.
+ * Secondary chords such as V7/IV or V/bVI are resolved in two steps: the
+ * target (IV) in the key, then the chord (V7) as a degree of the major scale
+ * on that target, so V7/IV in C is C7. In "minor" mode the numerals count
+ * from the natural minor scale.
+ */
+export function resolveRomanChord(symbol: string, keyRootPitchClass: string, mode: RomanNumeralMode = "major"): {
+  root: string;
+  pattern: FinderChordPattern;
+  label: string;
+} {
   const compact = normalizeRomanSymbol(symbol).replace(/\s+/g, "");
-  const romanMatch = compact.match(
-    /^(b|#)?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)(.*)$/,
-  );
+  const slash = compact.indexOf("/");
+  if (slash > 0 && ROMAN_NUMERAL.test(compact.slice(slash + 1))) {
+    const target = resolveRomanChord(compact.slice(slash + 1), keyRootPitchClass, mode);
+    const chord = resolveRomanChord(compact.slice(0, slash), target.root, "major");
+    return { ...chord, label: symbol };
+  }
+  const romanMatch = compact.match(ROMAN_NUMERAL);
   if (!romanMatch) {
     return {
       root: keyRootPitchClass,
@@ -273,9 +298,8 @@ export function resolveRomanChord(symbol: string, keyRootPitchClass: string) {
   const roman = romanMatch[2];
   const degree = ROMAN_TO_DEGREE[roman.toUpperCase()] ?? 0;
   const keyIndex = pitchIndex(keyRootPitchClass);
-  const root = pitchClassAt(
-    keyIndex + MAJOR_SCALE_INTERVALS[degree] + accidental,
-  );
+  const intervals = mode === "minor" ? NATURAL_MINOR_SCALE_INTERVALS : MAJOR_SCALE_INTERVALS;
+  const root = pitchClassAt(keyIndex + intervals[degree] + accidental);
   return {
     root,
     pattern: chordPatternFromRoman(compact),
@@ -956,7 +980,7 @@ export function makeBassPatternEvents(
   let previousBass: DiagramButton | undefined = reference;
 
   chordProgressionSteps(progression).forEach((progressionStep) => {
-    const chord = resolveRomanChord(progressionStep.symbol, keyRootPitchClass);
+    const chord = resolveRomanChord(progressionStep.symbol, keyRootPitchClass, progression.mode);
     const repeatsPerChord = Math.max(
       1,
       Math.round(repeatsPerChordOverride ?? progressionStep.bars ?? 1),

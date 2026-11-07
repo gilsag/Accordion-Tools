@@ -1,3 +1,14 @@
+## v0.18.1 — All presets load, bass on the bass rows (2026-11-06)
+
+- All 29 chord progression presets now load in the Progression Assistant. Secondary dominants are resolved on their target (V7/IV in C is C7, as in Bird Blues; Coltrane changes use V/bVI and V/III), and the minor-key presets (Andalusian cadence, Passamezzo antico, Romanesca) count III, VI and VII from the natural minor scale, with the chosen key as the minor tonic. Folia, written with explicit flats, also loads.
+- Fixed in the Bass Pattern Player as well, since it shares the resolver: V7/IV used to play the V7 of the key (G7 instead of C7 in C); III, VI and VII in the minor-key presets were a semitone too high; and flattened numerals such as bVII and bIII played minor chord buttons instead of major ones (I–IV–♭VII–IV, Backdoor, Folia, Andalusian cadence).
+- Chord Finder ranking: completeness is now one factor among others instead of coming first. Leaving out only the plain fifth costs very little, so the usual fingerings rank first: C bass + C7 for C7, C bass + C major for C, C counterbass + E minor for Cmaj7.
+- New **Play lowest note on bass button** option in the Chord Finder (on by default): a requested bass, including the root-position default, must be played on a bass or counterbass button rather than only being the lowest note. When that is impossible within the limits, the finder falls back to the bass as the lowest note and says so.
+- The Progression Assistant uses the Chord Finder's settings (maximum buttons, hand span, note-gap filter, register model and the new bass option) and a new **Bass: Root position / Any bass** choice (root position by default). With both weights at 0, every chord gets exactly the Chord Finder's first realization: I vi ii V7 I in C now plays C bass + C major, A bass + A minor, D bass + D minor, G bass + G7 and C bass + C major, instead of chord buttons alone, three single bass notes or the seventh in the bass.
+- When no realization within the hand span plays the requested bass on a bass button, the Chord Finder and the Progression Assistant first try the next wider span and say so, before giving up the bass button. C6 at the default Moderate reach is now C counterbass + A minor instead of A minor alone.
+- In Auto, the Progression Assistant plays major and minor chords with their own chord button whenever possible, so raising the weights no longer turns a chord into single bass notes (at the default weights, Dm in I vi ii V7 I was D counterbass + F bass + A counterbass; it is now D bass + D minor).
+- Two browser tests now wait for the page instead of sampling it at once, so they no longer fail when many tests run in parallel.
+
 ## v0.18.0 — Faster startup, steadier playback and browser tests (2026-11-06)
 
 ### Faster and lighter

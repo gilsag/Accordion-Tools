@@ -48,6 +48,7 @@ export interface SettingsSetters {
   setHarmonyPlaybackStyle: (value: NonNullable<DefaultSettingsFile["harmonyPlaybackStyle"]>) => void;
   setHarmonyProgressionHandMovementWeight: (value: NonNullable<DefaultSettingsFile["progressionHandMovementWeight"]>) => void;
   setHarmonyProgressionRhythmPattern: (value: NonNullable<DefaultSettingsFile["progressionRhythmPattern"]>) => void;
+  setHarmonyProgressionRootPosition: (value: NonNullable<DefaultSettingsFile["progressionRootPosition"]>) => void;
   setHarmonyRingVisibility: (value: Record<number, boolean>) => void;
   setHarmonyShowEnharmonics: (value: NonNullable<DefaultSettingsFile["harmonyShowEnharmonics"]>) => void;
   setHarmonyShowExplanation: (value: NonNullable<DefaultSettingsFile["harmonyShowExplanation"]>) => void;
@@ -114,6 +115,7 @@ export interface SettingsSetters {
   setStradellaBassRegisterOctave: (value: NonNullable<DefaultSettingsFile["stradellaBassRegisterOctave"]>) => void;
   setStradellaBassVoicing: (value: NonNullable<DefaultSettingsFile["stradellaBassVoicing"]>) => void;
   setStradellaChordFinderMarkRootBass: (value: NonNullable<DefaultSettingsFile["stradellaChordFinderMarkRootBass"]>) => void;
+  setStradellaRequestedBassOnBassButton: (value: NonNullable<DefaultSettingsFile["stradellaRequestedBassOnBassButton"]>) => void;
   setStradellaChordFinderMode: (value: NonNullable<DefaultSettingsFile["stradellaChordFinderMode"]>) => void;
   setStradellaChordRegisterGrouping: (value: NonNullable<DefaultSettingsFile["stradellaChordRegisterGrouping"]>) => void;
   setStradellaChordRegisterOctave: (value: NonNullable<DefaultSettingsFile["stradellaChordRegisterOctave"]>) => void;
@@ -197,6 +199,7 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
     setStradellaBassRegisterOctave,
     setStradellaBassVoicing,
     setStradellaChordFinderMarkRootBass,
+    setStradellaRequestedBassOnBassButton,
     setStradellaChordFinderMode,
     setStradellaChordRegisterGrouping,
     setStradellaChordRegisterOctave,
@@ -425,6 +428,9 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
             defaults.stradellaChordFinderMarkRootBass,
           );
         }
+        if (typeof defaults.stradellaRequestedBassOnBassButton === "boolean") {
+          setStradellaRequestedBassOnBassButton(defaults.stradellaRequestedBassOnBassButton);
+        }
         if (
           isOneOf(defaults.abcStradellaMode, [
             "bass-notes-only",
@@ -565,6 +571,7 @@ function applyExtendedDefaultSettings(settings: DefaultSettingsFile, setters: Se
     setHarmonyPlaybackStyle,
     setHarmonyProgressionHandMovementWeight,
     setHarmonyProgressionRhythmPattern,
+    setHarmonyProgressionRootPosition,
     setHarmonyRingVisibility,
     setHarmonyShowEnharmonics,
     setHarmonyShowExplanation,
@@ -733,6 +740,8 @@ function applyExtendedDefaultSettings(settings: DefaultSettingsFile, setters: Se
       setHarmonyProgressionHandMovementWeight(Math.max(0, Math.min(1, settings.progressionHandMovementWeight)));
     if (isOneOf(settings.progressionRhythmPattern, ["block", "oom-pah", "waltz", "march"] as const))
       setHarmonyProgressionRhythmPattern(settings.progressionRhythmPattern);
+    if (typeof settings.progressionRootPosition === "boolean")
+      setHarmonyProgressionRootPosition(settings.progressionRootPosition);
   }
 
 /** Imported partial JSON affects only valid supplied fields, and persists an
@@ -788,6 +797,7 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
     setStradellaBassRegisterOctave,
     setStradellaBassVoicing,
     setStradellaChordFinderMarkRootBass,
+    setStradellaRequestedBassOnBassButton,
     setStradellaChordFinderMode,
     setStradellaChordRegisterGrouping,
     setStradellaChordRegisterOctave,
@@ -955,6 +965,8 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
       setStradellaChordFinderMarkRootBass(
         settings.stradellaChordFinderMarkRootBass,
       );
+    if (typeof settings.stradellaRequestedBassOnBassButton === "boolean")
+      setStradellaRequestedBassOnBassButton(settings.stradellaRequestedBassOnBassButton);
     if (
       isOneOf(settings.abcStradellaMode, [
         "bass-notes-only",
@@ -1073,6 +1085,7 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   "stradellaChordRegisterOctave" |
   "stradellaChordRegisterGrouping" |
   "stradellaChordFinderMarkRootBass" |
+  "stradellaRequestedBassOnBassButton" |
   "stradellaChordFinderMode" |
   "stradellaNoteLevels" |
   "stradellaMinimumNominalGap" |
@@ -1166,6 +1179,7 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   harmonyRingVisibility: Record<number, boolean>;
   harmonyProgressionHandMovementWeight: NonNullable<DefaultSettingsFile["progressionHandMovementWeight"]>;
   harmonyProgressionRhythmPattern: NonNullable<DefaultSettingsFile["progressionRhythmPattern"]>;
+  harmonyProgressionRootPosition: NonNullable<DefaultSettingsFile["progressionRootPosition"]>;
 };
 
 /** Retains historical JSON ordering, alias names and normalization. */
@@ -1208,6 +1222,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     harmonyPlaybackStyle,
     harmonyProgressionHandMovementWeight,
     harmonyProgressionRhythmPattern,
+    harmonyProgressionRootPosition,
     harmonyRingVisibility,
     harmonyShowEnharmonics,
     harmonyShowExplanation,
@@ -1274,6 +1289,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     stradellaBassRegisterOctave,
     stradellaBassVoicing,
     stradellaChordFinderMarkRootBass,
+    stradellaRequestedBassOnBassButton,
     stradellaChordFinderMode,
     stradellaChordRegisterGrouping,
     stradellaChordRegisterOctave,
@@ -1319,6 +1335,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       stradellaChordRegisterOctave,
       stradellaChordRegisterGrouping,
       stradellaChordFinderMarkRootBass,
+      stradellaRequestedBassOnBassButton,
       stradellaChordFinderMode,
       stradellaNoteLevels,
       stradellaShowNominalNoteSpacing: showStradellaVoicingIntervals,
@@ -1412,5 +1429,6 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       harmonyVoicingStyle,
       progressionHandMovementWeight: harmonyProgressionHandMovementWeight,
       progressionRhythmPattern: harmonyProgressionRhythmPattern,
+      progressionRootPosition: harmonyProgressionRootPosition,
     };
 }

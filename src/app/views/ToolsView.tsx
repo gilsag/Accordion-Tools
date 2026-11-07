@@ -42,7 +42,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     deselectButton, downloadAllStradellaRealizations, exploreCurrentStradellaChordInHarmony, exportSelectedBassPattern, finderExplanationFontSize, finderMaxButtons,
     finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel,
     formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel, harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression,
-    harmonyProgressionHandMovementWeight, harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes,
+    harmonyProgressionHandMovementWeight, harmonyProgressionRootPosition, setHarmonyProgressionRootPosition, harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes,
     harmonyProgressionRecording, harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
     harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering, isRecordingSequence,
     isTrebleLikeSide, language, loadAbcExample, loadSelectedPatternIntoEditor, moveHarmonyProgressionChord,
@@ -66,13 +66,13 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     setStradellaChordFinderMode, setStradellaChordFinderPattern, setStradellaChordFinderRealizationIndex, setStradellaChordFinderRequestedBass, setStradellaChordFinderRoot, setStradellaMinimumNominalGap,
     setStradellaNoteLevels, setTextNoteColor, setTextNoteFont, setTextNoteFontSize, setTrebleChordVoicingMode, showFinderRealizationNote,
     showHarmonySelectionOnStradella, showStradellaVoicingIntervals, showTrebleVoicingNote, side, soundSequenceTempoBpm, stopAbcPlayback,
-    stopBassPatternPlayback, stopSoundPlayback, stradellaChordFinderActive, stradellaChordFinderMarkRootBass,
+    stopBassPatternPlayback, stopSoundPlayback, stradellaChordFinderActive, stradellaChordFinderMarkRootBass, stradellaRequestedBassOnBassButton, setStradellaRequestedBassOnBassButton,
     stradellaChordFinderMode, stradellaChordFinderPattern, stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass,
     stradellaChordFinderResult, stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaScaleFinderResult,
     t, textNoteColor, textNoteFont, textNoteFontSize, textNotes, toggleHarmonyProgressionRecording,
     toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
     progressionPathVisible, setProgressionPathVisible,
-    stradellaChordFinderRootFallback,
+    stradellaChordFinderRootFallback, stradellaChordFinderBassButtonFallback, stradellaChordFinderReachExtendedTo,
   } = model;
   return (
     <>
@@ -301,10 +301,14 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   requestedBass={stradellaChordFinderRequestedBass}
                   onRequestedBassChange={setStradellaChordFinderRequestedBass}
                   rootFallback={stradellaChordFinderRootFallback}
+                  bassButtonFallback={stradellaChordFinderBassButtonFallback}
+                  reachExtendedTo={stradellaChordFinderReachExtendedTo}
                   mode={stradellaChordFinderMode}
                   onModeChange={setStradellaChordFinderMode}
                   markRootBass={stradellaChordFinderMarkRootBass}
                   onMarkRootBassChange={setStradellaChordFinderMarkRootBass}
+                  requestedBassOnBassButton={stradellaRequestedBassOnBassButton}
+                  onRequestedBassOnBassButtonChange={setStradellaRequestedBassOnBassButton}
                   result={stradellaChordFinderResult}
                   maxButtons={finderMaxButtons}
                   onMaxButtonsChange={setFinderMaxButtons}
@@ -357,6 +361,8 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                   manualPattern={harmonyProgressionManualPattern}
                   onManualPatternChange={setHarmonyProgressionManualPattern}
                   handMovementWeight={harmonyProgressionHandMovementWeight}
+                  rootPosition={harmonyProgressionRootPosition}
+                  onRootPositionChange={(value) => { stopSoundPlayback(); setHarmonyProgressionRootPosition(value); }}
                   voiceLeadingWeight={harmonyProgressionVoiceLeadingWeight}
                   onVoiceLeadingWeightChange={(value) => { stopSoundPlayback(); setHarmonyProgressionVoiceLeadingWeight(value); }}
                   onHandMovementWeightChange={(value) => { stopSoundPlayback(); setHarmonyProgressionHandMovementWeight(value); }}

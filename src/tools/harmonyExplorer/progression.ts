@@ -1,7 +1,9 @@
 import type { DiagramButton, FinderChordPattern } from "../../types";
 import { intervalsForChordFinder, chordFinderLabel } from "../../music/chordDefinitions";
 import { displayFinderChord, type ChordDisplayStyle } from "../chordDisplay";
-import { getStradellaChordFinderResults, type StradellaChordFinderResult } from "../stradellaChordFinderTools";
+import { getStradellaChordFinderResults, nextWiderHandSpan, type StradellaChordFinderResult } from "../stradellaChordFinderTools";
+import { DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "../stradellaChordFinder/registerModel";
+import type { MinimumNominalGap } from "../stradellaChordFinder/voicingDensity";
 import { analyzeVoiceLeading, chordFamily, chordLabel, pitchClassesForChord, type ChordFamilyId } from "./music";
 import { finderPatternForHarmonyFamily, pitchClassNameFromNumber, pitchClassNumberFromName } from "./integration";
 
@@ -55,7 +57,33 @@ export function isHarmonyProgressionChord(
   return event.kind !== "note";
 }
 
+/** The Chord Finder settings the progression search shares, so that with both
+ * weights at 0 each chord gets the Chord Finder's first realization. */
+export type ProgressionSearchSettings = {
+  /** Ask for each chord's root as its bass (root position), falling back to
+   * any bass when no realization allows it, as the Chord Finder does. */
+  rootPosition: boolean;
+  /** The requested bass must sound on a bass or counterbass button. */
+  requestedBassOnBassButton: boolean;
+  maxButtons: number;
+  spanColumns: number;
+  registerModel: StradellaRegisterModel;
+  minimumNominalGap: MinimumNominalGap;
+};
+
+/** Engine defaults: any bass, three buttons, extended reach. */
+export const DEFAULT_PROGRESSION_SEARCH: ProgressionSearchSettings = {
+  rootPosition: false,
+  requestedBassOnBassButton: false,
+  maxButtons: 3,
+  spanColumns: 5.5,
+  registerModel: DEFAULT_STRADELLA_REGISTER_MODEL,
+  minimumNominalGap: 0,
+};
+
 export type ProgressionOptimizationOptions = {
+  /** Chord Finder settings for each chord's search (defaults: DEFAULT_PROGRESSION_SEARCH). */
+  search?: ProgressionSearchSettings;
   allowApproximations: boolean;
   handMovementWeight: number;
   /** Independent 0..1 transition coefficient, session-owned (not in settings JSON). */
@@ -250,23 +278,40 @@ export function progressionRealizationKey(result: StradellaChordFinderResult) {
   return result.playbackButtons.map((button) => button.id).sort().join("|");
 }
 
-/* Chord Finder results depend only on the physical layout, root and chord
-   type here (default limits, register model and gap filter), so they are
-   cached per layout. Moving a weight slider or re-ordering chords then reuses
-   them instead of searching again. The WeakMap releases a layout's entries
-   when its button array is no longer used. */
+/* Chord Finder results depend only on the physical layout, the chord and the
+   search settings, so they are cached per layout. Moving a weight slider or
+   re-ordering chords then reuses them instead of searching again. The
+   WeakMap releases a layout's entries when its button array is no longer used. */
 const finderResultCache = new WeakMap<DiagramButton[], Map<string, StradellaChordFinderResult[]>>();
 
-function progressionFinderResults(buttons: DiagramButton[], root: string, pattern: FinderChordPattern) {
+function progressionFinderResults(
+  buttons: DiagramButton[], root: string, pattern: FinderChordPattern,
+  search: ProgressionSearchSettings = DEFAULT_PROGRESSION_SEARCH,
+) {
   let byChord = finderResultCache.get(buttons);
   if (!byChord) {
     byChord = new Map();
     finderResultCache.set(buttons, byChord);
   }
-  const key = `${root}|${pattern}`;
+  const key = [root, pattern, search.rootPosition, search.requestedBassOnBassButton, search.maxButtons,
+    search.spanColumns, search.minimumNominalGap, JSON.stringify(search.registerModel)].join("|");
   let results = byChord.get(key);
   if (!results) {
-    results = getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true);
+    const find = (requestedBass: string | null, onBassButton: boolean, span = search.spanColumns) => getStradellaChordFinderResults(
+      buttons, root, pattern, "bass-and-chords", true, search.maxButtons, span,
+      requestedBass, search.registerModel, search.minimumNominalGap, onBassButton,
+    );
+    const playable = (list: StradellaChordFinderResult[]) => list.some((result) => result.playable);
+    // The same preferences as the Chord Finder, in the same order: the root on
+    // a bass button, the same with one step more hand span, then the root as
+    // the lowest note, then any bass.
+    results = find(search.rootPosition ? root : null, search.requestedBassOnBassButton);
+    const widerSpan = nextWiderHandSpan(search.spanColumns);
+    if (search.rootPosition && search.requestedBassOnBassButton && widerSpan !== null && !playable(results)) {
+      results = find(root, true, widerSpan);
+    }
+    if (search.rootPosition && search.requestedBassOnBassButton && !playable(results)) results = find(root, false);
+    if (search.rootPosition && !playable(results)) results = find(null, false);
     byChord.set(key, results);
   }
   return results;
@@ -280,11 +325,19 @@ export function progressionRealizationsForChord(
   buttons: DiagramButton[],
   chord: HarmonyProgressionChord,
   allowApproximations: boolean,
+  search: ProgressionSearchSettings = DEFAULT_PROGRESSION_SEARCH,
 ) {
   const pattern = progressionFinderPattern(chord);
   if (!pattern) return [];
-  return progressionFinderResults(buttons, pitchClassNameFromNumber(chord.rootPc), pattern).map((result, realizationIndex) => ({ result, realizationIndex }))
+  return progressionFinderResults(buttons, pitchClassNameFromNumber(chord.rootPc), pattern, search).map((result, realizationIndex) => ({ result, realizationIndex }))
     .filter(({ result }) => result.playable && (allowApproximations || result.exact));
+}
+
+/** The Stradella chord button that is exactly this chord, for triads. */
+function ownChordButtonKind(pattern: FinderChordPattern): DiagramButton["kind"] | null {
+  if (pattern === "major-triad") return "chord-major";
+  if (pattern === "minor-triad") return "chord-minor";
+  return null;
 }
 
 /* Limit each progression layer to usable candidate recipes. The global
@@ -300,14 +353,23 @@ function candidatesForChord(
   if (!pattern) return [];
   const root = pitchClassNameFromNumber(chord.rootPc);
   const maxResults = options.maxRealizationsPerChord ?? 5;
-  const allResults = progressionFinderResults(buttons, root, pattern);
+  const allResults = progressionFinderResults(buttons, root, pattern, options.search);
   const pinnedKey = options.fixedRealizationKeys?.[chord.id];
+  const indexed = allResults.map((result, realizationIndex) => ({ result, realizationIndex }));
+  // A major or minor triad has its own chord button. In Auto, play it with
+  // that button whenever some realization does, so the optimizer never
+  // spells the triad as single bass notes to save hand movement. Original
+  // Finder ranks are kept, and the ← → arrows can still pin any realization.
+  const ownButton = ownChordButtonKind(pattern);
+  const usesOwnButton = (result: StradellaChordFinderResult) => result.playbackButtons.some((button) =>
+    button.kind === ownButton && pitchClassNumberFromName(button.chordRoot ?? "") === chord.rootPc);
+  const auto = ownButton && indexed.some(({ result }) => result.playable && usesOwnButton(result))
+    ? indexed.filter(({ result }) => usesOwnButton(result)) : indexed;
   // A pinned result may lie well below the automatic top-five candidates.
   // Never silently replace it with another sounding recipe.
   const playable = (pinnedKey
-    ? allResults.map((result, realizationIndex) => ({ result, realizationIndex }))
-      .filter(({ result }) => progressionRealizationKey(result) === pinnedKey)
-    : allResults.slice(0, maxResults).map((result, realizationIndex) => ({ result, realizationIndex })))
+    ? indexed.filter(({ result }) => progressionRealizationKey(result) === pinnedKey)
+    : auto.slice(0, maxResults))
     .filter(({ result }) => result.playable)
     .filter(({ result }) => options.allowApproximations || result.exact);
 

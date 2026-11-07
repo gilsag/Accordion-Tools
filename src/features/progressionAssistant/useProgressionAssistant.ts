@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { AccidentalMode, BassCount } from "../../types";
 import type { FinderChordPattern } from "../../types";
 import type { HarmonyProgressionChord, HarmonyRecordedEvent } from "../../tools/harmonyExplorer/progression";
-import { optimizeStradellaProgression, progressionRealizationsForChord, progressionRealizationKey } from "../../tools/harmonyExplorer/progression";
+import { optimizeStradellaProgression, progressionRealizationsForChord, progressionRealizationKey, type ProgressionSearchSettings } from "../../tools/harmonyExplorer/progression";
 import type { ProgressionRhythmPattern } from "../../sound";
 import { generateStradella } from "../../stradella";
 import { progressionNoteStep } from "./progressionNoteSelection";
@@ -23,6 +23,9 @@ export function useHarmonyProgressionState() {
   const [harmonyProgressionManualPattern, setHarmonyProgressionManualPattern] = useState<FinderChordPattern>("major-triad");
   const [harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight] = useState(0.65);
   const [harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight] = useState(0.35);
+  // Root position for every chord (falling back to any bass when impossible),
+  // or any bass. Saved setting.
+  const [harmonyProgressionRootPosition, setHarmonyProgressionRootPosition] = useState(true);
   const [harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern] = useState<ProgressionRhythmPattern>("block");
   const [harmonyProgressionRealizationKeys, setHarmonyProgressionRealizationKeys] = useState<Record<string, string>>({});
   const [harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex] = useState<number | null>(null);
@@ -43,6 +46,7 @@ export function useHarmonyProgressionState() {
     harmonyProgressionManualPattern, setHarmonyProgressionManualPattern,
     harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
     harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight,
+    harmonyProgressionRootPosition, setHarmonyProgressionRootPosition,
     harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,
     harmonyProgressionRealizationKeys, setHarmonyProgressionRealizationKeys,
     harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex,
@@ -64,7 +68,7 @@ export function useHarmonyProgressionResults({
   harmonyProgression,
   harmonyProgressionHandMovementWeight, harmonyProgressionVoiceLeadingWeight, harmonyProgressionRealizationKeys, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId,
   setHarmonyProgressionRealizationKeys, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, harmonyProgressionActiveButtonIds, harmonyProgressionPulseSilent,
-  activeToolSection,
+  activeToolSection, progressionSearch,
 }: Pick<ReturnType<typeof useHarmonyProgressionState>,
   "harmonyProgression" |
   "harmonyProgressionHandMovementWeight" | "harmonyProgressionVoiceLeadingWeight" | "harmonyProgressionRealizationKeys" | "setHarmonyProgressionRealizationKeys" | "harmonyProgressionPreviewIndex" |
@@ -73,6 +77,8 @@ export function useHarmonyProgressionResults({
   basses: BassCount; buttonSize: number; spacing: number;
   stradellaAccidental: AccidentalMode; diagramVerticalSpacing: number;
   activeToolSection: string | null;
+  /** Chord Finder limits, register model and bass rules shared with each chord's search. */
+  progressionSearch: ProgressionSearchSettings;
 }) {
   /* Harmony progression optimization always targets the Stradella manual, even
      while the Harmony workspace is visible or the treble side was last active. */
@@ -91,10 +97,10 @@ export function useHarmonyProgressionResults({
     harmonyProgression.map((chord) => [
       chord.id,
       progressionRealizationsForChord(
-        harmonyProgressionStradellaButtons, chord, true,
+        harmonyProgressionStradellaButtons, chord, true, progressionSearch,
       ),
     ]),
-  ), [harmonyProgression, harmonyProgressionStradellaButtons]);
+  ), [harmonyProgression, harmonyProgressionStradellaButtons, progressionSearch]);
 
   // Removing a chord or changing physical layouts may
   // invalidate a pinned recipe. Return only that step to Auto, never silently
@@ -123,6 +129,7 @@ export function useHarmonyProgressionResults({
         voiceLeadingWeight: harmonyProgressionVoiceLeadingWeight,
         maxRealizationsPerChord: 5,
         fixedRealizationKeys: validPinnedKeys,
+        search: progressionSearch,
       },
     ),
     [
@@ -131,6 +138,7 @@ export function useHarmonyProgressionResults({
       harmonyProgressionHandMovementWeight,
       harmonyProgressionVoiceLeadingWeight,
       validPinnedKeys,
+      progressionSearch,
     ],
   );
 

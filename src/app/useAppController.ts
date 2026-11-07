@@ -65,7 +65,7 @@ import { playButtonArpeggioThenChord, playButtonCombination, playButtonRhythmPro
 import type { ChordFamilyId } from "../tools/harmonyExplorer/music";
 import { CIRCLE_OF_FIFTHS, DEFAULT_RING_VISIBILITY, chordLabel as harmonyChordLabel, chordMidiNotes as harmonyChordMidiNotes, pitchClassesForChord as harmonyPitchClassesForChord } from "../tools/harmonyExplorer/music";
 import type { HarmonyPlaybackStyle } from "../tools/harmonyExplorer/types";
-import type { HarmonyRecordedChord, HarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
+import type { HarmonyRecordedChord, HarmonyProgressionChord, ProgressionSearchSettings } from "../tools/harmonyExplorer/progression";
 import { progressionFinderPattern } from "../tools/harmonyExplorer/progression";
 import { isHarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
 import { progressionBassPulseButtons, progressionRealizationKey } from "../tools/harmonyExplorer/progression";
@@ -273,6 +273,7 @@ export function useAppController() {
     finderExplanationFontSize, setFinderExplanationFontSize,
     pendingProgressionRealizationKey, setPendingProgressionRealizationKey,
     stradellaChordFinderMarkRootBass, setStradellaChordFinderMarkRootBass,
+    stradellaRequestedBassOnBassButton, setStradellaRequestedBassOnBassButton,
   } = useStradellaChordFinderState();
   const [batchExporting, setBatchExporting] = useState(false);
   // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
@@ -311,6 +312,7 @@ export function useAppController() {
     harmonyProgressionManualPattern, setHarmonyProgressionManualPattern,
     harmonyProgressionHandMovementWeight, setHarmonyProgressionHandMovementWeight,
     harmonyProgressionVoiceLeadingWeight, setHarmonyProgressionVoiceLeadingWeight,
+    harmonyProgressionRootPosition, setHarmonyProgressionRootPosition,
     harmonyProgressionRhythmPattern, setHarmonyProgressionRhythmPattern,
     harmonyProgressionRealizationKeys, setHarmonyProgressionRealizationKeys,
     harmonyProgressionPreviewIndex, setHarmonyProgressionPreviewIndex,
@@ -407,6 +409,7 @@ export function useAppController() {
     setHarmonyPlaybackStyle,
     setHarmonyProgressionHandMovementWeight,
     setHarmonyProgressionRhythmPattern,
+    setHarmonyProgressionRootPosition,
     setHarmonyRingVisibility,
     setHarmonyShowEnharmonics,
     setHarmonyShowExplanation,
@@ -473,6 +476,7 @@ export function useAppController() {
     setStradellaBassRegisterOctave,
     setStradellaBassVoicing,
     setStradellaChordFinderMarkRootBass,
+    setStradellaRequestedBassOnBassButton,
     setStradellaChordFinderMode,
     setStradellaChordRegisterGrouping,
     setStradellaChordRegisterOctave,
@@ -559,6 +563,7 @@ export function useAppController() {
       harmonyPlaybackStyle,
       harmonyProgressionHandMovementWeight,
       harmonyProgressionRhythmPattern,
+      harmonyProgressionRootPosition,
       harmonyRingVisibility,
       harmonyShowEnharmonics,
       harmonyShowExplanation,
@@ -625,6 +630,7 @@ export function useAppController() {
       stradellaBassRegisterOctave,
       stradellaBassVoicing,
       stradellaChordFinderMarkRootBass,
+      stradellaRequestedBassOnBassButton,
       stradellaChordFinderMode,
       stradellaChordRegisterGrouping,
       stradellaChordRegisterOctave,
@@ -773,6 +779,18 @@ export function useAppController() {
     isPianoTreble,
   ]);
 
+  // The Progression Assistant searches each chord with the Chord Finder's own
+  // limits, register model and bass rules, so that with both weights at 0 every
+  // chord gets the Chord Finder's first realization.
+  const progressionSearch = useMemo<ProgressionSearchSettings>(() => ({
+    rootPosition: harmonyProgressionRootPosition,
+    requestedBassOnBassButton: stradellaRequestedBassOnBassButton,
+    maxButtons: finderMaxButtons,
+    spanColumns: finderSpanColumns,
+    registerModel: stradellaRegisterModel,
+    minimumNominalGap: stradellaMinimumNominalGap,
+  }), [harmonyProgressionRootPosition, stradellaRequestedBassOnBassButton, finderMaxButtons,
+    finderSpanColumns, stradellaRegisterModel, stradellaMinimumNominalGap]);
   const { harmonyProgressionPlan, harmonyProgressionRealizationOptions,
     progressionPreviewButtonIds, harmonyProgressionActiveButtonIdSet, harmonyProgressionNoteStep,
   } = useHarmonyProgressionResults({
@@ -780,7 +798,7 @@ export function useAppController() {
     harmonyProgression,
     harmonyProgressionHandMovementWeight, harmonyProgressionVoiceLeadingWeight, harmonyProgressionRealizationKeys, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId,
     setHarmonyProgressionRealizationKeys, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, harmonyProgressionActiveButtonIds, harmonyProgressionPulseSilent,
-    activeToolSection,
+    activeToolSection, progressionSearch,
   });
 
   /* Signature of layout-changing options used to clear stale tool markings. */
@@ -1128,7 +1146,7 @@ export function useAppController() {
     stradellaChordFinderPlaybackButtons,
     stradellaRootBassFinderButtonIds,
     stradellaPrimaryFinderButtonIds,
-    stradellaChordFinderRootFallback,
+    stradellaChordFinderRootFallback, stradellaChordFinderBassButtonFallback, stradellaChordFinderReachExtendedTo,
     stradellaChordFinderEffectiveRequestedBass,
   } = useStradellaChordFinderResults({
     buttons, side, stradellaRegisterModel,
@@ -1136,7 +1154,7 @@ export function useAppController() {
     stradellaChordFinderRoot, stradellaChordFinderPattern,
     stradellaChordFinderMode, stradellaChordFinderRealizationIndex,
     stradellaChordFinderRequestedBass, stradellaChordFinderRootPreferred, finderMaxButtons, finderSpanColumns,
-    stradellaMinimumNominalGap, stradellaChordFinderMarkRootBass,
+    stradellaMinimumNominalGap, stradellaChordFinderMarkRootBass, stradellaRequestedBassOnBassButton,
     pendingProgressionRealizationKey, setPendingProgressionRealizationKey,
     setStradellaChordFinderRealizationIndex,
   });
@@ -2403,7 +2421,7 @@ export function useAppController() {
       deselectButton, downloadAllStradellaRealizations, exploreCurrentStradellaChordInHarmony, exportSelectedBassPattern, finderExplanationFontSize,
       finderMaxButtons, finderSpanColumns, fingeringDraft, fingeringPosition, formatProgressionOptionLabel,
       formatStradellaFinderPitches, formatStradellaFinderText, formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel,
-      harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression, harmonyProgressionHandMovementWeight,
+      harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression, harmonyProgressionHandMovementWeight, harmonyProgressionRootPosition, setHarmonyProgressionRootPosition,
       harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionPreviewIndex, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes, harmonyProgressionRecording,
       harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyRecordedProgressionPlaying, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
       harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering,
@@ -2428,13 +2446,13 @@ export function useAppController() {
       setScaleFinderActive, setScaleFinderDisplayMode, setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
       setSelectionOnClick, setSequenceArrowheadSize, setSequenceColorPreset, setSequenceDisplayMode, setSequenceNumberColorPreset,
       setSequenceNumberFontSize, setSequenceNumberPosition, setSequenceThickness, setShowFinderRealizationNote, setShowStradellaVoicingIntervals,
-      setShowTrebleVoicingNote, setSoundSequenceTempoBpm, setStradellaChordFinderActive, setStradellaChordFinderMarkRootBass, setStradellaChordFinderMode,
+      setShowTrebleVoicingNote, setSoundSequenceTempoBpm, setStradellaChordFinderActive, setStradellaChordFinderMarkRootBass, stradellaRequestedBassOnBassButton, setStradellaRequestedBassOnBassButton, setStradellaChordFinderMode,
       setStradellaChordFinderPattern, setStradellaChordFinderRealizationIndex, setStradellaChordFinderRequestedBass, setStradellaChordFinderRoot, setStradellaMinimumNominalGap,
       setStradellaNoteLevels, setTextNoteColor, setTextNoteFont, setTextNoteFontSize, setTrebleChordVoicingMode,
       showFinderRealizationNote, showHarmonySelectionOnStradella, showStradellaVoicingIntervals, showTrebleVoicingNote, side,
       soundSequenceTempoBpm, stopAbcPlayback, stopBassPatternPlayback, stopHarmonyRecordedProgressionPlayback, stopSoundPlayback,
       stradellaChordFinderActive, stradellaChordFinderButtons, stradellaChordFinderMarkRootBass, stradellaChordFinderMode, stradellaChordFinderPattern,
-      stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass, stradellaChordFinderEffectiveRequestedBass, stradellaChordFinderRootFallback, stradellaChordFinderResult,
+      stradellaChordFinderPlaybackButtons, stradellaChordFinderRealizationIndex, stradellaChordFinderRealizations, stradellaChordFinderRequestedBass, stradellaChordFinderEffectiveRequestedBass, stradellaChordFinderRootFallback, stradellaChordFinderBassButtonFallback, stradellaChordFinderReachExtendedTo, stradellaChordFinderResult,
       stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaRegisterModel, stradellaScaleFinderResult,
       t, textNoteColor, textNoteFont, textNoteFontSize, textNotes,
       toggleHarmonyProgressionRecording, toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
