@@ -40,6 +40,9 @@ type ProgressionAssistantPanelProps = {
   manualPattern: FinderChordPattern;
   onManualPatternChange: (value: FinderChordPattern) => void;
   handMovementWeight: number;
+  /** Root position for every chord (with fallback), or any bass. */
+  rootPosition: boolean;
+  onRootPositionChange: (value: boolean) => void;
   onHandMovementWeightChange: (value: number) => void;
   voiceLeadingWeight: number;
   onVoiceLeadingWeightChange: (value: number) => void;
@@ -74,6 +77,8 @@ export function ProgressionAssistantPanel({
   manualPattern,
   onManualPatternChange,
   handMovementWeight,
+  rootPosition,
+  onRootPositionChange,
   onHandMovementWeightChange,
   voiceLeadingWeight,
   onVoiceLeadingWeightChange,
@@ -214,6 +219,16 @@ export function ProgressionAssistantPanel({
 
       <fieldset className="tool-fieldset">
         <legend>{t("ui.optimization")}</legend>
+
+        <SegmentedChoice
+          label={<>{t("ui.progressionBass")} <HelpTip text={t("ui.progressionBassHelp")} /></>}
+          value={rootPosition ? "root" : "any"}
+          onChange={(next) => onRootPositionChange(next === "root")}
+          options={[
+            { value: "root", label: t("ui.progressionRootPosition") },
+            { value: "any", label: t("ui.progressionAnyBass") },
+          ]}
+        />
 
         <label>
           <span className="label-line">

@@ -29,6 +29,13 @@ type StradellaChordFinderPanelProps = {
   onRequestedBassChange: (value: string | null) => void;
   /** Root position was preferred but no realization puts the root lowest. */
   rootFallback?: boolean;
+  /** No realization plays the requested bass on a bass button, so ones without are shown. */
+  bassButtonFallback?: boolean;
+  /** The wider hand span used to keep the bass on a bass button, or null. */
+  reachExtendedTo?: number | null;
+  /** The requested bass must sound on a bass or counterbass button. */
+  requestedBassOnBassButton: boolean;
+  onRequestedBassOnBassButtonChange: (value: boolean) => void;
   mode: StradellaChordFinderMode;
   onModeChange: (value: StradellaChordFinderMode) => void;
   markRootBass: boolean;
@@ -72,6 +79,10 @@ export function StradellaChordFinderPanel({
   requestedBass,
   onRequestedBassChange,
   rootFallback = false,
+  bassButtonFallback = false,
+  reachExtendedTo = null,
+  requestedBassOnBassButton,
+  onRequestedBassOnBassButtonChange,
   mode,
   onModeChange,
   markRootBass,
@@ -156,7 +167,18 @@ export function StradellaChordFinderPanel({
             ))}
           </select>
         </label>
+        {mode === "bass-and-chords" && requestedBass !== null && (
+          <label className="checkbox-line">
+            <input type="checkbox" checked={requestedBassOnBassButton}
+              onChange={(event) => onRequestedBassOnBassButtonChange(event.target.checked)} />
+            <span className="label-line">{t("tools.bassOnBassButton")} <HelpTip text={t("tools.bassOnBassButtonHelp")} /></span>
+          </label>
+        )}
         {rootFallback && <p className="hint" role="status">{t("tools.rootPositionUnavailable")}</p>}
+        {bassButtonFallback && <p className="hint" role="status">{t("tools.bassButtonUnavailable")}</p>}
+        {reachExtendedTo !== null && <p className="hint" role="status">{t("tools.reachWidenedForBass", {
+          span: t(reachExtendedTo > 5 ? "tools.extended" : reachExtendedTo > 4 ? "tools.moderate" : "tools.compact"),
+        })}</p>}
 
         <label>
           <span className="label-line">{t("tools.searchMode")} <HelpTip text={t("ui.stradellaSearchHelp")} /></span>

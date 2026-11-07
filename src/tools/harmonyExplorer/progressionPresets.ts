@@ -1,7 +1,8 @@
 /** Shared progression-catalog bridge. Both tools use the same bundled catalog
  * and Roman-numeral root resolver; no duplicate catalog or chord-finder engine.
- * Reject unsupported extensions / slash dominants instead of silently dropping
- * information while converting a Bass Pattern progression to Harmony chords.
+ * Secondary chords (V7/IV) and minor-mode catalog entries resolve through
+ * that resolver. Symbols whose chord type cannot be read exactly are reported
+ * as unsupported instead of being silently simplified.
  */
 import type { ChordProgressionDefinition } from "../bassPatternPlayerTools";
 import { chordProgressionSteps, resolveRomanChord } from "../bassPatternPlayerTools";
@@ -15,7 +16,7 @@ export type PresetConversion = {
 };
 
 /** Exact chord-type conversion for the shared Finder catalog. Unsupported
- * 7th alterations and secondary dominants remain visible as unsupported.
+ * chord types remain visible as unsupported.
  */
 export function convertProgressionPreset(
   definition: ChordProgressionDefinition, keyRoot: string,
@@ -23,15 +24,17 @@ export function convertProgressionPreset(
   const chords: PresetConversion["chords"] = [];
   const unsupported: string[] = [];
   const steps = chordProgressionSteps(definition);
-  // The shared Bass Pattern root resolver is major-scale based. Minor-tonic
-  // catalog entries require an explicit minor-mode mapping, not a guessed root.
-  if (definition.id === "andalusian-cadence" || steps.some(({ symbol }) => symbol === "i")) {
-    return { chords: [], unsupported: steps.map(({ symbol }) => symbol) };
-  }
+  const numeral = /^([b#]?)(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)(maj7|M7|7|ø7?|°7?|dim7?)?$/;
   for (const { symbol } of steps) {
     const normalized = symbol.replaceAll("♭", "b").replaceAll("♯", "#");
-    const match = normalized.match(/^([b#]?)(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)(maj7|M7|7|ø7?|°7?|dim7?)?$/);
-    if (!match) { unsupported.push(symbol); continue; }
+    // A secondary chord (V7/IV): the chord type comes from the part before the
+    // slash; the target after it must itself be a plain numeral.
+    const [chordPart, target, extra] = normalized.split("/");
+    const match = chordPart.match(numeral);
+    if (!match || extra !== undefined || (target !== undefined && !/^[b#]?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)$/.test(target))) {
+      unsupported.push(symbol);
+      continue;
+    }
     const [, , roman, suffix = ""] = match;
     const minor = roman === roman.toLowerCase();
     let pattern: FinderChordPattern;
@@ -40,7 +43,7 @@ export function convertProgressionPreset(
     else if (suffix.startsWith("ø")) pattern = "minor7b5";
     else if (suffix.startsWith("°") || suffix.startsWith("dim")) pattern = suffix.endsWith("7") ? "diminished7" : "diminished-triad";
     else pattern = minor ? "minor-triad" : "major-triad";
-    const resolved = resolveRomanChord(normalized, keyRoot);
+    const resolved = resolveRomanChord(normalized, keyRoot, definition.mode);
     const rootPc = pitchClassNumberFromName(resolved.root);
     if (rootPc === null) { unsupported.push(symbol); continue; }
     const sectorIndex = CIRCLE_OF_FIFTHS.indexOf(rootPc as typeof CIRCLE_OF_FIFTHS[number]);

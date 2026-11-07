@@ -27,6 +27,7 @@
   "stradellaChordRegisterOctave",
   "stradellaChordRegisterGrouping",
   "stradellaChordFinderMarkRootBass",
+  "stradellaRequestedBassOnBassButton",
   "stradellaChordFinderMode",
   "stradellaNoteLevels",
   "stradellaShowNominalNoteSpacing",
@@ -117,5 +118,6 @@
   "harmonyPlaybackStyle",
   "harmonyVoicingStyle",
   "progressionHandMovementWeight",
-  "progressionRhythmPattern"
+  "progressionRhythmPattern",
+  "progressionRootPosition"
 ]

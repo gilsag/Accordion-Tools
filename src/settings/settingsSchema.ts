@@ -87,6 +87,8 @@ export type DefaultSettingsFile = Partial<{
   stradellaChordRegisterGrouping: StradellaOctaveGrouping;
   stradellaChordFinderMode: StradellaChordFinderMode;
   stradellaChordFinderMarkRootBass: boolean;
+  /** Mixed search: the requested bass must sound on a bass or counterbass button. */
+  stradellaRequestedBassOnBassButton: boolean;
   abcStradellaMode: AbcStradellaMode;
   abcTrebleChordSymbolsMode: AbcTrebleChordSymbolsMode;
   bassPatternChordVoicing: BassPatternChordVoicing;
@@ -167,4 +169,6 @@ export type DefaultSettingsFile = Partial<{
   harmonyVoicingStyle: HarmonyVoicingStyle;
   progressionHandMovementWeight: number;
   progressionRhythmPattern: ProgressionRhythmPattern;
+  /** Progression Assistant: root position for every chord (with fallback) or any bass. */
+  progressionRootPosition: boolean;
 }>;

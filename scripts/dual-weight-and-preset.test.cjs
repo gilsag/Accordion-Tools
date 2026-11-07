@@ -41,13 +41,27 @@ for(const [preset, expected] of [
  const { chords,unsupported}=convertProgressionPreset(preset,'C');
  assert.deepEqual(unsupported,[]);assert.deepEqual(chords.map(x=>x.pattern),expected);
 }
-for(const symbols of ['V7/IV I','III9 V7','I sus4']){
+for(const symbols of ['III9 V7','I sus4','V7/IV/I','V7/X']){
  const converted=convertProgressionPreset({progression:symbols},'C');
- assert.ok(converted.unsupported.length>0);assert.equal(converted.chords.length,0);
+ assert.ok(converted.unsupported.length>0,symbols);assert.equal(converted.chords.length,0);
 }
+// Secondary chords resolve on their target: V7/IV in C is C7, V/bVI is Eb.
+const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const roots=(preset,key)=>convertProgressionPreset(preset,key).chords.map(c=>names[c.rootPc]+':'+c.pattern);
+assert.deepEqual(roots({progression:'V7/IV IV V/bVI bVI'},'C'),['C:dominant7','F:major-triad','D#:major-triad','G#:major-triad']);
+// Minor-mode entries count III, VI and VII from the natural minor scale.
+assert.deepEqual(roots({progression:'i VII III V',mode:'minor'},'A'),['A:minor-triad','G:major-triad','C:major-triad','E:major-triad']);
+assert.deepEqual(roots({progression:'iv III bII I',mode:'minor'},'A'),['D:minor-triad','C:major-triad','A#:major-triad','A:major-triad']);
 const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname,'../public/chord-progressions/chord-progressions.json'),'utf8'));
 assert.equal(catalog.length,29,'Use existing bundled 29-progression catalog');
-const convertible = catalog.filter(item => convertProgressionPreset(item,'C').chords.length>0);
-assert.ok(convertible.length >= 15 && convertible.length < catalog.length, 'Provide a useful subset and flag unsupported symbols');
-assert.equal(convertProgressionPreset(catalog.find(item=>item.id==='folia'),'C').chords.length,0,'Do not guess a major-key resolution for a minor tonic');
+for (const item of catalog) assert.deepEqual(convertProgressionPreset(item,'C').unsupported,[],`${item.id} loads`);
+assert.deepEqual(roots(catalog.find(item=>item.id==='bird-blues'),'F').slice(4,6),['F:dominant7','A#:major-triad'],'Bird Blues: V7/IV then IV');
+assert.deepEqual(roots(catalog.find(item=>item.id==='folia'),'D').slice(3,5),['C:major-triad','F:major-triad'],'Folia: bVII and bIII are major');
+// The Bass Pattern Player resolves through the same function.
+const { resolveRomanChord } = require('../src/tools/bassPatternPlayerTools.ts');
+const resolve=(symbol,key,mode)=>{const c=resolveRomanChord(symbol,key,mode);return c.root+':'+c.pattern;};
+assert.equal(resolve('V7/IV','C'),'C:dominant7');
+assert.equal(resolve('bVII','C'),'A#:major-triad','a flat does not make a numeral minor');
+assert.equal(resolve('#IVdim','C'),'F#:diminished-triad');
+assert.equal(resolve('VI','A','minor'),'F:major-triad');
 console.log('✓ Real Chord Finder ranking at 0/0, pinned physical IDs, independent weights, and shared preset conversions passed');

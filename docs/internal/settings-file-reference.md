@@ -111,6 +111,15 @@ These settings control rendered staff-notation panels in the accordion workspace
 | `stradellaChordRegisterOctave` | `3` | Octaves 2–5 |
 | `stradellaChordRegisterGrouping` | `"C-B"` | `"C-B"` or `"F-E"` |
 
+### Chord Finder and Progression Assistant bass
+
+| Key | Default | Meaning |
+|---|---|---|
+| `stradellaRequestedBassOnBassButton` | `true` | **Play lowest note on bass button**: a requested bass must sound on a bass or counterbass button. Also used by the Progression Assistant. |
+| `progressionRootPosition` | `true` | Progression Assistant **Bass**: root position for every chord (`true`) or any bass (`false`). |
+
+Both were added after v0.18.0 without a settings-version change: files without them keep the defaults.
+
 ### Chord Finder diagram notes
 
 `stradellaNoteLevels` is an object with boolean fields `identity`, `pitchClasses`, `voicing` and `physical`, all `true` by default. Older files omit it and keep showing all four lines; a partial object defaults only its missing or invalid fields to `true`. `stradellaShowNominalNoteSpacing` (default `true`) replaces the pitch list with the interval chart.

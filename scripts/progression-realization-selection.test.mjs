@@ -24,7 +24,11 @@ const candidates = (root) => Array.from({ length: 6 }, (_unused, n) => {
 const deps = {
   '../../music/chordDefinitions': { intervalsForChordFinder() {return [0,4,7]}, chordFinderLabel() {return 'Major'} },
   '../chordDisplay': { displayFinderChord(root) {return root;} },
-  '../stradellaChordFinderTools': { getStradellaChordFinderResults(_buttons, root) { return candidates(root); } },
+  '../stradellaChordFinderTools': {
+    getStradellaChordFinderResults(_buttons, root) { return candidates(root); },
+    nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
+  },
+  '../stradellaChordFinder/registerModel': { DEFAULT_STRADELLA_REGISTER_MODEL: {} },
   './music': {
     analyzeVoiceLeading() { return { totalMotion: 0, sharedPitchClasses: [] }; },
     chordLabel(rootPc) { return rootPc === 0 ? 'C' : 'D'; },

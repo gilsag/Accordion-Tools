@@ -8,15 +8,15 @@ test("diagram buttons work from the keyboard", async ({ page }) => {
   await expect(tabStop).toHaveCount(1);
   await tabStop.focus();
   const label = () => page.evaluate(() => document.activeElement?.getAttribute("aria-label"));
+  await expect.poll(label).toMatch(/, /);
   const start = await label();
-  expect(start).toMatch(/, /);
+  // Focus moves after React re-renders the roving tab stop, so poll for it.
   await page.keyboard.press("ArrowRight");
-  const moved = await label();
-  expect(moved).not.toBe(start);
+  await expect.poll(label).not.toBe(start);
   await page.keyboard.press("ArrowLeft");
-  expect(await label()).toBe(start);
+  await expect.poll(label).toBe(start);
   await page.keyboard.press("ArrowDown");
-  expect(await label()).not.toBe(start);
+  await expect.poll(label).not.toBe(start);
   // Only one diagram button is in the Tab order at a time.
   await expect(page.locator('svg [data-button-id][tabindex="0"]')).toHaveCount(1);
   const before = await audioStarts();

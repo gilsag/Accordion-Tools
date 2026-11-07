@@ -1,14 +1,14 @@
 {
   "name": "accordion-tools",
   "private": true,
-  "version": "0.18.0",
+  "version": "0.18.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:chords": "tsx scripts/chord-family-expansion.test.ts && tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts && tsx scripts/stradella-search-budget.test.ts",
+    "test:chords": "tsx scripts/chord-family-expansion.test.ts && tsx scripts/stradella-bass-policy.test.ts && tsx scripts/chord-logic.test.ts && tsx scripts/stradella-ranking.test.ts && tsx scripts/stradella-registral.test.ts && tsx scripts/stradella-reinforcement.test.ts && tsx scripts/stradella-registral-ranking.test.ts && tsx scripts/stradella-registral-explanations.test.ts && tsx scripts/stradella-register-model.test.ts && tsx scripts/stradella-requested-bass.test.ts && npm run test:notes && npm run test:density && npm run test:configurations && tsx scripts/treble-chord-finder.test.ts && tsx scripts/stradella-search-budget.test.ts",
     "test:notation": "tsx scripts/notation.test.ts && tsx scripts/bass-pattern-tempo.test.ts",
     "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:audio && npm run test:display && npm run test:i18n && npm run test:modules",
     "test:modules": "tsx scripts/settings-persistence.test.ts && node scripts/settings-controller-compatibility.test.mjs && tsx scripts/settings-migrations.test.ts && node scripts/finder-feature-modules.test.mjs && node scripts/stradella-finder-module.test.mjs && node scripts/abc-feature-module.test.mjs && node scripts/pattern-sequence-feature-modules.test.mjs && node scripts/harmony-progression-feature-modules.test.mjs && node scripts/diagram-annotation-modules.test.mjs && node scripts/render-audio-services.test.mjs && node scripts/app-navigation-modules.test.mjs && node scripts/app-view-and-commands.test.mjs && node scripts/controller-lifecycle.test.mjs && node scripts/playback-start-geometry.test.mjs && node scripts/stradella-inspector.test.mjs && node scripts/progression-realization-selection.test.mjs && node scripts/dual-weight-and-preset.test.cjs && node scripts/progression-rhythm-inspector.test.cjs && node scripts/progression-chord-types.test.cjs && node scripts/progression-eye-entry.test.cjs",

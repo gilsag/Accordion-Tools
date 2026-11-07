@@ -3,7 +3,7 @@ import type { DiagramButton, FinderChordPattern, Side, StradellaChordFinderMode 
 import { DEFAULT_STRADELLA_NOTE_LEVELS, type StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
 import type { MinimumNominalGap } from "../../tools/stradellaChordFinder/voicingDensity";
 import type { StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
-import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "../../tools/stradellaChordFinderTools";
+import { getStradellaChordFinderResult, getStradellaChordFinderResults, nextWiderHandSpan } from "../../tools/stradellaChordFinderTools";
 import { ROOT_POSITION_BASS, resolveRequestedBass } from "../../tools/stradellaChordFinder/harmonicIdentity";
 
 /** Finder-owned request and presentation state. The nominal register model and
@@ -33,6 +33,9 @@ export function useStradellaChordFinderState() {
   // An exact physical button signature selected in another tool.
   const [pendingProgressionRealizationKey, setPendingProgressionRealizationKey] = useState<string | null>(null);
   const [stradellaChordFinderMarkRootBass, setStradellaChordFinderMarkRootBass] = useState(true);
+  // The requested bass (root position by default) must sound on a bass or
+  // counterbass button, not only be the lowest modelled note. Saved setting.
+  const [stradellaRequestedBassOnBassButton, setStradellaRequestedBassOnBassButton] = useState(true);
 
   return {
     stradellaChordFinderActive, setStradellaChordFinderActive,
@@ -50,6 +53,7 @@ export function useStradellaChordFinderState() {
     finderExplanationFontSize, setFinderExplanationFontSize,
     pendingProgressionRealizationKey, setPendingProgressionRealizationKey,
     stradellaChordFinderMarkRootBass, setStradellaChordFinderMarkRootBass,
+    stradellaRequestedBassOnBassButton, setStradellaRequestedBassOnBassButton,
   };
 }
 
@@ -58,7 +62,7 @@ export type StradellaFinderSelection = Pick<FinderState,
   | "stradellaChordFinderActive" | "stradellaChordFinderRoot" | "stradellaChordFinderPattern"
   | "stradellaChordFinderMode" | "stradellaChordFinderRealizationIndex"
   | "stradellaChordFinderRequestedBass" | "stradellaChordFinderRootPreferred" | "finderMaxButtons" | "finderSpanColumns"
-  | "stradellaMinimumNominalGap" | "stradellaChordFinderMarkRootBass"
+  | "stradellaMinimumNominalGap" | "stradellaChordFinderMarkRootBass" | "stradellaRequestedBassOnBassButton"
   | "pendingProgressionRealizationKey" | "setPendingProgressionRealizationKey"
   | "setStradellaChordFinderRealizationIndex"
 > & {
@@ -77,36 +81,60 @@ export function useStradellaChordFinderResults({
   stradellaChordFinderMode, stradellaChordFinderRealizationIndex,
   stradellaChordFinderRequestedBass: requestedBass, stradellaChordFinderRootPreferred,
   finderMaxButtons, finderSpanColumns,
-  stradellaMinimumNominalGap, stradellaChordFinderMarkRootBass,
+  stradellaMinimumNominalGap, stradellaChordFinderMarkRootBass, stradellaRequestedBassOnBassButton,
   pendingProgressionRealizationKey, setPendingProgressionRealizationKey,
   setStradellaChordFinderRealizationIndex,
 }: StradellaFinderSelection) {
   const realizationSearch = useMemo(() => {
-    if (!stradellaChordFinderActive || side !== "stradella") return { results: [], rootFallback: false };
-    const search = (bass: string | null) => getStradellaChordFinderResults(
+    const none = { rootFallback: false, bassButtonFallback: false, reachExtendedTo: null as number | null };
+    if (!stradellaChordFinderActive || side !== "stradella") return { results: [], ...none };
+    const search = (bass: string | null, onBassButton = stradellaRequestedBassOnBassButton, span = finderSpanColumns) => getStradellaChordFinderResults(
       buttons, stradellaChordFinderRoot, stradellaChordFinderPattern,
       stradellaChordFinderMode, stradellaChordFinderMarkRootBass,
-      finderMaxButtons, finderSpanColumns, bass,
-      stradellaRegisterModel, stradellaMinimumNominalGap,
+      finderMaxButtons, span, bass,
+      stradellaRegisterModel, stradellaMinimumNominalGap, onBassButton,
     );
     const preferred = search(requestedBass);
+    // Before giving up the bass button, allow one step more reach (Compact to
+    // Moderate, Moderate to Extended): a bass note on the bass rows is worth a
+    // slightly wider hand, and the panel says the reach was widened.
+    const widerSpan = nextWiderHandSpan(finderSpanColumns);
+    if (stradellaChordFinderMode === "bass-and-chords" && stradellaRequestedBassOnBassButton && requestedBass !== null &&
+        widerSpan !== null && !preferred.some((result) => result.playable)) {
+      const wider = search(requestedBass, true, widerSpan);
+      if (wider.some((result) => result.playable)) return { results: wider, ...none, reachExtendedTo: widerSpan };
+    }
+    // The bass-button rule is a preference too: when no realization within
+    // the limits plays the requested bass on the bass rows, keep the requested
+    // bass as the lowest note without a bass button, and say so.
+    if (stradellaRequestedBassOnBassButton && requestedBass !== null && !preferred.some((result) => result.playable)) {
+      const withoutBassButton = search(requestedBass, false);
+      if (withoutBassButton.some((result) => result.playable)) {
+        return { results: withoutBassButton, ...none, bassButtonFallback: true };
+      }
+    }
     // The default root-position choice is a preference: if nothing puts the
     // root lowest, show any-bass results and say so. An explicit non-root slash
     // bass stays a strict requirement.
     if (stradellaChordFinderRootPreferred && !preferred.some((result) => result.playable)) {
       const anyBass = search(null);
-      if (anyBass.some((result) => result.playable)) return { results: anyBass, rootFallback: true };
+      if (anyBass.some((result) => result.playable)) return { results: anyBass, ...none, rootFallback: true };
     }
-    return { results: preferred, rootFallback: false };
+    return { results: preferred, ...none };
   }, [
     buttons, side, stradellaChordFinderActive, stradellaChordFinderRoot,
     stradellaChordFinderPattern, stradellaChordFinderMode,
     stradellaChordFinderMarkRootBass, finderMaxButtons, finderSpanColumns,
     requestedBass, stradellaChordFinderRootPreferred, stradellaRegisterModel, stradellaMinimumNominalGap,
+    stradellaRequestedBassOnBassButton,
   ]);
   const stradellaChordFinderRealizations = realizationSearch.results;
   /** True when root position was preferred but unavailable, so any bass is shown. */
   const stradellaChordFinderRootFallback = realizationSearch.rootFallback;
+  /** True when no realization plays the requested bass on a bass button, so ones without are shown. */
+  const stradellaChordFinderBassButtonFallback = realizationSearch.bassButtonFallback;
+  /** The wider hand span the shown results use to keep the bass on a bass button, or null. */
+  const stradellaChordFinderReachExtendedTo = realizationSearch.reachExtendedTo;
   /** The requested bass the shown results actually satisfy (null after a fallback). */
   const stradellaChordFinderRequestedBass = stradellaChordFinderRootFallback ? null : requestedBass;
 
@@ -133,7 +161,7 @@ export function useStradellaChordFinderResults({
     stradellaChordFinderRoot, stradellaChordFinderPattern,
     stradellaChordFinderMode, stradellaChordFinderRequestedBass,
     stradellaRegisterModel, finderMaxButtons, finderSpanColumns,
-    stradellaMinimumNominalGap, side, setStradellaChordFinderRealizationIndex,
+    stradellaMinimumNominalGap, stradellaRequestedBassOnBassButton, side, setStradellaChordFinderRealizationIndex,
   ]);
 
   /* A progression handoff identifies actual pressed buttons, not only a
@@ -166,7 +194,7 @@ export function useStradellaChordFinderResults({
     stradellaChordFinderRealizations, stradellaChordFinderResult,
     stradellaChordFinderButtons, stradellaChordFinderPlaybackButtons,
     stradellaRootBassFinderButtonIds, stradellaPrimaryFinderButtonIds,
-    stradellaChordFinderRootFallback,
+    stradellaChordFinderRootFallback, stradellaChordFinderBassButtonFallback, stradellaChordFinderReachExtendedTo,
     stradellaChordFinderEffectiveRequestedBass: stradellaChordFinderRequestedBass,
   };
 }

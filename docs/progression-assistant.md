@@ -11,7 +11,7 @@ Choose **Stradella** in the top bar, then open **Tools → Progression Assistant
 Choose how to enter chords with **Manual / Use preset**:
 
 - **Manual:** pick a **Root** and a **Chord type**, then **Add chord**. All 35 chord types of the Chord Finder are available, including add9, 9th, 11th and 13th chords.
-- **Use preset:** pick one of the progressions also used by the Bass Pattern Player and a key, then **Load preset**. This replaces the current list. Presets that use chords the assistant cannot place yet (such as secondary dominants or minor-key numerals) are marked as unsupported and cannot be loaded.
+- **Use preset:** pick one of the progressions also used by the Bass Pattern Player and a key, then **Load preset**. This replaces the current list. All the presets load, including those with secondary dominants such as V7/IV (in C, that is C7, the dominant of F) and the minor-key progressions, where the key you choose is the minor tonic.
 
 You can also send chords from Harmony Explorer: select a relationship there and choose **Add relationship to Progression**.
 
@@ -31,13 +31,15 @@ Some chords cannot be played at all on a given bass layout. They are reported as
 
 ## How the assistant chooses
 
-For every chord, the assistant starts from the Chord Finder's ranked list of ways to play it. In **Auto**, it then looks at the whole progression at once and picks the combination with the best balance of:
+For every chord, the assistant starts from the Chord Finder's ranked list of ways to play it, using the Chord Finder's settings: **Maximum buttons**, **Maximum hand span**, **Minimum nominal note gap**, **Play lowest note on bass button** and the register model.
+
+**Bass** chooses **Root position** (the default) or **Any bass**. In root position each chord is played with its root in the bass, on a bass button when that setting is on; when that is impossible for a chord, it falls back the same way the Chord Finder does. In **Auto**, it then looks at the whole progression at once and picks the combination with the best balance of:
 
 - how highly the Chord Finder ranks each choice;
 - **Hand movement:** how far your hand travels between chords;
 - **Harmonic voice leading:** how few notes change between chords.
 
-The two sliders set how much the last two matter. At 0% for both, every chord simply uses its top-ranked option. Raising **Hand movement** favours choices close to the previous chord; raising **Harmonic voice leading** favours choices that keep notes in common. These are practical rules of thumb, not measurements of real hands or reeds.
+The two sliders set how much the last two matter. At 0% for both, every chord uses exactly the realization the Chord Finder lists first for it. A major or minor chord is always played with its own chord button (C major with the C major button, for example) whenever that is possible, so raising the sliders never turns it into single bass notes; the ← → arrows can still choose any other realization. Raising **Hand movement** favours choices close to the previous chord; raising **Harmonic voice leading** favours choices that keep notes in common. These are practical rules of thumb, not measurements of real hands or reeds.
 
 ### Choosing a realization yourself
 
