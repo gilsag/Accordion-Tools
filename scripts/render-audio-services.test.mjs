@@ -168,6 +168,28 @@ timeouts.get(legatoRef.current[0]).fn();
 assert.equal(timing(soundCalls[legatoCalls]).durationMs, 1000, "50% of a 2-beat note at 60 BPM");
 transport.clearPlaybackTimers(legatoRef);
 
+// Both hands: a melody note and a bass note that start together both light up.
+const handsRef = { current: [] }; let handsActive = [];
+scheduling.scheduleAbcMappedPlayback({
+  abcMappedEvents: [{ startBeat: 0, durationBeats: 1, buttons: [{ id: "treble-1-4" }] },
+    { startBeat: 0, durationBeats: 1, buttons: [btn] }],
+  startBeat: 0, abcTempoBpm: 60, abcTotalBeats: 1,
+  abcPlaybackTimeoutsRef: handsRef, abcPlaybackStartedAtRef: { current: 0 },
+  soundOptions: { volume: .4, articulation: .85 }, setAbcPositionBeat: () => {},
+  setAbcActiveButtonIds: (next) => { handsActive = typeof next === "function" ? next(handsActive) : next; },
+  setAbcPlaybackState: () => {},
+});
+const handsFired = new Set();
+for (let round = 0; round < 3; round += 1) {
+  for (const id of [...handsRef.current]) {
+    const timer = timeouts.get(id);
+    if (!timer || handsFired.has(id) || timer.delay >= 500) continue;
+    handsFired.add(id); timer.fn();
+  }
+}
+assert.deepEqual(handsActive, ["treble-1-4", "bass-C"], "Simultaneous notes of both hands stay lit together");
+transport.clearPlaybackTimers(handsRef);
+
 const bassTimers = { current: [] }; const runRef = { current: 2 }; active = []; state = "stopped";
 scheduling.scheduleBassPatternEvents({
   bassPatternEvents: [{ startBeat: 1, durationBeats: 1, gain: .5, buttons: [btn] }],

@@ -39,7 +39,7 @@ The five built-in **Cueca floreo 1–5** examples have fixed names in all interf
 
 The bass follows the indicated tonic–dominant–dominant–tonic harmonic sequence over four bars. It plays on eighth-note positions **2, 3, 5, and 6** of each measure and rests on positions **1 and 4**. The bass pitches are nominal octave-2 roots; no chord-button part, fingering or T/D text is included. All five examples use `Q:1/4=80`, matching the ABC Player's quarter-note BPM control.
 
-The ABC Player maps voice 1 to Treble and voice 2 to Stradella. It does not currently play both manual voices simultaneously. The transcription originated from a supplied score image; check the melodic notes against a sharper source before treating this as a verified edition.
+The ABC Player maps voice 1 to Treble and voice 2 to Stradella, and with **Hands: Both** it plays them together (see [Both hands](#both-hands)). The transcription originated from a supplied score image; check the melodic notes against a sharper source before treating this as a verified edition.
 
 ## Supported ABC features
 
@@ -61,7 +61,23 @@ The player supports:
 - common tuplet/duration handling through abcjs sequencing
 - Play, Pause, Continue, and Stop controls, in the playback bar under the diagram
 
-Some advanced ABC features are still limited or future work, including ornaments, simultaneous two-hand playback on both manuals, custom ABC directives that do not affect abcjs sequencing, and advanced partial ties inside chords.
+Some advanced ABC features are still limited or future work, including ornaments, custom ABC directives that do not affect abcjs sequencing, and advanced partial ties inside chords.
+
+## Both hands
+
+The first time you open the ABC Player with nothing loaded, it loads **Happy Birthday**, a two-voice tune, so both hands are shown and heard right away. After **Clear ABC** it stays empty.
+
+**Hands** chooses what the ABC Player plays: **Stradella**, **Treble** or **Both**. Both is the default and is saved with your settings.
+
+With **Both**, a tune with two or more `V:` voices plays voice `1` on the treble and voice `2` on the Stradella at the same time, from one Play button. Each voice is mapped exactly as that side alone would map it, so the Treble chord-symbol choice and the Stradella mapping both apply, and both controls are shown.
+
+On wider screens both manuals are drawn in one diagram, treble on top and Stradella below, at the same scale and width, under the captions **Treble, voice 1** and **Stradella, voice 2**. Each lights up as its notes sound, and clicking a button plays it. To keep the view uncluttered it has no title, bellows guide or Stradella row names, and it shows only the ABC highlights; selection, finger numbers, sequences and notes come back when you choose one side or close the ABC Player. **Download** saves this two-manual diagram. On phones you see one manual at a time, with a **Show** switch above it to change between Treble and Stradella while both voices keep playing.
+
+A tune with a single voice plays on the current side only, as before.
+
+**Pause** keeps the last played button of each hand lit, so you can see where the tune stopped. **Continue** picks up from there, and **Stop** clears the highlights.
+
+Choosing **Stradella** or **Treble** under Hands switches the workspace to that side and shows one diagram. Clicking Stradella or Treble in the top bar while the ABC Player is open does the same.
 
 ## Treble mode
 
@@ -86,7 +102,7 @@ In Stradella mode, the ABC Player supports these mapping modes. If the ABC file 
 
 For scores that use a **single written pitch to represent a whole preset chord button**, add the exact comment `% accordion-tools-stradella-bass-chord` to the ABC header. In voice 2 (bass clef), notes **on or above D3**, the bass staff middle line, are then interpreted as chord-button markers; lower notes remain single bass notes. Put a quoted chord symbol on the first upper note at each harmony change (for example, `A,, "Am"A, E,, A,`). Subsequent upper markers reuse that chord quality until another chord label occurs. The chord marker's written pitch positions it on the staff; it does **not** become an additional sounded bass note. This is an opt-in notation convention; ordinary ABC notation continues to use literal pitches and standard chord symbols.
 
-With **Bass notes only**, the marked chord events are omitted. With **Chord symbols only**, single bass notes are omitted. With the combined mode, both physical button types are played at their written times. The ABC Player still plays the selected Treble or Stradella side separately, not both hands together.
+With **Bass notes only**, the marked chord events are omitted. With **Chord symbols only**, single bass notes are omitted. With the combined mode, both physical button types are played at their written times.
 
 ## Playback
 
@@ -97,7 +113,7 @@ ABC playback uses the same browser sound engine as the other tools. It is synthe
 The ABC Player's own controls choose how notes map to Stradella buttons and whether quoted chord symbols play on the Treble side. Under [Settings](settings.md), **Sound** sets the instrument sound and **Note length in players**, and **Music notation** sets the look of the staff.
 ## Rendered notation view
 
-When the ABC Player has ABC text loaded, the top toolbar can show a `Show notation` button. This draws the current tune as staff notation below the diagram, so the same source can be heard, highlighted on the accordion diagram, and read as staff notation.
+When the ABC Player has ABC text loaded, the top toolbar can show a `Show notation` button. This draws the current tune as staff notation in the results panel on the right, scaled to the panel's width, so the diagram keeps its space and the same source can be heard, highlighted on the accordion diagram, and read as staff notation. On phones, or when the results panel is hidden with its toolbar button, the notation appears below the diagram instead.
 
 The notation title uses the tune title from the ABC `T:` field when available. The notation panel includes **Download SVG** for saving the rendered staff notation.
 

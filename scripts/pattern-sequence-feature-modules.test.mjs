@@ -132,7 +132,7 @@ const sequence=load("src/features/sequences/useSequenceState.ts",seqHooks.react,
 });
 function renderSeq() { seqHooks.reset(); return sequence.useSequenceState(); }
 let seq=renderSeq();
-for(const [key,value] of Object.entries({isRecordingSequence:false,sequenceDisplayMode:"numbers-and-curved-arrows",sequenceColorPreset:"red",sequenceThickness:3.2,sequenceArrowheadSize:4,sequenceNumberFontSize:10,sequenceNumberColorPreset:"red",sequenceNumberPosition:"above",sequenceRenderedNotationVisible:false})) assert.equal(seq[key],value,key);
+for(const [key,value] of Object.entries({sequenceDisplayMode:"numbers-and-curved-arrows",sequenceColorPreset:"red",sequenceThickness:3.2,sequenceArrowheadSize:4,sequenceNumberFontSize:10,sequenceNumberColorPreset:"red",sequenceNumberPosition:"above",sequenceRenderedNotationVisible:false})) assert.equal(seq[key],value,key);
 seq.appendRecordedButton("bass-1");seq.appendRecordedButton("chord-1");seq.appendRecordedButton("bass-1");
 seq=renderSeq();
 assert.equal(JSON.stringify(seq.sequenceSteps),JSON.stringify([{id:"bass-1",step:1},{id:"chord-1",step:2},{id:"bass-1",step:3}]));

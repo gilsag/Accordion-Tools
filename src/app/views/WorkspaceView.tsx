@@ -1,5 +1,7 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
-import type { DiagramButton } from "../../types";
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import type { DiagramButton, Side } from "../../types";
+import { AbcHandsDiagram } from "../../diagram/components/AbcHandsDiagram";
+import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { PlaybackBar, type PlaybackTransport } from "../components/PlaybackBar";
 import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
 
@@ -47,7 +49,8 @@ const HarmonicCircle = lazy(() => import("../../tools/harmonyExplorer/components
 import type { AppControllerModel } from "../useAppController";
 
 /** View-only component: all state and commands originate in the controller. */
-export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector }: {
+export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector, abcNotationInInspector = false,
+  panelHandles }: {
   model: AppControllerModel["workspace"];
   isPhone?: boolean;
   phoneSheetOpen?: boolean;
@@ -55,10 +58,15 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   inspectorAvailable?: boolean;
   inspectorVisible?: boolean;
   onToggleInspector?: () => void;
+  /** The ABC notation is in the results panel, so it is not drawn below the diagram. */
+  abcNotationInInspector?: boolean;
+  /** Width handles on the workspace's left and right edges. */
+  panelHandles?: ReactNode;
 }) {
   const {
+    abcHandsView, setAbcHands, renderNotationInto,
     abcActiveButtonIdSet, abcNotationRef, abcParseResult, abcRenderedNotationVisible, abcText, accidentalStyle,
-    activeToolSection, annotationButtonAnchor, annotationEditorRef, annotationLevelForLine, annotationPointForButton, bassPatternActiveButtonIdSet,
+    activeToolSection, annotateMode, annotationButtonAnchor, annotationEditorRef, annotationLevelForLine, annotationPointForButton, bassPatternActiveButtonIdSet,
     bassPatternEvents, bassPatternNotationRef, bassPatternRenderedNotationVisible, bellowsEndLabel, bellowsLabelY, bellowsStartLabel,
     bellowsStripY, buttonSize, buttonTrebleFooter, buttons, cancelInlineAnnotation, chordDisplayStyle,
     chordFinderActive, chordFinderButtons, chordLabelMode, clearHarmonyWork, colorTheme, commitInlineAnnotation,
@@ -89,6 +97,10 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
     stopHarmonyRecordedProgressionPlayback, stopSoundPlayback, progressionPathVisible,
   } = model;
   // The one transport under the diagram follows the active player.
+  // Annotate Diagram's Sequence mode owns the sequence transport and notation;
+  // Notes mode owns the note cursor and the button anchor markers.
+  const sequenceModeActive = activeToolSection === "annotateDiagram" && annotateMode === "sequence";
+  const notesModeActive = activeToolSection === "annotateDiagram" && annotateMode === "notes";
   const transport: PlaybackTransport | null = workspaceMode === "harmony"
     ? harmonyRecordedProgression.length > 0
       ? { label: t("tools.harmonyExplorer"), state: harmonyRecordedProgressionPlaying ? "playing" : "stopped", canPlay: true,
@@ -103,7 +115,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
         : activeToolSection === "progressionAssistant" && side === "stradella"
           ? { label: t("ui.progressionAssistant"), state: soundEnginePlayer === "progression" ? "playing" : "stopped", canPlay: harmonyProgressionPlan.playable,
               onPlay: playOptimizedHarmonyProgression, onStop: stopSoundPlayback }
-          : activeToolSection === "sequences"
+          : sequenceModeActive
             ? { label: t("ui.sequence"), state: soundEnginePlayer === "sequence" ? "playing" : "stopped", canPlay: sequenceSteps.length > 0,
                 onPlay: playRecordedSequence, onStop: stopSoundPlayback }
             : null;
@@ -119,6 +131,17 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   useEffect(() => {
     scrollDiagramToFocus(canvasWrapRef.current);
   }, [diagramFocusKey]);
+  // The notation moves back under the diagram when the results panel is hidden;
+  // its new host element is empty until drawn again.
+  useEffect(() => {
+    if (!abcNotationInInspector && abcRenderedNotationVisible) renderNotationInto(abcNotationRef.current, abcText);
+    // Only the move matters here; text changes are drawn by the notation hook.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [abcNotationInInspector]);
+
+  // Phones show one manual at a time in the ABC Player's Both hands view.
+  const [phoneHand, setPhoneHand] = useState<Side | null>(null);
+  const shownPhoneHand = phoneHand ?? side;
   const accessibleButtonLabel = (button: DiagramButton) => {
     const name = musicLabelText(getMainLabel(button));
     if (button.kind === "treble-note") {
@@ -128,12 +151,20 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   };
   return (
     <section className="workspace" inert={phoneSheetOpen}>
+      {panelHandles}
         <WorkspaceToolbar
           inspectorAvailable={inspectorAvailable} inspectorVisible={inspectorVisible} onToggleInspector={onToggleInspector}
           t={t} workspaceMode={workspaceMode} side={side} leftPanelMode={leftPanelMode}
           activeToolSection={activeToolSection}
-          onSelectStradella={() => { selectAccordionSide("stradella"); stopAbcPlayback(); }}
-          onSelectTreble={() => { selectAccordionSide("treble"); stopAbcPlayback(); }}
+          sequenceModeActive={sequenceModeActive}
+          onSelectStradella={() => {
+            selectAccordionSide("stradella"); stopAbcPlayback();
+            if (activeToolSection === "abcPlayer") setAbcHands("stradella");
+          }}
+          onSelectTreble={() => {
+            selectAccordionSide("treble"); stopAbcPlayback();
+            if (activeToolSection === "abcPlayer") setAbcHands("treble");
+          }}
           onSelectHarmony={() => {
             navigateToTool("harmonyExplorer");
             stopAbcPlayback(); stopBassPatternPlayback(); stopAllSound();
@@ -235,6 +266,13 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
             </div>
           </>
         ) : (
+        <>
+        {abcHandsView && isPhone && (
+          <div className="abc-hand-switch">
+            <SegmentedChoice label={t("ui.abcShowHand")} value={shownPhoneHand} onChange={setPhoneHand}
+              options={[{ value: "treble", label: t("nav.treble") }, { value: "stradella", label: t("nav.stradella") }]} />
+          </div>
+        )}
         <div className="diagram-mobile-frame">
           <div className="mobile-diagram-view-control">
             <button type="button" className="mobile-diagram-toggle"
@@ -249,9 +287,23 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
           className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
           style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
         >
+          {abcHandsView ? (
+            <AbcHandsDiagram
+              ref={svgRef}
+              hands={[
+                { key: "treble", caption: t("ui.abcHandCaption", { hand: t("nav.treble"), voice: 1 }), buttons: abcHandsView.trebleButtons },
+                { key: "stradella", caption: t("ui.abcHandCaption", { hand: t("nav.stradella"), voice: 2 }), buttons: abcHandsView.stradellaButtons },
+              ].filter((hand) => !isPhone || hand.key === shownPhoneHand)}
+              abcActiveButtonIdSet={abcActiveButtonIdSet}
+              getMainLabel={getMainLabel} getAccessibleLabel={accessibleButtonLabel} onButton={toggleButton}
+              style={svgStyle} colorTheme={colorTheme} accidentalStyle={accidentalStyle} buttonSize={buttonSize}
+              chordLabelMode={chordLabelMode} labelFontSize={labelFontSize}
+              showButtonLabels={showButtonLabels} labelFont={labelFont}
+            />
+          ) : (
           <DiagramSvgSurface
             ref={svgRef} colorTheme={colorTheme} accidentalStyle={accidentalStyle}
-            annotationActive={activeToolSection === "annotateDiagram"}
+            annotationActive={notesModeActive}
             viewWidth={viewWidth} viewHeight={viewHeight}
             onClick={handleSvgClick} style={svgStyle}
           >
@@ -433,7 +485,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
               showButtonLabels={showButtonLabels} labelFont={labelFont}
               showSequenceNumbers={showSequenceNumbers}
               sequenceNumberPosition={sequenceNumberPosition}
-              annotationActive={activeToolSection === "annotateDiagram"}
+              annotationActive={notesModeActive}
               annotationPointForButton={annotationPointForButton}
               annotationButtonAnchor={annotationButtonAnchor}
               fingeringPosition={fingeringPosition}
@@ -465,8 +517,10 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
               annotationPlaceholder={t("ui.annotationPlaceholder")}
             />
           </DiagramSvgSurface>
+          )}
         </div>
         </div>
+        </>
         )}
 
         {transport && <PlaybackBar transport={transport} loading={samplesLoading} t={t} />}
@@ -557,7 +611,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
           )}
 
         {workspaceMode === "accordion" && activeToolSection === "abcPlayer" &&
-          abcText.trim() &&
+          abcText.trim() && !abcNotationInInspector &&
           abcRenderedNotationVisible && (
             <div
               className="rendered-notation-panel"
@@ -584,7 +638,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
             </div>
           )}
 
-        {workspaceMode === "accordion" && activeToolSection === "sequences" &&
+        {workspaceMode === "accordion" && sequenceModeActive &&
           sequenceStepsWithButtons.length > 0 &&
           sequenceRenderedNotationVisible && (
             <div

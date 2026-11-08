@@ -87,7 +87,38 @@ body {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
+
+/* Width handles on the workspace's edges, over the panel borders. */
+.panel-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  z-index: 30;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+.panel-resize-left { left: -5px; }
+.panel-resize-inspector { right: -5px; }
+.panel-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 120ms;
+}
+.panel-resize-handle:hover::after,
+.panel-resize-handle:focus-visible::after { background: #8aa4e8; }
+.panel-resize-handle:focus-visible { outline: none; }
+body.panel-resizing { cursor: col-resize; user-select: none; }
+body.panel-resizing iframe, body.panel-resizing svg { pointer-events: none; }
 
 .topbar {
   min-height: 48px;
@@ -258,6 +289,15 @@ input[type="range"] {
   align-items: flex-start;
   justify-content: flex-start;
 }
+
+/* ABC Player, Both hands: treble and Stradella manuals in one diagram. */
+.abc-hand-caption { font-size: 17px; font-weight: 800; fill: #33405a; }
+.abc-hand-divider { stroke: #d9deea; stroke-width: 1.5; }
+.abc-hand-switch { padding: 4px 6px 0; }
+.abc-hand-switch .segmented-choice-control { flex-direction: row; align-items: center; gap: 8px; }
+.abc-hand-switch .label-line { flex: none; white-space: nowrap; font-size: 12px; font-weight: 700; color: #526078; }
+/* Three short names in a narrow sidebar: keep each word whole. */
+.segmented-choice.whole-words .segmented-choice-button { overflow-wrap: normal; padding-left: 2px; padding-right: 2px; }
 
 .diagram {
   width: 100%;
@@ -1641,6 +1681,10 @@ input[type="range"] {
   display: block;
 }
 
+.rendered-abc.abc-notation-inspector { max-height: none; overflow: visible; margin-top: 10px; }
+.rendered-abc.abc-notation-inspector .abcjs-container { width: 100% !important; }
+.rendered-abc.abc-notation-inspector svg { width: 100% !important; max-width: 100%; height: auto; }
+
 .rendered-abc .abcjs-title,
 .rendered-abc .abcjs-subtitle,
 .rendered-abc .abcjs-composer,
@@ -2282,6 +2326,10 @@ input[type="range"] {
 .segmented-choice-button + .segmented-choice-button { border-left: 1px solid #c9d1e3; }
 .segmented-choice-button.selected { background: #e9efff; color: #173fa6; font-weight: 800; }
 .segmented-choice-button:focus-visible { position: relative; z-index: 1; outline: 2px solid #1746d0; outline-offset: -2px; }
+/* Four choices in a narrow sidebar: two rows of two keep every label whole. */
+.segmented-choice.two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.segmented-choice.two-columns .segmented-choice-button:nth-child(odd) { border-left: 0; }
+.segmented-choice.two-columns .segmented-choice-button:nth-child(n + 3) { border-top: 1px solid #c9d1e3; }
 
 /* The toolbar format selector is deliberately compact beside Download. */
 .topbar-format-choice { flex: 0 0 auto; width: 126px; }
@@ -2567,6 +2615,7 @@ input[type="range"] {
 .inspector-details p { font-size: var(--ui-support-font); color: #526078; line-height: 1.5; margin: 8px 0; overflow-wrap: anywhere; }
 @media (max-width: 1120px) {
   .app:has(> .workspace-inspector) { grid-template-columns: 1fr !important; overflow: auto; }
+  .app:has(> .workspace-inspector) .panel-resize-handle { display: none; }
   .app:has(> .workspace-inspector) > .left-panel { max-height: 40dvh; }
   .app:has(> .workspace-inspector) > .workspace { min-height: 45dvh; }
   .workspace-inspector { border-left: 0; border-top: 1px solid #d9deea; overflow: visible; }

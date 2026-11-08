@@ -1,7 +1,7 @@
 {
   "name": "accordion-tools",
   "private": true,
-  "version": "0.18.1",
+  "version": "0.19.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "test:notation": "tsx scripts/notation.test.ts && tsx scripts/bass-pattern-tempo.test.ts",
     "test:all": "npm run test:chords && npm run test:notation && npm run test:abc && npm run test:harmony && npm run test:audio && npm run test:display && npm run test:i18n && npm run test:modules",
     "test:modules": "tsx scripts/settings-persistence.test.ts && node scripts/settings-controller-compatibility.test.mjs && tsx scripts/settings-migrations.test.ts && node scripts/finder-feature-modules.test.mjs && node scripts/stradella-finder-module.test.mjs && node scripts/abc-feature-module.test.mjs && node scripts/pattern-sequence-feature-modules.test.mjs && node scripts/harmony-progression-feature-modules.test.mjs && node scripts/diagram-annotation-modules.test.mjs && node scripts/render-audio-services.test.mjs && node scripts/app-navigation-modules.test.mjs && node scripts/app-view-and-commands.test.mjs && node scripts/controller-lifecycle.test.mjs && node scripts/playback-start-geometry.test.mjs && node scripts/stradella-inspector.test.mjs && node scripts/progression-realization-selection.test.mjs && node scripts/dual-weight-and-preset.test.cjs && node scripts/progression-rhythm-inspector.test.cjs && node scripts/progression-chord-types.test.cjs && node scripts/progression-eye-entry.test.cjs",
-    "test:abc": "tsx scripts/abc-ties.test.ts && tsx scripts/katyusha-accordion-bass.test.ts && tsx scripts/easy-polka-happy-birthday.test.ts && node scripts/cueca-abc-examples.test.mjs && node scripts/abc-example-catalog.test.mjs",
+    "test:abc": "tsx scripts/abc-both-hands.test.ts && tsx scripts/abc-ties.test.ts && tsx scripts/katyusha-accordion-bass.test.ts && tsx scripts/easy-polka-happy-birthday.test.ts && node scripts/cueca-abc-examples.test.mjs && node scripts/abc-example-catalog.test.mjs",
     "test:harmony": "tsx scripts/harmony-note-ring-ui.test.ts && tsx scripts/harmony-explorer.test.ts && tsx scripts/harmony-integration.test.ts && tsx scripts/harmony-progression.test.ts",
     "test:inversions": "tsx scripts/stradella-requested-bass.test.ts",
     "test:notes": "tsx scripts/stradella-four-level-notes.test.ts && npm run test:titles && tsx scripts/stradella-inversion-spelling.test.ts",

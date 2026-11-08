@@ -166,6 +166,10 @@ export type StradellaChordFinderMode = "bass-only" | "chord-buttons-only" | "bas
 /** ABC Player mapping strategy for the treble side. */
 export type AbcTrebleChordSymbolsMode = "ignore" | "play";
 
+/** Which manual the ABC Player shows: one side, or both at once for two-voice
+ * tunes (voice 1 on the treble, voice 2 on the Stradella). */
+export type AbcHands = "stradella" | "treble" | "both";
+
 /** ABC Player mapping strategy for the Stradella side. */
 export type AbcStradellaMode = "bass-notes-only" | "chord-symbols-only" | "bass-notes-and-chord-symbols";
 

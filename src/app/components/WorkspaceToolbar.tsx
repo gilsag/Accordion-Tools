@@ -10,6 +10,8 @@ export type WorkspaceToolbarProps = {
   side: Side;
   leftPanelMode: LeftPanelMode;
   activeToolSection: ToolSection;
+  /** Annotate Diagram is open in Sequence mode. */
+  sequenceModeActive: boolean;
   inspectorAvailable?: boolean;
   inspectorVisible?: boolean;
   onToggleInspector?: () => void;
@@ -131,7 +133,7 @@ function DownloadIcon() {
 }
 
 export function WorkspaceToolbar({
-  t, workspaceMode, side, leftPanelMode, activeToolSection, inspectorAvailable, inspectorVisible, onToggleInspector,
+  t, workspaceMode, side, leftPanelMode, activeToolSection, sequenceModeActive, inspectorAvailable, inspectorVisible, onToggleInspector,
   onSelectStradella, onSelectTreble, onSelectHarmony, onShowSettings, onShowTools, onToggleFocus,
   bassPatternEvents, bassPatternRenderedNotationVisible, onToggleBassPatternNotation,
   harmonyRecordedProgression, harmonyRecordedNotationVisible, onToggleHarmonyRecordedNotation,
@@ -205,7 +207,7 @@ export function WorkspaceToolbar({
         ? { visible: harmonyProgressionNotationVisible, toggle: onToggleHarmonyProgressionNotation }
         : workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim()
           ? { visible: abcRenderedNotationVisible, toggle: onToggleAbcNotation }
-          : workspaceMode === "accordion" && activeToolSection === "sequences" && sequenceStepsWithButtons.length
+          : workspaceMode === "accordion" && sequenceModeActive && sequenceStepsWithButtons.length
             ? { visible: sequenceRenderedNotationVisible, toggle: onToggleSequenceNotation } : null;
   return (
         <div className="topbar" ref={barRef}>

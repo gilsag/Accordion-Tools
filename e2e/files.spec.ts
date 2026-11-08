@@ -51,16 +51,17 @@ test("settings save with a version and the note-length setting", async ({ page }
   await openTool(page, "Sound");
   await page.getByLabel(/Note length in players/).fill("50");
   const saved = await saveSettings(page);
-  expect(saved.settingsVersion).toBe(2);
+  expect(saved.settingsVersion).toBe(3);
   expect(saved.soundArticulation).toBe(0.5);
   expect(saved).not.toHaveProperty("progressionAllowApproximations");
+  expect(saved).not.toHaveProperty("selectionOnClick");
 });
 
 test("a settings file from v0.17.0 still loads", async ({ page }) => {
   await openApp(page);
   await openSettings(page);
   await openTool(page, "About");
-  const legacy = { soundNoteDurationMs: 600, side: "stradella", progressionAllowApproximations: false };
+  const legacy = { soundNoteDurationMs: 600, side: "stradella", progressionAllowApproximations: false, selectionOnClick: true };
   await page.locator('input[type="file"][accept*="json"]').setInputFiles({
     name: "accordion-tools-settings.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(legacy)),
   });
@@ -68,5 +69,6 @@ test("a settings file from v0.17.0 still loads", async ({ page }) => {
   const saved = await saveSettings(page);
   expect(saved.soundNoteDurationMs).toBe(600);
   expect(saved.soundArticulation).toBe(0.85);
-  expect(saved.settingsVersion).toBe(2);
+  expect(saved.settingsVersion).toBe(3);
+  expect(saved).not.toHaveProperty("selectionOnClick");
 });

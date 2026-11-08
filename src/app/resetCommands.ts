@@ -42,8 +42,6 @@ export function resetStradellaFinder(ports: StradellaFinderResetPorts) {
 export interface DiagramWorkResetPorts {
   setOverlays(value: Record<string, Overlay>): void;
   setSequenceSteps(value: SequenceStep[]): void;
-  setRecording(value: boolean): void;
-  setApplyingFingering(value: boolean): void;
   setTextNotes(value: TextNote[]): void;
   setScaleFinderActive(value: boolean): void;
   setChordFinderActive(value: boolean): void;
@@ -58,8 +56,6 @@ export interface DiagramWorkResetPorts {
 export function resetDiagramWorkState(ports: DiagramWorkResetPorts) {
   ports.setOverlays({});
   ports.setSequenceSteps([]);
-  ports.setRecording(false);
-  ports.setApplyingFingering(false);
   ports.setTextNotes([]);
   ports.setScaleFinderActive(false);
   ports.setChordFinderActive(false);

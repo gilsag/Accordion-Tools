@@ -13,9 +13,6 @@ export const TOOL_REGISTRY = {
   stradellaChordFinder: { workspace: "accordion", category: "finder", defaultSide: "stradella" },
   harmonyExplorer: { workspace: "harmony", category: "harmony" },
   progressionAssistant: { workspace: "accordion", category: "harmony", defaultSide: "stradella" },
-  fingering: { workspace: "accordion", category: "diagram" },
-  selection: { workspace: "accordion", category: "diagram" },
-  sequences: { workspace: "accordion", category: "diagram" },
   annotateDiagram: { workspace: "accordion", category: "diagram" },
 } as const;
 
