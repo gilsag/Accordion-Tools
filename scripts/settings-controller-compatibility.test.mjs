@@ -21,7 +21,7 @@ new Function('require', 'exports', compiled)((id) => {
   if (id.includes('i18n/catalog')) return { isInterfaceLanguagePreference: (v) =>
     ['auto', 'en', 'es', 'fr', 'pt', 'it', 'de'].includes(v) };
   if (id.includes('diagramAnnotations')) return { normalizeStradellaNoteLevels };
-  if (id.includes('settingsMigrations')) return { SETTINGS_VERSION: 2 };
+  if (id.includes('settingsMigrations')) return { SETTINGS_VERSION: 3 };
   if (id.includes('harmonyExplorer/music')) return { DEFAULT_RING_VISIBILITY: {0:false,1:true,2:true,3:true,4:true} };
   throw new Error(`Unexpected settings controller import: ${id}`);
 }, controller);
@@ -65,7 +65,7 @@ const snapshot = new Proxy({
 }, {get(target, key) {return key in target ? target[key] : key;}});
 const exported = controller.collectCurrentSettings(snapshot);
 assert.deepEqual(Object.keys(exported), expectedKeys, 'Historical settings key set and JSON order');
-assert.equal(exported.settingsVersion, 2, 'Exports carry the settings format version');
+assert.equal(exported.settingsVersion, 3, 'Exports carry the settings format version');
 assert.equal(exported.soundArticulation, 'soundArticulation');
 assert.equal(exported.stradellaRequestedBassOnBassButton, 'stradellaRequestedBassOnBassButton');
 assert.equal(exported.progressionRootPosition, 'harmonyProgressionRootPosition');

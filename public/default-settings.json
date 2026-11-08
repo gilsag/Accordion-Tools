@@ -1,5 +1,5 @@
 {
-  "settingsVersion": 2,
+  "settingsVersion": 3,
   "chordDisplayStyle": "letter",
   "side": "stradella",
   "notation": "english",
@@ -17,7 +17,6 @@
   "showButtonLabels": true,
   "showBellowsGuide": true,
   "showStradellaRowLabels": true,
-  "selectionOnClick": false,
   "downloadFormat": "svg",
   "soundEnabled": true,
   "soundSource": "la-melodiosa",
@@ -38,6 +37,7 @@
   "scaleFinderDisplayMode": "numbers-and-straight-arrows",
   "abcStradellaMode": "bass-notes-and-chord-symbols",
   "abcTrebleChordSymbolsMode": "ignore",
+  "abcHands": "both",
   "bassPatternChordVoicing": "simple",
   "bassPatternTempoBpm": 80,
   "bassPatternLoopMode": "fixed",

@@ -9,7 +9,7 @@ import type { DefaultSettingsFile } from "./settingsSchema";
  * collectCurrentSettings(). Old files keep importing because every step runs
  * in order; keys a step does not mention pass through untouched.
  */
-export const SETTINGS_VERSION = 2;
+export const SETTINGS_VERSION = 3;
 
 type SettingsDocument = Record<string, unknown>;
 
@@ -20,6 +20,14 @@ const MIGRATIONS: Record<number, (document: SettingsDocument) => SettingsDocumen
   1: (document) => {
     const next = { ...document };
     delete next.progressionAllowApproximations;
+    return next;
+  },
+  // 2 → 3: Selection became a mode of Annotate Diagram, where a click in
+  // Select mode always toggles the selection, so the saved
+  // "select on click" switch is dropped.
+  2: (document) => {
+    const next = { ...document };
+    delete next.selectionOnClick;
     return next;
   },
 };

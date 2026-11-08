@@ -13,7 +13,7 @@
 - **Find chords and scales.** Visualize scales on either manual and compare practical Stradella chord realizations using preset chord buttons, bass/counterbass notes, or mixed combinations. The Chord Finder ranks alternatives by musical completeness, nominal register, and physical practicality, with explanations of omitted tones and voicing choices.
 - **Understand harmony.** Use the Harmony Explorer's interactive circle of fifths to investigate chord families, common tones, diatonic relationships, and voice leading. Record a progression and send it to the Stradella Progression Assistant.
 - **Work with progressions.** Build a sequence of chords and use the Progression Assistant to find a coherent set of Stradella realizations, balancing harmonic voice movement and hand movement. Preview the selected buttons and hear rhythmic accompaniment.
-- **Practice patterns and melodies.** Use the Bass Pattern Player, ABC Player, Sequence Tool, and Fingering Tool. The ABC Player includes ready-to-use examples, including cueca floreos and a Katyusha arrangement.
+- **Practice patterns and melodies.** Use the Bass Pattern Player, the ABC Player, and Annotate Diagram's Sequence and Finger modes. The ABC Player plays two-voice tunes with both hands at once, treble and Stradella lighting up together, and includes ready-to-use examples, including cueca floreos and a Katyusha arrangement.
 - **Listen to the results.** Play individual buttons, chords, sequences, and patterns with the **La Melodiosa** accordion samples or the built-in synthesizer.
 - **Create diagrams and notation.** Highlight buttons, add annotations, display staff notation where available, and export diagrams as SVG or PNG. Selected tools also support music-data or notation exports.
 
@@ -31,9 +31,9 @@
 
 *Explore relationships between chord families around the circle of fifths, with common tones, diatonic harmony, and voice-leading information. Highlight relationships using a parent scale or mode, record chord selections, and send progressions to the Stradella Progression Assistant.*
 
-### Stradella Sequence Tool
+### Stradella sequence in Annotate Diagram
 
-![Stradella Sequence Tool with numbered paths and arrows](docs/images/stradella-sequence.png)
+![Stradella sequence with numbered paths and arrows](docs/images/stradella-sequence.png)
 
 *Build ordered paths through physical Stradella buttons, using numbers and arrows to illustrate bass movement, fingering ideas, exercises, and teaching sequences. The resulting diagram can be exported for practice material.*
 
@@ -56,7 +56,7 @@ You can customize chord-symbol styles (for example, C/Cm or CM/Cm), instrument r
 ## Documentation
 
 - **Musical exploration:** [Scale Finder](docs/scale-finder.md), [Chord Finder](docs/chord-finder.md), [Harmony Explorer](docs/harmony-explorer.md), and [Progression Assistant](docs/progression-assistant.md).
-- **Practice and diagram tools:** [Bass Pattern Player](docs/bass-pattern-player.md), [ABC Player](docs/abc-player.md), [Sequence](docs/sequence-tool.md), [Fingering](docs/fingering-tool.md), [Selection](docs/selection-tool.md), and [Annotations](docs/annotate-diagram-tool.md).
+- **Practice and diagram tools:** [Bass Pattern Player](docs/bass-pattern-player.md), [ABC Player](docs/abc-player.md), and [Annotate Diagram](docs/annotate-diagram-tool.md) (selection, fingering, sequences and notes).
 - **Configuration and development:** [Settings](docs/settings.md), [Settings file reference](docs/internal/settings-file-reference.md), [Bass Pattern format](docs/internal/bass-pattern-format.md), [Developer Guide](docs/internal/developer-guide.md), [Tests](docs/internal/test-suite-maintenance-audit.md), and [Modularization Roadmap](docs/internal/modularization-roadmap.md).
 
 The Progression Assistant supports automatic global optimization or an explicit Stradella Chord Finder realization for each progression step. Left/right controls preserve original candidate ranks while allowing the remaining steps to be optimized around the chosen ones. It also offers independent physical-movement and pitch-class voice-leading controls, plus progression presets from the existing Bass Pattern Player catalog.
@@ -86,4 +86,4 @@ The Stradella Chord Finder was informed in part by the [Stradella Explorer](http
 
 The project source and documentation are licensed under **CC BY-NC 4.0**. Diagrams you create with Accordion Tools may be used for any purpose, including commercial use. See [LICENSE](LICENSE) for details. Third-party assets retain their own licenses and attribution requirements.
 
-**Version:** 0.18.1 · [Release history](VERSION_HISTORY.md)
+**Version:** 0.19.0 · [Release history](VERSION_HISTORY.md)

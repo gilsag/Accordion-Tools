@@ -48,5 +48,9 @@ assert.equal(resolveWorkspaceInspector({...context, side: "treble"}), null, "oth
 assert.equal(resolveWorkspaceInspector({...context, workspaceMode: "harmony"}), null, "other workspaces remain unchanged");
 assert.equal(resolveWorkspaceInspector({...context, leftPanelMode: "settings"}), null, "settings keep original layout");
 assert.equal(resolveWorkspaceInspector({...context, leftPanelMode: "hidden"}), null, "focus mode remains inspector-free");
+const abc = {leftPanelMode: "tools", workspaceMode: "accordion", side: "treble", stradellaChordFinderActive: false, activeToolSection: "abcPlayer"};
+assert.equal(resolveWorkspaceInspector({...abc, abcNotationVisible: true}), "abcNotation", "ABC notation opens in the results panel");
+assert.equal(resolveWorkspaceInspector({...abc, abcNotationVisible: false}), null, "no notation, no panel");
+assert.equal(resolveWorkspaceInspector({...abc, abcNotationVisible: true, activeToolSection: "scaleFinder"}), null, "only while the ABC Player is open");
 
 console.log("✓ Shared inspector activation plus Stradella filters, original ranks, identities, lazy loading and six locales passed");

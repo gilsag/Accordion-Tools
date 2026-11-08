@@ -3,12 +3,12 @@ import type { DiagramButton, SequenceColorPreset, SequenceDisplayMode,
   SequenceStep, NumberPosition } from "../../types";
 import { getSequenceStepsWithButtons } from "../../tools/sequenceTools";
 
-/** Owns recording steps and visual-path preferences, not shared playback,
- * manual geometry, diagrams or notation rendering. Settings setters retain
+/** Owns sequence steps (added by clicks in Annotate Diagram's Sequence mode)
+ * and visual-path preferences, not shared playback, manual geometry, diagrams
+ * or notation rendering. Settings setters retain
  * their original identity and default values for saved JSON compatibility.
  */
 export function useSequenceState() {
-  const [isRecordingSequence, setIsRecordingSequence] = useState(false);
   const [sequenceSteps, setSequenceSteps] = useState<SequenceStep[]>([]);
   const [sequenceDisplayMode, setSequenceDisplayMode] =
     useState<SequenceDisplayMode>("numbers-and-curved-arrows");
@@ -30,7 +30,6 @@ export function useSequenceState() {
   }, []);
   const clearSequence = useCallback(() => setSequenceSteps([]), []);
   return {
-    isRecordingSequence, setIsRecordingSequence,
     sequenceSteps, setSequenceSteps,
     sequenceDisplayMode, setSequenceDisplayMode,
     sequenceColorPreset, setSequenceColorPreset,

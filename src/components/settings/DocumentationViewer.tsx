@@ -23,15 +23,12 @@ const labels: Record<string, string> = {
   "scale-finder.md": "Scale Finder",
   "harmony-explorer.md": "Harmony Explorer",
   "progression-assistant.md": "Progression Assistant",
-  "sequence-tool.md": "Sequence Tool",
-  "selection-tool.md": "Selection Tool",
-  "fingering-tool.md": "Fingering Tool",
   "annotate-diagram-tool.md": "Annotate Diagram",
   "bass-pattern-player.md": "Bass Pattern Player",
   "abc-player.md": "ABC Player",
   "settings.md": "Settings",
 };
-const preferredOrder = ["README.md", "chord-finder.md", "scale-finder.md", "harmony-explorer.md", "progression-assistant.md", "bass-pattern-player.md", "sequence-tool.md", "selection-tool.md", "fingering-tool.md", "annotate-diagram-tool.md", "abc-player.md", "settings.md", "VERSION_HISTORY.md"];
+const preferredOrder = ["README.md", "chord-finder.md", "scale-finder.md", "harmony-explorer.md", "progression-assistant.md", "bass-pattern-player.md", "annotate-diagram-tool.md", "abc-player.md", "settings.md", "VERSION_HISTORY.md"];
 const documents = Object.entries({ ...guideFiles, ...rootFiles }).map(([path, content]) => {
   const filename = path.split("/").pop() ?? path;
   return { filename, title: labels[filename] ?? filename.replace(/\.md$/, "").replace(/-/g, " "), content };

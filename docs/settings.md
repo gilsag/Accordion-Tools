@@ -11,7 +11,11 @@ Settings take effect immediately. To keep them, or to move them to another compu
 
 The top bar keeps Stradella, Treble and Harmony on the left. Icon buttons, each with a tooltip, toggle the side controls (**Focus diagram**), the Results panel and sound. **Download** opens a menu with **Download SVG** and **Download PNG**; the format you use last is listed first and is also the format of **Download all diagrams (ZIP)**. Under each tool name in the Tools list, a one-line description says what the tool does. When the window is too narrow for the full toolbar, for example with the Results panel open, Settings, Tools, Show notation, Reset and Download turn into icons; hover over one to see its name.
 
-Every player (ABC Player, Bass Pattern Player, Progression Assistant, Sequence and the Harmony recording) uses one playback bar under the diagram, with **Play** (or **Continue** after Pause), **Pause** where the player supports it, and **Stop**. On phones it stays visible with the diagram when the Tools sheet is closed. While the needed La Melodiosa samples load, it shows **Loading sounds…** and starts as soon as they are ready.
+### Panel widths
+
+On wider screens you can drag the edge between the diagram and the Tools or Settings panel, and the edge between the diagram and the Results panel, to make either panel wider or narrower. When an edge has keyboard focus, the left and right arrow keys move it. Double-click an edge, or press **Enter** on it, to go back to the default width. The diagram always keeps enough room, and on a narrow window a wide panel gives way. The widths are remembered in this browser; they are not part of settings files, because a good width depends on the screen. Phones are unchanged.
+
+Every player (ABC Player, Bass Pattern Player, Progression Assistant, Sequence in Annotate Diagram and the Harmony recording) uses one playback bar under the diagram, with **Play** (or **Continue** after Pause), **Pause** where the player supports it, and **Stop**. On phones it stays visible with the diagram when the Tools sheet is closed. While the needed La Melodiosa samples load, it shows **Loading sounds…** and starts as soon as they are ready.
 
 ## Phones and tablets
 
@@ -87,7 +91,7 @@ Controls the staff notation shown under the diagram by the ABC Player, Bass Patt
 - **Volume**, **Attack** and **Release**.
 - **Note duration:** how long a note sounds when you click a button, preview a chord or step through a sequence.
 - **Note length in players:** how much of each written note sounds in the ABC Player, Bass Pattern Player, Progression Assistant and Harmony recording, from 30% (short, detached) to 100% (fully connected). The default is 85%. The button on the diagram stays lit for the same time.
-- **Sequence tempo:** playback speed of the Sequence tool.
+- **Sequence tempo:** playback speed of a sequence in Annotate Diagram's Sequence mode.
 
 Sound uses your browser's audio system. When La Melodiosa is selected and a note has no recording nearby, the nearest recording is played at a different speed to reach the pitch. If a recording cannot be loaded, that note is silent; the app never switches to the Synthesizer on its own.
 

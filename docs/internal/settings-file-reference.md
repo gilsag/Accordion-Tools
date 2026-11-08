@@ -11,13 +11,14 @@ Developer and maintainer notes for the settings JSON: the file written by **Sett
 
 ## Versions and migrations
 
-Every exported file starts with `settingsVersion` (currently `2`). Files without it are version 1, which covers everything exported up to v0.17.0.
+Every exported file starts with `settingsVersion` (currently `3`). Files without it are version 1, which covers everything exported up to v0.17.0.
 
 `src/settings/settingsMigrations.ts` brings older files up to date before any setter runs, both for the startup defaults and for imported files:
 
 | Step | Change |
 |---|---|
 | 1 → 2 | Drops `progressionAllowApproximations` (retired from the interface). `soundArticulation` is new; files without it keep the default `0.85`. |
+| 2 → 3 | Drops `selectionOnClick`: Selection is now a mode of Annotate Diagram, where clicks in Select mode always toggle the selection. |
 
 To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that turns a version N document into version N + 1, update `collectCurrentSettings()` and `scripts/settings-export-keys.json`, and add a case to `scripts/settings-migrations.test.ts`. Files from newer builds pass through unchanged: known keys still validate and unknown ones are ignored.
 
@@ -46,7 +47,7 @@ To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that t
 
 ### Music notation settings
 
-These settings control rendered staff-notation panels in the accordion workspace, including Bass Pattern Player, ABC Player, Sequence Tool, and Progression Assistant. They are hidden in the Harmony workspace because Harmony diagrams do not render staff notation.
+These settings control rendered staff-notation panels in the accordion workspace, including Bass Pattern Player, ABC Player, Annotate Diagram's Sequence mode, and Progression Assistant. They are hidden in the Harmony workspace because Harmony diagrams do not render staff notation.
 
 | Setting | Default | Purpose |
 |---|---:|---|
@@ -99,7 +100,6 @@ These settings control rendered staff-notation panels in the accordion workspace
 
 | Setting | Purpose |
 |---|---|
-| `selectionOnClick` | Enables or disables selecting buttons/keys by clicking them. |
 | `downloadFormat` | Default diagram download format: SVG or PNG. |
 
 ### Stradella registers
@@ -190,13 +190,14 @@ Secondary Harmony Explorer preferences are stored in Settings so the main Harmon
 | `chordFinderOctave` | Default Chord Finder octave. |
 | `abcStradellaMode` | Default ABC mapping mode in Stradella mode. |
 | `abcTrebleChordSymbolsMode` | Default quoted chord-symbol behavior in Treble mode. |
+| `abcHands` | ABC Player hands: `stradella`, `treble` or `both` (default). With `both`, two-voice tunes play voice 1 on the treble and voice 2 on the Stradella at once. Files without it use `both`. |
 | `bassPatternChordVoicing` | Bass Pattern Player chord voicing: simple chord button or fuller recipe when available. |
 | `bassPatternRepeatsPerChord` | Number of complete bass-pattern cycles played for each progression chord. |
 | `bassPatternTempoBpm` | Default Bass Pattern Player tempo, 30–220 beats per minute. The beat is the meter's denominator, except in compound meters (6/8, 9/8, 12/8, and the same over 16), where it is a dotted beat of three units (see `bassPatternBeat()`). Until v0.18.0 the value counted denominator units in every meter; files were not converted because the settings do not record which pattern was selected, and only the compound patterns play differently. |
 | `bassPatternLoopMode` | Default Bass Pattern Player repeat mode. |
 | `bassPatternLoopCount` | Default fixed repeat count when repeat mode is fixed. |
 | `abcTempoBpm` | Default ABC Player tempo when the tune does not override it. |
-| `soundSequenceTempoBpm` | Default Sequence Tool playback tempo. |
+| `soundSequenceTempoBpm` | Default playback tempo for Annotate Diagram's Sequence mode. |
 | `sequenceDisplayMode` | Default Sequence display mode. |
 | `sequenceColorPreset` | Default Sequence arrow color. |
 | `sequenceThickness` | Default Sequence arrow thickness. |

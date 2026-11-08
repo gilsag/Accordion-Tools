@@ -1,6 +1,8 @@
 import { lazy, Suspense } from "react";
 import type { AppControllerModel } from "../useAppController";
 import type { WorkspaceInspectorId } from "./inspectorSelection";
+// Small, and it owns the notation host element, so it is not lazy.
+import { AbcNotationInspector } from "./AbcNotationInspector";
 
 // The slot is shared; loading and inputs stay feature-specific. Do not eagerly
 // import a future tool's inspector or copy its selection into local state.
@@ -15,6 +17,8 @@ export function WorkspaceInspectorSlot({ inspector, tools, blocked = false }: {
   tools: AppControllerModel["tools"];
   blocked?: boolean;
 }) {
+  if (inspector === "abcNotation") return <AbcNotationInspector blocked={blocked}
+    abcText={tools.abcText} title={tools.abcParseResult.title} renderNotationInto={tools.renderNotationInto} />;
   return <Suspense fallback={<aside className="workspace-inspector" aria-busy="true" inert={blocked} />}>
     {inspector === "progressionAssistant" && <ProgressionResultsInspector
       blocked={blocked}

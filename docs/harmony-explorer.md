@@ -6,7 +6,7 @@ Outer rings are grouped by the number of pitch classes shared with the reference
 
 ## Opening Harmony Explorer
 
-Use **Harmony** in the top bar. While the Harmony workspace is active, the Tools panel shows only Harmony Explorer; accordion-specific tools such as Scale Finder, Chord Finder, Selection, and Fingering are hidden because they do not act on the harmonic-circle diagram.
+Use **Harmony** in the top bar. While the Harmony workspace is active, the Tools panel shows only Harmony Explorer; accordion-specific tools such as Scale Finder, Chord Finder, and Annotate Diagram are hidden because they do not act on the harmonic-circle diagram.
 
 The Harmony workspace retains Accordion Tools' global sound and export systems.
 

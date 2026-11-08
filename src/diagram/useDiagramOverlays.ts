@@ -1,6 +1,12 @@
 import { useState } from "react";
 import type { NumberPosition, Overlay } from "../types";
 
+/** What a diagram click does while Annotate Diagram is open. Only the chosen
+ * mode reacts; every mark (selection, finger, sequence step, note) stays
+ * visible whatever the mode. */
+export type AnnotateMode = "select" | "finger" | "sequence" | "notes";
+export const ANNOTATE_MODES: readonly AnnotateMode[] = ["select", "finger", "sequence", "notes"];
+
 /** Button overlay and fingering state is diagram-local: identifiers are the
  * original physical DiagramButton IDs, not pitches or sounded voices. */
 export function useDiagramOverlays() {
@@ -8,26 +14,29 @@ export function useDiagramOverlays() {
   const [fingeringPosition, setFingeringPosition] =
     useState<NumberPosition>("inside-bottom");
   const [fingeringDraft, setFingeringDraft] = useState("1");
-  const [isApplyingFingering, setIsApplyingFingering] = useState(false);
-  const [selectionOnClick, setSelectionOnClick] = useState(false);
+  const [annotateMode, setAnnotateMode] = useState<AnnotateMode>("notes");
   const selectedButtonIds = Object.entries(overlays)
     .filter(([, overlay]) => overlay.selected)
     .map(([id]) => id);
 
-  function markButtonOverlay(id: string) {
+  /** Select mode: a click adds the button to the selection or removes it. */
+  function toggleButtonSelected(id: string) {
+    setOverlays((current) => {
+      const existing = current[id] ?? {};
+      return { ...current, [id]: { ...existing, selected: !existing.selected } };
+    });
+  }
+
+  /** Finger mode: a click writes the current finger value. Clicking a button
+   * that already shows that value removes it, and an empty value clears the
+   * button. The value is kept so several buttons can take the same finger. */
+  function toggleButtonFinger(id: string) {
     const trimmedFinger = fingeringDraft.trim();
     setOverlays((current) => {
       const existing = current[id] ?? {};
-      return {
-        ...current,
-        [id]: {
-          ...existing,
-          selected: selectionOnClick ? !existing.selected : existing.selected,
-          finger: isApplyingFingering && trimmedFinger ? trimmedFinger : existing.finger,
-        },
-      };
+      const finger = existing.finger === trimmedFinger ? "" : trimmedFinger;
+      return { ...current, [id]: { ...existing, finger } };
     });
-    if (isApplyingFingering && trimmedFinger) setFingeringDraft("");
   }
 
   function applyFingerToSelected() {
@@ -38,7 +47,6 @@ export function useDiagramOverlays() {
       selectedButtonIds.forEach((id) => { next[id] = { ...next[id], finger: trimmedFinger }; });
       return next;
     });
-    setFingeringDraft("");
   }
 
   function clearFingerForSelected() {
@@ -75,9 +83,8 @@ export function useDiagramOverlays() {
 
   return {
     overlays, setOverlays, fingeringPosition, setFingeringPosition,
-    fingeringDraft, setFingeringDraft, isApplyingFingering,
-    setIsApplyingFingering, selectionOnClick, setSelectionOnClick,
-    selectedButtonIds, markButtonOverlay, applyFingerToSelected,
+    fingeringDraft, setFingeringDraft, annotateMode, setAnnotateMode,
+    selectedButtonIds, toggleButtonSelected, toggleButtonFinger, applyFingerToSelected,
     clearFingerForSelected, clearAllFingerings, clearSelection, deselectButton,
   };
 }

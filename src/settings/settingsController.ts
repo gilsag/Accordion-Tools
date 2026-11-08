@@ -14,6 +14,7 @@ export interface SettingsSetters {
   setAbcStradellaMode: (value: NonNullable<DefaultSettingsFile["abcStradellaMode"]>) => void;
   setAbcTempoBpm: (value: NonNullable<DefaultSettingsFile["abcTempoBpm"]>) => void;
   setAbcTrebleChordSymbolsMode: (value: NonNullable<DefaultSettingsFile["abcTrebleChordSymbolsMode"]>) => void;
+  setAbcHands: (value: NonNullable<DefaultSettingsFile["abcHands"]>) => void;
   setAccidental: (value: NonNullable<DefaultSettingsFile["accidental"]>) => void;
   setAccidentalStyle: (value: NonNullable<DefaultSettingsFile["accidentalStyle"]>) => void;
   setAnnotationBold: (value: NonNullable<DefaultSettingsFile["annotationBold"]>) => void;
@@ -84,7 +85,6 @@ export interface SettingsSetters {
   setScaleFinderPattern: (value: NonNullable<DefaultSettingsFile["scaleFinderPattern"]>) => void;
   setScaleFinderRoot: (value: NonNullable<DefaultSettingsFile["scaleFinderRoot"]>) => void;
   setScaleFinderRowLimit: (value: NonNullable<DefaultSettingsFile["scaleFinderRowLimit"]>) => void;
-  setSelectionOnClick: (value: NonNullable<DefaultSettingsFile["selectionOnClick"]>) => void;
   setSequenceArrowheadSize: (value: NonNullable<DefaultSettingsFile["sequenceArrowheadSize"]>) => void;
   setSequenceColorPreset: (value: NonNullable<DefaultSettingsFile["sequenceColorPreset"]>) => void;
   setSequenceDisplayMode: (value: NonNullable<DefaultSettingsFile["sequenceDisplayMode"]>) => void;
@@ -150,6 +150,7 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
     setAbcStradellaMode,
     setAbcTempoBpm,
     setAbcTrebleChordSymbolsMode,
+    setAbcHands,
     setAccidental,
     setBassPatternBarsPerChord,
     setBassPatternChordVoicing,
@@ -185,7 +186,6 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
     setPianoKeyWidthScale,
     setPianoTrebleRange,
     setScaleFinderDisplayMode,
-    setSelectionOnClick,
     setShowBellowsGuide,
     setShowButtonLabels,
     setShowStatusBar,
@@ -375,9 +375,6 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
         if (typeof defaults.showStradellaRowLabels === "boolean") {
           setShowStradellaRowLabels(defaults.showStradellaRowLabels);
         }
-        if (typeof defaults.selectionOnClick === "boolean") {
-          setSelectionOnClick(defaults.selectionOnClick);
-        }
         if (isOneOf(defaults.downloadFormat, ["svg", "png"] as const)) {
           setDownloadFormat(defaults.downloadFormat);
         }
@@ -447,6 +444,9 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
           ] as const)
         ) {
           setAbcTrebleChordSymbolsMode(defaults.abcTrebleChordSymbolsMode);
+        }
+        if (isOneOf(defaults.abcHands, ["stradella", "treble", "both"] as const)) {
+          setAbcHands(defaults.abcHands);
         }
         if (
           isOneOf(defaults.bassPatternChordVoicing, ["simple", "full"] as const)
@@ -753,6 +753,7 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
     setAbcStradellaMode,
     setAbcTempoBpm,
     setAbcTrebleChordSymbolsMode,
+    setAbcHands,
     setAccidental,
     setBassPatternBarsPerChord,
     setBassPatternChordVoicing,
@@ -784,7 +785,6 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
     setPianoKeyWidthScale,
     setPianoTrebleRange,
     setScaleFinderDisplayMode,
-    setSelectionOnClick,
     setShowBellowsGuide,
     setShowButtonLabels,
     setShowStatusBar,
@@ -928,8 +928,6 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
       setShowBellowsGuide(settings.showBellowsGuide);
     if (typeof settings.showStradellaRowLabels === "boolean")
       setShowStradellaRowLabels(settings.showStradellaRowLabels);
-    if (typeof settings.selectionOnClick === "boolean")
-      setSelectionOnClick(settings.selectionOnClick);
     if (isOneOf(settings.downloadFormat, ["svg", "png"] as const))
       setDownloadFormat(settings.downloadFormat);
     if (typeof settings.soundEnabled === "boolean")
@@ -979,6 +977,8 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
       isOneOf(settings.abcTrebleChordSymbolsMode, ["ignore", "play"] as const)
     )
       setAbcTrebleChordSymbolsMode(settings.abcTrebleChordSymbolsMode);
+    if (isOneOf(settings.abcHands, ["stradella", "treble", "both"] as const))
+      setAbcHands(settings.abcHands);
     if (isOneOf(settings.bassPatternChordVoicing, ["simple", "full"] as const))
       setBassPatternChordVoicing(settings.bassPatternChordVoicing);
     const savedRepeatsPerChord =
@@ -1076,7 +1076,6 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   "showButtonLabels" |
   "showBellowsGuide" |
   "showStradellaRowLabels" |
-  "selectionOnClick" |
   "downloadFormat" |
   "soundEnabled" |
   "stradellaBassVoicing" |
@@ -1100,6 +1099,7 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   "scaleFinderDisplayMode" |
   "abcStradellaMode" |
   "abcTrebleChordSymbolsMode" |
+  "abcHands" |
   "bassPatternChordVoicing" |
   "bassPatternTempoBpm" |
   "bassPatternLoopMode" |
@@ -1188,6 +1188,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     abcStradellaMode,
     abcTempoBpm,
     abcTrebleChordSymbolsMode,
+    abcHands,
     accidental,
     accidentalStyle,
     annotationBold,
@@ -1258,7 +1259,6 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     scaleFinderPattern,
     scaleFinderRoot,
     scaleFinderRowLimit,
-    selectionOnClick,
     sequenceArrowheadSize,
     sequenceColorPreset,
     sequenceDisplayMode,
@@ -1326,7 +1326,6 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       showButtonLabels,
       showBellowsGuide,
       showStradellaRowLabels,
-      selectionOnClick,
       downloadFormat,
       soundEnabled,
       stradellaBassVoicing,
@@ -1351,6 +1350,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       scaleFinderDisplayMode,
       abcStradellaMode,
       abcTrebleChordSymbolsMode,
+      abcHands,
       bassPatternChordVoicing,
       bassPatternRepeatsPerChord: bassPatternBarsPerChord,
       bassPatternTempoBpm,

@@ -25,6 +25,14 @@ const HarmonyExplorerPanel = lazy(() => import("../../components/tools/HarmonyEx
 const ProgressionAssistantPanel = lazy(() => import("../../components/tools/ProgressionAssistantPanel").then(module => ({ default: module.ProgressionAssistantPanel })));
 import { harmonyFamilyForFinderPattern } from "../../tools/harmonyExplorer/integration";
 import type { AppControllerModel } from "../useAppController";
+import { ANNOTATE_MODES, type AnnotateMode } from "../../diagram/useDiagramOverlays";
+
+const FINGER_NUMBERS = ["1", "2", "3", "4", "5"] as const;
+
+const ANNOTATE_MODE_LABELS: Record<AnnotateMode, TranslationKey> = {
+  select: "ui.annotateModeSelect", finger: "ui.annotateModeFinger",
+  sequence: "ui.annotateModeSequence", notes: "ui.annotateModeNotes",
+};
 
 /** View-only component: all state and commands originate in the controller. */
 export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
@@ -44,13 +52,14 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     formatStradellaScaleFinderNames, formatTrebleChordFinderPitches, getMainLabel, harmonyDiatonicOnly, harmonyHighlightDiatonic, harmonyProgression,
     harmonyProgressionHandMovementWeight, harmonyProgressionRootPosition, setHarmonyProgressionRootPosition, harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionVoiceLeadingWeight, harmonyProgressionPlan, harmonyProgressionRealizationOptions, harmonyProgressionRealizationKeys, cycleHarmonyProgressionRealization, harmonyProgressionNoteStepId, toggleHarmonyProgressionStepNotes,
     harmonyProgressionRecording, harmonyProgressionRhythmPattern, harmonyRecordedProgression, harmonyReferenceFamilyId, harmonyRelatedFamilyId,
-    harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, isApplyingFingering, isRecordingSequence,
+    harmonyScaleId, harmonySelection, harmonyShowEnharmonics, harmonyShowNoteRing, annotateMode,
+    abcHands, chooseAbcHands, abcVoiceCount, abcBothHands,
     isTrebleLikeSide, language, loadAbcExample, loadSelectedPatternIntoEditor, moveHarmonyProgressionChord,
     pauseAbcPlayback, playChordFinder, playScaleFinder,
     playSelectedButtons, playStradellaChordFinder, removeHarmonyProgressionChord, removeSelectedCustomBassPattern, resetHarmonyExplorer,
     saveCustomBassPattern, scaleFinderActive, scaleFinderButtons, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
     scaleFinderRowLimit, selectedBassPattern, selectedButtons, selectedChordProgression,
-    selectionOnClick, sendHarmonyRecordedProgressionToAssistant, sequenceArrowheadSize, sequenceColorPreset, sequenceDisplayMode, sequenceNumberColorPreset,
+    sendHarmonyRecordedProgressionToAssistant, sequenceArrowheadSize, sequenceColorPreset, sequenceDisplayMode, sequenceNumberColorPreset,
     sequenceNumberFontSize, sequenceNumberPosition, sequenceSteps, sequenceThickness, setAbcActiveButtonIds, setAbcEditorExpanded,
     setAbcExampleValue, setAbcFileName, setAbcPlaybackState, setAbcPositionBeat, setAbcStradellaMode, setAbcTempoBpm,
     setAbcText, setAbcTrebleChordSymbolsMode, setAnnotationBold, setAnnotationButtonAnchor, setAnnotationItalic, setAnnotationOffsetPercent,
@@ -59,8 +68,8 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     setChordFinderPattern, setChordFinderRoot, setChordProgressionId, setFinderExplanationFontSize, setFinderMaxButtons, setFinderSpanColumns,
     setFingeringDraft, setFingeringPosition, setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyProgression,
     setHarmonyProgressionHandMovementWeight, setHarmonyProgressionManualPattern, setHarmonyProgressionManualRoot, setHarmonyProgressionVoiceLeadingWeight, setHarmonyProgressionPreviewIndex, setHarmonyProgressionNoteStepId, setHarmonyProgressionRhythmPattern, setHarmonyReferenceFamilyId,
-    setHarmonyRelatedFamilyId, setHarmonyScaleId, setHarmonyShowNoteRing, setIsApplyingFingering, setIsRecordingSequence, setScaleFinderActive,
-    setScaleFinderDisplayMode, setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit, setSelectionOnClick, setSequenceArrowheadSize,
+    setHarmonyRelatedFamilyId, setHarmonyScaleId, setHarmonyShowNoteRing, setAnnotateMode, setScaleFinderActive,
+    setScaleFinderDisplayMode, setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit, setSequenceArrowheadSize,
     setSequenceColorPreset, setSequenceDisplayMode, setSequenceNumberColorPreset, setSequenceNumberFontSize, setSequenceNumberPosition, setSequenceThickness,
     setShowFinderRealizationNote, setShowStradellaVoicingIntervals, setShowTrebleVoicingNote, setSoundSequenceTempoBpm, setStradellaChordFinderActive, setStradellaChordFinderMarkRootBass,
     setStradellaChordFinderMode, setStradellaChordFinderPattern, setStradellaChordFinderRealizationIndex, setStradellaChordFinderRequestedBass, setStradellaChordFinderRoot, setStradellaMinimumNominalGap,
@@ -389,317 +398,6 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
               <section className="control-section">
                 <button
                   className="section-title"
-                  aria-expanded={activeToolSection === "selection"}
-                  onClick={() => toggleToolSection("selection")}
-                >
-                  {t("ui.selection")}{" "}
-                  <span>{activeToolSection === "selection" ? "−" : "+"}</span>
-                </button>
-                {activeToolSection !== "selection" && <p className="section-summary">{t("tools.summary.selection")}</p>}
-
-                {activeToolSection === "selection" && (
-                  <div className="section-content">
-                    <p className="hint">
-                      {t("ui.selectedButtons")}: {" "}
-                      <strong>{selectedButtons.length}</strong>
-                    </p>
-
-                    <button
-                      type="button"
-                      className={`small-button ${selectionOnClick ? "active-tool" : ""}`}
-                      onClick={() => setSelectionOnClick((current) => !current)}
-                    >
-                      {selectionOnClick
-                        ? t("ui.selectionOnClick")
-                        : t("ui.selectionOffClick")}
-                    </button>
-
-                    <button
-                      type="button"
-                      className="small-button"
-                      onClick={playSelectedButtons}
-                      disabled={selectedButtons.length === 0}
-                    >
-                      {t("ui.playSelection")}
-                    </button>
-
-                    {selectedButtons.length > 0 ? (
-                      <div className="selected-list">
-                        {selectedButtons.map((button) => (
-                          <div key={button.id} className="selected-item">
-                            <span>{getMainLabel(button) || t("settings.blank")}</span>
-                            <span className="selected-meta">
-                              {side === "stradella"
-                                ? `${translateKnownLabel(language, stradellaRowLabel(button.kind))}, ${t("ui.columnShort")} ${button.column + 1}`
-                                : `${t("ui.rowShort")} ${button.row + 1}, ${t("ui.columnShort")} ${button.column + 1}`}
-                            </span>
-                            <button
-                              type="button"
-                              className="selected-remove-button"
-                              onClick={() => deselectButton(button.id)}
-                              aria-label={t("ui.deselectButton", { button: getMainLabel(button) || t("ui.buttonGeneric") })}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="hint">{t("ui.noButtonsSelected")}</p>
-                    )}
-
-                    <button className="small-button" onClick={clearSelection}>
-                      {t("ui.clearSelection")}
-                    </button>
-                  </div>
-                )}
-              </section>
-
-              <section className="control-section">
-                <button
-                  className="section-title"
-                  aria-expanded={activeToolSection === "fingering"}
-                  onClick={() => toggleToolSection("fingering")}
-                >
-                  {t("ui.fingering")}{" "}
-                  <span>{activeToolSection === "fingering" ? "−" : "+"}</span>
-                </button>
-                {activeToolSection !== "fingering" && <p className="section-summary">{t("tools.summary.fingering")}</p>}
-
-                {activeToolSection === "fingering" && (
-                  <div className="section-content">
-                    <p className="hint">
-                      {t("ui.fingeringIntro")}
-                    </p>
-
-                    <label>
-                      {t("ui.fingeringValue")}
-                      <input
-                        placeholder="1-5"
-                        maxLength={3}
-                        value={fingeringDraft}
-                        onChange={(event) =>
-                          setFingeringDraft(event.target.value)
-                        }
-                      />
-                    </label>
-
-                    <button
-                      type="button"
-                      className={`small-button ${isApplyingFingering ? "active-tool" : ""}`}
-                      onClick={() =>
-                        setIsApplyingFingering((current) => !current)
-                      }
-                    >
-                      {isApplyingFingering
-                        ? t("ui.stopClickLabel")
-                        : t("ui.startClickLabel")}
-                    </button>
-
-                    <label>
-                      {t("ui.fingeringPosition")}
-                      <select
-                        value={fingeringPosition}
-                        onChange={(event) =>
-                          setFingeringPosition(
-                            event.target.value as NumberPosition,
-                          )
-                        }
-                      >
-                        <option value="inside-bottom">{t("ui.insideBottom")}</option>
-                        <option value="inside-top">{t("ui.insideTop")}</option>
-                        <option value="above">{t("ui.aboveButton")}</option>
-                      </select>
-                    </label>
-
-                    <div className="button-row">
-                      <button
-                        className="small-button"
-                        onClick={applyFingerToSelected}
-                      >
-                        {t("ui.applyToSelected")}
-                      </button>
-                      <button
-                        className="small-button"
-                        onClick={clearFingerForSelected}
-                      >
-                        {t("ui.clearSelected")}
-                      </button>
-                      <button
-                        className="small-button"
-                        onClick={clearAllFingerings}
-                      >
-                        {t("ui.clearAll")}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </section>
-
-              <section className="control-section">
-                <button
-                  className="section-title"
-                  aria-expanded={activeToolSection === "sequences"}
-                  onClick={() => toggleToolSection("sequences")}
-                >
-                  {t("ui.sequence")}{" "}
-                  <span>{activeToolSection === "sequences" ? "−" : "+"}</span>
-                </button>
-                {activeToolSection !== "sequences" && <p className="section-summary">{t("tools.summary.sequences")}</p>}
-
-                {activeToolSection === "sequences" && (
-                  <div className="section-content">
-                    <p className="hint">
-                      {t("ui.sequenceIntro")}
-                    </p>
-
-                    <label>
-                      {t("ui.display")}
-                      <select
-                        value={sequenceDisplayMode}
-                        onChange={(event) =>
-                          setSequenceDisplayMode(
-                            event.target.value as SequenceDisplayMode,
-                          )
-                        }
-                      >
-                        {SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => (
-                          <option key={option.value} value={option.value}>
-                            {translateKnownLabel(language, option.label)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label>
-                      {t("ui.arrowColor")}
-                      <select
-                        value={sequenceColorPreset}
-                        onChange={(event) =>
-                          setSequenceColorPreset(
-                            event.target.value as SequenceColorPreset,
-                          )
-                        }
-                      >
-                        <option value="red">{t("ui.red")}</option>
-                        <option value="blue">{t("ui.blue")}</option>
-                        <option value="black">{t("ui.black")}</option>
-                        <option value="grey">{t("ui.grey")}</option>
-                        <option value="theme">{t("ui.themeAccent")}</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      {t("ui.arrowThickness")}: {sequenceThickness.toFixed(1)}
-                      <input
-                        type="range"
-                        min={1}
-                        max={8}
-                        step={0.25}
-                        value={sequenceThickness}
-                        onChange={(event) =>
-                          setSequenceThickness(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      {t("ui.arrowheadSize")}: {sequenceArrowheadSize.toFixed(1)}
-                      <input
-                        type="range"
-                        min={2}
-                        max={10}
-                        step={0.5}
-                        value={sequenceArrowheadSize}
-                        onChange={(event) =>
-                          setSequenceArrowheadSize(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      {t("ui.numberColor")}
-                      <select
-                        value={sequenceNumberColorPreset}
-                        onChange={(event) =>
-                          setSequenceNumberColorPreset(
-                            event.target.value as SequenceColorPreset,
-                          )
-                        }
-                      >
-                        <option value="red">{t("ui.red")}</option>
-                        <option value="blue">{t("ui.blue")}</option>
-                        <option value="black">{t("ui.black")}</option>
-                        <option value="grey">{t("ui.grey")}</option>
-                        <option value="theme">{t("ui.themeAccent")}</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      {t("ui.numberPosition")}
-                      <select
-                        value={sequenceNumberPosition}
-                        onChange={(event) =>
-                          setSequenceNumberPosition(
-                            event.target.value as NumberPosition,
-                          )
-                        }
-                      >
-                        <option value="above">{t("ui.aboveButton")}</option>
-                        <option value="inside-top">{t("ui.insideTop")}</option>
-                        <option value="inside-bottom">{t("ui.insideBottom")}</option>
-                        <option value="none">{t("ui.noNumbers")}</option>
-                      </select>
-                    </label>
-
-                    <label>
-                      {t("ui.numberFontSize")}: {sequenceNumberFontSize}px
-                      <input
-                        type="range"
-                        min={7}
-                        max={18}
-                        value={sequenceNumberFontSize}
-                        onChange={(event) =>
-                          setSequenceNumberFontSize(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <button
-                      className={`small-button ${isRecordingSequence ? "active-tool" : ""}`}
-                      onClick={() =>
-                        setIsRecordingSequence((current) => !current)
-                      }
-                    >
-                      {isRecordingSequence
-                        ? t("tools.stopRecording")
-                        : t("ui.recordSequence")}
-                    </button>
-
-                    <p className="hint">
-                      {t("ui.sequenceLength")} <strong>{sequenceSteps.length}</strong>
-                    </p>
-                    <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
-
-                    <div className="button-row">
-                      <button className="small-button" onClick={clearSequence}>
-                        {t("ui.clearSequence")}
-                      </button>
-                    </div>
-
-                    <details className="compact-help-details">
-                      <summary>{t("ui.notationHelp")}</summary>
-                      <p>
-                        {t("ui.sequenceNotationHint")}
-                      </p>
-                    </details>
-                  </div>
-                )}
-              </section>
-
-              <section className="control-section">
-                <button
-                  className="section-title"
                   aria-expanded={activeToolSection === "annotateDiagram"}
                   onClick={() => toggleToolSection("annotateDiagram")}
                 >
@@ -710,143 +408,384 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
 
                 {activeToolSection === "annotateDiagram" && (
                   <div className="section-content">
-                    <p className="hint">
-                      {t("ui.annotateHintDetailed")}
-                    </p>
+                    <SegmentedChoice
+                      label={t("ui.annotateMode")}
+                      value={annotateMode}
+                      onChange={setAnnotateMode}
+                      groupClassName="two-columns"
+                      options={ANNOTATE_MODES.map((mode) => ({ value: mode, label: t(ANNOTATE_MODE_LABELS[mode]) }))}
+                    />
+                    <p className="hint">{t("ui.annotateModeHint")}</p>
 
-                    <label>
-                      {t("ui.buttonPosition")}
-                      <select
-                        value={annotationButtonAnchor}
-                        onChange={(event) =>
-                          setAnnotationButtonAnchor(
-                            event.target.value as DiagramAnnotationAnchor,
-                          )
-                        }
-                      >
-                        <option value="center">{t("ui.center")}</option>
-                        <option value="top">{t("ui.top")}</option>
-                        <option value="bottom">{t("ui.bottom")}</option>
-                        <option value="left">{t("ui.left")}</option>
-                        <option value="right">{t("ui.right")}</option>
-                        <option value="topLeft">{t("ui.topLeft")}</option>
-                        <option value="topRight">{t("ui.topRight")}</option>
-                        <option value="bottomLeft">{t("ui.bottomLeft")}</option>
-                        <option value="bottomRight">{t("ui.bottomRight")}</option>
-                      </select>
-                    </label>
+                    {annotateMode === "select" && (
+                      <>
+                        <p className="hint">{t("ui.selectionIntro")}</p>
+                      <p className="hint">
+                        {t("ui.selectedButtons")}{" "}
+                        <strong>{selectedButtons.length}</strong>
+                      </p>
 
-                    <label>
-                      {t("ui.annotateTextSize")}: {textNoteFontSize}px
-                      <input
-                        type="range"
-                        min={8}
-                        max={32}
-                        value={textNoteFontSize}
-                        onChange={(event) =>
-                          setTextNoteFontSize(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <label>
-                      {t("ui.distanceFromCenter")}: {annotationOffsetPercent}%
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        value={annotationOffsetPercent}
-                        onChange={(event) =>
-                          setAnnotationOffsetPercent(Number(event.target.value))
-                        }
-                      />
-                    </label>
-
-                    <div className="annotation-style-toggles" aria-label={t("ui.annotationStyle")}>
                       <button
                         type="button"
-                        className={annotationBold ? "style-toggle active" : "style-toggle"}
-                        onClick={() => setAnnotationBold((current) => !current)}
-                        aria-pressed={annotationBold}
-                        title={t("ui.bold")}
+                        className="small-button"
+                        onClick={playSelectedButtons}
+                        disabled={selectedButtons.length === 0}
                       >
-                        B
+                        {t("ui.playSelection")}
                       </button>
-                      <button
-                        type="button"
-                        className={annotationItalic ? "style-toggle active" : "style-toggle"}
-                        onClick={() => setAnnotationItalic((current) => !current)}
-                        aria-pressed={annotationItalic}
-                        title={t("ui.italic")}
-                      >
-                        <em>I</em>
-                      </button>
-                    </div>
 
-                    <label>
-                      {t("ui.textColor")}
-                      <input
-                        type="color"
-                        value={textNoteColor}
-                        onChange={(event) => setTextNoteColor(event.target.value)}
-                      />
-                    </label>
-
-                    <label>
-                      {t("ui.font")}
-                      <select
-                        value={textNoteFont}
-                        onChange={(event) =>
-                          setTextNoteFont(event.target.value as FontFamily)
-                        }
-                      >
-                        <option value="system">{t("ui.system")}</option>
-                        <option value="serif">{t("ui.serif")}</option>
-                        <option value="mono">{t("ui.mono")}</option>
-                        <option value="rounded">{t("ui.rounded")}</option>
-                      </select>
-                    </label>
-
-                    <div className="annotation-list-block">
-                      <div className="annotation-list-header">
-                        <span>{t("ui.annotations")}</span>
-                        <strong>{textNotes.length}</strong>
-                      </div>
-
-                      {textNotes.length === 0 ? (
-                        <p className="hint">
-                          {t("ui.noAnnotationsYetClickTheDiagramToAddOne")}
-                        </p>
-                      ) : (
-                        <ul className="annotation-list">
-                          {textNotes.map((note, index) => (
-                            <li key={note.id} className="annotation-list-item">
-                              <div className="annotation-list-text">
-                                <strong>{index + 1}. {annotationPreview(note)}</strong>
-                                <span>{annotationLocationLabel(note)}</span>
-                              </div>
+                      {selectedButtons.length > 0 ? (
+                        <div className="selected-list">
+                          {selectedButtons.map((button) => (
+                            <div key={button.id} className="selected-item">
+                              <span>{getMainLabel(button) || t("settings.blank")}</span>
+                              <span className="selected-meta">
+                                {side === "stradella"
+                                  ? `${translateKnownLabel(language, stradellaRowLabel(button.kind))}, ${t("ui.columnShort")} ${button.column + 1}`
+                                  : `${t("ui.rowShort")} ${button.row + 1}, ${t("ui.columnShort")} ${button.column + 1}`}
+                              </span>
                               <button
                                 type="button"
-                                className="annotation-delete-button"
-                                onClick={() => deleteTextNote(note.id)}
-                                aria-label={t("ui.deleteAnnotation", { count: index + 1 })}
-                                title={t("ui.deleteAnnotationTooltip")}
+                                className="selected-remove-button"
+                                onClick={() => deselectButton(button.id)}
+                                aria-label={t("ui.deselectButton", { button: getMainLabel(button) || t("ui.buttonGeneric") })}
                               >
                                 ×
                               </button>
-                            </li>
+                            </div>
                           ))}
-                        </ul>
+                        </div>
+                      ) : (
+                        <p className="hint">{t("ui.noButtonsSelected")}</p>
                       )}
-                    </div>
 
-                    <button
-                      className="small-button"
-                      onClick={clearTextNotes}
-                      disabled={textNotes.length === 0}
-                    >
-                      {t("ui.clearAnnotations")}
-                    </button>
+                      <button className="small-button" onClick={clearSelection}>
+                        {t("ui.clearSelection")}
+                      </button>
+                      </>
+                    )}
+
+                    {annotateMode === "finger" && (
+                      <>
+                        <p className="hint">{t("ui.fingeringIntro")}</p>
+
+                      <SegmentedChoice label={t("ui.fingeringValue")} value={fingeringDraft} onChange={setFingeringDraft}
+                        options={FINGER_NUMBERS.map((finger) => ({ value: finger, label: finger }))} />
+
+                      <label>
+                        {t("ui.fingeringPosition")}
+                        <select
+                          value={fingeringPosition}
+                          onChange={(event) =>
+                            setFingeringPosition(
+                              event.target.value as NumberPosition,
+                            )
+                          }
+                        >
+                          <option value="inside-bottom">{t("ui.insideBottom")}</option>
+                          <option value="inside-top">{t("ui.insideTop")}</option>
+                          <option value="above">{t("ui.aboveButton")}</option>
+                        </select>
+                      </label>
+
+                      <div className="button-row">
+                        <button
+                          className="small-button"
+                          onClick={applyFingerToSelected}
+                        >
+                          {t("ui.applyToSelected")}
+                        </button>
+                        <button
+                          className="small-button"
+                          onClick={clearFingerForSelected}
+                        >
+                          {t("ui.clearSelected")}
+                        </button>
+                        <button
+                          className="small-button"
+                          onClick={clearAllFingerings}
+                        >
+                          {t("ui.clearAll")}
+                        </button>
+                      </div>
+                      </>
+                    )}
+
+                    {annotateMode === "sequence" && (
+                      <>
+                        <p className="hint">{t("ui.sequenceIntro")}</p>
+
+                      <label>
+                        {t("ui.display")}
+                        <select
+                          value={sequenceDisplayMode}
+                          onChange={(event) =>
+                            setSequenceDisplayMode(
+                              event.target.value as SequenceDisplayMode,
+                            )
+                          }
+                        >
+                          {SEQUENCE_DISPLAY_MODE_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {translateKnownLabel(language, option.label)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label>
+                        {t("ui.arrowColor")}
+                        <select
+                          value={sequenceColorPreset}
+                          onChange={(event) =>
+                            setSequenceColorPreset(
+                              event.target.value as SequenceColorPreset,
+                            )
+                          }
+                        >
+                          <option value="red">{t("ui.red")}</option>
+                          <option value="blue">{t("ui.blue")}</option>
+                          <option value="black">{t("ui.black")}</option>
+                          <option value="grey">{t("ui.grey")}</option>
+                          <option value="theme">{t("ui.themeAccent")}</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        {t("ui.arrowThickness")} {sequenceThickness.toFixed(1)}
+                        <input
+                          type="range"
+                          min={1}
+                          max={8}
+                          step={0.25}
+                          value={sequenceThickness}
+                          onChange={(event) =>
+                            setSequenceThickness(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        {t("ui.arrowheadSize")} {sequenceArrowheadSize.toFixed(1)}
+                        <input
+                          type="range"
+                          min={2}
+                          max={10}
+                          step={0.5}
+                          value={sequenceArrowheadSize}
+                          onChange={(event) =>
+                            setSequenceArrowheadSize(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        {t("ui.numberColor")}
+                        <select
+                          value={sequenceNumberColorPreset}
+                          onChange={(event) =>
+                            setSequenceNumberColorPreset(
+                              event.target.value as SequenceColorPreset,
+                            )
+                          }
+                        >
+                          <option value="red">{t("ui.red")}</option>
+                          <option value="blue">{t("ui.blue")}</option>
+                          <option value="black">{t("ui.black")}</option>
+                          <option value="grey">{t("ui.grey")}</option>
+                          <option value="theme">{t("ui.themeAccent")}</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        {t("ui.numberPosition")}
+                        <select
+                          value={sequenceNumberPosition}
+                          onChange={(event) =>
+                            setSequenceNumberPosition(
+                              event.target.value as NumberPosition,
+                            )
+                          }
+                        >
+                          <option value="above">{t("ui.aboveButton")}</option>
+                          <option value="inside-top">{t("ui.insideTop")}</option>
+                          <option value="inside-bottom">{t("ui.insideBottom")}</option>
+                          <option value="none">{t("ui.noNumbers")}</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        {t("ui.numberFontSize")} {sequenceNumberFontSize}px
+                        <input
+                          type="range"
+                          min={7}
+                          max={18}
+                          value={sequenceNumberFontSize}
+                          onChange={(event) =>
+                            setSequenceNumberFontSize(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <p className="hint">
+                        {t("ui.sequenceLength")} <strong>{sequenceSteps.length}</strong>
+                      </p>
+                      <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
+
+                      <div className="button-row">
+                        <button className="small-button" onClick={clearSequence}>
+                          {t("ui.clearSequence")}
+                        </button>
+                      </div>
+
+                      <details className="compact-help-details">
+                        <summary>{t("ui.notationHelp")}</summary>
+                        <p>
+                          {t("ui.sequenceNotationHint")}
+                        </p>
+                      </details>
+                      </>
+                    )}
+
+                    {annotateMode === "notes" && (
+                      <>
+                        <p className="hint">{t("ui.annotateHintDetailed")}</p>
+
+                      <label>
+                        {t("ui.buttonPosition")}
+                        <select
+                          value={annotationButtonAnchor}
+                          onChange={(event) =>
+                            setAnnotationButtonAnchor(
+                              event.target.value as DiagramAnnotationAnchor,
+                            )
+                          }
+                        >
+                          <option value="center">{t("ui.center")}</option>
+                          <option value="top">{t("ui.top")}</option>
+                          <option value="bottom">{t("ui.bottom")}</option>
+                          <option value="left">{t("ui.left")}</option>
+                          <option value="right">{t("ui.right")}</option>
+                          <option value="topLeft">{t("ui.topLeft")}</option>
+                          <option value="topRight">{t("ui.topRight")}</option>
+                          <option value="bottomLeft">{t("ui.bottomLeft")}</option>
+                          <option value="bottomRight">{t("ui.bottomRight")}</option>
+                        </select>
+                      </label>
+
+                      <label>
+                        {t("ui.annotateTextSize")}: {textNoteFontSize}px
+                        <input
+                          type="range"
+                          min={8}
+                          max={32}
+                          value={textNoteFontSize}
+                          onChange={(event) =>
+                            setTextNoteFontSize(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <label>
+                        {t("ui.distanceFromCenter")} {annotationOffsetPercent}%
+                        <input
+                          type="range"
+                          min={0}
+                          max={100}
+                          value={annotationOffsetPercent}
+                          onChange={(event) =>
+                            setAnnotationOffsetPercent(Number(event.target.value))
+                          }
+                        />
+                      </label>
+
+                      <div className="annotation-style-toggles" aria-label={t("ui.annotationStyle")}>
+                        <button
+                          type="button"
+                          className={annotationBold ? "style-toggle active" : "style-toggle"}
+                          onClick={() => setAnnotationBold((current) => !current)}
+                          aria-pressed={annotationBold}
+                          title={t("ui.bold")}
+                        >
+                          B
+                        </button>
+                        <button
+                          type="button"
+                          className={annotationItalic ? "style-toggle active" : "style-toggle"}
+                          onClick={() => setAnnotationItalic((current) => !current)}
+                          aria-pressed={annotationItalic}
+                          title={t("ui.italic")}
+                        >
+                          <em>I</em>
+                        </button>
+                      </div>
+
+                      <label>
+                        {t("ui.textColor")}
+                        <input
+                          type="color"
+                          value={textNoteColor}
+                          onChange={(event) => setTextNoteColor(event.target.value)}
+                        />
+                      </label>
+
+                      <label>
+                        {t("ui.font")}
+                        <select
+                          value={textNoteFont}
+                          onChange={(event) =>
+                            setTextNoteFont(event.target.value as FontFamily)
+                          }
+                        >
+                          <option value="system">{t("ui.system")}</option>
+                          <option value="serif">{t("ui.serif")}</option>
+                          <option value="mono">{t("ui.mono")}</option>
+                          <option value="rounded">{t("ui.rounded")}</option>
+                        </select>
+                      </label>
+
+                      <div className="annotation-list-block">
+                        <div className="annotation-list-header">
+                          <span>{t("ui.annotations")}</span>
+                          <strong>{textNotes.length}</strong>
+                        </div>
+
+                        {textNotes.length === 0 ? (
+                          <p className="hint">
+                            {t("ui.noAnnotationsYetClickTheDiagramToAddOne")}
+                          </p>
+                        ) : (
+                          <ul className="annotation-list">
+                            {textNotes.map((note, index) => (
+                              <li key={note.id} className="annotation-list-item">
+                                <div className="annotation-list-text">
+                                  <strong>{index + 1}. {annotationPreview(note)}</strong>
+                                  <span>{annotationLocationLabel(note)}</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  className="annotation-delete-button"
+                                  onClick={() => deleteTextNote(note.id)}
+                                  aria-label={t("ui.deleteAnnotation", { count: index + 1 })}
+                                  title={t("ui.deleteAnnotationTooltip")}
+                                >
+                                  ×
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+
+                      <button
+                        className="small-button"
+                        onClick={clearTextNotes}
+                        disabled={textNotes.length === 0}
+                      >
+                        {t("ui.clearAnnotations")}
+                      </button>
+                      </>
+                    )}
                   </div>
                 )}
               </section>
@@ -1157,7 +1096,14 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                           : t("ui.abcIntroTreble")}
                       </p>
 
-                      {side === "stradella" && (
+                      <SegmentedChoice label={t("ui.abcHands")} value={abcHands} onChange={chooseAbcHands} groupClassName="whole-words"
+                        options={[{ value: "stradella", label: t("nav.stradella") }, { value: "treble", label: t("nav.treble") },
+                          { value: "both", label: t("ui.abcHandsBoth") }]} />
+                      {abcHands === "both" && abcText.trim() && (
+                        <p className="hint">{abcVoiceCount >= 2 ? t("ui.abcHandsHint") : t("ui.abcHandsOneVoice")}</p>
+                      )}
+
+                      {(side === "stradella" || abcBothHands) && (
                         <label>
                           <span className="label-line">
                             {t("ui.abcStradellaMapping")}{" "}
@@ -1186,7 +1132,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                         </label>
                       )}
 
-                      {isTrebleLikeSide && (
+                      {(isTrebleLikeSide || abcBothHands) && (
                         <SegmentedChoice label={<>{t("ui.chordSymbols")} <HelpTip text={t("ui.abcTrebleSymbolsHelp")} /></>} value={abcTrebleChordSymbolsMode} onChange={(next) => { pauseAbcPlayback(); setAbcActiveButtonIds([]); setAbcTrebleChordSymbolsMode(next); }} options={[{ value: "ignore", label: t("ui.ignore") }, { value: "play", label: t("tools.play") }]} />
                       )}
 
@@ -1245,7 +1191,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                       </div>
 
                       {abcFileName && (
-                        <p className="hint">{t("ui.file")}: {abcFileName}</p>
+                        <p className="hint">{t("ui.file")} {abcFileName}</p>
                       )}
 
                       <label>
@@ -1289,14 +1235,16 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                           <p>{abcParseResult.errors.map((error) => translateKnownLabel(language, error)).join(" ")}</p>
                         ) : (
                           <p>
-                            {t("ui.events")}: {abcMappedEvents.length} · {t("ui.key")}: {" "}
+                            {t("ui.events")} {abcMappedEvents.length} · {t("ui.key")}: {" "}
                             {abcParseResult.key}
-                            {abcParseResult.voiceIds.length > 1
-                              ? ` · ${t("ui.voice")}: ${side === "stradella" ? "2" : "1"}`
-                              : ""} · {t("ui.length")}: {" "}
+                            {abcBothHands
+                              ? ` · ${t("ui.abcVoicesBoth")}`
+                              : abcParseResult.voiceIds.length > 1
+                                ? ` · ${t("ui.voice")}: ${side === "stradella" ? "2" : "1"}`
+                                : ""} · {t("ui.length")}: {" "}
                             {abcTotalBeats.toFixed(1)} {t("ui.beats")}
                             {abcMissingPitchText
-                              ? ` · ${side === "stradella" ? t("ui.unavailableNotes") : t("ui.missingShort")}: ${abcMissingPitchText}`
+                              ? ` · ${side === "stradella" && !abcBothHands ? t("ui.unavailableNotes") : t("ui.missingShort")}: ${abcMissingPitchText}`
                               : ""}
                           </p>
                         )}

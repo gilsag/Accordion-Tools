@@ -6,6 +6,7 @@
 import type {
   AbcStradellaMode,
   AbcTrebleChordSymbolsMode,
+  AbcHands,
   AccidentalMode,
   BassPatternChordVoicing,
   AccidentalStyle,
@@ -77,7 +78,6 @@ export type DefaultSettingsFile = Partial<{
   showButtonLabels: boolean;
   showBellowsGuide: boolean;
   showStradellaRowLabels: boolean;
-  selectionOnClick: boolean;
   downloadFormat: DownloadFormat;
   soundEnabled: boolean;
   stradellaBassVoicing: StradellaBassVoicing;
@@ -91,6 +91,7 @@ export type DefaultSettingsFile = Partial<{
   stradellaRequestedBassOnBassButton: boolean;
   abcStradellaMode: AbcStradellaMode;
   abcTrebleChordSymbolsMode: AbcTrebleChordSymbolsMode;
+  abcHands: AbcHands;
   bassPatternChordVoicing: BassPatternChordVoicing;
   bassPatternBarsPerChord: number;
   bassPatternRepeatsPerChord: number;

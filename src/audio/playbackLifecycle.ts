@@ -34,6 +34,32 @@ export interface AbcPausePorts {
   stopBassPattern(): void;
   stopSound(): void;
   clearProgressionButtons(): void;
+  /** Buttons to keep lit at the paused beat (see lastPlayedAbcButtonIds). */
+  buttonsAtPosition?(beat: number): string[];
+}
+
+/**
+ * The buttons a pause leaves lit: for each voice, the last event that started
+ * at or before `beat` (all its buttons). With both hands this is the last
+ * melody note and the last bass or chord, even if a short note had already
+ * been released when Pause was pressed.
+ */
+export function lastPlayedAbcButtonIds(
+  events: ReadonlyArray<{ startBeat: number; voiceId?: string; buttons: ReadonlyArray<{ id: string }> }>,
+  beat: number,
+): string[] {
+  const latest = new Map<string, number>();
+  for (const event of events) {
+    if (event.buttons.length === 0 || event.startBeat > beat + 1e-6) continue;
+    const voice = event.voiceId ?? "";
+    latest.set(voice, Math.max(latest.get(voice) ?? -Infinity, event.startBeat));
+  }
+  const ids: string[] = [];
+  for (const event of events) {
+    if (event.buttons.length === 0 || latest.get(event.voiceId ?? "") !== event.startBeat) continue;
+    for (const button of event.buttons) if (!ids.includes(button.id)) ids.push(button.id);
+  }
+  return ids;
 }
 
 export function pauseAbcTransport(ports: AbcPausePorts) {
@@ -41,9 +67,10 @@ export function pauseAbcTransport(ports: AbcPausePorts) {
   const elapsedBeats = ports.startedAt === null
     ? 0
     : ((ports.nowMs() - ports.startedAt) / 1000) * (ports.tempoBpm / 60);
-  ports.setPosition(Math.min(ports.totalBeats, ports.startingBeat + elapsedBeats));
+  const position = Math.min(ports.totalBeats, ports.startingBeat + elapsedBeats);
+  ports.setPosition(position);
   ports.setState("paused");
-  ports.setActiveButtons([]);
+  ports.setActiveButtons(ports.buttonsAtPosition?.(position) ?? []);
   ports.clearTimers();
   ports.stopBassPattern();
   ports.stopSound();

@@ -9,13 +9,19 @@ import { usePhonePanel } from "./app/usePhonePanel";
 import { SettingsView } from "./app/views/SettingsView";
 import { ToolsView } from "./app/views/ToolsView";
 import { WorkspaceView } from "./app/views/WorkspaceView";
+import { PanelResizeHandle } from "./app/components/PanelResizeHandle";
+import { clampPanelWidth, panelTrack, usePanelWidths } from "./app/panelWidths";
+import { workspaceGridColumns } from "./app/workspacePresentation";
+
+const DEFAULT_INSPECTOR_TRACK = "minmax(300px, 360px)";
 
 /** Layout composition only. Feature state and cross-tool orchestration are
  * supplied by the controller while independent views render the UI. */
 export default function App() {
   const model = useAppController();
   const { visible: inspectorVisible, toggle: toggleInspector } = useInspectorVisibility();
-  const { language, interfaceDensity, appGridColumns, leftPanelMode, t } = model;
+  const { language, interfaceDensity, leftPanelMode, t } = model;
+  const { widths: panelWidths, setPanelWidth } = usePanelWidths();
   const { isPhone, open: sheetOpen, show: showSheet, close: closeSheet,
     panelRef, closeRef, onPanelKeyDown } = usePhonePanel(model.tools.activeToolSection, model.tools.workspaceMode);
   function openPhonePanel(mode: "tools" | "settings") {
@@ -28,11 +34,28 @@ export default function App() {
     side: model.tools.side,
     stradellaChordFinderActive: model.tools.stradellaChordFinderActive,
     activeToolSection: model.tools.activeToolSection,
+    // Phones keep the notation under the diagram.
+    abcNotationVisible: !isPhone && model.tools.abcRenderedNotationVisible && Boolean(model.tools.abcText.trim()),
   });
   const inspector = inspectorVisible ? availableInspector : null;
+  const appGridColumns = workspaceGridColumns(interfaceDensity, leftPanelMode,
+    panelWidths.left === null ? undefined : panelTrack(panelWidths.left, ""));
+  const inspectorTrack = panelTrack(panelWidths.inspector, DEFAULT_INSPECTOR_TRACK);
+  const panelWidth = (element: Element | null | undefined) => element?.getBoundingClientRect().width ?? 0;
+  const leftPanelWidth = () => panelWidth(panelRef.current);
+  const inspectorWidth = () => panelWidth(document.querySelector(".workspace-inspector"));
+  // Drag handles on the diagram's edges; phones use a sheet instead of panels.
+  const panelHandles = isPhone ? null : <>
+    {leftPanelMode !== "hidden" && <PanelResizeHandle panel="left" label={t("ui.resizeLeftPanel")}
+      measure={leftPanelWidth} onResize={(width) => setPanelWidth("left", width)}
+      clamp={(width) => clampPanelWidth("left", width, window.innerWidth, inspector ? inspectorWidth() : 0)} />}
+    {inspector && <PanelResizeHandle panel="inspector" label={t("ui.resizeResultsPanel")}
+      measure={inspectorWidth} onResize={(width) => setPanelWidth("inspector", width)}
+      clamp={(width) => clampPanelWidth("inspector", width, window.innerWidth, leftPanelWidth())} />}
+  </>;
   return (
     <LanguageProvider language={language}>
-      <AppShell language={language} density={interfaceDensity} gridTemplateColumns={inspector ? `${appGridColumns} minmax(300px, 360px)` : appGridColumns}>
+      <AppShell language={language} density={interfaceDensity} gridTemplateColumns={inspector ? `${appGridColumns} ${inspectorTrack}` : appGridColumns}>
         {isPhone && sheetOpen && <button type="button" tabIndex={-1}
           className="phone-sheet-backdrop" aria-label={t("ui.close")}
           onClick={closeSheet} />}
@@ -54,7 +77,8 @@ export default function App() {
         <WorkspaceView model={model.workspace} isPhone={isPhone}
           phoneSheetOpen={isPhone && sheetOpen} onOpenPhonePanel={openPhonePanel}
           inspectorAvailable={!!availableInspector} inspectorVisible={!!inspector}
-          onToggleInspector={toggleInspector} />
+          onToggleInspector={toggleInspector} abcNotationInInspector={inspector === "abcNotation"}
+          panelHandles={panelHandles} />
         {inspector && <WorkspaceInspectorSlot inspector={inspector} tools={model.tools} blocked={isPhone && sheetOpen} />}
       </AppShell>
     </LanguageProvider>

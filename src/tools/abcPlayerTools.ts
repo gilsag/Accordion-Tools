@@ -1144,6 +1144,28 @@ export function mapAbcEventsToStradellaButtons(
   });
 }
 
+/**
+ * Both hands: voice 1 on the treble and voice 2 on the Stradella, each mapped
+ * exactly as that side alone would map it, merged into one timeline sorted by
+ * start. A melody note and a bass note may start together.
+ */
+export function mapAbcEventsToBothHands(
+  trebleButtons: DiagramButton[],
+  stradellaButtons: DiagramButton[],
+  events: AbcEvent[],
+  keyTonicPitchClass: string,
+  stradellaMode: AbcStradellaMappingMode,
+  playTrebleChordSymbols: boolean,
+) {
+  const trebleEvents = abcEventsForTrebleSide(events);
+  const stradellaEvents = abcEventsForStradellaSide(events);
+  const mapped = [
+    ...mapAbcEventsToTrebleButtons(trebleButtons, trebleEvents, playTrebleChordSymbols),
+    ...mapAbcEventsToStradellaButtons(stradellaButtons, stradellaEvents, keyTonicPitchClass, stradellaMode),
+  ].sort((a, b) => a.startBeat - b.startBeat);
+  return { playable: [...trebleEvents, ...stradellaEvents], mapped };
+}
+
 export function totalAbcBeats(events: AbcEvent[]) {
   if (events.length === 0) return 0;
   return Math.max(...events.map((event) => event.startBeat + event.durationBeats));

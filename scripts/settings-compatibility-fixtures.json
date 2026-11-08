@@ -238,10 +238,6 @@
         true
       ],
       [
-        "setSelectionOnClick",
-        false
-      ],
-      [
         "setDownloadFormat",
         "svg"
       ],

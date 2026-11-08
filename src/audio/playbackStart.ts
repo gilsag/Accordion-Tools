@@ -8,6 +8,8 @@ export interface AbcStartPorts {
   eventCount: number;
   startBeat: number;
   clearTimers(): void;
+  /** Clears the buttons a pause left lit before playback resumes. */
+  clearActiveButtons?(): void;
   stopBassPattern(): void;
   stopSound(): void;
   clearProgressionButtons(): void;
@@ -25,6 +27,7 @@ export interface AbcStartPorts {
 export function startAbcTransport(ports: AbcStartPorts): boolean {
   if (ports.eventCount === 0) return false;
   ports.clearTimers();
+  ports.clearActiveButtons?.();
   ports.stopBassPattern();
   ports.stopSound();
   ports.clearProgressionButtons();

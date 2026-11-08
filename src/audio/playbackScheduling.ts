@@ -47,7 +47,10 @@ export function scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoB
           playButtonSound(button, soundOptions, { at: when, durationMs })),
         () => {
           setAbcPositionBeat(event.startBeat);
-          setAbcActiveButtonIds(event.buttons.map((button) => button.id));
+          // Add rather than replace: with both hands, a melody note and a
+          // bass note can sound at once, each cleared when it ends.
+          setAbcActiveButtonIds((current) => current.concat(
+            event.buttons.map((button) => button.id).filter((id) => !current.includes(id))));
           const clearTimeoutId = window.setTimeout(
             () => {
               setAbcActiveButtonIds((current) => {
