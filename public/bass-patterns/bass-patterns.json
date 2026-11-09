@@ -135,6 +135,44 @@
       ]
     },
     {
+      "id": "march-2-4",
+      "name": "March (2/4)",
+      "meter": "2/4",
+      "description": "Stradella marching bass: root bass, chord, fifth bass, chord in even eighths. Accents on the two bass attacks.",
+      "steps": [
+        {
+          "t": 0,
+          "d": 0.5,
+          "play": [
+            "bass:1"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 0.5,
+          "d": 0.5,
+          "play": [
+            "chord"
+          ]
+        },
+        {
+          "t": 1,
+          "d": 0.5,
+          "play": [
+            "bass:5"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 1.5,
+          "d": 0.5,
+          "play": [
+            "chord"
+          ]
+        }
+      ]
+    },
+    {
       "id": "polka",
       "name": "Polka",
       "meter": "2/4",
@@ -195,6 +233,44 @@
       ]
     },
     {
+      "id": "march-4-4",
+      "name": "March (4/4)",
+      "meter": "4/4",
+      "description": "Even Stradella march with accented root on one, fifth bass on three, and short chord responses on two and four.",
+      "steps": [
+        {
+          "t": 0,
+          "d": 1,
+          "play": [
+            "bass:1"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 1,
+          "d": 1,
+          "play": [
+            "chord"
+          ]
+        },
+        {
+          "t": 2,
+          "d": 1,
+          "play": [
+            "bass:5"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 3,
+          "d": 1,
+          "play": [
+            "chord"
+          ]
+        }
+      ]
+    },
+    {
       "id": "tarantella",
       "name": "Tarantella",
       "meter": "6/8",
@@ -236,68 +312,48 @@
       "name": "Bo Diddley beat",
       "meter": "4/4",
       "bars": 2,
-      "description": "Primitive rock rhythm derived from the son clave, with massive drive on the first beat.",
+      "description": "Five-stroke, two-bar 3-2 son-clave-derived Bo Diddley rhythmic skeleton, adapted to Stradella bass and chord buttons. This does not reproduce the muted eighth-note guitar texture.",
       "steps": [
         {
           "t": 0,
-          "d": "3/4",
+          "d": "1/2",
           "play": [
             "bass:1",
             "chord"
-          ]
-        },
-        {
-          "t": "3/4",
-          "d": "1/4",
-          "play": [
-            "bass:1"
           ],
-          "tie": "start"
+          "accent": ">"
         },
         {
-          "t": 1,
-          "d": 0.5,
+          "t": "3/2",
+          "d": "1/2",
           "play": [
-            "bass:1"
-          ],
-          "tie": "stop"
-        },
-        {
-          "t": 1.5,
-          "d": 0.5,
-          "play": [
-            "bass:1"
-          ]
-        },
-        {
-          "t": 2,
-          "d": 1,
-          "play": [
-            "rest"
-          ]
-        },
-        {
-          "t": 2.5,
-          "d": 1,
-          "play": [
-            "bass:1",
             "chord"
           ]
         },
         {
           "t": 3,
-          "d": 0.5,
+          "d": "1/2",
           "play": [
             "bass:1",
+            "chord"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 5,
+          "d": "1/2",
+          "play": [
             "chord"
           ]
         },
         {
-          "t": 3.5,
-          "d": 0.5,
+          "t": 6,
+          "d": "1/2",
           "play": [
-            "rest"
-          ]
+            "bass:1",
+            "chord"
+          ],
+          "accent": ">"
         }
       ]
     },
@@ -306,67 +362,43 @@
       "name": "Son clave 3-2",
       "meter": "4/4",
       "bars": 2,
-      "description": "The pillar of Afro-Cuban music, three notes in the first bar and two notes in the second.",
+      "description": "Two-bar Son clave 3-2 timing (five strokes), adapted for Stradella coordination: first attack of each bar on a root bass button, remaining attacks on chord buttons. Not a traditional Cuban bass line.",
       "steps": [
         {
           "t": 0,
-          "d": "3/2",
+          "d": 0.5,
           "play": [
-            "bass:1",
+            "bass:1"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 1.5,
+          "d": 0.5,
+          "play": [
             "chord"
           ]
         },
         {
-          "t": "3/2",
-          "d": "1/2",
-          "play": [
-            "bass:1"
-          ],
-          "tie": "start"
-        },
-        {
-          "t": 2,
-          "d": 1,
-          "play": [
-            "bass:1"
-          ],
-          "tie": "stop"
-        },
-        {
           "t": 3,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1"
-          ]
-        },
-        {
-          "t": 4,
-          "d": 1,
-          "play": [
-            "rest"
+            "chord"
           ]
         },
         {
           "t": 5,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
-            "chord"
-          ]
+            "bass:1"
+          ],
+          "accent": ">"
         },
         {
           "t": 6,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
             "chord"
-          ]
-        },
-        {
-          "t": 7,
-          "d": 1,
-          "play": [
-            "rest"
           ]
         }
       ]
@@ -376,66 +408,43 @@
       "name": "Son clave 2-3",
       "meter": "4/4",
       "bars": 2,
-      "description": "Son clave with two notes in the first bar and three notes in the second.",
+      "description": "Two-bar Son clave 2-3 timing (five strokes), adapted for Stradella coordination: first attack of each bar on a root bass button, remaining attacks on chord buttons. Not a traditional Cuban bass line.",
       "steps": [
         {
-          "t": 0,
-          "d": 1,
-          "play": [
-            "rest"
-          ]
-        },
-        {
           "t": 1,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
-            "chord"
-          ]
+            "bass:1"
+          ],
+          "accent": ">"
         },
         {
           "t": 2,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
             "chord"
-          ]
-        },
-        {
-          "t": 3,
-          "d": 1,
-          "play": [
-            "rest"
           ]
         },
         {
           "t": 4,
-          "d": "3/2",
+          "d": 0.5,
           "play": [
             "bass:1"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 5.5,
+          "d": 0.5,
+          "play": [
+            "chord"
           ]
         },
         {
-          "t": "11/2",
-          "d": "1/2",
-          "play": [
-            "bass:1"
-          ],
-          "tie": "start"
-        },
-        {
-          "t": 6,
-          "d": 1,
-          "play": [
-            "bass:1"
-          ],
-          "tie": "stop"
-        },
-        {
           "t": 7,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1"
+            "chord"
           ]
         }
       ]
@@ -445,73 +454,43 @@
       "name": "Rumba clave 3-2",
       "meter": "4/4",
       "bars": 2,
-      "description": "Like a two-bar son clave with the delayed third attack on the three-side.",
+      "description": "Two-bar Rumba clave 3-2 timing (five strokes), adapted for Stradella coordination: first attack of each bar on a root bass button, remaining attacks on chord buttons. Not a traditional Cuban bass line.",
       "steps": [
         {
           "t": 0,
-          "d": "3/2",
-          "play": [
-            "bass:1"
-          ]
-        },
-        {
-          "t": "3/2",
-          "d": "1/2",
+          "d": 0.5,
           "play": [
             "bass:1"
           ],
-          "tie": "start"
+          "accent": ">"
         },
         {
-          "t": 2,
-          "d": 1,
+          "t": 1.5,
+          "d": 0.5,
           "play": [
-            "bass:1"
-          ],
-          "tie": "stop"
-        },
-        {
-          "t": 3,
-          "d": "1/2",
-          "play": [
-            "rest"
+            "chord"
           ]
         },
         {
-          "t": "7/2",
-          "d": "1/2",
+          "t": 3.5,
+          "d": 0.5,
           "play": [
-            "bass:1"
-          ]
-        },
-        {
-          "t": 4,
-          "d": 1,
-          "play": [
-            "rest"
+            "chord"
           ]
         },
         {
           "t": 5,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
-            "chord"
-          ]
+            "bass:1"
+          ],
+          "accent": ">"
         },
         {
           "t": 6,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
             "chord"
-          ]
-        },
-        {
-          "t": 7,
-          "d": 1,
-          "play": [
-            "rest"
           ]
         }
       ]
@@ -521,73 +500,43 @@
       "name": "Rumba clave 2-3",
       "meter": "4/4",
       "bars": 2,
-      "description": "Rumba clave with two notes in the first bar and three notes in the second.",
+      "description": "Two-bar Rumba clave 2-3 timing (five strokes), adapted for Stradella coordination: first attack of each bar on a root bass button, remaining attacks on chord buttons. Not a traditional Cuban bass line.",
       "steps": [
         {
-          "t": 0,
-          "d": 1,
-          "play": [
-            "rest"
-          ]
-        },
-        {
           "t": 1,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
-            "chord"
-          ]
+            "bass:1"
+          ],
+          "accent": ">"
         },
         {
           "t": 2,
-          "d": 1,
+          "d": 0.5,
           "play": [
-            "bass:1",
             "chord"
-          ]
-        },
-        {
-          "t": 3,
-          "d": 1,
-          "play": [
-            "rest"
           ]
         },
         {
           "t": 4,
-          "d": "3/2",
-          "play": [
-            "bass:1"
-          ]
-        },
-        {
-          "t": "11/2",
-          "d": "1/2",
+          "d": 0.5,
           "play": [
             "bass:1"
           ],
-          "tie": "start"
+          "accent": ">"
         },
         {
-          "t": 6,
-          "d": 1,
+          "t": 5.5,
+          "d": 0.5,
           "play": [
-            "bass:1"
-          ],
-          "tie": "start"
-        },
-        {
-          "t": 7,
-          "d": "1/2",
-          "play": [
-            "rest"
+            "chord"
           ]
         },
         {
-          "t": "15/2",
-          "d": "1/2",
+          "t": 7.5,
+          "d": 0.5,
           "play": [
-            "bass:1"
+            "chord"
           ]
         }
       ]
@@ -755,7 +704,7 @@
       "id": "bolero",
       "name": "Bolero",
       "meter": "4/4",
-      "description": "Accented chords with triplet bass in second beat.",
+      "description": "An illustrative Stradella bolero-like accompaniment: accented chord eighths and a three-note bass flourish at the end of beat 1; not a definitive regional bolero pattern.",
       "steps": [
         {
           "t": 0,
@@ -1010,11 +959,11 @@
       "id": "shuffle",
       "name": "Shuffle",
       "meter": "12/8",
-      "description": "Swing bass-chord feel with long-short subdivision. It is equivalent to a 2:1 swing",
+      "description": "Four complete dotted-quarter beats in 12/8, each subdivided into a long (two eighths) and short (one eighth) attack. A Stradella adaptation of a triplet shuffle feel.",
       "steps": [
         {
           "t": 0,
-          "d": 1,
+          "d": 2,
           "play": [
             "bass:1",
             "chord"
@@ -1022,25 +971,8 @@
           "accent": ">"
         },
         {
-          "t": 1,
-          "d": "1/2",
-          "play": [
-            "bass:1",
-            "chord"
-          ]
-        },
-        {
-          "t": 1.5,
+          "t": 2,
           "d": 1,
-          "play": [
-            "bass:1",
-            "chord"
-          ],
-          "accent": ">"
-        },
-        {
-          "t": 2.5,
-          "d": "1/2",
           "play": [
             "bass:1",
             "chord"
@@ -1048,6 +980,15 @@
         },
         {
           "t": 3,
+          "d": 2,
+          "play": [
+            "bass:1",
+            "chord"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 5,
           "d": 1,
           "play": [
             "bass:1",
@@ -1055,15 +996,16 @@
           ]
         },
         {
-          "t": 4,
-          "d": "1/2",
+          "t": 6,
+          "d": 2,
           "play": [
             "bass:1",
             "chord"
-          ]
+          ],
+          "accent": ">"
         },
         {
-          "t": 4.5,
+          "t": 8,
           "d": 1,
           "play": [
             "bass:1",
@@ -1071,8 +1013,17 @@
           ]
         },
         {
-          "t": 5.5,
-          "d": "1/2",
+          "t": 9,
+          "d": 2,
+          "play": [
+            "bass:1",
+            "chord"
+          ],
+          "accent": ">"
+        },
+        {
+          "t": 11,
+          "d": 1,
           "play": [
             "bass:1",
             "chord"
@@ -1289,73 +1240,59 @@
     },
     {
       "id": "standard-african-bell",
-      "name": "Standard African bell pattern",
-      "meter": "4/4",
-      "description": "Seven-stroke 12-pulse bell timeline adapted into four dotted beats.",
+      "name": "Standard African bell (12/8)",
+      "meter": "12/8",
+      "description": "Seven-stroke standard 12-pulse bell timeline (2+2+1+2+2+2+1), mapped to Stradella attacks. A rhythmic study, not an authentic bell sound or full African ensemble accompaniment.",
       "steps": [
         {
           "t": 0,
-          "d": "3/4",
+          "d": 1,
           "play": [
             "bass:1",
             "chord"
-          ]
-        },
-        {
-          "t": "3/4",
-          "d": "1/4",
-          "play": [
-            "chord"
-          ]
-        },
-        {
-          "t": 1,
-          "d": "1/2",
-          "play": [
-            "rest"
-          ]
-        },
-        {
-          "t": "3/2",
-          "d": "1/4",
-          "play": [
-            "chord"
-          ]
-        },
-        {
-          "t": "7/4",
-          "d": "1/4",
-          "play": [
-            "chord"
-          ]
+          ],
+          "accent": ">"
         },
         {
           "t": 2,
-          "d": "1/2",
+          "d": 1,
           "play": [
-            "rest"
+            "chord"
           ]
         },
         {
-          "t": "5/2",
-          "d": "1/2",
+          "t": 4,
+          "d": 1,
+          "play": [
+            "chord"
+          ]
+        },
+        {
+          "t": 5,
+          "d": 1,
+          "play": [
+            "chord"
+          ]
+        },
+        {
+          "t": 7,
+          "d": 1,
           "play": [
             "bass:1",
             "chord"
           ]
         },
         {
-          "t": 3,
-          "d": "3/4",
+          "t": 9,
+          "d": 1,
           "play": [
             "chord"
           ]
         },
         {
-          "t": "15/4",
-          "d": "1/4",
+          "t": 11,
+          "d": 1,
           "play": [
-            "bass:1",
             "chord"
           ]
         }

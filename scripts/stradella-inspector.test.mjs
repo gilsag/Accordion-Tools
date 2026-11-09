@@ -51,6 +51,10 @@ assert.equal(resolveWorkspaceInspector({...context, leftPanelMode: "hidden"}), n
 const abc = {leftPanelMode: "tools", workspaceMode: "accordion", side: "treble", stradellaChordFinderActive: false, activeToolSection: "abcPlayer"};
 assert.equal(resolveWorkspaceInspector({...abc, abcNotationVisible: true}), "abcNotation", "ABC notation opens in the results panel");
 assert.equal(resolveWorkspaceInspector({...abc, abcNotationVisible: false}), null, "no notation, no panel");
+assert.equal(resolveWorkspaceInspector({...abc, activeToolSection: "rhythmTrainer", rhythmNotationVisible: true}), "rhythmNotation",
+  "Rhythm Trainer notation uses the shared right-side inspector");
+assert.equal(resolveWorkspaceInspector({...abc, activeToolSection: "rhythmTrainer", rhythmNotationVisible: false}), null,
+  "Rhythm Trainer notation is opt-in");
 assert.equal(resolveWorkspaceInspector({...abc, abcNotationVisible: true, activeToolSection: "scaleFinder"}), null, "only while the ABC Player is open");
 
 console.log("✓ Shared inspector activation plus Stradella filters, original ranks, identities, lazy loading and six locales passed");

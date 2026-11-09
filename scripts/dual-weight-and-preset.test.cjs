@@ -53,7 +53,13 @@ assert.deepEqual(roots({progression:'V7/IV IV V/bVI bVI'},'C'),['C:dominant7','F
 assert.deepEqual(roots({progression:'i VII III V',mode:'minor'},'A'),['A:minor-triad','G:major-triad','C:major-triad','E:major-triad']);
 assert.deepEqual(roots({progression:'iv III bII I',mode:'minor'},'A'),['D:minor-triad','C:major-triad','A#:major-triad','A:major-triad']);
 const catalog = JSON.parse(fs.readFileSync(path.resolve(__dirname,'../public/chord-progressions/chord-progressions.json'),'utf8'));
-assert.equal(catalog.length,29,'Use existing bundled 29-progression catalog');
+assert.equal(catalog.length,30,'The 29 original progressions plus the Cueca I–V–V–I preset');
+assert.equal(new Set(catalog.map(item=>item.id)).size,catalog.length,'Progression IDs must be unique');
+const cuecaPreset = catalog.find(item=>item.id==='i-v-v-i');
+assert.ok(cuecaPreset,'Cueca I–V–V–I must be present in the shared progression catalog');
+assert.deepEqual(roots(cuecaPreset,'C'),[
+  'C:major-triad','G:major-triad','G:major-triad','C:major-triad'
+],'Cueca harmonies resolve to I–V–V–I in C');
 for (const item of catalog) assert.deepEqual(convertProgressionPreset(item,'C').unsupported,[],`${item.id} loads`);
 assert.deepEqual(roots(catalog.find(item=>item.id==='bird-blues'),'F').slice(4,6),['F:dominant7','A#:major-triad'],'Bird Blues: V7/IV then IV');
 assert.deepEqual(roots(catalog.find(item=>item.id==='folia'),'D').slice(3,5),['C:major-triad','F:major-triad'],'Folia: bVII and bIII are major');

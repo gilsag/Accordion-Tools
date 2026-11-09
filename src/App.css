@@ -2902,3 +2902,53 @@ input[type="range"] {
   clip-path: inset(50%); white-space: nowrap;
 }
 .topbar-compact .topbar-after-reset-space { display: none; }
+
+/* Bass–Treble Rhythm Trainer. The two-lane timeline is independent of the
+   ABC notation renderer; bar widths follow meter-denominator units. */
+/* Timeline and combined diagram share an 880px maximum and center axis. */
+.rhythm-timeline { box-sizing: border-box; width: min(calc(100% - 16px), 880px); margin: 5px auto; padding: 8px 10px; border: 1px solid var(--border-color, #b9c3ce); border-radius: 10px; }
+.rhythm-timeline-title { display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.rhythm-timeline-title span,.rhythm-timeline-note {font-size:.8rem;opacity:.72;}
+/* Four bars fill each desktop row, regardless of inspector width. A short
+   progression stays centered; narrow phone layouts use two readable columns. */
+.rhythm-timeline-bars { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-height: 235px; overflow-y: auto; }
+.rhythm-timeline-bar {box-sizing:border-box; flex: 0 0 calc((100% - 18px)/4); border:1px solid var(--border-color,#c8cdd3);border-radius:6px;padding:5px;min-width:0;}
+@media (max-width: 620px) {
+  .rhythm-timeline-bar { flex-basis: calc((100% - 6px)/2); }
+}
+.rhythm-timeline-bar.active {outline:2px solid #188a90;outline-offset:0;}
+.rhythm-bar-header {font-size:.8rem;font-weight:600;margin-bottom:5px;}
+.rhythm-beat-ruler {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-left:40px;text-align:center;font-size:.72rem;opacity:.7;}
+.rhythm-strong-beat {font-weight:800;}
+.rhythm-lane {display:flex;gap:4px;align-items:center;margin-top:5px;}
+.rhythm-lane-caption {flex:0 0 36px;font-size:.65rem;}
+.rhythm-lane-grid {height:26px;position:relative;min-width:0;flex:1;background:rgba(128,128,128,.06);border-radius:3px;overflow:hidden;}
+.rhythm-lane-grid i {position:absolute;top:0;bottom:0;border-left:1px solid rgba(128,128,128,.24);}
+.rhythm-event {position:absolute;top:3px;bottom:3px;border-radius:3px;border-right:2px solid rgba(255,255,255,.6);min-width:2px;color:#fff;font-size:10px;padding-left:3px;overflow:hidden;}
+.rhythm-event-bass {background:#7c889a;}
+.rhythm-event-treble {background:#16878c;}
+/* Active attacks light up for their scheduled audible duration, including
+   overlapping left/right events and repeated notes on the same button. */
+.rhythm-event.is-sounding { background: #c97912; box-shadow: inset 0 0 0 2px #fff4c9; z-index: 2; overflow: visible; }
+.rhythm-event .rhythm-attack-dot {display:inline-flex;align-items:center;justify-content:center; min-width:12px; height:100%; line-height:1;transform-origin:center;}
+.rhythm-event.is-sounding .rhythm-attack-dot { color:#fff; text-shadow:0 0 5px #fff; transform:scale(1.35); }
+@media (prefers-reduced-motion: no-preference) {
+  .rhythm-event.is-sounding .rhythm-attack-dot {animation:rhythm-attack-pulse 240ms ease-out both;}
+  @keyframes rhythm-attack-pulse {from{transform:scale(1.7);}to{transform:scale(1.35);}}
+}
+.rhythm-timeline-note {margin:4px 0 0;}
+.rhythm-trainer-controls .playback-bar-buttons {margin-top:10px;}
+
+/* Rhythm Trainer: readable two-hand view without modifying SVG button
+   geometry, click targets, or export behavior. */
+.canvas-wrap.rhythm-compact-diagrams { justify-content: center; padding-top: 4px; }
+.canvas-wrap.rhythm-compact-diagrams .abc-hands-diagram {
+  max-width: min(100%, 880px);
+  box-shadow: 0 5px 14px rgba(25, 35, 60, 0.08);
+}
+@media (max-width: 860px) {
+  .canvas-wrap.rhythm-compact-diagrams.diagram-readable > .diagram {
+    min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
+  }
+  .canvas-wrap.rhythm-compact-diagrams.diagram-fit > .diagram { min-width: 0; }
+}

@@ -36,6 +36,7 @@ export default function App() {
     activeToolSection: model.tools.activeToolSection,
     // Phones keep the notation under the diagram.
     abcNotationVisible: !isPhone && model.tools.abcRenderedNotationVisible && Boolean(model.tools.abcText.trim()),
+    rhythmNotationVisible: !isPhone && model.tools.rhythmTrainer.notationVisible && model.tools.rhythmTrainer.exercise.barCount > 0,
   });
   const inspector = inspectorVisible ? availableInspector : null;
   const appGridColumns = workspaceGridColumns(interfaceDensity, leftPanelMode,
@@ -78,6 +79,7 @@ export default function App() {
           phoneSheetOpen={isPhone && sheetOpen} onOpenPhonePanel={openPhonePanel}
           inspectorAvailable={!!availableInspector} inspectorVisible={!!inspector}
           onToggleInspector={toggleInspector} abcNotationInInspector={inspector === "abcNotation"}
+          rhythmNotationInInspector={inspector === "rhythmNotation"}
           panelHandles={panelHandles} />
         {inspector && <WorkspaceInspectorSlot inspector={inspector} tools={model.tools} blocked={isPhone && sheetOpen} />}
       </AppShell>

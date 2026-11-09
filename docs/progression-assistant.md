@@ -81,6 +81,10 @@ With **Show path on diagram** turned on, the diagram numbers each chord's button
 
 When there is something to play, the top toolbar offers **Show notation**, which draws the progression in the chosen rhythm as staff notation below the diagram. It can be downloaded as SVG.
 
+Under **Settings → Music notation**, select **Standard Stradella** (the default) to display each physical bass/counterbass button as a low note and each preset chord button as a *single upper-staff root note* with its chord quality (`M`, `m`, `7`, `d`). The written pitch is independent of the configured audio registers.
+
+Select **Expanded voicing** to retain the previous analytical representation of the *sounding pitches* in the selected Stradella realization. This is useful for examining inversions, registral voicings and voice leading. In this expanded view, the configured sound source and its octave range are relevant to the actual acoustic pitches. The global chord-quality and optional counterbass-dash settings apply to symbolic notation, not arbitrary imported ABC files.
+
 ## Progression Assistant and Harmony Explorer
 
 Harmony Explorer shows **which chords are related and why**. The Progression Assistant shows **how to play a sequence of them efficiently on the Stradella bass**. Harmonically, an E bass and an E counterbass are the same note; the assistant decides which of the two is more convenient.

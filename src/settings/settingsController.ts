@@ -74,6 +74,9 @@ export interface SettingsSetters {
   setMusicNotationStaffSeparator: (value: NonNullable<DefaultSettingsFile["musicNotationStaffSeparator"]>) => void;
   setMusicNotationStaffWidth: (value: NonNullable<DefaultSettingsFile["musicNotationStaffWidth"]>) => void;
   setMusicNotationUseBarsPerLine: (value: NonNullable<DefaultSettingsFile["musicNotationUseBarsPerLine"]>) => void;
+  setStradellaNotationMode: (value: NonNullable<DefaultSettingsFile["stradellaNotationMode"]>) => void;
+  setStradellaChordQualityLabels: (value: NonNullable<DefaultSettingsFile["stradellaChordQualityLabels"]>) => void;
+  setStradellaMarkCounterbass: (value: NonNullable<DefaultSettingsFile["stradellaMarkCounterbass"]>) => void;
   setNotation: (value: NonNullable<DefaultSettingsFile["notation"]>) => void;
   setPianoBlackKeyHeightScale: (value: NonNullable<DefaultSettingsFile["pianoBlackKeyHeightScale"]>) => void;
   setPianoBlackKeyWidthScale: (value: NonNullable<DefaultSettingsFile["pianoBlackKeyWidthScale"]>) => void;
@@ -179,6 +182,9 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
     setMusicNotationStaffSeparator,
     setMusicNotationStaffWidth,
     setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode,
+    setStradellaChordQualityLabels,
+    setStradellaMarkCounterbass,
     setNotation,
     setPianoBlackKeyHeightScale,
     setPianoBlackKeyWidthScale,
@@ -500,6 +506,12 @@ export function applyStartupSettings(defaults: DefaultSettingsFile, setters: Set
             ),
           );
         }
+        if (isOneOf(defaults.stradellaNotationMode, ["symbolic", "sounding"] as const))
+          setStradellaNotationMode(defaults.stradellaNotationMode);
+        if (isOneOf(defaults.stradellaChordQualityLabels, ["always", "changes"] as const))
+          setStradellaChordQualityLabels(defaults.stradellaChordQualityLabels);
+        if (typeof defaults.stradellaMarkCounterbass === "boolean")
+          setStradellaMarkCounterbass(defaults.stradellaMarkCounterbass);
         if (typeof defaults.musicNotationIncludeTitle === "boolean")
           setMusicNotationIncludeTitle(defaults.musicNotationIncludeTitle);
         if (typeof defaults.musicNotationIncludeDescription === "boolean")
@@ -778,6 +790,9 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
     setMusicNotationStaffSeparator,
     setMusicNotationStaffWidth,
     setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode,
+    setStradellaChordQualityLabels,
+    setStradellaMarkCounterbass,
     setNotation,
     setPianoBlackKeyHeightScale,
     setPianoBlackKeyWidthScale,
@@ -1013,6 +1028,12 @@ export function applyImportedSettings(settings: DefaultSettingsFile, setters: Se
       setSoundSequenceTempoBpm(
         Math.max(30, Math.min(220, Math.round(settings.soundSequenceTempoBpm))),
       );
+    if (isOneOf(settings.stradellaNotationMode, ["symbolic", "sounding"] as const))
+      setStradellaNotationMode(settings.stradellaNotationMode);
+    if (isOneOf(settings.stradellaChordQualityLabels, ["always", "changes"] as const))
+      setStradellaChordQualityLabels(settings.stradellaChordQualityLabels);
+    if (typeof settings.stradellaMarkCounterbass === "boolean")
+      setStradellaMarkCounterbass(settings.stradellaMarkCounterbass);
     if (typeof settings.musicNotationIncludeTitle === "boolean")
       setMusicNotationIncludeTitle(settings.musicNotationIncludeTitle);
     if (typeof settings.musicNotationIncludeDescription === "boolean")
@@ -1115,6 +1136,7 @@ export type SettingsExportSnapshot = Required<Pick<DefaultSettingsFile,
   "musicNotationScale" |
   "musicNotationStaffWidth" |
   "musicNotationStaffSeparator" |
+  "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass" |
   "buttonSize" |
   "trebleAngle" |
   "buttonStrokeWidth" |
@@ -1248,6 +1270,9 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     musicNotationStaffSeparator,
     musicNotationStaffWidth,
     musicNotationUseBarsPerLine,
+    stradellaNotationMode,
+    stradellaChordQualityLabels,
+    stradellaMarkCounterbass,
     notation,
     pianoBlackKeyHeightScale,
     pianoBlackKeyWidthScale,
@@ -1367,6 +1392,9 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
       musicNotationScale,
       musicNotationStaffWidth,
       musicNotationStaffSeparator,
+      stradellaNotationMode,
+      stradellaChordQualityLabels,
+      stradellaMarkCounterbass,
       buttonSize,
       buttonSpacing: spacing,
       trebleAngle,

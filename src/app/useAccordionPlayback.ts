@@ -13,7 +13,7 @@ import { stopAbcTransport, pauseAbcTransport, stopBassPatternTransport, lastPlay
 import { startAbcTransport, startBassPatternTransport } from "../audio/playbackStart";
 import { scheduleAbcMappedPlayback, scheduleBassPatternEvents } from "../audio/playbackScheduling";
 import type { DiagramButton } from "../types";
-import { bassPatternBeat, bassPatternEventsToAbc, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond } from "../tools/bassPatternPlayerTools";
+import { bassPatternBeat, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond } from "../tools/bassPatternPlayerTools";
 import { playButtonArpeggioThenChord, playButtonCombination, playButtonSequence, stopAllSound, preloadLaMelodiosa, unlockAudio, samplesReadyFor, prepareSamplesFor, currentPlaybackGeneration, onStopAllSound } from "../sound";
 import type { RefObject } from "react";
 import type { SequenceStepWithButton } from "../tools/sequenceTools";
@@ -54,6 +54,7 @@ export type UseAccordionPlaybackDeps = Pick<ReturnType<typeof useAbcPlayerResult
     abcPlaybackStartBeatRef: RefObject<number>;
     abcPlaybackStartedAtRef: RefObject<number | null>;
     abcPlaybackTimeoutsRef: RefObject<number[]>;
+    bassPatternRenderedNotationAbc: string;
     chordFinderButtons: DiagramButton[];
     selectedButtons: DiagramButton[];
     sequenceStepsWithButtons: SequenceStepWithButton[];
@@ -66,7 +67,7 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
     abcPlaybackTimeoutsRef, abcPositionBeat, abcTempoBpm, abcTotalBeats, bassPatternBarsPerChord,
     bassPatternEvents, bassPatternExportFormat, bassPatternLoopCount, bassPatternLoopMode,
     bassPatternPlaybackRunRef, bassPatternRoot, bassPatternTempoBpm, bassPatternTimeoutsRef,
-    bassPatternTotalBeats, chordFinderButtons, laMelodiosaBassRegister, laMelodiosaTrebleRegister,
+    bassPatternTotalBeats, bassPatternRenderedNotationAbc, chordFinderButtons, laMelodiosaBassRegister, laMelodiosaTrebleRegister,
     scaleFinderButtons, selectedBassPattern, selectedButtons, selectedChordProgression,
     sequenceStepsWithButtons, setAbcActiveButtonIds, setAbcPlaybackState, setAbcPositionBeat,
     setBassPatternActiveButtonIds, setBassPatternPlaybackState, setChordFinderActive,
@@ -248,14 +249,7 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
     if (!selectedBassPattern || !selectedChordProgression) return;
     downloadTextFile(
       `${selectedBassPattern.id || "bass-pattern"}.abc`,
-      bassPatternEventsToAbc(
-        selectedBassPattern,
-        selectedChordProgression,
-        bassPatternEvents,
-        bassPatternRoot,
-        bassPatternBarsPerChord,
-        bassPatternTempoBpm,
-      ),
+      bassPatternRenderedNotationAbc,
       "text/vnd.abc",
     );
   }

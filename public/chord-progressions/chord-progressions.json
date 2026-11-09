@@ -1,5 +1,6 @@
 [
   {"id": "i-iv-v-i", "name": "I–IV–V–I progression", "progression": "I IV V I", "description": "Basic major-key cadence."},
+  {"id": "i-v-v-i", "name": "I–V–V–I progression", "progression": "I V V I", "description": "Four-bar tonic–dominant–dominant–tonic outline used by the Cueca examples."},
   {"id": "i-iv-v-v", "name": "I–IV–V–V progression", "progression": "I IV V V", "description": "Simple four-bar starter progression."},
   {"id": "i-i-iv-v", "name": "I–I–IV–V progression", "progression": "I I IV V", "description": "Simple four-bar starter progression."},
   {"id": "i-iv-i-v", "name": "I–IV–I–V progression", "progression": "I IV I V", "description": "Simple four-bar starter progression."},

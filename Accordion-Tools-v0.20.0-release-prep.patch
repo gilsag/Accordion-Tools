@@ -1,0 +1,118 @@
+diff --git a/README.md b/README.md
+index cd9f2b4..716559e 100644
+--- a/README.md
++++ b/README.md
+@@ -86,4 +86,4 @@ The Stradella Chord Finder was informed in part by the [Stradella Explorer](http
+ 
+ The project source and documentation are licensed under **CC BY-NC 4.0**. Diagrams you create with Accordion Tools may be used for any purpose, including commercial use. See [LICENSE](LICENSE) for details. Third-party assets retain their own licenses and attribution requirements.
+ 
+-**Version:** 0.19.0 · [Release history](VERSION_HISTORY.md)
++**Version:** 0.20.0 · [Release notes](release-notes-v0.20.0.md) · [Release history](VERSION_HISTORY.md)
+diff --git a/VERSION_HISTORY.md b/VERSION_HISTORY.md
+index 4f485b1..b81bec7 100644
+--- a/VERSION_HISTORY.md
++++ b/VERSION_HISTORY.md
+@@ -1,9 +1,9 @@
+-## Unreleased — Post-v0.19.0 development patches (2026-11-08)
++## v0.20.0 — Rhythm Trainer, shared Stradella notation and rhythm audit (2026-11-09)
+ 
+ - **Rhythm Trainer Phases 1–5:** Added a bass–treble two-hand practice tool with 2/4, 3/4, 4/4 and 6/8, root-following treble notes, shared chord progressions, two-manual display, staff notation in the right inspector, active attack highlights, four-bar timeline rows, and new march and corrected Son/Rumba clave definitions. The cueca ABC bass example is retained as a bass-only reference rhythm.
+ - **Phase 6 shared Stradella notation:** Consolidated left-hand notation across players, sequences, and the Progression Assistant; written symbolic bass/chord positions are independent of audio registers. Added global notation style preferences, repeated chord-quality symbols by default, and an optional counterbass dash. Imported ABC scores are not silently rewritten.
+ - **Rhythm follow-up:** Removed the duplicate sidebar Show notation checkbox (toolbar remains), shortened the timing legend, and audited all 29 Bass Pattern Player definitions. Corrected the incomplete 12/8 Shuffle, one-bar-only Bo Diddley beat, and mis-metered standard African bell. See [Bass Pattern Rhythm Audit](docs/internal/bass-pattern-rhythm-audit.md) for findings and patterns requiring stylistic review.
+-- These remain incremental working patches on **v0.19.0**. A production build and E2E run must be completed on the user's Windows checkout before release.
++- The previously separate post-v0.19.0 patches are integrated into this release. See [v0.20.0 release notes](release-notes-v0.20.0.md) for the overview and validation checklist.
+ 
+ ## v0.19.0 — Both hands in the ABC Player, Annotate Diagram modes, resizable panels (2026-11-07)
+ 
+diff --git a/package-lock.json b/package-lock.json
+index e344778..66a6b1e 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -1,12 +1,12 @@
+ {
+   "name": "accordion-tools",
+-  "version": "0.19.0",
++  "version": "0.20.0",
+   "lockfileVersion": 3,
+   "requires": true,
+   "packages": {
+     "": {
+       "name": "accordion-tools",
+-      "version": "0.19.0",
++      "version": "0.20.0",
+       "dependencies": {
+         "abcjs": "^6.6.3",
+         "react": "^19.2.5",
+diff --git a/package.json b/package.json
+index 029fcad..9d12ec1 100644
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "accordion-tools",
+   "private": true,
+-  "version": "0.19.0",
++  "version": "0.20.0",
+   "type": "module",
+   "scripts": {
+     "dev": "vite",
+diff --git a/release-notes-v0.20.0.md b/release-notes-v0.20.0.md
+new file mode 100644
+index 0000000..f950a62
+--- /dev/null
++++ b/release-notes-v0.20.0.md
+@@ -0,0 +1,41 @@
++# Accordion Tools v0.20.0 — Rhythm Trainer and shared notation
++
++Release date: November 9, 2026
++
++## What's new
++
++### Bass–Treble Rhythm Trainer
++
++- A dedicated two-hand coordination tool with independently selectable Stradella accompaniments and treble rhythmic templates in 2/4, 3/4, 4/4, and 6/8.
++- Treble playback follows the root of each chord in the shared harmonic-progression catalog; exercises can span longer progressions.
++- A synchronized two-lane timeline highlights attacks as they sound, displaying four bars per row on desktop. The compact Stradella and treble diagrams highlight their active buttons together.
++- Optional music notation is available through the top toolbar and right-side notation panel.
++- Includes a Cueca reference rhythm derived from the ABC Player's two-hand examples, plus 2/4 and 4/4 marches and 3–2 / 2–3 Son and Rumba clave exercises.
++
++### Consistent Stradella notation
++
++- A common notation mapper is shared by the Rhythm Trainer, Bass Pattern Player, recorded sequences, and applicable Progression Assistant displays.
++- Written bass and preset-chord note positions no longer change with the instrument's configured audio register.
++- Standard symbolic Stradella notation, repeated chord-quality labels, and optional counterbass markings are controlled through common settings.
++- The Progression Assistant can switch between standard button notation and an expanded sounding-pitch view.
++- Ordinary, imported ABC scores retain their written notation.
++
++### Bass Pattern Player rhythm review
++
++- Audited the full built-in 29-pattern catalog for metrical validity and multi-bar timing.
++- Corrected the compressed 12/8 Shuffle, the incomplete two-bar Bo Diddley figure, and the meter/timeline of the standard African bell pattern.
++- Normalized five-stroke Son and Rumba clave patterns to their two-bar 3–2 / 2–3 structures.
++- Documented stylistic arrangements that may have multiple accepted realizations in [the rhythm audit](docs/internal/bass-pattern-rhythm-audit.md).
++
++### Interface and documentation
++
++- Rhythm Trainer appears immediately above ABC Player in the tool list; notation visibility is controlled from the top toolbar.
++- Updated six-language interface labels and the application's user/developer documentation.
++
++## What remains planned
++
++- Guided tapping with per-hand accuracy feedback, and treble arpeggio exercises, are not yet part of this release.
++
++## Release verification
++
++Before tagging and publishing, run `npm run verify:release`, `npm run test:e2e`, and a manual browser playback/notation check on Windows. GitHub Pages builds the site from the `main` branch after a push.
+diff --git a/src/config/appInfo.ts b/src/config/appInfo.ts
+index 3799589..10dbf1e 100644
+--- a/src/config/appInfo.ts
++++ b/src/config/appInfo.ts
+@@ -2,7 +2,7 @@
+ 
+ export const APP_INFO = {
+   name: "Accordion-Tools",
+-  version: "0.19.0",
++  version: "0.20.0",
+   authorName: "gilsag",
+   authorGithubUrl: "https://github.com/gilsag",
+   readmeUrl: "https://github.com/gilsag/Accordion-Tools/blob/main/README.md",

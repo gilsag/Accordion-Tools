@@ -109,6 +109,9 @@ export type DefaultSettingsFile = Partial<{
   musicNotationScale: number;
   musicNotationStaffWidth: number;
   musicNotationStaffSeparator: number;
+  stradellaNotationMode: "symbolic" | "sounding";
+  stradellaChordQualityLabels: "always" | "changes";
+  stradellaMarkCounterbass: boolean;
   buttonSize: number;
   buttonSpacing: number;
   trebleAngle: number;

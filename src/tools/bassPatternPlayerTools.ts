@@ -4,6 +4,8 @@
   quarter notes; conversion to ABC, LilyPond and MIDI is a later step.
 */
 
+import { stradellaButtonToken, stradellaNoteForButton, DEFAULT_STRADELLA_NOTATION,
+  type StradellaNotationPreferences } from "../notation/stradellaNotation";
 import type {
   BassPatternChordVoicing,
   DiagramButton,
@@ -1049,48 +1051,6 @@ function abcAccidentalNoteName(pitchClass: string) {
   return letter;
 }
 
-function abcPitchForMidi(pitchClass: string, midiNumber: number) {
-  const abcBase = abcAccidentalNoteName(pitchClass);
-  const octave = Math.floor(midiNumber / 12) - 1;
-
-  if (octave < 4) {
-    return `${abcBase}${",".repeat(4 - octave)}`;
-  }
-
-  if (octave === 4) {
-    return abcBase;
-  }
-
-  return `${abcBase.toLowerCase()}${"'".repeat(octave - 5)}`;
-}
-
-function stradellaNotationPitch(pitchClass: string, kind: "bass" | "chord") {
-  const pitchIndexValue = pitchIndex(pitchClass);
-  const normalizedPitchClass =
-    pitchIndexValue >= 0 ? pitchClassAt(pitchIndexValue) : "C";
-  const normalizedIndex = pitchIndex(normalizedPitchClass);
-
-  // Bass-clef middle line is D3. In this Stradella convention,
-  // fundamental and counterbass buttons use the first occurrence at or below
-  // that line; chord buttons use the first occurrence above it.
-  const middleLineD3 = 50;
-  if (kind === "bass") {
-    for (let midi = middleLineD3; midi >= 24; midi -= 1) {
-      if (((midi % 12) + 12) % 12 === normalizedIndex) {
-        return abcPitchForMidi(normalizedPitchClass, midi);
-      }
-    }
-  } else {
-    for (let midi = middleLineD3 + 1; midi <= 72; midi += 1) {
-      if (((midi % 12) + 12) % 12 === normalizedIndex) {
-        return abcPitchForMidi(normalizedPitchClass, midi);
-      }
-    }
-  }
-
-  return abcPitchForMidi(normalizedPitchClass, kind === "bass" ? 48 : 52);
-}
-
 function abcDuration(duration: number) {
   const rounded = roundRhythm(duration);
   if (rounded === 1) return "";
@@ -1202,14 +1162,6 @@ export function bassPatternEventsToAbc(
   ].join("\n");
 }
 
-function abcLowerBassNoteName(pitchClass: string) {
-  return stradellaNotationPitch(pitchClass, "bass");
-}
-
-function abcUpperChordNoteName(pitchClass: string) {
-  return stradellaNotationPitch(pitchClass, "chord");
-}
-
 function chordButtonAbcAnnotation(button: DiagramButton | undefined) {
   if (!button) return "";
   if (button.kind === "chord-minor") return '"^m"';
@@ -1219,7 +1171,7 @@ function chordButtonAbcAnnotation(button: DiagramButton | undefined) {
   return "";
 }
 
-function abcBassVoiceTokenForEvent(event: BassPatternPlaybackEvent) {
+function abcBassVoiceTokenForEvent(event: BassPatternPlaybackEvent, preferences: StradellaNotationPreferences = DEFAULT_STRADELLA_NOTATION) {
   const bassButtons = event.buttons.filter(
     (button) =>
       button.kind === "bass-root" || button.kind === "bass-counterbass",
@@ -1234,7 +1186,7 @@ function abcBassVoiceTokenForEvent(event: BassPatternPlaybackEvent) {
   }
 
   const noteNames = bassButtons.map((button) =>
-    abcLowerBassNoteName(button.pitchClass ?? "C"),
+    stradellaNoteForButton(button, preferences),
   );
   const noteBody =
     noteNames.length === 1 ? noteNames[0] : `[${noteNames.join("")}]`;
@@ -1243,7 +1195,7 @@ function abcBassVoiceTokenForEvent(event: BassPatternPlaybackEvent) {
   return `${accent}${noteBody}${abcDuration(event.durationBeats)}${tie}`;
 }
 
-function abcChordVoiceTokenForEvent(event: BassPatternPlaybackEvent) {
+function abcChordVoiceTokenForEvent(event: BassPatternPlaybackEvent, preferences: StradellaNotationPreferences = DEFAULT_STRADELLA_NOTATION) {
   const chordButtons = event.buttons.filter((button) =>
     button.kind.startsWith("chord-"),
   );
@@ -1253,7 +1205,7 @@ function abcChordVoiceTokenForEvent(event: BassPatternPlaybackEvent) {
   }
 
   const noteNames = chordButtons.map((button) =>
-    abcUpperChordNoteName(button.chordRoot ?? button.pitchClass ?? "C"),
+    stradellaNoteForButton(button, preferences),
   );
   const noteBody =
     noteNames.length === 1 ? noteNames[0] : `[${noteNames.join("")}]`;
@@ -1315,6 +1267,36 @@ function abcVoiceBarTokens(
   }, "");
 }
 
+/** One sequential symbolic Stradella voice where there are no genuine overlapping
+ * attacks. Written durations are separated from performance gates; a gap before
+ * the next attack is filled by the preceding note unless it is an explicit rest.
+ */
+function stradellaSingleVoiceBar(events: BassPatternPlaybackEvent[], units: number,
+  preferences: StradellaNotationPreferences, priorQuality: string | null): {line:string|null;quality:string|null} {
+  const parts: string[] = [];
+  let cursor = 0;
+  let lastQuality: string | null = priorQuality;
+  const sorted = [...events].sort((a,b)=>a.unitInBar-b.unitInBar || a.index-b.index);
+  for (let i=0; i<sorted.length; i++) {
+    const event=sorted[i];
+    const start=event.unitInBar;
+    if (start < cursor - 0.00001) return {line:null,quality:lastQuality};
+    if (start > cursor+0.00001) parts.push(`z${abcDuration(start-cursor)}`);
+    const next = i+1<sorted.length ? sorted[i+1].unitInBar : units;
+    if (next <= start+0.00001) return {line:null,quality:lastQuality}; // same-onset polyphony: preserve separate voices
+    if (event.durationBeats > next-start+0.125) return {line:null,quality:lastQuality};
+    const isRest=event.play.includes("rest") || !event.buttons.length;
+    const result: {token:string;quality:string|null} = isRest ? {token:"z",quality:lastQuality} : stradellaButtonToken(event.buttons, preferences,lastQuality);
+    lastQuality=result.quality;
+    const accent=abcAccentDecoration(event.accent);
+    const note=`${isRest?"":accent}${result.token}${abcDuration(next-start)}`;
+    parts.push(note);
+    cursor=next;
+  }
+  if (cursor<units-0.00001) parts.push(`z${abcDuration(units-cursor)}`);
+  return {line:parts.join(" ") || `z${units}`,quality:lastQuality};
+}
+
 export type StradellaNotationAbcOptions = {
   includeTitle?: boolean;
   includeDescription?: boolean;
@@ -1323,10 +1305,12 @@ export type StradellaNotationAbcOptions = {
   chordFontSize?: number;
   titleFontSize?: number;
   staffSeparator?: number;
+  stradellaPreferences?: StradellaNotationPreferences;
 };
 
-/** Emit separate bass and chord voices for teaching notation; this is a
- * notation convention, not an acoustic transcription of every reed rank. */
+/** Emit standardized symbolic Stradella notation. Use one chronological
+ * voice for non-overlapping events; separate voices only for true polyphony.
+ * Chord noteheads indicate buttons, not individual sounding reeds. */
 export function bassPatternEventsToStradellaNotationAbc(
   pattern: BassPatternDefinition,
   progression: ChordProgressionDefinition,
@@ -1369,6 +1353,14 @@ export function bassPatternEventsToStradellaNotationAbc(
   });
 
   const barNumbers = [...groupedByBar.keys()].sort((a, b) => a - b);
+  const preferences = options.stradellaPreferences ?? DEFAULT_STRADELLA_NOTATION;
+  let precedingQuality: string | null = null;
+  const singleBars = barNumbers.map(bar => {
+    const result = stradellaSingleVoiceBar(groupedByBar.get(bar) ?? [], meterUnitsPerBar, preferences, precedingQuality);
+    precedingQuality = result.quality;
+    return result.line;
+  });
+  const needsPolyphony = singleBars.some(bar=>bar===null);
   const useRepeatSigns = loopMode !== "once";
   const barPrefix = (index: number) =>
     useRepeatSigns && index === 0 ? "|:" : "|";
@@ -1378,11 +1370,22 @@ export function bassPatternEventsToStradellaNotationAbc(
     index > 0 && index % barsPerLine === 0 ? "\n" : "";
   const bassBars = barNumbers.map(
     (barNumber, index) =>
-      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, abcBassVoiceTokenForEvent)} ${barSuffix(index)}`,
+      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, event=>abcBassVoiceTokenForEvent(event,preferences))} ${barSuffix(index)}`,
   );
+  let priorPolyChordQuality: string | null = null;
   const chordBars = barNumbers.map(
     (barNumber, index) =>
-      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, abcChordVoiceTokenForEvent)} ${barSuffix(index)}`,
+      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, event=>{
+        const chord = event.buttons.find(button=>button.kind.startsWith("chord-"));
+        const quality = chord?.kind === "chord-major" ? "M"
+          : chord?.kind === "chord-minor" ? "m"
+          : chord?.kind === "chord-dominant7" ? "7"
+          : chord?.kind === "chord-diminished7" ? "d" : null;
+        const rendered = abcChordVoiceTokenForEvent(event, preferences);
+        const show = preferences.chordQualityLabels === "always" || quality !== priorPolyChordQuality;
+        if (quality) priorPolyChordQuality = quality;
+        return show ? rendered : rendered.replace(/^"\^[Mm7d]"/, "");
+      })} ${barSuffix(index)}`,
   );
   const summaryLine = includeSummary
     ? `W: ${progression.name} · ${pattern.name} · ${barNumbers.length} bar${barNumbers.length === 1 ? "" : "s"} · Root ${keyRootPitchClass} · ${repeatsPerChord} repeat${repeatsPerChord === 1 ? "" : "s"} per chord · ${pattern.meter}`
@@ -1391,7 +1394,6 @@ export function bassPatternEventsToStradellaNotationAbc(
     includeDescription && pattern.description
       ? `W: ${pattern.description}`
       : "";
-  void tempoBpm;
   void loopCount;
 
   return [
@@ -1401,16 +1403,17 @@ export function bassPatternEventsToStradellaNotationAbc(
     `%%gchordfont sans-serif ${chordFontSize}`,
     `%%annotationfont sans-serif ${Math.max(8, chordFontSize - 1)}`,
     includeTitle ? `T:${pattern.name} over ${progression.name}` : "",
-    "%%score (1 2)",
+    needsPolyphony ? "%%score (1 2)" : "%%score 1",
     `%%staffsep ${staffSeparator}`,
     "%%stretchlast 0",
     `M:${pattern.meter}`,
     `L:${unitLength}`,
+    `Q:${bassPatternBeat(pattern.meter).abcLength}=${tempoBpm}`,
     `K:${keyRootPitchClass} clef=bass`,
-    "V:1 clef=bass stem=down",
-    "V:2 clef=bass stem=up",
-    `[V:1] ${bassBars.join("")}`,
-    `[V:2] ${chordBars.join("")}`,
+    needsPolyphony ? "V:1 clef=bass stem=down" : "V:1 clef=bass",
+    ...(needsPolyphony ? ["V:2 clef=bass stem=up"] : []),
+    `[V:1] ${needsPolyphony ? bassBars.join("") : barNumbers.map((_,index)=>`${lineBreakBeforeBar(index)}${barPrefix(index)} ${singleBars[index]} ${barSuffix(index)}`).join("")}`,
+    ...(needsPolyphony ? [`[V:2] ${chordBars.join("")}`] : []),
     descriptionLine,
     summaryLine,
     "",

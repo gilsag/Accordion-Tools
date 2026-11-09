@@ -14,6 +14,7 @@ import { useDiagramAppearanceState } from "../diagram/useDiagramAppearanceState"
 import { useDiagramOverlays } from "../diagram/useDiagramOverlays";
 import { useDiagramAnnotations } from "../features/annotateDiagram/useDiagramAnnotations";
 import { useBassPatternState, useBassPatternResults } from "../features/bassPatternPlayer/useBassPatternPlayer";
+import { useRhythmTrainer } from "../features/rhythmTrainer/useRhythmTrainer";
 import { useSequenceState, useSequenceResults } from "../features/sequences/useSequenceState";
 import { useAbcPlayerState, useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
 import { useHarmonyExplorerState, useHarmonyExplorerResults } from "../features/harmonyExplorer/useHarmonyExplorer";
@@ -225,6 +226,9 @@ export function useAppController() {
     musicNotationScale, setMusicNotationScale,
     musicNotationStaffWidth, setMusicNotationStaffWidth,
     musicNotationStaffSeparator, setMusicNotationStaffSeparator,
+    stradellaNotationMode, setStradellaNotationMode,
+    stradellaChordQualityLabels, setStradellaChordQualityLabels,
+    stradellaMarkCounterbass, setStradellaMarkCounterbass,
   } = useNotationSettings();
 
   function toggleBassPatternNotation() {
@@ -387,7 +391,8 @@ export function useAppController() {
     labelFont, labelFontSize, languagePreference, musicNotationBarsPerLine,
     musicNotationChordFontSize, musicNotationIncludeDescription, musicNotationIncludeSummary,
     musicNotationIncludeTitle, musicNotationScale, musicNotationStaffSeparator,
-    musicNotationStaffWidth, musicNotationUseBarsPerLine, notation, pianoBlackKeyHeightScale,
+    musicNotationStaffWidth, musicNotationUseBarsPerLine, stradellaNotationMode,
+    stradellaChordQualityLabels, stradellaMarkCounterbass, notation, pianoBlackKeyHeightScale,
     pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale, pianoTrebleRange,
     referenceStrokeWidth, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
     scaleFinderRowLimit, sequenceArrowheadSize, sequenceColorPreset,
@@ -410,6 +415,7 @@ export function useAppController() {
     setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription,
     setMusicNotationIncludeSummary, setMusicNotationIncludeTitle, setMusicNotationScale,
     setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
     setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale, setPianoKeyHeightScale,
     setPianoKeyWidthScale, setPianoTrebleRange, setReferenceStrokeWidth, setScaleFinderDisplayMode,
     setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
@@ -601,7 +607,7 @@ export function useAppController() {
   });
 
   const {
-    renderNotationInto,
+    renderNotationInto, bassPatternRenderedNotationAbc,
   } = useAccordionNotation({
     abcNotationRef, abcRenderedNotationVisible, abcText, bassPatternBarsPerChord, bassPatternEvents,
     bassPatternLoopCount, bassPatternLoopMode, bassPatternNotationRef,
@@ -609,6 +615,7 @@ export function useAppController() {
     musicNotationBarsPerLine, musicNotationChordFontSize, musicNotationIncludeDescription,
     musicNotationIncludeSummary, musicNotationIncludeTitle, musicNotationScale,
     musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine,
+    stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
     selectedBassPattern, selectedChordProgression, sequenceNotationRef,
     sequenceRenderedNotationVisible, sequenceStepsWithButtons, side,
   });
@@ -674,6 +681,7 @@ export function useAppController() {
     harmonyProgressionPlan, harmonyProgressionRhythmPattern, harmonyRecordedNotationRef,
     harmonyRecordedNotationVisible, harmonyRecordedProgression, harmonyShowEnharmonics,
     renderNotationInto, soundOptions, soundSequenceTempoBpm,
+    stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
   });
 
   const {
@@ -723,6 +731,7 @@ export function useAppController() {
       setScaleFinderActive(false);
       setStradellaChordFinderActive(false);
     }
+    if (section === "rhythmTrainer") stopSoundPlayback();
     if (section === "progressionAssistant") {
       setStradellaChordFinderActive(false);
       setScaleFinderActive(false);
@@ -781,6 +790,7 @@ export function useAppController() {
     stopBassPatternPlayback, exportSelectedBassPattern, scheduleBassPatternPlayback,
     stopSoundPlayback,
   } = useAccordionPlayback({
+    bassPatternRenderedNotationAbc,
     abcMappedEvents, abcPlaybackStartBeatRef, abcPlaybackStartedAtRef, abcPlaybackState,
     abcPlaybackTimeoutsRef, abcPositionBeat, abcTempoBpm, abcTotalBeats, bassPatternBarsPerChord,
     bassPatternEvents, bassPatternExportFormat, bassPatternLoopCount, bassPatternLoopMode,
@@ -792,6 +802,12 @@ export function useAppController() {
     setHarmonyProgressionActiveButtonIds, setHarmonyProgressionPulseSilent, setScaleFinderActive,
     setStradellaChordFinderActive, side, soundEnabled, soundOptions, soundSource,
     stradellaChordFinderMode, stradellaChordFinderPlaybackButtons, workspaceMode,
+  });
+
+  const rhythmTrainer = useRhythmTrainer({
+    notationPreferences: {mode:stradellaNotationMode,chordQualityLabels:stradellaChordQualityLabels,markCounterbass:stradellaMarkCounterbass},
+    sideButtonSettings, bassPatterns: bassPatternDefinitions, chordProgressions: chordProgressionDefinitions, soundOptions, activeToolSection,
+    stopOtherPlayback: stopSoundPlayback,
   });
 
   const {
@@ -1100,7 +1116,7 @@ export function useAppController() {
   const bellowsStartLabel = side === "stradella" ? t("ui.bottom") : t("ui.top");
   const bellowsEndLabel = side === "stradella" ? t("ui.top") : t("ui.bottom");
 
-  const activeToolLabel = activeToolStatusLabel({
+  const activeToolLabel = activeToolSection === "rhythmTrainer" ? t("rhythm.title") : activeToolStatusLabel({
     side, bassPatternPlaybackState, abcPlaybackState, activeToolSection,
     scaleFinderActive, stradellaChordFinderActive, chordFinderActive,
     t,
@@ -1124,7 +1140,9 @@ export function useAppController() {
       interfaceDensity, isPianoTreble, laMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, laMelodiosaTrebleRegister,
       labelFont, labelFontSize, language, languagePreference, musicNotationBarsPerLine,
       musicNotationChordFontSize, musicNotationIncludeDescription, musicNotationIncludeSummary, musicNotationIncludeTitle, musicNotationScale,
-      musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine, notation, pianoBlackKeyHeightScale,
+      musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine,
+      stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
+      notation, pianoBlackKeyHeightScale,
       pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale, pianoTrebleRange, referenceStrokeWidth,
       setAccidental, setAccidentalStyle, setBasses, setButtonSize, setButtonStrokeWidth,
       setChordDisplayStyle, setChordFillStrength, setChordLabelMode, setColorTheme, setCustomTitle,
@@ -1133,7 +1151,9 @@ export function useAppController() {
       setHarmonyShowNoteRing, setHarmonyShowSeparators, setHarmonyShowToneTooltips, setHarmonyVoicingStyle, setInterfaceDensity,
       setLaMelodiosaBassRegister, setLaMelodiosaFollowStradellaRegisters, setLaMelodiosaTrebleRegister, setLabelFont, setLabelFontSize,
       setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription, setMusicNotationIncludeSummary, setMusicNotationIncludeTitle,
-      setMusicNotationScale, setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine, setNotation,
+      setMusicNotationScale, setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine,
+      setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
+      setNotation,
       setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale, setPianoKeyHeightScale, setPianoKeyWidthScale, setReferenceStrokeWidth,
       setShowBellowsGuide, setShowButtonLabels, setShowStatusBar, setShowStradellaRowLabels, setShowTrebleOctaves,
       setSoundAttackMs, setSoundMusetteDetuneCents, setSoundNoteDurationMs, setSoundArticulation, soundArticulation, setSoundReleaseMs, setSoundSequenceTempoBpm,
@@ -1149,7 +1169,7 @@ export function useAppController() {
       trebleSize, workspaceMode,
     },
     tools: {
-      SEQUENCE_DISPLAY_MODE_OPTIONS, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName,
+      rhythmTrainer, SEQUENCE_DISPLAY_MODE_OPTIONS, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName,
       progressionPathVisible, setProgressionPathVisible,
       abcMappedEvents, abcMissingPitchText, abcParseResult, abcPlaybackState, abcPositionBeat,
       abcStradellaMode, abcTempoBpm, abcText, abcTotalBeats, abcTrebleChordSymbolsMode,
@@ -1203,7 +1223,7 @@ export function useAppController() {
       toggleHarmonyProgressionRecording, toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
     },
     workspace: {
-      abcActiveButtonIdSet, abcNotationRef, abcParseResult, abcRenderedNotationVisible, abcText,
+      rhythmTrainer, abcActiveButtonIdSet, abcNotationRef, abcParseResult, abcRenderedNotationVisible, abcText,
       abcHandsView, setAbcHands, renderNotationInto,
       accidentalStyle, activeToolSection, annotateMode, annotationButtonAnchor, annotationEditorRef, annotationLevelForLine,
       annotationPointForButton, bassPatternActiveButtonIdSet, bassPatternEvents, bassPatternNotationRef, bassPatternRenderedNotationVisible,
