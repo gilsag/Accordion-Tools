@@ -21,7 +21,8 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
     harmonyShowNoteRing, harmonyShowSeparators, harmonyShowToneTooltips, harmonyVoicingStyle, importSettingsFile, interfaceDensity,
     isPianoTreble, laMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, laMelodiosaTrebleRegister, labelFont, labelFontSize,
     language, languagePreference, musicNotationBarsPerLine, musicNotationChordFontSize, musicNotationIncludeDescription, musicNotationIncludeSummary,
-    musicNotationIncludeTitle, musicNotationScale, musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine, notation,
+    musicNotationIncludeTitle, musicNotationScale, musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine, stradellaNotationMode,
+    stradellaChordQualityLabels, stradellaMarkCounterbass, notation,
     pianoBlackKeyHeightScale, pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale, pianoTrebleRange, referenceStrokeWidth,
     setAccidental, setAccidentalStyle, setBasses, setButtonSize, setButtonStrokeWidth, setChordDisplayStyle,
     setChordFillStrength, setChordLabelMode, setColorTheme, setCustomTitle, setDiagramScale, setDiagramVerticalSpacing,
@@ -29,7 +30,9 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
     setHarmonyShowExplanation, setHarmonyShowLegend, setHarmonyShowNoteRing, setHarmonyShowSeparators, setHarmonyShowToneTooltips, setHarmonyVoicingStyle,
     setInterfaceDensity, setLaMelodiosaBassRegister, setLaMelodiosaFollowStradellaRegisters, setLaMelodiosaTrebleRegister, setLabelFont, setLabelFontSize,
     setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription, setMusicNotationIncludeSummary, setMusicNotationIncludeTitle, setMusicNotationScale,
-    setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine, setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale,
+    setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
+    setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale,
     setPianoKeyHeightScale, setPianoKeyWidthScale, setReferenceStrokeWidth, setShowBellowsGuide, setShowButtonLabels, setShowStatusBar,
     setShowStradellaRowLabels, setShowTrebleOctaves, setSoundAttackMs, setSoundMusetteDetuneCents, setSoundNoteDurationMs, setSoundArticulation, setSoundReleaseMs,
     setSoundSequenceTempoBpm, setSoundSource, setSoundVoicePreset, setSoundVolume, setSoundWaveform, setSpacing,
@@ -323,6 +326,26 @@ export function SettingsView({model}:{model:AppControllerModel["settings"]}) {
 
                               {activeSettingsSection === "musicNotation" && (
                                 <div className="section-content">
+                                  <label className="control-label" htmlFor="stradella-notation-mode">{t("ui.stradellaNotationMode")}</label>
+                                  <select id="stradella-notation-mode" value={stradellaNotationMode}
+                                    onChange={event=>setStradellaNotationMode(event.target.value as "symbolic" | "sounding")}>
+                                    <option value="symbolic">{t("ui.stradellaNotationSymbolic")}</option>
+                                    <option value="sounding">{t("ui.stradellaNotationSounding")}</option>
+                                  </select>
+                                  <p className="hint">{t("ui.stradellaNotationModeHelp")}</p>
+                                  <label className="control-label" htmlFor="stradella-chord-labels">{t("ui.stradellaChordLabels")}</label>
+                                  <select id="stradella-chord-labels" value={stradellaChordQualityLabels}
+                                    onChange={event=>setStradellaChordQualityLabels(event.target.value as "always" | "changes")}>
+                                    <option value="always">{t("ui.stradellaChordLabelsAlways")}</option>
+                                    <option value="changes">{t("ui.stradellaChordLabelsChanges")}</option>
+                                  </select>
+                                  <label className="checkbox-label">
+                                    <input type="checkbox" checked={stradellaMarkCounterbass}
+                                      onChange={event=>setStradellaMarkCounterbass(event.target.checked)}/>
+                                    <span>{t("ui.stradellaCounterbassDash")}</span>
+                                  </label>
+                                  <p className="hint">{t("ui.stradellaOctaveHelp")}</p>
+
                                   <label className="checkbox-label">
                                     <input
                                       type="checkbox"

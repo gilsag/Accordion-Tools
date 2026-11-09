@@ -93,7 +93,10 @@ export type UseSettingsTransferDeps = Pick<ReturnType<typeof useAbcPlayerState>,
     "musicNotationBarsPerLine" | "musicNotationChordFontSize" |
     "musicNotationIncludeDescription" | "musicNotationIncludeSummary" |
     "musicNotationIncludeTitle" | "musicNotationScale" | "musicNotationStaffSeparator" |
-    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" | "setMusicNotationBarsPerLine" |
+    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" |
+    "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass" |
+    "setStradellaNotationMode" | "setStradellaChordQualityLabels" | "setStradellaMarkCounterbass" |
+    "setMusicNotationBarsPerLine" |
     "setMusicNotationChordFontSize" | "setMusicNotationIncludeDescription" |
     "setMusicNotationIncludeSummary" | "setMusicNotationIncludeTitle" |
     "setMusicNotationScale" | "setMusicNotationStaffSeparator" | "setMusicNotationStaffWidth" |
@@ -149,7 +152,8 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     labelFont, labelFontSize, languagePreference, musicNotationBarsPerLine,
     musicNotationChordFontSize, musicNotationIncludeDescription, musicNotationIncludeSummary,
     musicNotationIncludeTitle, musicNotationScale, musicNotationStaffSeparator,
-    musicNotationStaffWidth, musicNotationUseBarsPerLine, notation, pianoBlackKeyHeightScale,
+    musicNotationStaffWidth, musicNotationUseBarsPerLine, stradellaNotationMode,
+    stradellaChordQualityLabels, stradellaMarkCounterbass, notation, pianoBlackKeyHeightScale,
     pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale, pianoTrebleRange,
     referenceStrokeWidth, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
     scaleFinderRowLimit, sequenceArrowheadSize, sequenceColorPreset,
@@ -172,6 +176,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription,
     setMusicNotationIncludeSummary, setMusicNotationIncludeTitle, setMusicNotationScale,
     setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
     setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale, setPianoKeyHeightScale,
     setPianoKeyWidthScale, setPianoTrebleRange, setReferenceStrokeWidth, setScaleFinderDisplayMode,
     setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
@@ -266,6 +271,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     setMusicNotationStaffSeparator,
     setMusicNotationStaffWidth,
     setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
     setNotation,
     setPianoBlackKeyHeightScale,
     setPianoBlackKeyWidthScale,
@@ -420,6 +426,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
       musicNotationStaffSeparator,
       musicNotationStaffWidth,
       musicNotationUseBarsPerLine,
+      stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
       notation,
       pianoBlackKeyHeightScale,
       pianoBlackKeyWidthScale,

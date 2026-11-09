@@ -129,3 +129,6 @@ Each note sounds for its written length (85% of it by default, the same time its
 Simple ABC ties are merged during playback after abcjs sequencing. For example, `A-A2` is treated as one sustained A event with the combined duration, so the diagram does not retrigger the same button on the continuation note. Whole-chord ties such as `[CE]-[CE]` are handled similarly when the tied chord contains the same notes.
 
 Advanced partial ties inside chords are not fully interpreted yet.
+
+
+**Shared Stradella settings and imports:** The global standard Stradella notation preferences apply to *generated* bass-button scores in other tools. ABC Player continues to render imported ABC exactly as supplied, including independent voices, rests, clefs, and octave spellings. It does not automatically reinterpret generic bass-clef notes as Stradella chord buttons.

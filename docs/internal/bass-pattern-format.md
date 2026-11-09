@@ -110,15 +110,16 @@ Most patterns are one bar long, so `bars` can be omitted. Rhythms such as son cl
   "meter": "4/4",
   "bars": 2,
   "steps": [
-    { "t": 0, "d": "3/2", "play": ["bass:1"] },
-    { "t": "3/2", "d": "1/2", "play": ["bass:1"] },
-    { "t": 4, "d": 1, "play": ["rest"] },
-    { "t": 5, "d": 1, "play": ["bass:1", "chord"] }
+    { "t": 0, "d": "1/2", "play": ["bass:1"] },
+    { "t": "3/2", "d": "1/2", "play": ["chord"] },
+    { "t": 3, "d": "1/2", "play": ["chord"] },
+    { "t": 5, "d": "1/2", "play": ["bass:1"] },
+    { "t": 6, "d": "1/2", "play": ["chord"] }
   ]
 }
 ```
 
-Here `t` and `d` are still measured in the denominator unit of the meter. In `4/4`, `t: 5` means beat 2 of the second bar of the pattern.
+Here `t` and `d` are still measured in the denominator unit of the meter. In `4/4`, `t: 5` means beat 2 of the second bar of the pattern. This five-event example represents the standard 3–2 son clave attack positions; actual son accompaniments use additional interlocking parts.
 
 Use this instead of changing the meter to something like `8/4` merely to fit a two-bar phrase into one artificial bar.
 
@@ -503,7 +504,7 @@ Current limitation: ties are notation-level markers. Playback still follows each
 
 The Bass Pattern Player can render staff notation in the application using `abcjs`. The rendered notation is generated from the expanded playback state: root, chord progression, repeats per chord, selected pattern, pattern bar count, chord voicing, and repeat mode.
 
-The notation follows a simplified Stradella convention:
+The current in-app notation follows standardized symbolic Stradella conventions (shared generator, AAA 1938):
 
 | Musical action | Rendered convention |
 |---|---|
@@ -516,7 +517,7 @@ The notation follows a simplified Stradella convention:
 | Diminished chord button | chord root note with `d` marker |
 | Simultaneous bass + chord | both positions are shown at the same rhythmic point |
 
-Counterbass notes are not specially marked in the staff notation.
+Counterbass notes are unmarked by default. An optional courtesy dash is available via Settings → Music notation. Written notes do not follow audio registers.
 
 The rendered notation can optionally include a summary note at the end, for example:
 
@@ -546,9 +547,12 @@ The ABC export includes:
 - `L:` from the meter denominator,
 - `Q:` from the Bass Pattern Player tempo, stated in its beat (`Q:1/4=` in 4/4, `Q:3/8=` in 6/8 and 12/8),
 - `K:` from the selected root,
-- quoted resolved chord labels such as `"C"`, `"G7"`, or `"Am"`,
-- bass-note events where a bass or counterbass button is played,
-- rests for gaps in the generated bar.
+- one conventional bass-clef staff for sequential events (two voices only for genuine overlaps),
+- one low note per bass/counterbass button and one upper root note per chord button,
+- `M`/`m`/`7`/`d` chord-quality marks, with repeat mode and optional counterbass dash from shared preferences,
+- genuine rests where the arrangement is silent; no artificial rests from overlaid voices.
+
+The standalone `bassPatternEventsToAbc()` helper retains the older performance/progression ABC representation for compatibility. The **app's ABC download** now uses the same symbolic ABC generator as its rendered score (`bassPatternEventsToStradellaNotationAbc()`), including `Q:` tempo and the shared notation preferences.
 
 Remaining limitation: ABC still cannot represent every accordion-specific detail. It does not encode bellows, fingering, register switches, or true button tablature. Treat it as a progression-aware notation sketch, not as a complete engraved accordion arrangement.
 
@@ -702,7 +706,7 @@ When the app renders bass-pattern notation with `abcjs`, it uses a simplified St
 The vertical position is chosen from the musical note name and the button type:
 
 - **Bass and counterbass buttons:** write the note at the first matching staff position at or below the bass-clef middle line, D.
-- **Chord buttons:** write the chord root at the first matching staff position above the bass-clef middle line.
+- **Chord buttons:** write the chord root at the first matching staff position above the bass-clef middle line; the third-line D can also represent a D chord when marked with its quality.
 - **Bass + chord together:** write both notes at the same rhythmic position, one in the lower bass area and one in the upper chord area.
 
 Chord quality is shown by a small symbol above the chord-button note:
@@ -714,6 +718,6 @@ Chord quality is shown by a small symbol above the chord-button note:
 | `7` | dominant seventh |
 | `d` | diminished |
 
-Counterbass events are not marked with `cb` in the rendered staff notation. They are still counterbass events internally and in playback, but visually they follow the same lower-staff placement rule as fundamental bass notes.
+Counterbass events are unmarked by default; the global notation preference may add a courtesy dash under the note. Chord-quality symbols repeat on every chord by default. Written staff octaves remain independent of bass/chord audio register octaves; the expanded sounding-pitch representation is separate and only available in the Progression Assistant.
 
 If the Bass Pattern Player repeat control is set to a fixed count or infinite loop, the rendered notation uses repeat signs. Fixed-count repeat also adds a short repeat-count annotation.

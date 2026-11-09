@@ -18,10 +18,10 @@ function load(path, imports) {
 }
 
 const registry = load("src/app/toolRegistry.ts", {});
-const ids = ["scaleFinder", "chordFinder", "abcPlayer", "bassPatternPlayer",
+const ids = ["scaleFinder", "chordFinder", "bassPatternPlayer", "rhythmTrainer", "abcPlayer",
   "stradellaChordFinder", "harmonyExplorer", "progressionAssistant",
   "annotateDiagram"];
-assert.deepEqual(Object.keys(registry.TOOL_REGISTRY), ids, "All eight tool sections registered (Selection, Fingering and Sequence are Annotate Diagram modes)");
+assert.deepEqual(Object.keys(registry.TOOL_REGISTRY), ids, "All nine tool sections registered (Selection, Fingering and Sequence are Annotate Diagram modes)");
 for (const id of ids) {
   const destination = registry.toolDestination(id);
   assert.equal(destination.workspace, id === "harmonyExplorer" ? "harmony" : "accordion");

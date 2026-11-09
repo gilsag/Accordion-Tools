@@ -8,8 +8,9 @@
 export const TOOL_REGISTRY = {
   scaleFinder: { workspace: "accordion", category: "finder" },
   chordFinder: { workspace: "accordion", category: "finder" },
-  abcPlayer: { workspace: "accordion", category: "player" },
   bassPatternPlayer: { workspace: "accordion", category: "player" },
+  rhythmTrainer: { workspace: "accordion", category: "player" },
+  abcPlayer: { workspace: "accordion", category: "player" },
   stradellaChordFinder: { workspace: "accordion", category: "finder", defaultSide: "stradella" },
   harmonyExplorer: { workspace: "harmony", category: "harmony" },
   progressionAssistant: { workspace: "accordion", category: "harmony", defaultSide: "stradella" },

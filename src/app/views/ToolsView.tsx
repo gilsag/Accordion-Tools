@@ -19,6 +19,7 @@ const TrebleChordFinderPanel = lazy(() => import("../../components/tools/TrebleC
 const StradellaChordFinderPanel = lazy(() => import("../../components/tools/StradellaChordFinderPanel").then(module => ({ default: module.StradellaChordFinderPanel })));
 import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
+import { RhythmTrainerControls } from "../../components/tools/RhythmTrainerControls";
 // The panel is fetched on first render; its state stays in its feature hook.
 const HarmonyExplorerPanel = lazy(() => import("../../components/tools/HarmonyExplorerPanel").then(module => ({ default: module.HarmonyExplorerPanel })));
 // The panel is fetched on first render; its state stays in its feature hook.
@@ -80,7 +81,7 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
     stradellaChordFinderResult, stradellaChordFinderRoot, stradellaMinimumNominalGap, stradellaNoteLevels, stradellaScaleFinderResult,
     t, textNoteColor, textNoteFont, textNoteFontSize, textNotes, toggleHarmonyProgressionRecording,
     toggleToolSection, trebleChordExplanation, trebleChordVoicingMode, workspaceMode,
-    progressionPathVisible, setProgressionPathVisible,
+    rhythmTrainer, progressionPathVisible, setProgressionPathVisible,
     stradellaChordFinderRootFallback, stradellaChordFinderBassButtonFallback, stradellaChordFinderReachExtendedTo,
   } = model;
   return (
@@ -1073,6 +1074,17 @@ export function ToolsView({model}:{model:AppControllerModel["tools"]}) {
                       </div>
                     </div>
                   )}
+                </section>
+              )}
+
+              {(isTrebleLikeSide || side === "stradella") && (
+                <section className="control-section">
+                  <button className="section-title" aria-expanded={activeToolSection === "rhythmTrainer"}
+                    onClick={() => toggleToolSection("rhythmTrainer")}>
+                    {t("rhythm.title")} <span aria-hidden="true">{activeToolSection === "rhythmTrainer" ? "−" : "+"}</span>
+                  </button>
+                  {activeToolSection !== "rhythmTrainer" && <p className="section-summary">{t("rhythm.summary")}</p>}
+                  {activeToolSection === "rhythmTrainer" && <RhythmTrainerControls trainer={rhythmTrainer} t={t} language={language} />}
                 </section>
               )}
 

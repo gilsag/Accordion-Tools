@@ -137,3 +137,15 @@ This is the easiest way to keep a backup or to use the same settings on another 
 The **Reset** menu in the top bar has two actions: **Clear current work** clears the active selection and stops playback; **Restore current tool defaults** puts the open tool back to its starting values. Neither changes your Sound or Stradella register settings.
 
 If you publish your own copy of the app and want different starting settings, see the [settings file reference](https://github.com/gilsag/Accordion-Tools/blob/main/docs/internal/settings-file-reference.md).
+
+### Standard Stradella staff notation (shared preferences)
+
+The **Music notation** section also controls how the generated Stradella left-hand scores are written:
+
+- **Left-hand notation:** **Standard Stradella** (default) uses a *single written root note* for each preset chord button. **Expanded voicing** shows the selected realization's sounding pitches **in the Progression Assistant**, where registral analysis is available. The other Stradella teaching tools continue to use symbolic notation; imported ABC Player scores are displayed unchanged.
+- **Chord-quality symbols:** **Show on every chord** (default) writes `M`, `m`, `7`, or `d` above each chord button, even when consecutive buttons share the same quality. **Show when quality changes** omits repeated identical labels.
+- **Mark counterbass notes:** off by default. When enabled, a courtesy dash is drawn beneath counterbass notes in generated symbolic notation.
+
+Written Stradella staff positions depend on **button pitch class and button function** (bass versus chord), not on the configured bass/chord reed register, sample transposition, or playback octave. Thus changing the instrument's audio register does not transpose its standard Stradella notation. A D on the third line of the bass staff may be either a bass or a chord; the chord-quality symbol identifies a D chord button.
+
+These preferences participate in settings export/import and editable `default-settings.json`. When notation is visible, changes take effect in the displayed score and in the Bass Pattern Player's exported score ABC. The separate MIDI export and audio playback are unaffected.

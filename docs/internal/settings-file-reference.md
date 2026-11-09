@@ -230,3 +230,8 @@ The `titleMode` setting supports **Auto** (instrument/layout), **Contextual** (d
 ## ABC example manifest
 
 The ABC Player catalog is generated at development and build time by scanning `public/abc/*.abc`. To add an example, copy an ABC file into that folder and rebuild or redeploy; no manifest edit is needed. The title comes from the ABC `T:` header, with the filename as fallback. Static GitHub Pages hosting cannot list files uploaded without rebuilding the site.
+
+
+### Shared symbolic Stradella notation (Phase 6)
+
+The optional JSON fields `stradellaNotationMode` (`symbolic` / `sounding`), `stradellaChordQualityLabels` (`always` / `changes`), and `stradellaMarkCounterbass` (boolean) are exported and imported with the other notation settings; missing keys in historical settings files preserve current application defaults. Standard defaults: `symbolic`, `always`, `false`. The sounding/expanded mode is used by the Progression Assistant; generated exercises and bass patterns always retain symbolic Stradella notation. No settings value derived from audio/reed register shifts standard staff positions.

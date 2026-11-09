@@ -33,6 +33,9 @@ export type WorkspaceToolbarProps = {
   abcText: string;
   abcRenderedNotationVisible: boolean;
   onToggleAbcNotation: () => void;
+  rhythmNotationVisible: boolean;
+  rhythmNotationAvailable: boolean;
+  onToggleRhythmNotation: () => void;
   sequenceStepsWithButtons: readonly unknown[];
   sequenceRenderedNotationVisible: boolean;
   onToggleSequenceNotation: () => void;
@@ -139,6 +142,7 @@ export function WorkspaceToolbar({
   harmonyRecordedProgression, harmonyRecordedNotationVisible, onToggleHarmonyRecordedNotation,
   harmonyProgressionPlayable, harmonyProgressionNotationVisible, onToggleHarmonyProgressionNotation,
   abcText, abcRenderedNotationVisible, onToggleAbcNotation,
+  rhythmNotationVisible, rhythmNotationAvailable, onToggleRhythmNotation,
   sequenceStepsWithButtons, sequenceRenderedNotationVisible, onToggleSequenceNotation,
   soundEnabled, onToggleSound, onClearWork, onRestoreToolDefaults,
   downloadFormat, setDownloadFormat, onDownloadDiagram,
@@ -199,7 +203,9 @@ export function WorkspaceToolbar({
     setDownloadFormat(format);
     onDownloadDiagram(format);
   }
-  const notationAction = workspaceMode === "accordion" && side === "stradella" && activeToolSection === "bassPatternPlayer" && bassPatternEvents.length
+  const notationAction = workspaceMode === "accordion" && activeToolSection === "rhythmTrainer" && rhythmNotationAvailable
+    ? { visible: rhythmNotationVisible, toggle: onToggleRhythmNotation }
+    : workspaceMode === "accordion" && side === "stradella" && activeToolSection === "bassPatternPlayer" && bassPatternEvents.length
     ? { visible: bassPatternRenderedNotationVisible, toggle: onToggleBassPatternNotation }
     : workspaceMode === "harmony" && harmonyRecordedProgression.length
       ? { visible: harmonyRecordedNotationVisible, toggle: onToggleHarmonyRecordedNotation }

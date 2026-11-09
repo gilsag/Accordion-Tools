@@ -6,6 +6,7 @@ import type { useHarmonyProgressionState, useHarmonyProgressionResults } from ".
 import type { useSoundSettings } from "../audio/useSoundSettings";
 import type { DiagramButton } from "../types";
 import { notesForButton } from "../sound";
+import { stradellaButtonToken, type StradellaNotationPreferences } from "../notation/stradellaNotation";
 import { chordLabel as harmonyChordLabel, chordMidiNotes as harmonyChordMidiNotes } from "../tools/harmonyExplorer/music";
 import { progressionBassPulseButtons } from "../tools/harmonyExplorer/progression";
 import { pitchClassNameFromNumber, pitchClassNumberFromName } from "../tools/harmonyExplorer/integration";
@@ -22,6 +23,9 @@ export type UseProgressionNotationDeps = Pick<ReturnType<typeof useHarmonyProgre
     "renderNotationInto"> &
   Pick<ReturnType<typeof useSoundSettings>,
     "soundOptions" | "soundSequenceTempoBpm"> &
+  { stradellaNotationMode: StradellaNotationPreferences["mode"];
+    stradellaChordQualityLabels: StradellaNotationPreferences["chordQualityLabels"];
+    stradellaMarkCounterbass: boolean; } &
   {
     buttons: DiagramButton[];
   };
@@ -33,6 +37,7 @@ export function useProgressionNotation(deps: UseProgressionNotationDeps) {
     harmonyProgressionPlan, harmonyProgressionRhythmPattern, harmonyRecordedNotationRef,
     harmonyRecordedNotationVisible, harmonyRecordedProgression, harmonyShowEnharmonics,
     renderNotationInto, soundOptions, soundSequenceTempoBpm,
+    stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
   } = deps;
 
   function abcNameForConcreteNote(pitchClass: string, octave: number) {
@@ -64,8 +69,23 @@ export function useProgressionNotation(deps: UseProgressionNotationDeps) {
       : harmonyProgressionRhythmPattern === "oom-pah"
         ? "2/4"
         : "4/4";
+    const preferences: StradellaNotationPreferences = {
+      mode: stradellaNotationMode,
+      chordQualityLabels: stradellaChordQualityLabels,
+      markCounterbass: stradellaMarkCounterbass,
+    };
+    let precedingQuality: string | null = null;
     const bars = harmonyProgressionPlan.steps.map((step) => {
       const pulses = progressionRhythmPulses(step);
+      if (stradellaNotationMode === "symbolic") {
+        const tokens = pulses.map(pulse => {
+          if (!pulse.length) return "z";
+          const result = stradellaButtonToken(pulse, preferences, precedingQuality);
+          precedingQuality = result.quality;
+          return result.token;
+        });
+        return harmonyProgressionRhythmPattern === "block" ? `${tokens[0]}4` : tokens.join(" ");
+      }
       if (harmonyProgressionRhythmPattern === "block") {
         const notes = pulses[0]
           .flatMap((button) => notesForButton(button, soundOptions))
@@ -96,7 +116,7 @@ export function useProgressionNotation(deps: UseProgressionNotationDeps) {
     harmonyProgressionRhythmPattern,
     soundSequenceTempoBpm,
     progressionRhythmPulses,
-    soundOptions,
+    soundOptions, stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
   ]);
 
   useEffect(() => {

@@ -6,7 +6,8 @@ import type { useAbcPlayerState } from "../features/abcPlayer/useAbcPlayer";
 import { renderNotationInto as renderSharedNotation } from "../notation/notationService";
 import type { useNotationSettings } from "../notation/useNotationSettings";
 import type { DiagramButton } from "../types";
-import { INDEX_TO_PITCH } from "../music";
+import { stradellaButtonToken,
+  type StradellaNotationPreferences } from "../notation/stradellaNotation";
 import { bassPatternEventsToStradellaNotationAbc, type StradellaNotationAbcOptions } from "../tools/bassPatternPlayerTools";
 
 export type UseAccordionNotationDeps = Pick<ReturnType<typeof useAbcPlayerState>,
@@ -21,7 +22,8 @@ export type UseAccordionNotationDeps = Pick<ReturnType<typeof useAbcPlayerState>
     "musicNotationBarsPerLine" | "musicNotationChordFontSize" |
     "musicNotationIncludeDescription" | "musicNotationIncludeSummary" |
     "musicNotationIncludeTitle" | "musicNotationScale" | "musicNotationStaffSeparator" |
-    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine"> &
+    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" |
+    "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass"> &
   Pick<ReturnType<typeof useSequenceState>,
     "sequenceNotationRef" | "sequenceRenderedNotationVisible"> &
   Pick<ReturnType<typeof useInstrumentState>,
@@ -39,9 +41,16 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
     musicNotationBarsPerLine, musicNotationChordFontSize, musicNotationIncludeDescription,
     musicNotationIncludeSummary, musicNotationIncludeTitle, musicNotationScale,
     musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine,
+    stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
     selectedBassPattern, selectedChordProgression, sequenceNotationRef,
     sequenceRenderedNotationVisible, sequenceStepsWithButtons, side,
   } = deps;
+
+  const stradellaPreferences: StradellaNotationPreferences = useMemo(() => ({
+    mode: stradellaNotationMode,
+    chordQualityLabels: stradellaChordQualityLabels,
+    markCounterbass: stradellaMarkCounterbass,
+  }), [stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass]);
 
   const musicNotationAbcOptions: StradellaNotationAbcOptions = useMemo(
     () => ({
@@ -52,6 +61,7 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
       chordFontSize: musicNotationChordFontSize,
       titleFontSize: 14,
       staffSeparator: musicNotationStaffSeparator,
+      stradellaPreferences,
     }),
     [
       musicNotationBarsPerLine,
@@ -60,7 +70,7 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
       musicNotationIncludeSummary,
       musicNotationIncludeTitle,
       musicNotationStaffSeparator,
-      musicNotationUseBarsPerLine,
+      musicNotationUseBarsPerLine, stradellaPreferences,
     ],
   );
 
@@ -127,109 +137,23 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
     return baseName;
   }
 
-  function stradellaNotationPitchForButton(
-    button: DiagramButton,
-    kind: "bass" | "chord",
-  ) {
-    const pitchClass = button.pitchClass ?? button.chordRoot ?? "C";
-    const pitchIndexValue = INDEX_TO_PITCH.indexOf(pitchClass);
-    const normalizedPitchClass = pitchIndexValue >= 0 ? pitchClass : "C";
-    const normalizedIndex = INDEX_TO_PITCH.indexOf(normalizedPitchClass);
-    const accidentalMap: Record<string, string> = {
-      C: "C",
-      "C#": "^C",
-      Db: "_D",
-      D: "D",
-      "D#": "^D",
-      Eb: "_E",
-      E: "E",
-      F: "F",
-      "F#": "^F",
-      Gb: "_G",
-      G: "G",
-      "G#": "^G",
-      Ab: "_A",
-      A: "A",
-      "A#": "^A",
-      Bb: "_B",
-      B: "B",
-    };
-    const middleLineD3 = 50;
-    const start = kind === "bass" ? middleLineD3 : middleLineD3 + 1;
-    const end = kind === "bass" ? 24 : 72;
-    const step = kind === "bass" ? -1 : 1;
-    for (
-      let midi = start;
-      kind === "bass" ? midi >= end : midi <= end;
-      midi += step
-    ) {
-      if (((midi % 12) + 12) % 12 === normalizedIndex) {
-        const abcBase = accidentalMap[normalizedPitchClass] ?? "C";
-        const octave = Math.floor(midi / 12) - 1;
-        if (octave <= 3)
-          return `${abcBase}${",".repeat(Math.max(0, 4 - octave))}`;
-        if (octave === 4) return abcBase;
-        return `${abcBase.toLowerCase()}${"'".repeat(Math.max(0, octave - 5))}`;
-      }
-    }
-    return kind === "bass" ? "D," : "F";
-  }
-
-  function chordButtonAnnotationForButton(button: DiagramButton) {
-    if (button.kind === "chord-minor") return '"^m"';
-    if (button.kind === "chord-dominant7") return '"^7"';
-    if (button.kind === "chord-diminished7") return '"^d"';
-    if (button.kind === "chord-major") return '"^M"';
-    return "";
-  }
-
   const sequenceRenderedNotationAbc = useMemo(() => {
-  function stradellaSequenceBassTokenForButton(button: DiagramButton) {
-    if (button.kind === "bass-root" || button.kind === "bass-counterbass") {
-      return stradellaNotationPitchForButton(button, "bass");
-    }
-    return "x";
-  }
-
-  function stradellaSequenceChordTokenForButton(button: DiagramButton) {
-    if (button.kind.startsWith("chord-")) {
-      return `${chordButtonAnnotationForButton(button)}${stradellaNotationPitchForButton(button, "chord")}`;
-    }
-    return "x";
-  }
-
     if (sequenceStepsWithButtons.length === 0) return "";
-
     if (side === "stradella") {
-      const bassTokens = sequenceStepsWithButtons.map((step) =>
-        stradellaSequenceBassTokenForButton(step.button),
-      );
-      const chordTokens = sequenceStepsWithButtons.map((step) =>
-        stradellaSequenceChordTokenForButton(step.button),
-      );
-      const bassBars: string[] = [];
-      const chordBars: string[] = [];
-      for (let index = 0; index < sequenceStepsWithButtons.length; index += 4) {
+      const tokens = sequenceStepsWithButtons.reduce<{notes:string[];quality:string|null}>((state,step) => {
+        const result = stradellaButtonToken([step.button], stradellaPreferences, state.quality);
+        return {notes:[...state.notes,result.token],quality:result.quality};
+      }, {notes:[],quality:null}).notes;
+      const bars: string[] = [];
+      for (let index = 0; index < tokens.length; index += 4) {
         const lineBreak = index > 0 && index % 16 === 0 ? "\n" : "";
-        bassBars.push(
-          `${lineBreak}| ${bassTokens.slice(index, index + 4).join(" ")} `,
-        );
-        chordBars.push(
-          `${lineBreak}| ${chordTokens.slice(index, index + 4).join(" ")} `,
-        );
+        const barTokens = tokens.slice(index,index + 4);
+        // Short final measures are padded with true rests, not a second ghost voice.
+        bars.push(`${lineBreak}| ${[...barTokens, ...Array.from({length:4 - barTokens.length},()=>"z")].join(" ")} `);
       }
       return [
-        "X:1",
-        "%%score (1 2)",
-        "%%staffsep 16",
-        "M:4/4",
-        "L:1/4",
-        "K:C clef=bass",
-        "V:1 clef=bass stem=down",
-        "V:2 clef=bass stem=up",
-        `[V:1] ${bassBars.join("")} |`,
-        `[V:2] ${chordBars.join("")} |`,
-        "",
+        "X:1", "%%score 1", "%%staffsep 16", "M:4/4", "L:1/4",
+        "K:C clef=bass", "V:1 clef=bass", `[V:1] ${bars.join("")} |`, "",
       ].join("\n");
     }
 
@@ -244,7 +168,7 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
     return ["X:1", "M:4/4", "L:1/4", "K:C", `${bars.join("")} |`, ""].join(
       "\n",
     );
-  }, [sequenceStepsWithButtons, side]);
+  }, [sequenceStepsWithButtons, side, stradellaPreferences]);
 
   useEffect(() => {
     if (!bassPatternRenderedNotationVisible) return;
@@ -283,6 +207,7 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
   ]);
 
   return {
+    bassPatternRenderedNotationAbc,
     renderNotationInto,
   };
 }

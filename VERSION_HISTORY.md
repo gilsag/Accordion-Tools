@@ -1,3 +1,10 @@
+## Unreleased — Post-v0.19.0 development patches (2026-11-08)
+
+- **Rhythm Trainer Phases 1–5:** Added a bass–treble two-hand practice tool with 2/4, 3/4, 4/4 and 6/8, root-following treble notes, shared chord progressions, two-manual display, staff notation in the right inspector, active attack highlights, four-bar timeline rows, and new march and corrected Son/Rumba clave definitions. The cueca ABC bass example is retained as a bass-only reference rhythm.
+- **Phase 6 shared Stradella notation:** Consolidated left-hand notation across players, sequences, and the Progression Assistant; written symbolic bass/chord positions are independent of audio registers. Added global notation style preferences, repeated chord-quality symbols by default, and an optional counterbass dash. Imported ABC scores are not silently rewritten.
+- **Rhythm follow-up:** Removed the duplicate sidebar Show notation checkbox (toolbar remains), shortened the timing legend, and audited all 29 Bass Pattern Player definitions. Corrected the incomplete 12/8 Shuffle, one-bar-only Bo Diddley beat, and mis-metered standard African bell. See [Bass Pattern Rhythm Audit](docs/internal/bass-pattern-rhythm-audit.md) for findings and patterns requiring stylistic review.
+- These remain incremental working patches on **v0.19.0**. A production build and E2E run must be completed on the user's Windows checkout before release.
+
 ## v0.19.0 — Both hands in the ABC Player, Annotate Diagram modes, resizable panels (2026-11-07)
 
 ### ABC Player

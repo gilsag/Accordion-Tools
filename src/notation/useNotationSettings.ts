@@ -1,3 +1,4 @@
+import type { ChordQualityLabelMode, StradellaNotationMode } from "./stradellaNotation";
 import { useState } from "react";
 
 /** Owns score-presentation preferences independently of the audio transport,
@@ -20,7 +21,14 @@ export function useNotationSettings() {
   const [musicNotationStaffSeparator, setMusicNotationStaffSeparator] =
     useState(14);
 
+  const [stradellaNotationMode, setStradellaNotationMode] = useState<StradellaNotationMode>("symbolic");
+  const [stradellaChordQualityLabels, setStradellaChordQualityLabels] = useState<ChordQualityLabelMode>("always");
+  const [stradellaMarkCounterbass, setStradellaMarkCounterbass] = useState(false);
+
   return {
+    stradellaNotationMode, setStradellaNotationMode,
+    stradellaChordQualityLabels, setStradellaChordQualityLabels,
+    stradellaMarkCounterbass, setStradellaMarkCounterbass,
     musicNotationIncludeTitle, setMusicNotationIncludeTitle,
     musicNotationIncludeDescription, setMusicNotationIncludeDescription,
     musicNotationIncludeSummary, setMusicNotationIncludeSummary,

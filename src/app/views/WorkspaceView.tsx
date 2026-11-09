@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import type { DiagramButton, Side } from "../../types";
 import { AbcHandsDiagram } from "../../diagram/components/AbcHandsDiagram";
+import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimeline";
+import { RhythmNotationPanel } from "../../app/inspector/RhythmNotationInspector";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { PlaybackBar, type PlaybackTransport } from "../components/PlaybackBar";
 import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
@@ -49,7 +51,7 @@ const HarmonicCircle = lazy(() => import("../../tools/harmonyExplorer/components
 import type { AppControllerModel } from "../useAppController";
 
 /** View-only component: all state and commands originate in the controller. */
-export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector, abcNotationInInspector = false,
+export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector, abcNotationInInspector = false, rhythmNotationInInspector = false,
   panelHandles }: {
   model: AppControllerModel["workspace"];
   isPhone?: boolean;
@@ -60,11 +62,12 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   onToggleInspector?: () => void;
   /** The ABC notation is in the results panel, so it is not drawn below the diagram. */
   abcNotationInInspector?: boolean;
+  rhythmNotationInInspector?: boolean;
   /** Width handles on the workspace's left and right edges. */
   panelHandles?: ReactNode;
 }) {
   const {
-    abcHandsView, setAbcHands, renderNotationInto,
+    abcHandsView, setAbcHands, renderNotationInto, rhythmTrainer,
     abcActiveButtonIdSet, abcNotationRef, abcParseResult, abcRenderedNotationVisible, abcText, accidentalStyle,
     activeToolSection, annotateMode, annotationButtonAnchor, annotationEditorRef, annotationLevelForLine, annotationPointForButton, bassPatternActiveButtonIdSet,
     bassPatternEvents, bassPatternNotationRef, bassPatternRenderedNotationVisible, bellowsEndLabel, bellowsLabelY, bellowsStartLabel,
@@ -106,6 +109,9 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
       ? { label: t("tools.harmonyExplorer"), state: harmonyRecordedProgressionPlaying ? "playing" : "stopped", canPlay: true,
           onPlay: playHarmonyRecordedProgression, onStop: stopHarmonyRecordedProgressionPlayback }
       : null
+    : activeToolSection === "rhythmTrainer"
+      ? {label:t("rhythm.title"),state:rhythmTrainer.playing?"playing":"stopped",canPlay:rhythmTrainer.canPlay,
+          onPlay:()=>void rhythmTrainer.play(),onStop:rhythmTrainer.stop}
     : activeToolSection === "abcPlayer"
       ? { label: t("ui.abcDefault"), state: abcPlaybackState, canPlay: abcMappedEvents.length > 0,
           onPlay: () => scheduleAbcPlayback(abcPositionBeat), onPause: pauseAbcPlayback, onStop: stopAbcPlayback }
@@ -142,6 +148,8 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   // Phones show one manual at a time in the ABC Player's Both hands view.
   const [phoneHand, setPhoneHand] = useState<Side | null>(null);
   const shownPhoneHand = phoneHand ?? side;
+  const combinedHandsView = abcHandsView ?? (activeToolSection === "rhythmTrainer"
+    ? {trebleButtons:rhythmTrainer.trebleButtons,stradellaButtons:rhythmTrainer.bassButtons} : null);
   const accessibleButtonLabel = (button: DiagramButton) => {
     const name = musicLabelText(getMainLabel(button));
     if (button.kind === "treble-note") {
@@ -183,6 +191,9 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
           onToggleHarmonyProgressionNotation={toggleHarmonyProgressionNotation}
           abcText={abcText} abcRenderedNotationVisible={abcRenderedNotationVisible}
           onToggleAbcNotation={toggleAbcNotation}
+          rhythmNotationVisible={rhythmTrainer.notationVisible}
+          rhythmNotationAvailable={rhythmTrainer.exercise.barCount > 0}
+          onToggleRhythmNotation={() => rhythmTrainer.setNotationVisible(!rhythmTrainer.notationVisible)}
           sequenceStepsWithButtons={sequenceStepsWithButtons}
           sequenceRenderedNotationVisible={sequenceRenderedNotationVisible}
           onToggleSequenceNotation={toggleSequenceNotation}
@@ -267,11 +278,15 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
           </>
         ) : (
         <>
-        {abcHandsView && isPhone && (
+        {combinedHandsView && isPhone && (
           <div className="abc-hand-switch">
             <SegmentedChoice label={t("ui.abcShowHand")} value={shownPhoneHand} onChange={setPhoneHand}
               options={[{ value: "treble", label: t("nav.treble") }, { value: "stradella", label: t("nav.stradella") }]} />
           </div>
+        )}
+        {activeToolSection === "rhythmTrainer" && (
+          <RhythmTrainerTimeline exercise={rhythmTrainer.exercise} positionUnit={rhythmTrainer.positionUnit}
+            playing={rhythmTrainer.playing} activeRhythmKeys={rhythmTrainer.activeRhythmKeys} t={t} />
         )}
         <div className="diagram-mobile-frame">
           <div className="mobile-diagram-view-control">
@@ -284,19 +299,22 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
           </div>
         <div
           ref={canvasWrapRef}
-          className={`canvas-wrap ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
+          className={`canvas-wrap ${activeToolSection === "rhythmTrainer" ? "rhythm-compact-diagrams" : ""} ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
           style={{ "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px` } as CSSProperties}
         >
-          {abcHandsView ? (
+          {combinedHandsView ? (
             <AbcHandsDiagram
               ref={svgRef}
-              hands={[
-                { key: "treble", caption: t("ui.abcHandCaption", { hand: t("nav.treble"), voice: 1 }), buttons: abcHandsView.trebleButtons },
-                { key: "stradella", caption: t("ui.abcHandCaption", { hand: t("nav.stradella"), voice: 2 }), buttons: abcHandsView.stradellaButtons },
-              ].filter((hand) => !isPhone || hand.key === shownPhoneHand)}
-              abcActiveButtonIdSet={abcActiveButtonIdSet}
+              hands={(activeToolSection === "rhythmTrainer" ? [
+                { key: "stradella", caption: t("nav.stradella"), buttons: combinedHandsView.stradellaButtons },
+                { key: "treble", caption: t("nav.treble"), buttons: combinedHandsView.trebleButtons },
+              ] : [
+                { key: "treble", caption: t("ui.abcHandCaption", { hand: t("nav.treble"), voice: 1 }), buttons: combinedHandsView.trebleButtons },
+                { key: "stradella", caption: t("ui.abcHandCaption", { hand: t("nav.stradella"), voice: 2 }), buttons: combinedHandsView.stradellaButtons },
+              ]).filter((hand) => !isPhone || hand.key === shownPhoneHand)}
+              abcActiveButtonIdSet={activeToolSection === "rhythmTrainer" ? rhythmTrainer.activeButtonIdSet : abcActiveButtonIdSet}
               getMainLabel={getMainLabel} getAccessibleLabel={accessibleButtonLabel} onButton={toggleButton}
-              style={svgStyle} colorTheme={colorTheme} accidentalStyle={accidentalStyle} buttonSize={buttonSize}
+              style={activeToolSection === "rhythmTrainer" ? {...svgStyle, maxWidth:"880px"} : svgStyle} colorTheme={colorTheme} accidentalStyle={accidentalStyle} buttonSize={buttonSize}
               chordLabelMode={chordLabelMode} labelFontSize={labelFontSize}
               showButtonLabels={showButtonLabels} labelFont={labelFont}
             />
@@ -523,7 +541,7 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
         </>
         )}
 
-        {transport && <PlaybackBar transport={transport} loading={samplesLoading} t={t} />}
+        {transport && <PlaybackBar transport={transport} loading={samplesLoading || rhythmTrainer.loading} t={t} />}
 
         {workspaceMode === "harmony" &&
           harmonyRecordedProgression.length > 0 &&
@@ -548,6 +566,14 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
                 </button>
               </div>
               <div ref={harmonyRecordedNotationRef} className="rendered-abc" />
+            </div>
+          )}
+
+        {workspaceMode === "accordion" && activeToolSection === "rhythmTrainer" &&
+          rhythmTrainer.notationVisible && !rhythmNotationInInspector &&
+          rhythmTrainer.exercise.barCount > 0 && (
+            <div className="rendered-notation-panel">
+              <RhythmNotationPanel trainer={rhythmTrainer} renderNotationInto={renderNotationInto} />
             </div>
           )}
 

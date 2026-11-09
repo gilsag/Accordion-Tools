@@ -66,6 +66,26 @@ const snapshot = new Proxy({
 const exported = controller.collectCurrentSettings(snapshot);
 assert.deepEqual(Object.keys(exported), expectedKeys, 'Historical settings key set and JSON order');
 assert.equal(exported.settingsVersion, 3, 'Exports carry the settings format version');
+// New symbolic/expanded preferences join the historical settings schema.
+assert.equal(exported.stradellaNotationMode, 'stradellaNotationMode');
+assert.equal(exported.stradellaChordQualityLabels, 'stradellaChordQualityLabels');
+assert.equal(exported.stradellaMarkCounterbass, 'stradellaMarkCounterbass');
+for (const mode of ['startup', 'import']) {
+  const calls = [];
+  const setters = new Proxy({}, {get(_target,key){return value=>calls.push([key,value]);}});
+  const input = {stradellaNotationMode:'sounding', stradellaChordQualityLabels:'changes',stradellaMarkCounterbass:true};
+  if (mode === 'startup') controller.applyStartupSettings(input,setters);
+  else controller.applyImportedSettings(input,setters);
+  assert.ok(calls.some(([name,value])=>name==='setStradellaNotationMode'&&value==='sounding'));
+  assert.ok(calls.some(([name,value])=>name==='setStradellaChordQualityLabels'&&value==='changes'));
+  assert.ok(calls.some(([name,value])=>name==='setStradellaMarkCounterbass'&&value===true));
+  const invalid=[];
+  const invalidSetters=new Proxy({}, {get(_target,key){return value=>invalid.push([key,value]);}});
+  const bad = {stradellaNotationMode:'other',stradellaChordQualityLabels:'never',stradellaMarkCounterbass:'true'};
+  if(mode==='startup')controller.applyStartupSettings(bad,invalidSetters);
+  else controller.applyImportedSettings(bad,invalidSetters);
+  assert.equal(invalid.some(([name])=>name.startsWith('setStradellaNotation')||name.startsWith('setStradellaChordQuality')||name==='setStradellaMarkCounterbass'),false);
+}
 assert.equal(exported.soundArticulation, 'soundArticulation');
 assert.equal(exported.stradellaRequestedBassOnBassButton, 'stradellaRequestedBassOnBassButton');
 assert.equal(exported.progressionRootPosition, 'harmonyProgressionRootPosition');
