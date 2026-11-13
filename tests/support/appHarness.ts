@@ -10,6 +10,7 @@ import { resolve } from "node:path";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, vi } from "vitest";
 import { useAppController, type AppControllerModel } from "../../src/app/useAppController";
+import { PlatformProviders } from "../../src/app/platform/PlatformProviders";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
 
 const PUBLIC_DIR = resolve(import.meta.dirname, "../../public");
@@ -77,7 +78,7 @@ export interface RenderAppOptions {
 /** Renders the composition. Sound is switched off after startup, because
  * jsdom has no Web Audio; playback order is covered by the audio tests. */
 export async function renderApp(options: RenderAppOptions = {}): Promise<RenderedApp> {
-  const { result } = renderHook(() => useAppController());
+  const { result } = renderHook(() => useAppController(), { wrapper: PlatformProviders });
   const app: RenderedApp = {
     get model() {
       return result.current;

@@ -6,6 +6,7 @@ import { WorkspaceInspectorSlot } from "./app/inspector/WorkspaceInspectorSlot";
 import { LanguageProvider } from "./i18n/context";
 import { AppShell } from "./app/components/AppShell";
 import { useAppController } from "./app/useAppController";
+import { PlatformProviders } from "./app/platform/PlatformProviders";
 import { usePhonePanel } from "./app/usePhonePanel";
 import { ToolsView } from "./app/views/ToolsView";
 import { WorkspaceView } from "./app/views/WorkspaceView";
@@ -21,9 +22,19 @@ const SettingsView = lazy(() =>
 
 const DEFAULT_INSPECTOR_TRACK = "minmax(300px, 360px)";
 
+/** Everything renders inside the platform providers, which own the shared
+ * state (language, instrument, appearance, sound, notation, navigation). */
+export default function App() {
+  return (
+    <PlatformProviders>
+      <AppLayout />
+    </PlatformProviders>
+  );
+}
+
 /** Layout composition only. Feature state and cross-tool orchestration are
  * supplied by the controller while independent views render the UI. */
-export default function App() {
+function AppLayout() {
   const model = useAppController();
   const { visible: inspectorVisible, toggle: toggleInspector } = useInspectorVisibility();
   const { language, interfaceDensity, leftPanelMode, t } = model;

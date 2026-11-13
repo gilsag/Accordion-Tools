@@ -47,6 +47,7 @@ The rules to follow when changing the code: who owns what, which contracts other
 | Annotate Diagram state | `src/features/annotateDiagram/useDiagramAnnotations.ts` | Free and button-anchored text notes, formatting controls, inline editor/ref, SVG-coordinate anchor calculation, original note creation |
 | Application navigation and shell | `src/app/toolRegistry.ts`, `src/app/useWorkspaceNavigation.ts`, `src/app/components/` | Owns typed tool destinations, workspace/section/panel navigation, the outer DOM frame and toolbar controls; not sound or musical payloads |
 | Application composition | `src/App.tsx`, `src/app/views/`, `src/app/toolSections/`, `src/app/settingsSections/` | `ToolsView` and `SettingsView` are short shells that list sections from a registry; each section component holds the controls of one tool or settings group and declares the slice of the controller model it reads |
+| Platform providers | `src/app/platform/PlatformProviders.tsx`, `platformContexts.ts`, `src/diagram/useMusicSpelling.ts` | Call the shared-state hooks once (language, instrument, diagram appearance and spelling, sound, notation settings, navigation) and hand the results to readers through `usePlatformLanguage()`, `usePlatformInstrument()` and the like. Sound and navigation sit inside the instrument provider because they read it. A reader outside the providers throws |
 | Controller | `src/app/useAppController.ts` | Hook order, derived diagram (buttons, highlights, titles, footer geometry), click routing, tool toggles, resets and the typed view prop groups |
 | Controller parts | `src/app/useAccordionPlayback.ts`, `useAccordionNotation.ts`, `useDiagramLabels.ts`, `useHarmonyActions.ts`, `useProgressionActions.ts`, `useProgressionNotation.ts`, `useSettingsTransfer.ts`, plus the pure `sideButtons.ts` | Accordion sound and transports, player notation, button and title text, Harmony playback and recording, Progression Assistant commands and notation, settings files. Each takes a typed `Deps` object built from `Pick<ReturnType<typeof useOwnerHook>, …>`, so a dependency's type always comes from the hook that owns it |
 | Cross-tool command ordering | `src/app/crossToolCommands.ts` | Pure typed transfer/destination command sequencing with payloads and React state owned by callers |
@@ -142,7 +143,7 @@ To add a tool:
 
 `ToolsView.tsx` itself does not change. `tests/unit/modules/tool-registry.test.ts` checks that every registered tool has controls, a translated name and summary, and is listed somewhere.
 
-`useAppController` remains the composition root: it calls every feature hook, wires the cross-tool commands and assembles the three view models (`settings`, `tools`, `workspace`). The `tools` model is still one flat object because the workspace, the inspector and the notation presenter read it too.
+`App.tsx` renders everything inside `PlatformProviders`, so shared state has one owner however many readers it has. `useAppController` remains the composition root for the tools: it reads the platform contexts, calls every tool's hook, wires the cross-tool commands and assembles the three view models (`settings`, `tools`, `workspace`). The `tools` model is still one flat object because the workspace, the inspector and the notation presenter read it too.
 
 ## Staff notation
 

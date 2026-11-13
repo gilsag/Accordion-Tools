@@ -1,11 +1,7 @@
 import { accordionStatusText } from "../i18n/diagramLabels";
 import { type StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
 import { trebleContextualTitle } from "../tools/contextualTitles";
-import {
-  DEFAULT_CHORD_DISPLAY_STYLE,
-  displayRealizedChord,
-  type ChordDisplayStyle,
-} from "../tools/chordDisplay";
+import { displayRealizedChord } from "../tools/chordDisplay";
 import {
   chordToneName,
   displayRoot,
@@ -20,15 +16,20 @@ import {
   SEQUENCE_DISPLAY_MODE_OPTIONS,
   formatProgressionOptionLabel,
 } from "./controllerOptions";
-import { useLanguageSettings } from "../settings/useLanguageSettings";
-import { useWorkspaceNavigation } from "../app/useWorkspaceNavigation";
+import {
+  usePlatformAppearance,
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformNavigation,
+  usePlatformNotation,
+  usePlatformSound,
+  usePlatformSpelling,
+} from "./platform/platformContexts";
 import type { ToolSection } from "../app/toolRegistry";
-import { useInstrumentState } from "../instrument/useInstrumentState";
 import {
   TREBLE_PRESET_BUTTON_SIZE,
   PIANO_TREBLE_PRESET_BUTTON_SIZE,
 } from "../instrument/sizePresets";
-import { useDiagramAppearanceState } from "../diagram/useDiagramAppearanceState";
 import { useDiagramOverlays } from "../diagram/useDiagramOverlays";
 import { useDiagramAnnotations } from "../features/annotateDiagram/useDiagramAnnotations";
 import {
@@ -56,18 +57,13 @@ import {
   useTrebleChordFinderButtons,
 } from "../features/trebleChordFinder/useTrebleChordFinder";
 import { flushSync } from "react-dom";
-import { useSoundSettings } from "../audio/useSoundSettings";
-import { useNotationSettings } from "../notation/useNotationSettings";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { translateKnownLabel } from "../i18n/catalog";
 import type {
   AbcHands,
-  AccidentalMode,
-  ChordLabelMode,
   DiagramButton,
   DownloadFormat,
   InterfaceDensity,
-  NotationMode,
   PianoTrebleRange,
   TrebleLayout,
   TrebleSizePreset,
@@ -141,9 +137,10 @@ export function useAppController() {
   const abcPlaybackStartedAtRef = useRef<number | null>(null);
   const abcPlaybackStartBeatRef = useRef(0);
 
-  /* Core layout and notation state. */
+  /* Shared state is owned by the platform providers (src/app/platform/);
+   * the controller only reads it. */
   const { languagePreference, setLanguagePreference, language, t, changeLanguage } =
-    useLanguageSettings();
+    usePlatformLanguage();
 
   const {
     side,
@@ -169,13 +166,17 @@ export function useAppController() {
     stradellaChordRegisterGrouping,
     setStradellaChordRegisterGrouping,
     stradellaRegisterModel,
-  } = useInstrumentState();
-  const [notation, setNotation] = useState<NotationMode>("english");
-  const [accidental, setAccidental] = useState<AccidentalMode>("natural");
-  const [chordDisplayStyle, setChordDisplayStyle] = useState<ChordDisplayStyle>(
-    DEFAULT_CHORD_DISPLAY_STYLE,
-  );
-  const [chordLabelMode, setChordLabelMode] = useState<ChordLabelMode>("chord-name");
+  } = usePlatformInstrument();
+  const {
+    notation,
+    setNotation,
+    accidental,
+    setAccidental,
+    chordDisplayStyle,
+    setChordDisplayStyle,
+    chordLabelMode,
+    setChordLabelMode,
+  } = usePlatformSpelling();
 
   /* Diagram appearance and typography are state-owned by the diagram feature.
    * Keep the original setters for the settings-controller compatibility adapter. */
@@ -228,7 +229,7 @@ export function useAppController() {
     setLabelFont,
     colorTheme,
     setColorTheme,
-  } = useDiagramAppearanceState();
+  } = usePlatformAppearance();
   const [interfaceDensity, setInterfaceDensity] = useState<InterfaceDensity>("compact");
 
   /* The application shell owns workspace/tool visibility; physical side stays
@@ -244,7 +245,7 @@ export function useAppController() {
     selectAccordionSide,
     setPanel,
     toggleFocusPanel,
-  } = useWorkspaceNavigation(side, setSide);
+  } = usePlatformNavigation();
 
   /* Physical-button overlays/fingerings are independent of musical selection. */
   const {
@@ -425,7 +426,7 @@ export function useAppController() {
     setMusicNotationNoteNamesInNoteheads,
     musicNotationPlacement,
     setMusicNotationPlacement,
-  } = useNotationSettings();
+  } = usePlatformNotation();
 
   function toggleBassPatternNotation() {
     setBassPatternRenderedNotationVisible((current) => !current);
@@ -678,7 +679,7 @@ export function useAppController() {
     stradellaBassVoicing,
     setStradellaBassVoicing,
     soundOptions,
-  } = useSoundSettings(stradellaRegisterModel);
+  } = usePlatformSound();
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
   const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
 

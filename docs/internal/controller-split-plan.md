@@ -1,6 +1,6 @@
 # Plan: splitting `useAppController`
 
-Status: agreed; step 1 (characterization tests) done. Written for the roadmap item that asks for a plan before any code.
+Status: agreed; steps 1 (characterization tests) and 2 (platform providers) done. Written for the roadmap item that asks for a plan before any code.
 
 Decisions taken: tools own their state through providers listed in the tool registry; files in `src/app/` stay under 500 formatted lines; Harmony Explorer owns the recorded progression and the Progression Assistant the optimized plan. When the work is finished, move this file to the [archive](archive/README.md) and update the ownership table in the [developer guide](developer-guide.md).
 
@@ -35,7 +35,7 @@ The Rhythm Trainer shows the target shape: one hook, one object (`rhythmTrainer`
 
 Three layers, from the bottom up.
 
-**Platform.** State that many tools read and that is not a tool: language, instrument (side, layout, register model), diagram appearance, sound options, notation settings, navigation (workspace, active tool, `navigateToTool`) and the generated diagram buttons. Each is a React context with its own provider. The hooks already exist (`useLanguageSettings`, `useInstrumentState`, `useDiagramAppearanceState`, `useSoundSettings`, `useNotationSettings`, `useWorkspaceNavigation`); the providers only wrap them. The buttons provider computes `buttons` from instrument and appearance, so no tool rebuilds `DiagramButton` identities.
+**Platform.** State that many tools read and that is not a tool: language, instrument (side, layout, register model), diagram appearance, sound options, notation settings, navigation (workspace, active tool, `navigateToTool`) and the generated diagram buttons. Each is a React context with its own provider. The hooks already exist (`useLanguageSettings`, `useInstrumentState`, `useDiagramAppearanceState`, `useSoundSettings`, `useNotationSettings`, `useWorkspaceNavigation`); the providers only wrap them. The buttons provider computes `buttons` from instrument and appearance, so no tool rebuilds `DiagramButton` identities. It comes last, with the diagram model (step 8): on the compact treble sizes the generated buttons keep the Treble Chord Finder's and Scale Finder's result and the marked buttons visible, so `buttons` depends on tool state until the tools can contribute the buttons they need kept.
 
 **Tools.** Each tool has one provider that owns its state and results hooks and exposes two things:
 
@@ -144,7 +144,7 @@ Done together with the hook-test rewrite, as the roadmap asks.
 Each step leaves `verify:release` and `test:e2e` green, is one or a few commits, and can ship on its own.
 
 1. Characterization tests (above). Done.
-2. Platform providers. The controller reads them instead of calling the hooks. No visible change.
+2. Platform providers. The controller reads them instead of calling the hooks. No visible change. Done: `src/app/platform/` holds language, instrument, appearance with spelling (`useMusicSpelling`, formerly four `useState` calls in the controller), sound, notation settings and navigation. Still in the controller until the diagram model (step 8): `buttons`, `interfaceDensity`, `downloadFormat` and `mobileDiagramView`.
 3. Settings registry and slices. `useSettingsTransfer` shrinks to the registry.
 4. Coordinator and handles for exclusivity, layout change, reset scopes and stop-all, with the controller still owning the tools.
 5. Move the tools into providers, simplest first: Rhythm Trainer, Scale Finder, Treble Chord Finder, Annotate Diagram, Bass Pattern Player, ABC Player, Stradella Chord Finder, Harmony Explorer, Progression Assistant. Each move deletes that tool's fields from the `tools` model, and its section reads the tool's context. Feature hooks move as they are; folder consolidation is item 3.
