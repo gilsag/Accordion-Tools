@@ -76,7 +76,7 @@ To run the full regression checks and analyze the production build:
 npm run verify:release
 ```
 
-`npm test` runs the unit and component tests with Vitest. `npm run verify:release` runs lint, those tests, a production build, and the bundle audit. Browser tests run separately with `npm run test:e2e` (run `npx playwright install chromium` once first). For faster diagnosis, use `npm run test:modules` or a specific `test:*` script. See the [Developer Guide](docs/internal/developer-guide.md) and [testing guide](docs/internal/testing.md) for the current test inventory and contributor policy. For a normal production build, run `npm run build`.
+`npm test` runs the unit and component tests with Vitest. `npm run verify:release` runs lint (ESLint and the Prettier check; `npm run format` fixes formatting), those tests, a production build, and the bundle audit. Browser tests run separately with `npm run test:e2e` (run `npx playwright install chromium` once first). For faster diagnosis, use `npm run test:modules` or a specific `test:*` script. See the [Developer Guide](docs/internal/developer-guide.md) and [testing guide](docs/internal/testing.md) for the current test inventory and contributor policy. For a normal production build, run `npm run build`.
 
 ## Acknowledgements and license
 

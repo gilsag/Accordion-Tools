@@ -1,0 +1,16 @@
+# Build output and test artifacts
+dist/
+coverage/
+test-results/
+playwright-report/
+
+# Written by npm
+package-lock.json
+
+# Third-party instrument files, kept exactly as distributed
+public/samples/
+
+# Markdown is not formatted. The in-app documentation viewer has its own small
+# Markdown reader, and Prettier's rewrites (for example *text* to _text_, or
+# escaped characters) would change what players see in the guides.
+*.md

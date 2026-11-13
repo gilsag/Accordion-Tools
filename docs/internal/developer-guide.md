@@ -208,6 +208,7 @@ The diagram's x axis is the instrument's circle-of-fifths direction; `utils.ts` 
 - `npm test` runs the unit and component tests in `tests/unit/` with Vitest; `npm run test:watch` reruns the affected files while you work, and `npm run test:<area>` runs one folder (for example `test:chords`).
 - `npm run test:e2e` runs the Playwright browser tests in `e2e/` against the production build (one-time setup: `npx playwright install chromium`).
 - `tsc -b` type-checks the tests together with the application, so a test that passes a value the application would reject does not compile.
+- `npm run lint` runs ESLint and `prettier --check`; `npm run format` rewrites every file Prettier covers. Settings are in `.prettierrc.json` (100 columns, line endings left to `.gitattributes`) and `.editorconfig`. Markdown is not formatted, because the in-app documentation viewer reads it with its own parser and Prettier's rewrites would change what players see. Prettier is pinned to an exact version: upgrade it in a commit that contains only the resulting reformatting, and add that commit to `.git-blame-ignore-revs`.
 - **Do not write tests that read source files and match their text.** They break on harmless refactors and pass on real regressions. Test exported functions, rendered output or browser behaviour instead.
 
 See [`testing.md`](testing.md) for the layout, the three kinds of unit test and the rules for writing them.

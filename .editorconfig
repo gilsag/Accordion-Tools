@@ -1,0 +1,25 @@
+# Editor defaults shared by every contributor. Prettier formats the code
+# (`npm run format`); this file covers what editors do while typing and the
+# files Prettier does not touch. Line endings are left to .gitattributes.
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
+
+[*.md]
+# A trailing double space is a line break in Markdown.
+trim_trailing_whitespace = false
+max_line_length = off
+
+[*.{wav,png,jpg,ico,zip}]
+charset = unset
+indent_style = unset
+indent_size = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+max_line_length = unset
