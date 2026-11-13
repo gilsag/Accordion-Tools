@@ -8,7 +8,6 @@ import type { ChordDisplayStyle } from "../../tools/chordDisplay";
    pinning to an existing Chord Finder recipe. Playback/notation use that same plan. */
 
 import { useI18n } from "../../i18n/useI18n";
-import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { SegmentedChoice } from "../ui/SegmentedChoice";
 import { HelpTip } from "../ui/HelpTip";
 import {
@@ -25,9 +24,7 @@ import type { ChordProgressionDefinition } from "../../tools/bassPatternPlayerTo
 
 
 type ProgressionAssistantPanelProps = {
-  isOpen: boolean;
   chordDisplayStyle: ChordDisplayStyle;
-  onToggle: () => void;
   progression: HarmonyProgressionChord[];
   plan: OptimizedProgressionPlan;
   presetDefinitions: ChordProgressionDefinition[];
@@ -62,9 +59,7 @@ type ProgressionAssistantPanelProps = {
 };
 
 export function ProgressionAssistantPanel({
-  isOpen,
   chordDisplayStyle,
-  onToggle,
   progression,
   plan,
   presetDefinitions,
@@ -106,7 +101,7 @@ export function ProgressionAssistantPanel({
   );
 
   return (
-    <CollapsibleSection title={t("ui.progressionAssistant")} summary={t("tools.summary.progressionAssistant")} isOpen={isOpen} onToggle={onToggle}>
+    <>
       <p className="hint">
         {t("ui.progressionIntro")}
       </p>
@@ -289,6 +284,6 @@ export function ProgressionAssistantPanel({
         <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
       </fieldset>
 
-    </CollapsibleSection>
+    </>
   );
 }

@@ -5,3 +5,4 @@ dist/
 .vscode/
 test-results/
 playwright-report/
+coverage

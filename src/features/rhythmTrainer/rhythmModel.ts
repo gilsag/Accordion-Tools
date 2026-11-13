@@ -3,6 +3,8 @@
  * moving alternate-bass note: a bar's explicit harmonic root is authoritative.
  */
 import type { DiagramButton } from "../../types";
+import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
+import { trebleButtonForTarget, treblePitchTargets, type TreblePitchMode } from "./treblePitchPatterns";
 import { chordProgressionSteps, makeBassPatternEvents, normalizedPatternSteps, patternBarCount, resolveRomanChord, type BassPatternDefinition, type ChordProgressionDefinition } from "../../tools/bassPatternPlayerTools";
 
 export type RhythmMeter = "2/4" | "3/4" | "4/4" | "6/8";
@@ -77,6 +79,11 @@ export const RHYTHM_BASS_STYLES: ReadonlyArray<{id:string; meter:RhythmMeter; la
 ];
 
 export const RHYTHM_METERS: readonly RhythmMeter[] = ["2/4","3/4","4/4","6/8"];
+/** Default treble attacks fall on the metrical beats, alongside standard bass
+ * accompaniments. Syncopated bass styles (clave, Cueca) can differ. */
+export const DEFAULT_TREBLE_TEMPLATE_BY_METER: Readonly<Record<RhythmMeter,string>> = {
+  "2/4":"T202", "3/4":"T302", "4/4":"T401", "6/8":"T602",
+};
 export function unitsPerBar(meter: RhythmMeter) { return meter === "6/8" ? 6 : Number(meter.split("/")[0]); }
 export function unitsPerTempoBeat(meter: RhythmMeter) { return meter === "6/8" ? 3 : 1; }
 export function millisecondsPerUnit(meter: RhythmMeter, dottedQuarterBpm: number) {
@@ -94,6 +101,7 @@ export type RhythmExerciseOptions = {
   meter: RhythmMeter;
   bassStyleId: string;
   trebleTemplateId: string;
+  treblePitchMode?: TreblePitchMode;
   keyRoot: string;
   progression: ChordProgressionDefinition | undefined;
   bassButtons: DiagramButton[];
@@ -106,6 +114,7 @@ export type RhythmExercise = {
   barCount: number;
   harmonicRoots: string[];
   harmonicLabels: string[];
+  harmonicChordNames: string[];
   harmonicSymbols: string[];
   events: RhythmEvent[];
   missing: string[];
@@ -113,7 +122,7 @@ export type RhythmExercise = {
 };
 
 export function buildRhythmExercise(options: RhythmExerciseOptions): RhythmExercise {
-  const {meter,bassStyleId,trebleTemplateId,keyRoot,progression,bassButtons,trebleButtons,bassPatterns} = options;
+  const {meter,bassStyleId,trebleTemplateId,treblePitchMode="root",keyRoot,progression,bassButtons,trebleButtons,bassPatterns} = options;
   const barUnits=unitsPerBar(meter);
   const selectedTemplate = RHYTHM_TEMPLATES.find(t => t.id === trebleTemplateId && t.meter === meter);
   const style = RHYTHM_BASS_STYLES.find(p => p.id === bassStyleId && p.meter === meter);
@@ -125,6 +134,7 @@ export function buildRhythmExercise(options: RhythmExerciseOptions): RhythmExerc
   const harmonicChords = symbols.map(s=>resolveRomanChord(s,keyRoot,progression?.mode));
   const harmonicRoots = harmonicChords.map(chord=>chord.root);
   const harmonicLabels = harmonicChords.map((chord,i)=>`${chord.root} · ${symbols[i]}`);
+  const harmonicChordNames = harmonicChords.map(chord=>finderChordSymbol(chord.root,chord.pattern));
   const missing:string[]=[];
   const events:RhythmEvent[]=[];
   if (!progression || !symbols.length) missing.push("No chord progression is available.");
@@ -175,12 +185,20 @@ export function buildRhythmExercise(options: RhythmExerciseOptions): RhythmExerc
         buttons:[bass],label:`${root} bass`,gain:1}));
     });
   }
-  harmonicRoots.forEach((root,bar)=>{
-    const treble = rootTrebleButton(trebleButtons,root);
-    if (!treble) {missing.push(`Missing treble root: ${root}`); return;}
-    selectedTemplate?.notes.forEach(([onset,duration])=> events.push({hand:"treble",
-      startUnit:bar*barUnits+onset,durationUnits:duration,bar,buttons:[treble],label:root,gain:1}));
+  harmonicChords.forEach((chord,bar)=>{
+    const pitches=treblePitchTargets(chord.root,chord.pattern,treblePitchMode,selectedTemplate?.notes.length??0);
+    selectedTemplate?.notes.forEach(([onset,duration],index)=>{
+      const target=pitches[index];
+      if (!target) return;
+      const treble=trebleButtonForTarget(trebleButtons,target);
+      if (!treble || (treblePitchMode!=="root" &&
+          (treble.soundOctave??treble.octave)!==target.octave)) {
+        missing.push(`Missing treble note: ${target.pitchClass}${target.octave}`);return;
+      }
+      events.push({hand:"treble",startUnit:bar*barUnits+onset,durationUnits:duration,
+        bar,buttons:[treble],label:target.pitchClass,gain:1});
+    });
   });
   events.sort((a,b)=>a.startUnit-b.startUnit || (a.hand==="bass"?-1:1));
-  return {meter,barUnits,barCount:harmonicRoots.length,harmonicRoots,harmonicLabels,harmonicSymbols:symbols,events,missing:[...new Set(missing)],selectedTemplate};
+  return {meter,barUnits,barCount:harmonicRoots.length,harmonicRoots,harmonicLabels,harmonicChordNames,harmonicSymbols:symbols,events,missing:[...new Set(missing)],selectedTemplate};
 }

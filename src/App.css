@@ -1929,6 +1929,7 @@ input[type="range"] {
 
 .harmonic-diagram {
   display: block;
+  box-sizing: border-box;
   width: 100%;
   height: auto;
   background: #ffffff;
@@ -2266,12 +2267,6 @@ input[type="range"] {
   margin-top: 0.12rem;
 }
 
-/* Three independent appearance toggles use the same full-width alignment. */
-.appearance-label-toggle {
-  width: 100%;
-  text-align: center;
-}
-
 /* Compact binary controls: the button states the next action. */
 .binary-choice-control {
   display: flex;
@@ -2358,7 +2353,8 @@ input[type="range"] {
   .mobile-diagram-view-control {
     display: block;
     position: absolute;
-    top: 10px;
+    /* Bottom corner: the top edge belongs to the diagram title. */
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     right: 14px;
     z-index: 4;
   }
@@ -2918,18 +2914,23 @@ input[type="range"] {
 }
 .rhythm-timeline-bar.active {outline:2px solid #188a90;outline-offset:0;}
 .rhythm-bar-header {font-size:.8rem;font-weight:600;margin-bottom:5px;}
-.rhythm-beat-ruler {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-left:40px;text-align:center;font-size:.72rem;opacity:.7;}
+.rhythm-beat-ruler {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-left:40px;text-align:center;font-size:.72rem;opacity:.92;}
 .rhythm-strong-beat {font-weight:800;}
 .rhythm-lane {display:flex;gap:4px;align-items:center;margin-top:5px;}
 .rhythm-lane-caption {flex:0 0 36px;font-size:.65rem;}
-.rhythm-lane-grid {height:26px;position:relative;min-width:0;flex:1;background:rgba(128,128,128,.06);border-radius:3px;overflow:hidden;}
-.rhythm-lane-grid i {position:absolute;top:0;bottom:0;border-left:1px solid rgba(128,128,128,.24);}
-.rhythm-event {position:absolute;top:3px;bottom:3px;border-radius:3px;border-right:2px solid rgba(255,255,255,.6);min-width:2px;color:#fff;font-size:10px;padding-left:3px;overflow:hidden;}
+.rhythm-lane-grid {height:28px;position:relative;min-width:0;flex:1;background:rgba(100,110,125,.14);border:1px solid rgba(80,90,105,.30);border-radius:4px;overflow:hidden;}
+.rhythm-lane-grid i {position:absolute;top:0;bottom:0;border-left:1px solid rgba(30,45,65,.43);z-index:3;pointer-events:none;}
+.rhythm-event {position:absolute;top:3px;bottom:3px;display:flex;align-items:center;justify-content:space-between;gap:2px;border-radius:3px;box-shadow:inset -3px 0 0 rgba(250,250,255,.92);min-width:2px;color:#fff;font-size:10px;padding:0 5px 0 3px;overflow:hidden;box-sizing:border-box;z-index:1;}
 .rhythm-event-bass {background:#7c889a;}
 .rhythm-event-treble {background:#16878c;}
 /* Active attacks light up for their scheduled audible duration, including
    overlapping left/right events and repeated notes on the same button. */
 .rhythm-event.is-sounding { background: #c97912; box-shadow: inset 0 0 0 2px #fff4c9; z-index: 2; overflow: visible; }
+.rhythm-duration-value {font-size:.65rem;font-weight:700;line-height:1;opacity:.95;text-shadow:0 1px 1px rgba(0,0,0,.2);}
+/* Notation notes follow the same timed events as the diagram and timeline. */
+.rhythm-score-active { color:#c97912 !important; filter:drop-shadow(0 0 2px rgba(201,121,18,.4)); }
+.rhythm-score-active .abcjs-notehead, .rhythm-score-active .abcjs-stem,
+.rhythm-score-active .abcjs-beam, .rhythm-score-active .abcjs-flag {fill:#c97912 !important;stroke:#c97912 !important;}
 .rhythm-event .rhythm-attack-dot {display:inline-flex;align-items:center;justify-content:center; min-width:12px; height:100%; line-height:1;transform-origin:center;}
 .rhythm-event.is-sounding .rhythm-attack-dot { color:#fff; text-shadow:0 0 5px #fff; transform:scale(1.35); }
 @media (prefers-reduced-motion: no-preference) {
@@ -2952,3 +2953,86 @@ input[type="range"] {
   }
   .canvas-wrap.rhythm-compact-diagrams.diagram-fit > .diagram { min-width: 0; }
 }
+
+
+/* Shared music notation: one presentation for right inspector and below view. */
+.shared-notation-score { width: 100%; min-width: 0; }
+.notation-inspector .shared-notation-score { padding: 0.35rem; }
+.notation-header-actions { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; flex: 0 0 auto; }
+.notation-help { width: 24px; height: 24px; padding: 0; border-radius: 50%; border: 1px solid #c9d1e3;
+  color: #42526e; background: #f8faff; font-size: 12px; font-weight: 700; cursor: help; }
+.shared-notation-score .rendered-abc { min-width: 0; overflow-x: hidden; max-height: none; }
+/* Compact full-width systems fit narrow notation panels without scrolling. */
+.shared-notation-score .rendered-abc .abcjs-container { width: 100% !important; min-width: 0; }
+.shared-notation-score .rendered-abc svg { display: block; width: 100% !important; min-width: 0; max-width: 100%; height: auto; }
+.shared-notation-score .rendered-notation-title { line-height: 1.3; overflow-wrap: anywhere; }
+
+/* Recovery screen shown by ErrorBoundary; it renders outside .app. */
+.app-error {
+  --ui-control-font: 13px;
+  max-width: 560px;
+  margin: 12vh auto 0;
+  padding: 0 20px;
+  line-height: 1.5;
+}
+
+.app-error h1 {
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.app-error details {
+  margin-top: 16px;
+  color: #55607a;
+  font-size: 13px;
+}
+
+.app-error pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Destructive confirmation (Settings → About → Reset to defaults). */
+.small-button.danger-button {
+  border-color: #b42318;
+  color: #b42318;
+}
+
+.small-button.danger-button:hover:not(:disabled) {
+  background: #fef3f2;
+}
+
+/* View switch (Stradella / Treble / Harmony): one choice of three, drawn as a
+   segmented control. The panel toggles beside it keep the outlined pill, so
+   "what am I looking at" and "which panel is open" look different. Phones lay
+   the three buttons out as equal columns of the toolbar instead. */
+.topbar-workspace-switch { display: contents; }
+
+@media (min-width: 621px) {
+  .topbar-workspace-switch {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: #e9edf6;
+  }
+  .topbar-workspace-switch .topbar-primary {
+    border-color: transparent;
+    background: transparent;
+    padding: 5px 12px;
+  }
+  .topbar-workspace-switch .topbar-primary:hover {
+    background: #ffffff;
+    border-color: transparent;
+    color: #172033;
+  }
+  .topbar-workspace-switch .topbar-primary.active,
+  .topbar-workspace-switch .topbar-primary.active:hover {
+    background: #1746d0;
+    border-color: #1746d0;
+    color: #ffffff;
+  }
+}
+
+/* A kept-mounted section stays in the DOM while closed. */
+.section-content[hidden] { display: none; }

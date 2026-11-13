@@ -5,9 +5,10 @@ Developer and maintainer notes for the settings JSON: the file written by **Sett
 ## Files and loading order
 
 - `public/default-settings.json` holds the startup defaults. It is fetched with `cache: "no-store"` on every load; if it is missing or invalid the app keeps its built-in defaults. Edit it when publishing your own copy of the app with different defaults.
-- A saved settings file has the same shape. Loading one changes the current session only; it never rewrites `public/default-settings.json`.
+- The browser keeps the settings of the last session in `localStorage` under `accordionTools.session.v1`, in the same shape as a settings file. It is applied after `default-settings.json`, so the order of precedence at startup is: built-in defaults, then `default-settings.json`, then the saved session. **Reset to defaults** in Settings → About removes the saved session and the saved language and reloads.
+- A saved settings file has the same shape. Loading one changes the current session (and therefore the saved session); it never rewrites `public/default-settings.json`.
 - Keys are optional. A partial file applies only the keys it contains, and each value is validated by its setter (`src/settings/settingsController.ts`); invalid values are ignored.
-- The exported key set and its order are fixed by `scripts/settings-export-keys.json`, checked by `scripts/settings-controller-compatibility.test.mjs`.
+- The exported key set and its order are fixed by `tests/fixtures/settings-export-keys.json`, checked by `tests/unit/modules/settings-controller-compatibility.test.js`.
 
 ## Versions and migrations
 
@@ -20,7 +21,7 @@ Every exported file starts with `settingsVersion` (currently `3`). Files without
 | 1 → 2 | Drops `progressionAllowApproximations` (retired from the interface). `soundArticulation` is new; files without it keep the default `0.85`. |
 | 2 → 3 | Drops `selectionOnClick`: Selection is now a mode of Annotate Diagram, where clicks in Select mode always toggle the selection. |
 
-To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that turns a version N document into version N + 1, update `collectCurrentSettings()` and `scripts/settings-export-keys.json`, and add a case to `scripts/settings-migrations.test.ts`. Files from newer builds pass through unchanged: known keys still validate and unknown ones are ignored.
+To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that turns a version N document into version N + 1, update `collectCurrentSettings()` and `tests/fixtures/settings-export-keys.json`, and add a case to `tests/unit/modules/settings-migrations.test.ts`. Files from newer builds pass through unchanged: known keys still validate and unknown ones are ignored.
 
 ## Keys by area
 
@@ -28,6 +29,7 @@ To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that t
 
 | Setting | Purpose |
 |---|---|
+| `language` | Interface language: `auto` (follow the browser), `en`, `es`, `fr`, `pt`, `it` or `de`. The bundled default file applies it only when this browser has no saved language choice; a file the user loads always applies it. |
 | `side` | Starts the app in `stradella` or `treble` mode. |
 | `basses` | Stradella bass count, such as `48`, `72`, `96`, or `120`. |
 | `trebleLayout` | Treble layout: `c-system`, `b-system`, or `piano`. |
@@ -57,7 +59,7 @@ These settings control rendered staff-notation panels in the accordion workspace
 | `musicNotationUseBarsPerLine` | `true` | Enables automatic line wrapping for app-generated notation. |
 | `musicNotationBarsPerLine` | `4` | Number of bars per line when wrapping is enabled. |
 | `musicNotationChordFontSize` | `11` | Chord-symbol/annotation font size in rendered notation. |
-| `musicNotationScale` | `54` | Overall abcjs render scale percentage. |
+| `musicNotationScale` | `76` | Overall abcjs render scale percentage. |
 | `musicNotationStaffWidth` | `520` | Staff width used by the in-app renderer. |
 | `musicNotationStaffSeparator` | `14` | Vertical spacing between rendered voices/staves. |
 
@@ -235,3 +237,9 @@ The ABC Player catalog is generated at development and build time by scanning `p
 ### Shared symbolic Stradella notation (Phase 6)
 
 The optional JSON fields `stradellaNotationMode` (`symbolic` / `sounding`), `stradellaChordQualityLabels` (`always` / `changes`), and `stradellaMarkCounterbass` (boolean) are exported and imported with the other notation settings; missing keys in historical settings files preserve current application defaults. Standard defaults: `symbolic`, `always`, `false`. The sounding/expanded mode is used by the Progression Assistant; generated exercises and bass patterns always retain symbolic Stradella notation. No settings value derived from audio/reed register shifts standard staff positions.
+
+- `musicNotationNoteNamesInNoteheads` (boolean, default `false`): display an optional pitch-letter overlay in enlarged notehead circles on generated scores. Imported ABC is excluded.
+
+- `musicNotationPlacement`: `right` (default) or `below`, shared across notation-capable tools.
+
+The legacy key `musicNotationNoteNamesInNoteheads` controls **native below-note labels**, not an SVG notehead overlay.

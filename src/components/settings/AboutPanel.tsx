@@ -5,21 +5,19 @@ import type { ReactNode } from "react";
 // loaded only when someone opens the documentation.
 const DocumentationViewer = lazy(() => import("./DocumentationViewer").then((module) => ({ default: module.DocumentationViewer })));
 import { APP_INFO } from "../../config/appInfo";
-import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { useI18n } from "../../i18n/useI18n";
 
 type AboutPanelProps = {
-  isOpen: boolean;
-  onToggle: () => void;
+  /** Controls shown under the app information (settings file actions). */
   children?: ReactNode;
 };
 
 /** Compact app metadata shown in Settings → About. */
-export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
+export function AboutPanel({ children }: AboutPanelProps) {
   const [docsOpen, setDocsOpen] = useState(false);
   const { t } = useI18n();
   return (
-    <CollapsibleSection title={t("about.title")} isOpen={isOpen} onToggle={onToggle}>
+    <>
       <p className="hint">
         <strong>{APP_INFO.name}</strong> {t("about.description")}
       </p>
@@ -54,6 +52,6 @@ export function AboutPanel({ isOpen, onToggle, children }: AboutPanelProps) {
           <DocumentationViewer onClose={() => setDocsOpen(false)} />
         </Suspense>
       )}
-    </CollapsibleSection>
+    </>
   );
 }

@@ -3,11 +3,20 @@
  * enforced by audit-production-bundle.mjs. */
 import assert from 'node:assert/strict';
 
-const LAZY_MODULES = [
-  'src/components/tools/TrebleChordFinderPanel.tsx',
-  'src/components/tools/StradellaChordFinderPanel.tsx',
-  'src/components/tools/HarmonyExplorerPanel.tsx',
-  'src/components/tools/ProgressionAssistantPanel.tsx',
+/** Modules that must never be part of the first download. */
+export const LAZY_MODULES = [
+  // Each tool's controls load when its section in the Tools panel is opened.
+  'src/app/toolSections/ScaleFinderSection.tsx',
+  'src/app/toolSections/TrebleChordFinderSection.tsx',
+  'src/app/toolSections/StradellaChordFinderSection.tsx',
+  'src/app/toolSections/ProgressionAssistantSection.tsx',
+  'src/app/toolSections/AnnotateDiagramSection.tsx',
+  'src/app/toolSections/BassPatternPlayerSection.tsx',
+  'src/app/toolSections/RhythmTrainerSection.tsx',
+  'src/app/toolSections/AbcPlayerSection.tsx',
+  'src/app/toolSections/HarmonyExplorerSection.tsx',
+  // The Tools panel is open at startup; Settings loads when first opened.
+  'src/app/views/SettingsView.tsx',
   'src/tools/harmonyExplorer/components/HarmonicCircle.tsx',
   'src/tools/abcPlayerTools.ts',
   // Opened only from Settings -> About; carries every guide as raw Markdown.

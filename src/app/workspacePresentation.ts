@@ -1,10 +1,11 @@
 import type { Side } from "../types";
-import type { ToolSection } from "./toolRegistry";
+import { TOOL_REGISTRY, toolOfferedOn, type ToolSection } from "./toolRegistry";
 import type { translate } from "../i18n/catalog";
 
-/** Pure status-label selector. Its priority order is the historical UI order:
- * active audio overrides tool selection, then active Finder modes.
- * This reports interface state only; it never affects musical selection.
+/** Pure status-label selector, in priority order: sounding audio, the
+ * Progression Assistant, an active Finder, then whichever tool is open in the
+ * Tools panel. This reports interface state only; it never affects musical
+ * selection.
  */
 export function activeToolStatusLabel({
   side, bassPatternPlaybackState, abcPlaybackState, activeToolSection,
@@ -20,38 +21,15 @@ export function activeToolStatusLabel({
   chordFinderActive: boolean;
   t: (key: Parameters<typeof translate>[1]) => string;
 }): string {
-  return side === "stradella"
-      ? bassPatternPlaybackState === "playing"
-        ? t("ui.bassPatternPlayer")
-        : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-          ? t("ui.abcDefault")
-          : activeToolSection === "progressionAssistant"
-            ? t("ui.progressionAssistant")
-            : scaleFinderActive
-              ? t("ui.scaleFinder")
-              : stradellaChordFinderActive
-                ? t("tools.chordFinder")
-                : activeToolSection === "annotateDiagram"
-                  ? t("ui.annotateDiagram")
-                  : activeToolSection === "stradellaChordFinder"
-                    ? t("tools.chordFinder")
-                    : activeToolSection === "scaleFinder"
-                      ? t("ui.scaleFinder")
-                      : t("ui.noActiveTool")
-      : abcPlaybackState === "playing" || abcPlaybackState === "paused"
-        ? t("ui.abcDefault")
-        : scaleFinderActive
-          ? t("ui.scaleFinder")
-          : chordFinderActive
-            ? t("tools.chordFinder")
-            : activeToolSection === "annotateDiagram"
-              ? t("ui.annotateDiagram")
-              : activeToolSection === "chordFinder"
-                ? t("tools.chordFinder")
-                : activeToolSection === "scaleFinder"
-                  ? t("ui.scaleFinder")
-                  : t("ui.noActiveTool");
-
+  if (side === "stradella" && bassPatternPlaybackState === "playing") return t("ui.bassPatternPlayer");
+  if (abcPlaybackState === "playing" || abcPlaybackState === "paused") return t("ui.abcDefault");
+  if (side === "stradella" && activeToolSection === "progressionAssistant") return t("ui.progressionAssistant");
+  if (scaleFinderActive) return t("ui.scaleFinder");
+  if (side === "stradella" ? stradellaChordFinderActive : chordFinderActive) return t("tools.chordFinder");
+  // A Finder can stay active with its section closed; every other tool is
+  // active exactly while its section is open.
+  if (activeToolSection && toolOfferedOn(activeToolSection, side)) return t(TOOL_REGISTRY[activeToolSection].titleKey);
+  return t("ui.noActiveTool");
 }
 
 /** Layout-only width policy: hiding the sidebar must keep the entire

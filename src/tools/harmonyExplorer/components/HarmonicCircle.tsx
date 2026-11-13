@@ -369,7 +369,8 @@ export function HarmonicCircle({
     stackGap +
     (showExplanation ? explanationBoxHeight : 0);
 
-  const canvasWidth = diameter + margin * 2 + (hasRightColumn ? gap + rightColumnWidth : 0);
+  // The right column needs its own outer margin; without it the legend frame sits on the edge.
+  const canvasWidth = diameter + margin * 2 + (hasRightColumn ? gap + rightColumnWidth + margin : 0);
   const canvasHeight = Math.max(diameter + margin * 2, rightStackHeight + margin * 2);
   const cx = margin + diameter / 2;
   const cy = canvasHeight / 2;

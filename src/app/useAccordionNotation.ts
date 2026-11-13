@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { useInstrumentState } from "../instrument/useInstrumentState";
 import type { useBassPatternState, useBassPatternResults } from "../features/bassPatternPlayer/useBassPatternPlayer";
 import { type useSequenceState, useSequenceResults } from "../features/sequences/useSequenceState";
@@ -22,7 +22,7 @@ export type UseAccordionNotationDeps = Pick<ReturnType<typeof useAbcPlayerState>
     "musicNotationBarsPerLine" | "musicNotationChordFontSize" |
     "musicNotationIncludeDescription" | "musicNotationIncludeSummary" |
     "musicNotationIncludeTitle" | "musicNotationScale" | "musicNotationStaffSeparator" |
-    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" |
+    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" | "musicNotationNoteNamesInNoteheads" |
     "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass"> &
   Pick<ReturnType<typeof useSequenceState>,
     "sequenceNotationRef" | "sequenceRenderedNotationVisible"> &
@@ -35,15 +35,15 @@ export type UseAccordionNotationDeps = Pick<ReturnType<typeof useAbcPlayerState>
 /** Staff notation for the accordion players: builds the ABC for the Bass Pattern Player and the Sequence tool and renders it, and the ABC Player's own score, into their notation panels when shown. */
 export function useAccordionNotation(deps: UseAccordionNotationDeps) {
   const {
-    abcNotationRef, abcRenderedNotationVisible, abcText, bassPatternBarsPerChord, bassPatternEvents,
-    bassPatternLoopCount, bassPatternLoopMode, bassPatternNotationRef,
-    bassPatternRenderedNotationVisible, bassPatternRoot, bassPatternTempoBpm,
+    bassPatternBarsPerChord, bassPatternEvents,
+    bassPatternLoopCount, bassPatternLoopMode,
+    bassPatternRoot, bassPatternTempoBpm,
     musicNotationBarsPerLine, musicNotationChordFontSize, musicNotationIncludeDescription,
     musicNotationIncludeSummary, musicNotationIncludeTitle, musicNotationScale,
-    musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine,
+    musicNotationStaffSeparator, musicNotationStaffWidth, musicNotationUseBarsPerLine, musicNotationNoteNamesInNoteheads,
     stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
-    selectedBassPattern, selectedChordProgression, sequenceNotationRef,
-    sequenceRenderedNotationVisible, sequenceStepsWithButtons, side,
+    selectedBassPattern, selectedChordProgression,
+    sequenceStepsWithButtons, side,
   } = deps;
 
   const stradellaPreferences: StradellaNotationPreferences = useMemo(() => ({
@@ -104,9 +104,14 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
     selectedChordProgression,
   ]);
 
-  const renderNotationInto = useCallback((target: HTMLDivElement | null, abcSource: string) => {
-    renderSharedNotation(target, abcSource, musicNotationScale, musicNotationStaffWidth);
-  }, [musicNotationScale, musicNotationStaffWidth]);
+  const renderNotationInto = useCallback((target: HTMLDivElement | null, abcSource: string, imported = false) =>
+    renderSharedNotation(target, abcSource, musicNotationScale, musicNotationStaffWidth,
+      musicNotationNoteNamesInNoteheads, {
+        staffSeparator: musicNotationStaffSeparator,
+        barsPerLine: musicNotationUseBarsPerLine ? musicNotationBarsPerLine : 999,
+        chordFontSize: musicNotationChordFontSize,
+      }, imported), [musicNotationScale, musicNotationStaffWidth, musicNotationNoteNamesInNoteheads,
+      musicNotationStaffSeparator, musicNotationBarsPerLine, musicNotationUseBarsPerLine, musicNotationChordFontSize]);
 
   function abcNoteNameForButton(button: DiagramButton) {
     const pitchClass = button.pitchClass ?? button.chordRoot ?? "C";
@@ -170,44 +175,8 @@ export function useAccordionNotation(deps: UseAccordionNotationDeps) {
     );
   }, [sequenceStepsWithButtons, side, stradellaPreferences]);
 
-  useEffect(() => {
-    if (!bassPatternRenderedNotationVisible) return;
-    renderNotationInto(
-      bassPatternNotationRef.current,
-      bassPatternRenderedNotationAbc,
-    );
-  }, [
-    bassPatternRenderedNotationAbc,
-    bassPatternRenderedNotationVisible,
-    bassPatternNotationRef,
-    renderNotationInto,
-  ]);
-
-  useEffect(() => {
-    if (!abcRenderedNotationVisible) return;
-    renderNotationInto(abcNotationRef.current, abcText);
-  }, [
-    abcRenderedNotationVisible,
-    abcText,
-    abcNotationRef,
-    renderNotationInto,
-  ]);
-
-  useEffect(() => {
-    if (!sequenceRenderedNotationVisible) return;
-    renderNotationInto(
-      sequenceNotationRef.current,
-      sequenceRenderedNotationAbc,
-    );
-  }, [
-    sequenceRenderedNotationAbc,
-    sequenceRenderedNotationVisible,
-    sequenceNotationRef,
-    renderNotationInto,
-  ]);
-
   return {
-    bassPatternRenderedNotationAbc,
+    bassPatternRenderedNotationAbc, sequenceRenderedNotationAbc,
     renderNotationInto,
   };
 }

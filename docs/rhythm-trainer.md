@@ -1,45 +1,88 @@
 # Bass–Treble Rhythm Trainer
 
-The Rhythm Trainer is a dedicated two-hand coordination player. Select **Bass–Treble Rhythm Trainer** in Tools from either manual. It uses the current accordion configuration for the treble and Stradella diagrams, as well as the application's sound engine and volume/register preferences.
+The Rhythm Trainer plays a left-hand accompaniment and a right-hand rhythm together so you can hear and see how the two hands fit. Open **Bass–Treble Rhythm Trainer** in Tools from either side of the instrument. It uses your current accordion layout, sound and registers.
 
 ## Play an exercise
 
-1. Choose a meter: **2/4**, **3/4**, **4/4**, or **6/8**. The available Stradella accompaniments and treble rhythmic templates update to match.
-2. Choose the left-hand accompaniment and the right-hand rhythm independently.
-3. Select a key and a **chord progression from the same library as the Bass Pattern Player** (cadences, jazz, pop, blues, etc.). Each progression chord occupies its defined number of bars. The right hand follows the current chord root; left-hand bass alternations do not change the harmony.
-4. Adjust tempo and repetition count (1, 2, or 4 cycles), then press **Play** in the Tools panel or the shared playback bar under the diagram. **Stop** silences the exercise and clears all highlights.
+1. Choose a meter: **2/4**, **3/4**, **4/4** or **6/8**. The lists of accompaniments and right-hand rhythms change to match.
+2. Choose the left-hand accompaniment, the right-hand rhythm and the **Treble notes** pattern. The three are independent.
+3. Choose a key and a chord progression. The progressions are the same ones the Bass Pattern Player offers (cadences, jazz, pop, blues and others). Each chord lasts the number of bars the progression gives it.
+4. Set the tempo and the number of repetitions (1, 2 or 4), then press **Play** in the Tools panel or in the playback bar under the diagram. **Stop** silences the exercise and clears the highlights.
 
-The right hand repeats **one selected physical treble button for the harmonic root of each measure**. It does not follow every alternating bass pitch. Its note changes at the start of a new harmony, even if the left hand rests on that beat. For instance, C–G–G–C changes the repeated treble note from C to G in measure 2. Alternate button positions for the same pitch are not all highlighted; the trainer picks one available position near octave 4. If a required button or pattern is unavailable, playback is disabled and the missing item is shown. Shorter treble keyboards may expand their visible range to include the required notes.
+If a button or pattern the exercise needs is not available on the current layout, Play is disabled and the missing item is named. Short button keyboards may widen their visible range to include the notes required.
 
-The central workspace displays a centered four-column rhythm timeline and the paired diagrams (up to 880 px wide, still respecting the configured diagram scale). A dot indicates the **attack** and the length of the colored bar indicates the **notated duration**. Gray represents the left hand; teal represents treble. The active measure is outlined during playback and each attack dot lights up while its scheduled note sounds. Stradella is shown above Treble in the Trainer; the ABC Player keeps its own original order. For 6/8, the timeline shows six eighth-note positions. The ruler visually distinguishes the start of each three-eighth compound beat without an additional explanatory caption.
+## What you see
 
-## Exercise library
+The workspace shows a rhythm timeline above the two diagrams, with the Stradella side above the treble side.
 
-The catalog has 25 right-hand rhythms: six in 2/4, six in 3/4, six in 4/4, and seven in 6/8. The first choice in every meter is sustained; the second is one note per metrical beat (dotted-quarter beats in 6/8). Examples include sustained notes, 2+1 and 1+2 in 3/4, eighth-note subdivisions, offbeats, 2-against-3, 3+3 in 6/8, 2+2+2 hemiola, and Cueca bass echo. These are rhythmic templates, not separate melodies or musical pitches. Difficulty values are indicative rather than calibrated performance scores.
+- A dot marks each **attack**. The length of its segment, and the number inside it where there is room, show the **written duration** in beats of the meter: quarter notes in 2/4, 3/4 and 4/4, eighth notes in 6/8.
+- Gray is the left hand and teal is the right hand.
+- During playback the current bar is outlined, and each dot lights up while its note sounds. The buttons on both diagrams light up at the same time.
+- In 6/8 the timeline shows six eighth-note positions and marks the start of each group of three.
 
-The left hand uses compatible built-in Bass Pattern Player definitions: Polka, March and Tango/Habanera (2/4); Waltz, Mazurca and Alternate-bass Waltz (3/4); Alternate-bass Polka, March, and Son/Rumba claves in both 3–2 and 2–3 directions (4/4); and Tarantella (6/8). The sixth choice, **Cueca (ABC bass notes)**, reproduces the verified bass-onset structure of the ABC Player's Cueca floreos, *not* a full Stradella chord accompaniment. Its bass voice has eighth-note attacks at positions 2, 3, 5, and 6 (resting on 1 and 4). It uses **one bass-root button at each attack** and deliberately adds **no chord-button events**. You may select any compatible harmonic progression. The original Cueca examples use I–V–V–I in C (C–G–G–C), which is available in the shared progression library (the trainer defaults to I–IV–V–I in C major). The trainer does not restrict you to that progression.
+## Right-hand notes
 
-Important tempo convention: The trainer's 6/8 tempo is measured in **dotted-quarter beats/minute**, while the Cueca ABC source has **Q:1/4=80**. To reproduce that ABC reference speed, set the trainer to approximately **53 BPM** (80 × 2/3); one eighth-note slot is then approximately 375 ms. Set a different tempo for practice as needed.
+The right-hand rhythm decides when notes sound. **Treble notes** decides which notes they are.
 
-## Musical notation
+With **Repeated root** (the default), the right hand repeats one treble button: the root of the current chord. In C–G–G–C it plays C in bar 1 and G in bar 2. The right hand always follows the chord of the bar, not the alternating bass notes of the left hand.
 
-Enable **Show notation** from the top toolbar to render both hands using the app’s ABC notation renderer. On desktop, notation opens in the resizable right-side panel; hide it with the workspace results toggle. On narrow screens, notation appears below the diagrams. The notation normally uses two staves: treble root notes and a combined Stradella bass/chord-symbol voice; the latter does **not** attempt to spell every sounding Stradella reed. The treble pitch follows the selected chord root for each bar. An SVG download button is included. In the current implementation, notation uses a neutral C chromatic key signature with explicit accidentals, to avoid incorrect pitches when mixing modal and chromatic progressions.
+The other patterns take their notes from the current chord and start again in every bar:
 
-## Current phase limitations
+- root and fifth, root and third, root and octave
+- triad going up, going down, or up and down
+- broken chord
+- upper neighbor, which adds one note outside the chord, a whole step above the root
+- six patterns that use the seventh: root and seventh, third and seventh, seventh arpeggio up, down, or up and down, and root–fifth–seventh–fifth
 
-The current version provides **Explore/listen mode** and synchronized two-hand playback. It does **not yet score user taps, accept MIDI/microphone input, provide count-in, implement endless looping, or generate arpeggios**. These are planned for later phases. The note assignments currently use chord roots only, not third/fifth arpeggio degrees. The 6/8 Cueca rhythm is transposed from a source bass-only pattern; it is not a transcription of the original treble floreo melodies.
+The seventh patterns work with dominant, major, minor, diminished, half-diminished and minor-major seventh chords. A plain triad is never given a seventh: the arpeggios use the root an octave higher as their fourth note, and the third-and-seventh pattern uses the third and fifth. In suspended chords the suspended note takes the place of the third.
 
-The tool reuses the existing sound scheduler pattern, Bass Pattern resolution, two-manual SVG diagram, and exclusive stop behavior. No ABC source examples are modified.
+When a note can be played on several buttons, the trainer shows one of them, near the middle of the keyboard. A pattern needs several attacks in a bar to be heard: with a rhythm that has one attack per bar, only the first note of the pattern sounds.
 
-## March and clave-based left-hand exercises
+## Right-hand rhythms
 
-The **March (2/4)** pattern uses four eighth-note attacks per measure: root bass on 1, chord on 1&, fifth bass on 2, chord on 2&. **March (4/4)** uses root bass on 1, chord on 2, fifth bass on 3, chord on 4, with accents on the basses. Both are built-in Bass Pattern Player definitions shared with the trainer.
+There are 25 right-hand rhythms: six each in 2/4, 3/4 and 4/4, and seven in 6/8. The default is one note per beat (per dotted quarter in 6/8). The others include sustained notes, long–short and short–long in 3/4, eighth-note subdivisions, offbeats, two against three, 3+3 and 2+2+2 in 6/8, and an echo of the cueca bass. The difficulty shown for each rhythm is a rough guide.
 
-Four **4/4 two-bar clave-based coordination exercises** use the same shared library as the Bass Pattern Player. Son 3–2 places its five strokes at **bar 1: 1, 2&, 4; bar 2: 2, 3**. Son 2–3 reverses the bar order. Rumba 3–2 shifts the 4 attack to **4&**, and Rumba 2–3 reverses the order. Each bar's first clave attack is mapped to a root bass button; its remaining strokes use the chord button, chosen from the *current harmonic progression*. These are **pedagogical Stradella adaptations of the clave timeline**, not literal claves (normally a percussion reference) or a transcription of a Cuban bass tumbao. No extra downbeat notes are inserted in the 2-side.
+## Left-hand accompaniments
 
-The two-bar timing cycle persists **across harmonic changes**, even when the progression changes chords every measure. A four-bar I–IV–V–I progression still occupies four bars, not eight. With odd-length progressions, the last clave cycle is incomplete before the chosen progression repeats; use even-length progressions for uninterrupted clave looping. Notation and the animated attack dots derive from the same resolved events as audio playback.
+The accompaniments are built-in Bass Pattern Player patterns:
 
+| Meter | Accompaniments |
+| --- | --- |
+| 2/4 | Polka, March, Tango/Habanera |
+| 3/4 | Waltz, Mazurca, Alternate-bass Waltz |
+| 4/4 | Alternate-bass Polka, March, Son clave 3–2 and 2–3, Rumba clave 3–2 and 2–3 |
+| 6/8 | Tarantella, Cueca (ABC bass notes) |
 
-## Standardized Stradella notation
+### March
 
-The left-hand staff uses the same symbolic Stradella pitch-class-to-staff mapping as the Bass Pattern Player and recorded sequences. Chord buttons are indicated by a single upper-register root note with a chord-quality label (repeated by default). The staff does not shift when bass/chord audio octaves or registers change. **Settings → Music notation** provides global preferences for repeated chord labels and optional counterbass dashes. The Rhythm Trainer remains a symbolic learning tool; its treble notes retain their selected physical treble octave. Imported scores in ABC Player are not rewritten.
+**March (2/4)** has four eighth-note attacks per bar: root bass on 1, chord on 1&, fifth bass on 2, chord on 2&. **March (4/4)** has root bass on 1, chord on 2, fifth bass on 3 and chord on 4, with the basses accented.
+
+### Son and rumba claves
+
+The four clave accompaniments are two bars long. Son 3–2 places its five strokes on **bar 1: 1, 2&, 4; bar 2: 2, 3**. Son 2–3 swaps the two bars. Rumba 3–2 moves the stroke on 4 to **4&**, and Rumba 2–3 swaps the bars. The first stroke of each bar is played on the root bass button and the others on the chord button of the current chord.
+
+These are teaching adaptations of the clave rhythm for the Stradella bass. They are not a percussion clave part or a transcription of a Cuban bass line, and no extra downbeats are added on the two-stroke side.
+
+The two-bar rhythm keeps going across chord changes, even when the chord changes every bar. A four-bar progression still lasts four bars. With a progression that has an odd number of bars, the last clave cycle is cut short before the repeat, so choose an even number of bars for an unbroken loop.
+
+### Cueca
+
+**Cueca (ABC bass notes)** reproduces the bass rhythm of the cueca floreos in the ABC Player: eighth-note attacks on positions 2, 3, 5 and 6, with rests on 1 and 4. It plays one root bass button on each attack and no chord buttons, so it is a bass rhythm, not a full accompaniment. Any progression can be used with it. The original examples use I–V–V–I in C.
+
+The trainer counts 6/8 tempo in dotted quarters per minute. The cueca examples in the ABC Player are marked 80 quarter notes per minute, which corresponds to about **53** in the trainer.
+
+## Staff notation
+
+Press **Show notation** in the top toolbar to see both hands on staves. The score appears in the right panel or below the diagrams, as chosen in **Settings → Music notation → Notation position**; on phones it is always below the diagrams. A download button saves the score as SVG.
+
+- The upper staff shows the right-hand notes.
+- The lower staff shows the left hand in standard Stradella notation: a bass button is one note in the lower register, and a chord button is one note in the upper register labeled with its root and quality, for example **CM**, **Cm**, **G7** or **Bbd**. The label names the chord button played, which may be simpler than the chord of the progression. The staff does not change when you change the bass or chord registers.
+- With the cueca accompaniment, which has no chord buttons, the chord of the bar is written above its first bass note.
+- Notes light up in the score as they sound, for each hand separately.
+- The score has no key signature; every sharp and flat is written next to its note.
+
+**Settings → Music notation** also has options to label every chord or only chord changes, to mark counterbass notes with a dash, and to print the letter name under every note.
+
+## Limits
+
+The trainer plays exercises for you to listen to and play along with. It does not listen to your playing or score it, there is no count-in, and the longest run is four repetitions. The right-hand patterns are simple cycles built from each chord; you cannot write your own melody.

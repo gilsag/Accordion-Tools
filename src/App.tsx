@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { useInspectorVisibility } from "./app/inspector/useInspectorVisibility";
 import "./App.css";
 import { resolveWorkspaceInspector } from "./app/inspector/inspectorSelection";
@@ -6,12 +7,15 @@ import { LanguageProvider } from "./i18n/context";
 import { AppShell } from "./app/components/AppShell";
 import { useAppController } from "./app/useAppController";
 import { usePhonePanel } from "./app/usePhonePanel";
-import { SettingsView } from "./app/views/SettingsView";
 import { ToolsView } from "./app/views/ToolsView";
 import { WorkspaceView } from "./app/views/WorkspaceView";
 import { PanelResizeHandle } from "./app/components/PanelResizeHandle";
 import { clampPanelWidth, panelTrack, usePanelWidths } from "./app/panelWidths";
 import { workspaceGridColumns } from "./app/workspacePresentation";
+import { selectNotationKind, notationLocation } from "./notation/notationSelection";
+
+// The Tools panel is open at startup; Settings loads the first time it is opened.
+const SettingsView = lazy(() => import("./app/views/SettingsView").then((module) => ({ default: module.SettingsView })));
 
 const DEFAULT_INSPECTOR_TRACK = "minmax(300px, 360px)";
 
@@ -28,6 +32,20 @@ export default function App() {
     if (leftPanelMode !== mode) model.workspace.setPanel(mode);
     showSheet();
   }
+  const notationKind = selectNotationKind({
+    workspaceMode: model.tools.workspaceMode,
+    side: model.tools.side,
+    activeToolSection: model.tools.activeToolSection,
+    annotateMode: model.tools.annotateMode,
+    rhythm: model.tools.rhythmTrainer.notationVisible && model.tools.rhythmTrainer.exercise.barCount > 0,
+    abc: model.tools.abcRenderedNotationVisible && Boolean(model.tools.abcText.trim()),
+    bassPattern: model.tools.bassPatternRenderedNotationVisible && model.tools.bassPatternEvents.length > 0,
+    sequence: model.tools.sequenceRenderedNotationVisible && model.tools.sequenceSteps.length > 0,
+    progression: model.tools.harmonyProgressionNotationVisible && model.tools.harmonyProgressionPlan.playable,
+    recording: model.tools.harmonyRecordedNotationVisible && model.tools.harmonyRecordedProgression.length > 0,
+  });
+  const showNotationRight = notationKind !== null &&
+    notationLocation(model.tools.musicNotationPlacement, isPhone, inspectorVisible) === "right";
   const availableInspector = resolveWorkspaceInspector({
     leftPanelMode,
     workspaceMode: model.tools.workspaceMode,
@@ -35,10 +53,10 @@ export default function App() {
     stradellaChordFinderActive: model.tools.stradellaChordFinderActive,
     activeToolSection: model.tools.activeToolSection,
     // Phones keep the notation under the diagram.
-    abcNotationVisible: !isPhone && model.tools.abcRenderedNotationVisible && Boolean(model.tools.abcText.trim()),
-    rhythmNotationVisible: !isPhone && model.tools.rhythmTrainer.notationVisible && model.tools.rhythmTrainer.exercise.barCount > 0,
+    abcNotationVisible: false,
+    rhythmNotationVisible: false,
   });
-  const inspector = inspectorVisible ? availableInspector : null;
+  const inspector = showNotationRight ? "notation" : inspectorVisible ? availableInspector : null;
   const appGridColumns = workspaceGridColumns(interfaceDensity, leftPanelMode,
     panelWidths.left === null ? undefined : panelTrack(panelWidths.left, ""));
   const inspectorTrack = panelTrack(panelWidths.inspector, DEFAULT_INSPECTOR_TRACK);
@@ -71,17 +89,16 @@ export default function App() {
               <button ref={closeRef} type="button" className="phone-sheet-close" onClick={closeSheet}>{t("ui.close")}</button>
             </div>
             <h1>{leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}</h1>
-            {leftPanelMode === "settings" && <SettingsView model={model.settings} />}
+            {leftPanelMode === "settings" && <Suspense fallback={<div className="section-content" aria-busy="true" />}><SettingsView model={model.settings} /></Suspense>}
             {leftPanelMode === "tools" && <ToolsView model={model.tools} />}
           </aside>
         )}
-        <WorkspaceView model={model.workspace} isPhone={isPhone}
+        <WorkspaceView model={model.workspace} tools={model.tools} notationKind={notationKind} isPhone={isPhone}
           phoneSheetOpen={isPhone && sheetOpen} onOpenPhonePanel={openPhonePanel}
           inspectorAvailable={!!availableInspector} inspectorVisible={!!inspector}
-          onToggleInspector={toggleInspector} abcNotationInInspector={inspector === "abcNotation"}
-          rhythmNotationInInspector={inspector === "rhythmNotation"}
+          onToggleInspector={toggleInspector} notationInInspector={inspector === "notation"}
           panelHandles={panelHandles} />
-        {inspector && <WorkspaceInspectorSlot inspector={inspector} tools={model.tools} blocked={isPhone && sheetOpen} />}
+        {inspector && <WorkspaceInspectorSlot inspector={inspector} tools={model.tools} notationKind={notationKind} blocked={isPhone && sheetOpen} />}
       </AppShell>
     </LanguageProvider>
   );

@@ -101,8 +101,8 @@ Recommended commands (run from the repository root):
 
 ```cmd
 npm run test:i18n
-npm run test:all
-npm run test:responsive
+npm test
+npm run test:e2e
 npm run build
 ```
 
@@ -114,6 +114,6 @@ Report automated results, browser checks, export checks, and tests not performed
 
 ## Related documentation
 
-- [`localization-plan.md`](localization-plan.md) — historical v0.15.14 localization implementation and follow-up scope.
+- [`localization-plan.md`](archive/localization-plan.md) — historical v0.15.14 localization implementation and follow-up scope.
 - [`developer-guide.md`](developer-guide.md) — architecture, musical invariants, validation, and contribution practices.
 - [`../settings.md`](../settings.md) — user-facing language and settings behavior.

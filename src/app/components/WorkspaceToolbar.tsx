@@ -217,26 +217,31 @@ export function WorkspaceToolbar({
             ? { visible: sequenceRenderedNotationVisible, toggle: onToggleSequenceNotation } : null;
   return (
         <div className="topbar" ref={barRef}>
-          <button
-            className={`topbar-button topbar-primary ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
-            onClick={onSelectStradella}
-          >
-            {t("nav.stradella")}
-          </button>
-
-          <button
-            className={`topbar-button topbar-primary ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
-            onClick={onSelectTreble}
-          >
-            {t("nav.treble")}
-          </button>
-
-          <button
-            className={`topbar-button topbar-primary ${workspaceMode === "harmony" ? "active" : ""}`}
-            onClick={onSelectHarmony}
-          >
-            {t("nav.harmony")}
-          </button>
+          {/* One-of-three view switch; styled as a segmented control so it
+              reads differently from the panel toggles that follow it. */}
+          <div className="topbar-workspace-switch" role="group" aria-label={t("ui.workspaceSwitch")}>
+            <button type="button"
+              className={`topbar-button topbar-primary ${workspaceMode === "accordion" && side === "stradella" ? "active" : ""}`}
+              aria-pressed={workspaceMode === "accordion" && side === "stradella"}
+              onClick={onSelectStradella}
+            >
+              {t("nav.stradella")}
+            </button>
+            <button type="button"
+              className={`topbar-button topbar-primary ${workspaceMode === "accordion" && side === "treble" ? "active" : ""}`}
+              aria-pressed={workspaceMode === "accordion" && side === "treble"}
+              onClick={onSelectTreble}
+            >
+              {t("nav.treble")}
+            </button>
+            <button type="button"
+              className={`topbar-button topbar-primary ${workspaceMode === "harmony" ? "active" : ""}`}
+              aria-pressed={workspaceMode === "harmony"}
+              onClick={onSelectHarmony}
+            >
+              {t("nav.harmony")}
+            </button>
+          </div>
 
           <button type="button" className="topbar-button phone-tools-button" onClick={onShowTools}>
             {t("nav.tools")}

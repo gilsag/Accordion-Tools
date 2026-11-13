@@ -3,7 +3,6 @@ import type { ChordDisplayStyle } from "../../tools/chordDisplay";
 /* Harmony Explorer controls. The React panel adjusts filters and recording
    actions; music-theory relationships are computed in the tools layer. */
 
-import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { useI18n } from "../../i18n/useI18n";
 import { HelpTip } from "../ui/HelpTip";
 import type { HarmonySelection } from "../../tools/harmonyExplorer/types";
@@ -19,9 +18,7 @@ import { finderPatternForHarmonyFamily } from "../../tools/harmonyExplorer/integ
 import type { HarmonyRecordedEvent } from "../../tools/harmonyExplorer/progression";
 
 type HarmonyExplorerPanelProps = {
-  isOpen: boolean;
   chordDisplayStyle: ChordDisplayStyle;
-  onToggle: () => void;
   referenceFamilyId: ChordFamilyId;
   onReferenceFamilyChange: (value: ChordFamilyId) => void;
   relatedFamilyId: RelatedFamilyId;
@@ -47,9 +44,7 @@ type HarmonyExplorerPanelProps = {
 };
 
 export function HarmonyExplorerPanel({
-  isOpen,
   chordDisplayStyle,
-  onToggle,
   referenceFamilyId,
   onReferenceFamilyChange,
   relatedFamilyId,
@@ -99,7 +94,7 @@ export function HarmonyExplorerPanel({
   };
 
   return (
-    <CollapsibleSection title={t("tools.harmonyExplorer")} summary={t("tools.summary.harmonyExplorer")} isOpen={isOpen} onToggle={onToggle}>
+    <>
       <p className="hint">
         {t("tools.harmonyIntro")}
       </p>
@@ -280,6 +275,6 @@ export function HarmonyExplorerPanel({
           {t("tools.resetHarmony")}
         </button>
       </div>
-    </CollapsibleSection>
+    </>
   );
 }

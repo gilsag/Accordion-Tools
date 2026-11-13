@@ -1,36 +1,35 @@
-import { useEffect, useMemo, useRef } from "react";
-import { downloadRenderedNotationSvg } from "../../notation/notationService";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { rhythmExerciseToAbc } from "../../features/rhythmTrainer/rhythmNotation";
 import type { useRhythmTrainer } from "../../features/rhythmTrainer/useRhythmTrainer";
+import { mapRhythmScoreNotes, highlightRhythmScoreNotes } from "../../features/rhythmTrainer/rhythmScoreHighlight";
 import { useI18n } from "../../i18n/useI18n";
-import { WorkspaceInspectorFrame } from "./WorkspaceInspectorFrame";
+import { NotationScore, type NotationRenderer } from "../../notation/NotationScore";
 
-/** Both desktop inspector and narrow screen fallback use identical ABC source. */
-export function RhythmNotationPanel({trainer,renderNotationInto}: {
-  trainer:ReturnType<typeof useRhythmTrainer>;
-  renderNotationInto:(host:HTMLDivElement|null,abc:string)=>void;
+/** A rhythm feature adapter: only its score content and playback-specific
+ * highlighting are special. Engraving, title, layout and export are shared. */
+export function RhythmNotationPanel({ trainer, renderNotationInto, showTitle = true }: {
+  trainer: ReturnType<typeof useRhythmTrainer>;
+  renderNotationInto: NotationRenderer;
+  showTitle?: boolean;
 }) {
   const { t } = useI18n();
-  const host=useRef<HTMLDivElement|null>(null);
-  const abc=useMemo(()=>rhythmExerciseToAbc(trainer.exercise,t("rhythm.title"),trainer.notationPreferences),[trainer.exercise,trainer.notationPreferences,t]);
-  useEffect(()=>{renderNotationInto(host.current,abc);},[abc,renderNotationInto]);
-  return <>
-    <div className="rendered-notation-header">
-      <div className="rendered-notation-title">{t("rhythm.notationTitle")}</div>
-      <button type="button" className="small-button notation-download-button"
-        onClick={()=>downloadRenderedNotationSvg(host.current,"bass-treble-rhythm-notation")}>{t("ui.downloadSVG")}</button>
-    </div>
-    <div ref={host} className="rendered-abc abc-notation-inspector" aria-label={t("rhythm.notationTitle")}/>
-    <p className="hint">{t("rhythm.notationHelp")}</p>
-  </>;
-}
-export function RhythmNotationInspector({trainer,renderNotationInto,blocked=false}: {
-  trainer:ReturnType<typeof useRhythmTrainer>;
-  renderNotationInto:(host:HTMLDivElement|null,abc:string)=>void;
-  blocked?:boolean;
-}) {
-  const {t}=useI18n();
-  return <WorkspaceInspectorFrame title={t("rhythm.notationTitle")} blocked={blocked}>
-    <RhythmNotationPanel trainer={trainer} renderNotationInto={renderNotationInto}/>
-  </WorkspaceInspectorFrame>;
+  const abc = useMemo(() => rhythmExerciseToAbc(trainer.exercise, t("rhythm.title"), trainer.notationPreferences),
+    [trainer.exercise, trainer.notationPreferences, t]);
+  const activeKeys = useRef(trainer.activeRhythmKeys);
+  useEffect(() => { activeKeys.current = trainer.activeRhythmKeys; }, [trainer.activeRhythmKeys]);
+  const onRendered = useCallback((host: HTMLDivElement) => {
+    if (mapRhythmScoreNotes(host, trainer.exercise))
+      highlightRhythmScoreNotes(host, activeKeys.current);
+  }, [trainer.exercise]);
+  const onActive = useCallback((host: HTMLDivElement) => {
+    highlightRhythmScoreNotes(host, trainer.activeRhythmKeys);
+  }, [trainer.activeRhythmKeys]);
+  const styleName = trainer.availableStyles.find(s => s.id === trainer.bassStyleId)?.label ?? t("rhythm.title");
+  const harmony = trainer.exercise.harmonicRoots;
+  const sequence = harmony.length <= 6 ? harmony.join("–") : `${harmony.slice(0, 4).join("–")}…`;
+  const title = `${styleName} · ${trainer.exercise.meter} · ${sequence}`;
+  return <NotationScore title={title} abc={abc} filename="bass-treble-rhythm-notation"
+    render={renderNotationInto} onRendered={onRendered} onActive={onActive}
+    activeKey={trainer.activeRhythmKeys} showTitle={showTitle}
+    help={t("rhythm.notationHelp")}/>;
 }
