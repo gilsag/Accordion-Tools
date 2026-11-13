@@ -1,6 +1,6 @@
 import type { useAccordionNotation } from "./useAccordionNotation";
 import { progressionPulsePlan } from "../audio/progressionPulsePlan";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import type { useHarmonyExplorerState } from "../features/harmonyExplorer/useHarmonyExplorer";
 import type { useHarmonyProgressionState, useHarmonyProgressionResults } from "../features/progressionAssistant/useProgressionAssistant";
 import type { useSoundSettings } from "../audio/useSoundSettings";
@@ -33,10 +33,10 @@ export type UseProgressionNotationDeps = Pick<ReturnType<typeof useHarmonyProgre
 /** Rhythm pulses for the Progression Assistant and staff notation for it and for the Harmony recording, rendered into their notation panels when shown. */
 export function useProgressionNotation(deps: UseProgressionNotationDeps) {
   const {
-    buttons, harmonyProgressionNotationRef, harmonyProgressionNotationVisible,
-    harmonyProgressionPlan, harmonyProgressionRhythmPattern, harmonyRecordedNotationRef,
-    harmonyRecordedNotationVisible, harmonyRecordedProgression, harmonyShowEnharmonics,
-    renderNotationInto, soundOptions, soundSequenceTempoBpm,
+    buttons,
+    harmonyProgressionPlan, harmonyProgressionRhythmPattern,
+    harmonyRecordedProgression, harmonyShowEnharmonics,
+    soundOptions, soundSequenceTempoBpm,
     stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
   } = deps;
 
@@ -119,19 +119,6 @@ export function useProgressionNotation(deps: UseProgressionNotationDeps) {
     soundOptions, stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
   ]);
 
-  useEffect(() => {
-    if (!harmonyProgressionNotationVisible) return;
-    renderNotationInto(
-      harmonyProgressionNotationRef.current,
-      harmonyProgressionRenderedNotationAbc,
-    );
-  }, [
-    harmonyProgressionNotationVisible,
-    harmonyProgressionRenderedNotationAbc,
-    harmonyProgressionNotationRef,
-    renderNotationInto,
-  ]);
-
   const harmonyRecordedProgressionNotationAbc = useMemo(() => {
     if (harmonyRecordedProgression.length === 0) return "";
     const bars = harmonyRecordedProgression.map((event) => {
@@ -160,20 +147,7 @@ export function useProgressionNotation(deps: UseProgressionNotationDeps) {
     ].join("\n");
   }, [harmonyRecordedProgression, harmonyShowEnharmonics, soundSequenceTempoBpm]);
 
-  useEffect(() => {
-    if (!harmonyRecordedNotationVisible || !harmonyRecordedProgressionNotationAbc) return;
-    renderNotationInto(
-      harmonyRecordedNotationRef.current,
-      harmonyRecordedProgressionNotationAbc,
-    );
-  }, [
-    harmonyRecordedNotationVisible,
-    harmonyRecordedProgressionNotationAbc,
-    harmonyRecordedNotationRef,
-    renderNotationInto,
-  ]);
-
   return {
-    progressionRhythmPulses,
+    progressionRhythmPulses, harmonyProgressionRenderedNotationAbc, harmonyRecordedProgressionNotationAbc,
   };
 }

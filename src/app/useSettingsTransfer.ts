@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import type { DefaultSettingsFile } from "../settings/settingsSchema";
 import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "../settings/settingsController";
 import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "../settings/settingsPersistence";
+import { clearSavedSession, readSavedSession, serializeSession, writeSavedSession } from "../settings/settingsSession";
 import type { useLanguageSettings } from "../settings/useLanguageSettings";
 import type { useInstrumentState } from "../instrument/useInstrumentState";
 import type { useDiagramAppearanceState } from "../diagram/useDiagramAppearanceState";
@@ -20,6 +21,9 @@ import type { useSoundSettings } from "../audio/useSoundSettings";
 import type { useNotationSettings } from "../notation/useNotationSettings";
 import type { AccidentalMode, ChordLabelMode, DownloadFormat, InterfaceDensity, NotationMode } from "../types";
 import type { Dispatch, SetStateAction } from "react";
+
+/** Quiet period after the last change before the session is stored. */
+const SESSION_SAVE_DELAY_MS = 500;
 
 export type UseSettingsTransferDeps = Pick<ReturnType<typeof useAbcPlayerState>,
     "abcStradellaMode" | "abcTempoBpm" | "abcTrebleChordSymbolsMode" | "setAbcStradellaMode" |
@@ -94,8 +98,8 @@ export type UseSettingsTransferDeps = Pick<ReturnType<typeof useAbcPlayerState>,
     "musicNotationIncludeDescription" | "musicNotationIncludeSummary" |
     "musicNotationIncludeTitle" | "musicNotationScale" | "musicNotationStaffSeparator" |
     "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" |
-    "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass" |
-    "setStradellaNotationMode" | "setStradellaChordQualityLabels" | "setStradellaMarkCounterbass" |
+    "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass" | "musicNotationNoteNamesInNoteheads" | "musicNotationPlacement" | "setMusicNotationPlacement" |
+    "setStradellaNotationMode" | "setStradellaChordQualityLabels" | "setStradellaMarkCounterbass" | "setMusicNotationNoteNamesInNoteheads" |
     "setMusicNotationBarsPerLine" |
     "setMusicNotationChordFontSize" | "setMusicNotationIncludeDescription" |
     "setMusicNotationIncludeSummary" | "setMusicNotationIncludeTitle" |
@@ -153,7 +157,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     musicNotationChordFontSize, musicNotationIncludeDescription, musicNotationIncludeSummary,
     musicNotationIncludeTitle, musicNotationScale, musicNotationStaffSeparator,
     musicNotationStaffWidth, musicNotationUseBarsPerLine, stradellaNotationMode,
-    stradellaChordQualityLabels, stradellaMarkCounterbass, notation, pianoBlackKeyHeightScale,
+    stradellaChordQualityLabels, stradellaMarkCounterbass, musicNotationNoteNamesInNoteheads, musicNotationPlacement, notation, pianoBlackKeyHeightScale,
     pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale, pianoTrebleRange,
     referenceStrokeWidth, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
     scaleFinderRowLimit, sequenceArrowheadSize, sequenceColorPreset,
@@ -176,7 +180,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription,
     setMusicNotationIncludeSummary, setMusicNotationIncludeTitle, setMusicNotationScale,
     setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine,
-    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
+    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass, setMusicNotationNoteNamesInNoteheads, setMusicNotationPlacement,
     setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale, setPianoKeyHeightScale,
     setPianoKeyWidthScale, setPianoTrebleRange, setReferenceStrokeWidth, setScaleFinderDisplayMode,
     setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
@@ -271,7 +275,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     setMusicNotationStaffSeparator,
     setMusicNotationStaffWidth,
     setMusicNotationUseBarsPerLine,
-    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass,
+    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass, setMusicNotationNoteNamesInNoteheads, setMusicNotationPlacement,
     setNotation,
     setPianoBlackKeyHeightScale,
     setPianoBlackKeyWidthScale,
@@ -333,6 +337,12 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
 
   /** Applies extended visual/tool defaults that are also user-editable in default-settings.json. */
 
+  /** False until startup has applied the bundled defaults and the saved
+   * session; nothing is written to storage before then, so a slow fetch can
+   * never replace the saved session with built-in defaults. */
+  const sessionReadyRef = useRef(false);
+  const lastSavedSessionRef = useRef<string | null>(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -341,11 +351,23 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
         const defaults = await fetchDefaultSettingsDocument(
           `${import.meta.env.BASE_URL}default-settings.json`,
         );
-        if (cancelled || !defaults || typeof defaults !== "object") return;
-        applyStartupSettings(defaults, settingsSettersRef.current);
+        if (cancelled) return;
+        if (defaults && typeof defaults === "object") applyStartupSettings(defaults, settingsSettersRef.current);
       } catch {
         /* The app still runs with built-in defaults if the editable file is missing or invalid. */
       }
+      if (cancelled) return;
+      // The previous session overrides the bundled defaults. It is applied
+      // like an imported file: only valid fields take effect.
+      const saved = readSavedSession();
+      if (saved) {
+        try {
+          applyImportedSettings(saved, settingsSettersRef.current);
+        } catch {
+          clearSavedSession();
+        }
+      }
+      sessionReadyRef.current = true;
     }
 
     loadDefaultSettings();
@@ -426,7 +448,7 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
       musicNotationStaffSeparator,
       musicNotationStaffWidth,
       musicNotationUseBarsPerLine,
-      stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass,
+      stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass, musicNotationNoteNamesInNoteheads, musicNotationPlacement,
       notation,
       pianoBlackKeyHeightScale,
       pianoBlackKeyWidthScale,
@@ -487,6 +509,27 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     });
   }
 
+  // Save the session shortly after the last change. This runs after every
+  // render on purpose: the snapshot spans every settings owner, and the
+  // string comparison makes an unchanged render free of storage writes.
+  useEffect(() => {
+    if (!sessionReadyRef.current) return;
+    const timer = window.setTimeout(() => {
+      const serialized = serializeSession(collectSettingsSnapshot());
+      if (serialized === lastSavedSessionRef.current) return;
+      if (writeSavedSession(serialized)) lastSavedSessionRef.current = serialized;
+    }, SESSION_SAVE_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  });
+
+  /** Forgets the saved session and the saved language, then reloads so that
+   * every owner starts again from the built-in and bundled defaults. */
+  function resetSettingsToDefaults() {
+    sessionReadyRef.current = false;
+    clearSavedSession();
+    window.location.reload();
+  }
+
   /** Download format and filename remain compatible with v0.15.28. */
   function downloadCurrentSettings() {
     downloadSettingsDocument(collectSettingsSnapshot());
@@ -506,6 +549,6 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
   }
 
   return {
-    downloadCurrentSettings, importSettingsFile,
+    downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults,
   };
 }

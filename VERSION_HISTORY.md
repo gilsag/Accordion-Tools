@@ -1,9 +1,31 @@
-## Unreleased — Post-v0.19.0 development patches (2026-11-08)
+## v0.22.0 — Saved sessions, error recovery and interface consistency (2026-11-12)
+
+- **Settings are remembered:** the browser keeps the settings of the last session and restores them on the next visit. They take precedence over `default-settings.json`. **Settings → About → Reset to defaults** returns everything to the starting values after a confirmation; custom bass patterns are kept.
+- **Error recovery:** an unexpected rendering error now shows a recovery screen with **Reload** and **Reset settings and reload** in place of a blank page.
+- **Status bar:** an open tool is named even when nothing is playing (the ABC Player, Rhythm Trainer and Bass Pattern Player used to show "No active tool").
+- **View switch:** Stradella, Treble and Harmony form a segmented control, visually distinct from the Settings and Tools panel buttons.
+- **Settings toggles:** button labels, bellows guide, Stradella row labels and octave numbers are checkboxes like every other on/off preference.
+- **Diagram margins:** the Stradella diagram always leaves room to the right of its last button, including with large buttons or wide spacing, and row labels shrink together when a long label would reach the left edge. Button positions are unchanged. The Harmony legend has an outer margin.
+- **Phones:** the fit/readable button moved to the bottom corner of the diagram so it no longer covers the title.
+- **Smaller first download, clearer structure:** the Tools and Settings panels are now lists driven by a registry. Each tool's controls and each settings group live in their own component, which declares exactly the state it reads, and a tool's controls are downloaded when its section is first opened. The first download is 188 KiB.
+- **Tests:** the unit tests moved from chained Node scripts in `scripts/` to Vitest in `tests/unit/`, with named cases, watch mode and coverage. The copies of a hand-written TypeScript loader became one helper, the Progression Assistant panel is tested with Testing Library, and the tests are type-checked with the application. `npm test` runs them all.
+
+## v0.21.0 — Shared notation placement, release hygiene and test cleanup (2026-11-11)
+
+- **Notation position:** one score presenter serves the Rhythm Trainer, ABC Player, Bass Pattern Player, sequences, the Progression Assistant and Harmony recordings. **Settings → Music notation → Notation position** chooses the right panel or below the diagram.
+- **Note names below notes:** an optional setting adds note letters under the staff without changing noteheads. Imported ABC is annotated only in C major and A minor.
+- **Rhythm Trainer:** selectable treble pitch patterns and score highlighting during playback.
+- **Smaller first download:** the Settings panel and the Rhythm Trainer controls now load on first use, bringing the initial download back under the 200 KiB budget.
+- **Release hygiene:** version files agree with the published tag history, and the release check now fails if the package version is behind the newest git tag. Lint, unit tests, the bundle budget and the browser tests run in GitHub Actions before every deployment. Line endings are normalized through `.gitattributes`.
+- **Documentation:** developer and testing guides updated for the Rhythm Trainer and shared notation; historical validation and planning notes moved to `docs/internal/archive/`; release notes moved to `docs/releases/`; user guides rewritten in plain language.
+- **Tests:** tests named after development moments were renamed or merged by the behaviour they protect.
+
+## v0.20.0 — Rhythm Trainer and shared Stradella notation (2026-11-08)
 
 - **Rhythm Trainer Phases 1–5:** Added a bass–treble two-hand practice tool with 2/4, 3/4, 4/4 and 6/8, root-following treble notes, shared chord progressions, two-manual display, staff notation in the right inspector, active attack highlights, four-bar timeline rows, and new march and corrected Son/Rumba clave definitions. The cueca ABC bass example is retained as a bass-only reference rhythm.
 - **Phase 6 shared Stradella notation:** Consolidated left-hand notation across players, sequences, and the Progression Assistant; written symbolic bass/chord positions are independent of audio registers. Added global notation style preferences, repeated chord-quality symbols by default, and an optional counterbass dash. Imported ABC scores are not silently rewritten.
-- **Rhythm follow-up:** Removed the duplicate sidebar Show notation checkbox (toolbar remains), shortened the timing legend, and audited all 29 Bass Pattern Player definitions. Corrected the incomplete 12/8 Shuffle, one-bar-only Bo Diddley beat, and mis-metered standard African bell. See [Bass Pattern Rhythm Audit](docs/internal/bass-pattern-rhythm-audit.md) for findings and patterns requiring stylistic review.
-- These remain incremental working patches on **v0.19.0**. A production build and E2E run must be completed on the user's Windows checkout before release.
+- **Rhythm follow-up:** Removed the duplicate sidebar Show notation checkbox (toolbar remains), shortened the timing legend, and audited all 29 Bass Pattern Player definitions. Corrected the incomplete 12/8 Shuffle, one-bar-only Bo Diddley beat, and mis-metered standard African bell. See [Bass Pattern Rhythm Audit](docs/internal/archive/bass-pattern-rhythm-audit.md) for findings and patterns requiring stylistic review.
+- The `v0.20.0` tag was published with the version files still reading 0.19.0; v0.21.0 corrects the metadata.
 
 ## v0.19.0 — Both hands in the ABC Player, Annotate Diagram modes, resizable panels (2026-11-07)
 
@@ -160,7 +182,7 @@ This release reorganizes Accordion Tools internally while preserving existing mu
 - **Combined Phase 3d (patterns and sequences):** Extracted Bass Pattern Player state, bundled library and progression loading, custom pattern JSON editing, historical localStorage persistence, and Stradella-only derived accompaniment events into `src/features/bassPatternPlayer/useBassPatternPlayer.ts`. Retained original validation behavior, fallback selection, per-field settings setters, exact engine input order, musical/notation/export formats and playback button references.
 - Extracted Sequence/Recording state, append-order step numbering, visual path preferences, notation visibility, and current physical-button reconnection into `src/features/sequences/useSequenceState.ts`; shared audio/notation rendering and file downloads remain in `App.tsx` pending service extraction.
 - Added `scripts/pattern-sequence-feature-modules.test.mjs` to verify original feature defaults, pattern persistence and editor operations, bundled loading, derived event/button identity, and recorded step order. Registered it in `test:modules`. No public behavior or version changes.
-- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/modularization-roadmap.md). Shared SVG rendering, export/playback orchestration, cross-tool commands and lazy loading are **not yet extracted**.
+- Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/archive/modularization-roadmap.md). Shared SVG rendering, export/playback orchestration, cross-tool commands and lazy loading are **not yet extracted**.
 - **Combined Phase 3f (diagram and annotation state):** Extracted visual geometry/display/title settings to `src/diagram/useDiagramAppearanceState.ts`, moved the unchanged treble/piano size tables into `src/instrument/sizePresets.ts`, and isolated physical-button overlays and fingering editing in `src/diagram/useDiagramOverlays.ts`.
 - Moved Annotate Diagram's text notes, style/anchor controls, editor state, SVG-anchor coordinate formula, and edit/commit/delete actions into `src/features/annotateDiagram/useDiagramAnnotations.ts`. Kept `makeTextNote`, the rendered SVG, browser click-coordinate conversion, shared audio, layout resets, and export/download functions unchanged.
 - Added `scripts/diagram-annotation-modules.test.mjs` for visual defaults, physical-button mark behavior, note positioning, style, editor lifecycle and settings-setter stability. Existing translations and all 118 settings export keys remain unchanged. Full browser rendering/export acceptance remains necessary.
@@ -403,7 +425,7 @@ The ABC Player discovers example files from `public/abc/` during Vite developmen
 
 ## v0.15.0 — Stradella interpretation, realizations and contextual titles (2026-10-22)
 
-This release consolidates the previously unreleased Chord Finder developments since v0.14.0. It includes normalized ergonomic ranking, registral analysis, selectable register ranges, explicit requested-bass inversions, four independently selectable explanatory note levels, realization navigation and contextual-title refinements. The analytical register model is separate from actual sampled/synth playback and does not claim a measured acoustic inversion. See [Stradella configuration validation](docs/internal/validation.md) for verification scope and remaining build/browser gates.
+This release consolidates the previously unreleased Chord Finder developments since v0.14.0. It includes normalized ergonomic ranking, registral analysis, selectable register ranges, explicit requested-bass inversions, four independently selectable explanatory note levels, realization navigation and contextual-title refinements. The analytical register model is separate from actual sampled/synth playback and does not claim a measured acoustic inversion. See [Stradella configuration validation](docs/internal/archive/validation.md) for verification scope and remaining build/browser gates.
 
 ### Contextual title consistency audit
 

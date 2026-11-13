@@ -2,9 +2,20 @@ import type { useRhythmTrainer } from "../../features/rhythmTrainer/useRhythmTra
 import type { InterfaceLanguage, TranslationKey } from "../../i18n/catalog";
 import { bassPatternName } from "../../i18n/optionLabels";
 import { RHYTHM_METERS, type RhythmMeter } from "../../features/rhythmTrainer/rhythmModel";
+import { TREBLE_PITCH_MODES, type TreblePitchMode } from "../../features/rhythmTrainer/treblePitchPatterns";
 import { formatProgressionOptionLabel } from "../../app/controllerOptions";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 
+const PITCH_MODE_KEYS: Record<TreblePitchMode,TranslationKey> = {
+  root:"rhythm.notes.root", "root-fifth":"rhythm.notes.rootFifth",
+  "root-third":"rhythm.notes.rootThird", "triad-up":"rhythm.notes.triadUp",
+  "triad-down":"rhythm.notes.triadDown", "triad-wave":"rhythm.notes.triadWave",
+  "broken-chord":"rhythm.notes.brokenChord", "upper-neighbor":"rhythm.notes.upperNeighbor",
+  "root-octave":"rhythm.notes.rootOctave",
+  "root-seventh":"rhythm.notes.rootSeventh", "guide-tones":"rhythm.notes.guideTones",
+  "seventh-up":"rhythm.notes.seventhUp", "seventh-down":"rhythm.notes.seventhDown",
+  "seventh-wave":"rhythm.notes.seventhWave", "seventh-ostinato":"rhythm.notes.seventhOstinato",
+};
 const TEMPLATE_LABEL_KEYS: Record<string,TranslationKey> = {
   T201:"rhythm.template.sustain2", T203:"rhythm.template.fourEighths",
   T204:"rhythm.template.offbeats", T205:"rhythm.template.threePlusOneEighths",
@@ -39,6 +50,13 @@ export function RhythmTrainerControls({trainer,t,language}: {
         {trainer.availableTemplates.map(p=><option key={p.id} value={p.id}>{p.id} · {TEMPLATE_LABEL_KEYS[p.id] ? t(TEMPLATE_LABEL_KEYS[p.id]) : p.label}</option>)}
       </select>
     </label>
+    <label>{t("rhythm.trebleNotes")}
+      <select value={trainer.treblePitchMode} onChange={e=>trainer.changeTreblePitchMode(e.target.value as TreblePitchMode)}>
+        {TREBLE_PITCH_MODES.map(mode=><option key={mode} value={mode}>{t(PITCH_MODE_KEYS[mode])}</option>)}
+      </select>
+    </label>
+    {trainer.exercise.selectedTemplate?.notes.length===1 && trainer.treblePitchMode!=="root" &&
+      <p className="hint">{t("rhythm.needsMultipleAttacks")}</p>}
     <label>{t("rhythm.key")}
       <select value={trainer.keyRoot} onChange={e=>trainer.changeRoot(e.target.value)}>
         {FINDER_ROOT_OPTIONS.map(r=><option key={r.value} value={r.value}>{r.label}</option>)}

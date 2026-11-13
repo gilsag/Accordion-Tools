@@ -72,3 +72,34 @@ test("a settings file from v0.17.0 still loads", async ({ page }) => {
   expect(saved.settingsVersion).toBe(3);
   expect(saved).not.toHaveProperty("selectionOnClick");
 });
+
+test("settings survive a reload, and Reset returns to the bundled defaults", async ({ page }) => {
+  const noteLength = page.getByLabel(/Note length in players/);
+  const savedSession = () => page.evaluate(() => window.localStorage.getItem("accordionTools.session.v1") ?? "");
+
+  await openApp(page);
+  await openSettings(page);
+  await openTool(page, "Sound");
+  const bundledDefault = await noteLength.inputValue();
+  expect(bundledDefault).not.toBe("50");
+  await noteLength.fill("50");
+  await expect.poll(savedSession, { message: "the change is stored shortly after it is made" })
+    .toContain('"soundArticulation":0.5');
+
+  // The saved session overrides default-settings.json on the next visit.
+  await page.reload();
+  await expect(page.locator("svg [data-button-id]").first()).toBeVisible();
+  await openSettings(page);
+  await openTool(page, "Sound");
+  await expect(noteLength).toHaveValue("50");
+
+  // Reset asks for confirmation, forgets the session and reloads.
+  await openTool(page, "About");
+  await page.getByRole("button", { name: "Reset to defaults" }).click();
+  await expect(page.getByText(/Reset every setting to its default/)).toBeVisible();
+  await page.getByRole("button", { name: "Reset", exact: true }).click();
+  await expect(page.locator("svg [data-button-id]").first()).toBeVisible();
+  await openSettings(page);
+  await openTool(page, "Sound");
+  await expect(noteLength).toHaveValue(bundledDefault);
+});

@@ -10,7 +10,7 @@ export function RhythmTrainerTimeline({exercise,positionUnit,playing,activeRhyth
   const unit=exercise.barUnits;
   return <section className="rhythm-timeline" aria-label={t("rhythm.timeline")}>
     <div className="rhythm-timeline-title"><strong>{t("rhythm.timeline")}</strong>
-      <span>{exercise.meter} · {t("rhythm.rootRuleShort")}</span></div>
+      <span>{exercise.meter} · {t("rhythm.pitchSource")}</span></div>
     <div className="rhythm-timeline-bars">
       {exercise.harmonicLabels.map((root,bar)=><div className={`rhythm-timeline-bar ${playing && Math.floor(positionUnit/unit)===bar?"active":""}`} key={bar}>
         <div className="rhythm-bar-header">{t("rhythm.bar")} {bar+1} · {root}</div>
@@ -24,8 +24,10 @@ export function RhythmTrainerTimeline({exercise,positionUnit,playing,activeRhyth
             {exercise.events.filter(e=>e.bar===bar&&e.hand===hand).map((e,i)=><div key={i}
               className={`rhythm-event rhythm-event-${hand}${activeRhythmKeys.has(rhythmEventKey(e)) ? " is-sounding" : ""}`}
               data-event-key={rhythmEventKey(e)} data-active={activeRhythmKeys.has(rhythmEventKey(e)) ? "true" : "false"}
+              title={`${e.label} · ${e.durationUnits} ${t("rhythm.durationUnits")}`}
               style={{left:`${((e.startUnit-bar*unit)/unit)*100}%`,width:`${(e.durationUnits/unit)*100}%`}}>
               <span className="rhythm-attack-dot" aria-hidden="true">●</span>
+              {e.durationUnits/unit>=0.26 && <span className="rhythm-duration-value" aria-hidden="true">{e.durationUnits}</span>}
             </div>)}
           </div>
         </div>)}

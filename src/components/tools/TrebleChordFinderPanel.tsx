@@ -11,13 +11,10 @@ import { CHORD_FINDER_INVERSION_OPTIONS, type TrebleChordVoicingMode } from "../
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
 import { isExtendedChord } from "../../music/chordVoicingPolicy";
-import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import { useI18n } from "../../i18n/useI18n";
 
 type TrebleChordFinderPanelProps = {
-  isOpen: boolean;
-  onToggle: () => void;
   targetToneText: string;
   root: string;
   onRootChange: (value: string) => void;
@@ -41,8 +38,6 @@ type TrebleChordFinderPanelProps = {
 
 /** Right-hand chord finder panel for CBA and piano treble layouts. */
 export function TrebleChordFinderPanel({
-  isOpen,
-  onToggle,
   targetToneText,
   root,
   onRootChange,
@@ -65,7 +60,7 @@ export function TrebleChordFinderPanel({
 }: TrebleChordFinderPanelProps) {
   const { t, language } = useI18n();
   return (
-    <CollapsibleSection title={t("tools.chordFinder")} summary={t("tools.summary.trebleChordFinder")} isOpen={isOpen} onToggle={onToggle}>
+    <>
       <p className="hint">
         {t("tools.trebleIntro")}
       </p>
@@ -170,6 +165,6 @@ export function TrebleChordFinderPanel({
           <span>{t("tools.showNote")}</span>
         </label>
       </fieldset>
-    </CollapsibleSection>
+    </>
   );
 }

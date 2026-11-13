@@ -50,7 +50,7 @@
   "musicNotationUseBarsPerLine": true,
   "musicNotationBarsPerLine": 4,
   "musicNotationChordFontSize": 11,
-  "musicNotationScale": 54,
+  "musicNotationScale": 76,
   "musicNotationStaffWidth": 520,
   "musicNotationStaffSeparator": 14,
   "stradellaNotationMode": "symbolic",
@@ -131,5 +131,7 @@
     "voicing": true,
     "physical": true
   },
-  "laMelodiosaFollowStradellaRegisters": true
+  "laMelodiosaFollowStradellaRegisters": true,
+  "musicNotationNoteNamesInNoteheads": false,
+  "musicNotationPlacement": "right"
 }

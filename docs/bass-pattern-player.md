@@ -110,7 +110,7 @@ The staff-notation view presents the current pattern.
 
 When notation is visible, the notation panel includes **Download SVG**. This downloads the rendered staff notation diagram as an SVG file.
 
-The ABC download now exports the same symbolic Stradella score (including notation preferences and tempo) that is displayed. MIDI and LilyPond exports retain their existing formats and purpose.
+The ABC download contains the score as displayed, including the notation preferences and the tempo. MIDI and LilyPond downloads contain the sounding notes.
 
 ## Export
 
@@ -138,16 +138,16 @@ It lets you draft one pattern object, validate it, and save it to a local custom
 
 ## Music notation settings used by this tool
 
-The Bass Pattern Player uses the shared **Settings → Music notation** section for rendered notation. Useful options include showing/hiding the generated title, including the pattern description, including a compact summary note, changing bars per line, reducing chord-symbol font size, and changing abcjs render scale/staff width.
+The Bass Pattern Player uses the shared **Settings → Music notation** section for rendered notation. Useful options include showing/hiding the generated title, including the pattern description, including a compact summary note, changing bars per line, adjusting notation text size, and changing the notation scale and staff width.
 
-## Pattern accuracy and stylistic scope (reviewed 2026-11-08)
+## Pattern accuracy and stylistic scope
 
 The built-in catalog has **29 rhythmic definitions**. It mixes conventional accompaniment foundations (e.g., Waltz, Polka, March), abstract rhythmic figures (e.g., gallop and Scotch snap), and **Stradella adaptations** of rhythms originally played by other instruments (claves, rock guitar, African bell). Pattern labels are teaching aids; they do not certify an ethnographically complete accompaniment for each genre.
 
-Three timing definitions were corrected in the November 2026 rhythm audit:
+Three patterns are worth describing exactly:
 
-- **Shuffle (12/8):** four long–short pairs now occupy all twelve eighth-note positions (onsets 1, 3, 4, 6, 7, 9, 10, 12).
-- **Bo Diddley beat (4/4, two bars):** a five-attack 3–2 son-clave-derived figure (bar 1: 1, 2&, 4; bar 2: 2, 3). It does not simulate muted guitar strumming.
-- **Standard African bell (12/8):** the seven-stroke, twelve-pulse timeline is now represented in compound meter, with attacks on pulse positions 1, 3, 5, 6, 8, 10, 12. The accordion sounds remain a deliberate adaptation.
+- **Shuffle (12/8):** four long–short pairs fill all twelve eighth-note positions (attacks on 1, 3, 4, 6, 7, 9, 10 and 12).
+- **Bo Diddley beat (4/4, two bars):** a five-attack figure derived from the 3–2 son clave (bar 1: 1, 2&, 4; bar 2: 2, 3). It does not imitate muted guitar strumming.
+- **Standard African bell (12/8):** the seven-stroke, twelve-pulse timeline in compound meter, with attacks on pulses 1, 3, 5, 6, 8, 10 and 12. Playing it on accordion buttons is a deliberate adaptation.
 
-The Son/Rumba clave 3–2 and 2–3 definitions are also two-bar adaptations with exactly five attacks. The other named dances are **representative practice examples**, not unique or authoritative definitions of a genre. For the per-pattern review and remaining stylistic cautions, see [Rhythm Catalog Audit](internal/bass-pattern-rhythm-audit.md).
+The Son/Rumba clave 3–2 and 2–3 definitions are also two-bar adaptations with exactly five attacks. The other named dances are **representative practice examples**, not unique or authoritative definitions of a genre.

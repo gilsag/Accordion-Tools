@@ -8,8 +8,9 @@ import { audioClockNow, currentPlaybackGeneration, onStopAllSound, playButtonSou
   prepareSamplesFor, samplesReadyFor, stopAllSound } from "../../sound";
 import { audioTimelineOrigin, scheduleAtAudioOffset } from "../../audio/audioClock";
 import { chordProgressionSteps, resolveRomanChord, type BassPatternDefinition, type ChordProgressionDefinition } from "../../tools/bassPatternPlayerTools";
-import { buildRhythmExercise, millisecondsPerUnit, RHYTHM_BASS_STYLES,
-  RHYTHM_TEMPLATES, rhythmEventKey, rootTrebleButton, type RhythmMeter } from "./rhythmModel";
+import { treblePitchTargets, trebleButtonForTarget, type TreblePitchMode } from "./treblePitchPatterns";
+import { buildRhythmExercise, DEFAULT_TREBLE_TEMPLATE_BY_METER, millisecondsPerUnit, RHYTHM_BASS_STYLES,
+  RHYTHM_TEMPLATES, rhythmEventKey, type RhythmMeter } from "./rhythmModel";
 
 export function useRhythmTrainer({sideButtonSettings,bassPatterns,chordProgressions,soundOptions,activeToolSection,stopOtherPlayback,notationPreferences}: {
   sideButtonSettings: SideButtonSettings;
@@ -22,7 +23,8 @@ export function useRhythmTrainer({sideButtonSettings,bassPatterns,chordProgressi
 }) {
   const [meter,setMeter] = useState<RhythmMeter>("3/4");
   const [bassStyleId,setBassStyleId] = useState("oom-pah-pah");
-  const [trebleTemplateId,setTrebleTemplateId] = useState("T301");
+  const [trebleTemplateId,setTrebleTemplateId] = useState(DEFAULT_TREBLE_TEMPLATE_BY_METER["3/4"]);
+  const [treblePitchMode,setTreblePitchMode] = useState<TreblePitchMode>("root");
   const [keyRoot,setKeyRoot] = useState("C");
   const [progressionId,setProgressionId] = useState("i-iv-v-i");
   const [notationVisible,setNotationVisible] = useState(false);
@@ -63,12 +65,14 @@ export function useRhythmTrainer({sideButtonSettings,bassPatterns,chordProgressi
 
   const bassButtons=useMemo(()=>stradellaButtonsFor(sideButtonSettings),[sideButtonSettings]);
   const trebleButtons=useMemo(()=>trebleButtonsFor(sideButtonSettings,reference=>{
-    const targetRoots = progression ? chordProgressionSteps(progression)
-      .map(step=>resolveRomanChord(step.symbol,keyRoot,progression.mode).root) : [keyRoot];
-    return targetRoots.flatMap(root=>{const b=rootTrebleButton(reference,root);return b?[b]:[];});
-  }),[sideButtonSettings,keyRoot,progression]);
-  const exercise=useMemo(()=>buildRhythmExercise({meter,bassStyleId,trebleTemplateId,keyRoot,progression,
-    bassButtons,trebleButtons,bassPatterns}),[meter,bassStyleId,trebleTemplateId,keyRoot,progression,bassButtons,trebleButtons,bassPatterns]);
+    const chords = progression ? chordProgressionSteps(progression)
+      .map(step=>resolveRomanChord(step.symbol,keyRoot,progression.mode)) : [];
+    const attacks=RHYTHM_TEMPLATES.find(t=>t.id===trebleTemplateId && t.meter===meter)?.notes.length??1;
+    return chords.flatMap(chord=>treblePitchTargets(chord.root,chord.pattern,treblePitchMode,attacks)
+      .flatMap(target=>{const b=trebleButtonForTarget(reference,target);return b?[b]:[];}));
+  }),[sideButtonSettings,keyRoot,progression,treblePitchMode,trebleTemplateId,meter]);
+  const exercise=useMemo(()=>buildRhythmExercise({meter,bassStyleId,trebleTemplateId,treblePitchMode,keyRoot,progression,
+    bassButtons,trebleButtons,bassPatterns}),[meter,bassStyleId,trebleTemplateId,treblePitchMode,keyRoot,progression,bassButtons,trebleButtons,bassPatterns]);
   const availableStyles=RHYTHM_BASS_STYLES.filter(s=>s.meter===meter);
   const availableTemplates=RHYTHM_TEMPLATES.filter(t=>t.meter===meter);
   const canPlay=exercise.events.length>0 && exercise.missing.length===0 && soundOptions.enabled;
@@ -77,10 +81,11 @@ export function useRhythmTrainer({sideButtonSettings,bassPatterns,chordProgressi
   function changeMeter(next:RhythmMeter) {
     stop(); setMeter(next);
     setBassStyleId(RHYTHM_BASS_STYLES.find(s=>s.meter===next)?.id??"");
-    setTrebleTemplateId(RHYTHM_TEMPLATES.find(t=>t.meter===next)?.id??"");
+    setTrebleTemplateId(DEFAULT_TREBLE_TEMPLATE_BY_METER[next]);
   }
   function changeBassStyle(next:string) {stop();setBassStyleId(next);}
   function changeTrebleTemplate(next:string) {stop();setTrebleTemplateId(next);}
+  function changeTreblePitchMode(next:TreblePitchMode) {stop();setTreblePitchMode(next);}
   function changeRoot(next:string) {stop();setKeyRoot(next);}
   function changeProgression(next:string) {stop();setProgressionId(next);}
   function changeTempo(next:number) {stop();setTempo(next);}
@@ -143,7 +148,8 @@ export function useRhythmTrainer({sideButtonSettings,bassPatterns,chordProgressi
     ports.push(window.setTimeout(()=>{if(run.current===runId)stopTimers();},
       repeats*cycleUnits*msUnit+170));
   };
-  return {notationPreferences,meter,changeMeter,bassStyleId,changeBassStyle,trebleTemplateId,changeTrebleTemplate,keyRoot,changeRoot,
+  return {notationPreferences,meter,changeMeter,bassStyleId,changeBassStyle,trebleTemplateId,changeTrebleTemplate,
+    treblePitchMode,changeTreblePitchMode,keyRoot,changeRoot,
     progressionId,progression,chordProgressions,changeProgression,notationVisible,setNotationVisible,
     tempo,changeTempo,repeats,changeRepeats,
     availableStyles,availableTemplates,exercise,trebleButtons,bassButtons,activeButtonIdSet,

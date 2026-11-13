@@ -112,6 +112,8 @@ export type DefaultSettingsFile = Partial<{
   stradellaNotationMode: "symbolic" | "sounding";
   stradellaChordQualityLabels: "always" | "changes";
   stradellaMarkCounterbass: boolean;
+  musicNotationNoteNamesInNoteheads: boolean;
+  musicNotationPlacement: "right" | "below";
   buttonSize: number;
   buttonSpacing: number;
   trebleAngle: number;

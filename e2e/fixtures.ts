@@ -62,6 +62,8 @@ export async function openSettings(page: Page, label = "Settings") {
   } else {
     await page.locator(".topbar-secondary").getByRole("button", { name: label, exact: true }).click();
   }
+  // The Settings view is fetched on first use; wait until its sections exist.
+  await expect(page.locator(".left-panel button.section-title").first()).toBeVisible();
 }
 
 const WORKSPACES = ["Stradella", "Treble", "Harmony"] as const;

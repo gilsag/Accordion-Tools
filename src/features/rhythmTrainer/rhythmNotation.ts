@@ -5,7 +5,7 @@
  * The written octave is conventional and intentionally not a reed octave.
  */
 import type { DiagramButton } from "../../types";
-import { DEFAULT_STRADELLA_NOTATION, stradellaWrittenPitch, stradellaButtonToken,
+import { DEFAULT_STRADELLA_NOTATION, stradellaWrittenPitch, stradellaButtonToken, stradellaChordQuality,
   type StradellaNotationPreferences } from "../../notation/stradellaNotation";
 import type { RhythmEvent, RhythmExercise } from "./rhythmModel";
 
@@ -48,14 +48,27 @@ function isBassButton(button: DiagramButton) {
 function isChordButton(button: DiagramButton) {
   return button.kind.startsWith("chord-");
 }
-function chordTag(button: DiagramButton | undefined) {
-  if (!button) return "";
-  switch (button.kind) {
-    case "chord-minor": return '"^m"';
-    case "chord-dominant7": return '"^7"';
-    case "chord-diminished7": return '"^d"';
-    default: return '"^M"';
-  }
+/** Combine the physical Stradella button root and its quality in one marker:
+ * CM, Cm, G7, Bbd. This annotates the BASS staff, not the treble voice.
+ * It labels the actual chord button rather than implying that one button
+ * realizes every extension of the progression's underlying harmony.
+ */
+function buttonChordName(button: DiagramButton): string {
+  return `${button.chordRoot ?? button.pitchClass ?? "C"}${stradellaChordQuality(button) ?? "M"}`;
+}
+function chordIdentity(button: DiagramButton | undefined): string | undefined {
+  return button ? `${button.chordRoot ?? button.pitchClass ?? "C"}:${button.kind}` : undefined;
+}
+/** For bass-only arrangements (Cueca), label the *harmony*, since there is no
+ * physical chord button to label. Keep the requested compact CM/Cm spelling. */
+function harmonicName(exercise: RhythmExercise, bar: number): string {
+  return (exercise.harmonicChordNames[bar] ?? "")
+    .replace(/maj/g, "M").replace(/min/g, "m").replace(/dim/g, "d")
+    .replace(/"/g, "");
+}
+function replaceQualityWithChordName(marked: string, chord: DiagramButton | undefined): string {
+  if (!chord) return marked;
+  return marked.replace(/^"\^[^"\n]+"/, `"^${buttonChordName(chord)}"`);
 }
 function token(event:RhythmEvent,voice:Voice,preferences:StradellaNotationPreferences,markChordQuality=true,duration=event.durationUnits) {
   const buttons=event.buttons.filter(b=>voice==="treble"? b.kind==="treble-note"
@@ -68,9 +81,9 @@ function token(event:RhythmEvent,voice:Voice,preferences:StradellaNotationPrefer
       (buttons.find(isChordButton)?.kind === "chord-major" ? "M" :
        buttons.find(isChordButton)?.kind === "chord-minor" ? "m" :
        buttons.find(isChordButton)?.kind === "chord-dominant7" ? "7" : "d"));
-    return `${marked.token}${abcDuration(duration)}`;
+    return `${replaceQualityWithChordName(marked.token,buttons.find(isChordButton))}${abcDuration(duration)}`;
   }
-  return `${markChordQuality&&voice!=="treble"&&voice!=="bass"?chordTag(buttons.find(isChordButton)):""}${pitch}${abcDuration(duration)}`;
+  return `${markChordQuality&&voice==="chord" ? `"^${buttonChordName(buttons.find(isChordButton)!)}"` : ""}${pitch}${abcDuration(duration)}`;
 }
 function entriesForBar(exercise:RhythmExercise,bar:number,voice:Voice) {
   return exercise.events.filter(e=>e.bar===bar && (voice==="treble"?e.hand==="treble":e.hand==="bass")
@@ -83,11 +96,13 @@ function entriesForBar(exercise:RhythmExercise,bar:number,voice:Voice) {
 function singleLeftBar(exercise:RhythmExercise,bar:number,preferences:StradellaNotationPreferences,priorKind?:string): {line:string|null;kind?:string} {
   let cursor=0;
   const pieces:string[]=[];
-  let previousChordKind=priorKind;
+  let previousChordIdentity=priorKind;
   const entries=entriesForBar(exercise,bar,"left");
+  const bassOnly = !entries.some(event => event.buttons.some(isChordButton));
+  let labelledBassOnly = false;
   for (const [i,event] of entries.entries()) {
     const start=event.startUnit-bar*exercise.barUnits;
-    if (start<cursor-0.00001) return {line:null,kind:previousChordKind};
+    if (start<cursor-0.00001) return {line:null,kind:previousChordIdentity};
     if (start>cursor+0.00001) pieces.push(`z${abcDuration(start-cursor)}`);
     const following=entries[i+1]?.startUnit;
     const nextStart=following===undefined?exercise.barUnits:following-bar*exercise.barUnits;
@@ -97,31 +112,36 @@ function singleLeftBar(exercise:RhythmExercise,bar:number,preferences:StradellaN
     // onset, but retain actual gate durations for playback. Real overlaps
     // longer than an eighth of a beat still use the polyphonic fallback.
     const overlap=start+notated-nextStart;
-    if(overlap>1/8+0.00001) return {line:null,kind:previousChordKind};
+    if(overlap>1/8+0.00001) return {line:null,kind:previousChordIdentity};
     const duration=Math.min(notated,nextStart-start);
-    if(duration<=0) return {line:null,kind:previousChordKind};
-    const chordKind=event.buttons.find(isChordButton)?.kind;
-    pieces.push(token(event,"left",preferences,preferences.chordQualityLabels==="always" || (!!chordKind && chordKind!==previousChordKind),duration));
-    if(chordKind) previousChordKind=chordKind;
+    if(duration<=0) return {line:null,kind:previousChordIdentity};
+    const identity=chordIdentity(event.buttons.find(isChordButton));
+    let note=token(event,"left",preferences,preferences.chordQualityLabels==="always" || (!!identity && identity!==previousChordIdentity),duration);
+    if (bassOnly && !labelledBassOnly && harmonicName(exercise,bar)) {
+      note=`"^${harmonicName(exercise,bar)}"${note}`;
+      labelledBassOnly = true;
+    }
+    pieces.push(note);
+    if(identity) previousChordIdentity=identity;
     cursor=start+duration;
   }
   if(cursor<exercise.barUnits-0.00001) pieces.push(`z${abcDuration(exercise.barUnits-cursor)}`);
-  return {line:pieces.length?pieces.join(" "):`z${exercise.barUnits}`,kind:previousChordKind};
+  return {line:pieces.length?pieces.join(" "):`z${exercise.barUnits}`,kind:previousChordIdentity};
 }
 /** For rare overlapping left-hand events retain polyphony. Invisible spacers
  * avoid misleading extra rests caused by two simultaneous staff voices. */
 function voiceBar(exercise: RhythmExercise, bar: number, voice: Voice,preferences:StradellaNotationPreferences) {
   let cursor=0;
   const pieces:string[]=[];
-  let previousChordKind:string|undefined;
+  let previousChordIdentity:string|undefined;
   for (const event of entriesForBar(exercise,bar,voice)) {
     const start=event.startUnit-bar*exercise.barUnits;
     if (start>cursor+0.00001) pieces.push(`${voice==="treble"?"z":"x"}${abcDuration(start-cursor)}`);
     if (start<cursor-0.00001) continue;
-    const chordKind=event.buttons.find(isChordButton)?.kind;
-    pieces.push(token(event,voice,preferences,preferences.chordQualityLabels==="always" || (!!chordKind && chordKind!==previousChordKind),
+    const identity=chordIdentity(event.buttons.find(isChordButton));
+    pieces.push(token(event,voice,preferences,preferences.chordQualityLabels==="always" || (!!identity && identity!==previousChordIdentity),
       voice==="treble"?event.durationUnits:scoreDuration(event.durationUnits)));
-    if(chordKind) previousChordKind=chordKind;
+    if(identity) previousChordIdentity=identity;
     cursor=start+(voice==="treble"?event.durationUnits:scoreDuration(event.durationUnits));
   }
   if(cursor<exercise.barUnits-0.00001) pieces.push(`${voice==="treble"?"z":"x"}${abcDuration(exercise.barUnits-cursor)}`);
@@ -138,18 +158,17 @@ export function rhythmExerciseToAbc(exercise:RhythmExercise, title="Bass–Trebl
   const needsPolyphony=singleLeftBars.some(bar=>bar===null);
   const measure=(voice:Voice)=>Array.from({length:exercise.barCount},(_,bar)=>{
     const separator=bar>0&&bar%4===0?"\n":" ";
-    const annotation=voice==="treble"?`"^${exercise.harmonicLabels[bar].replace(/"/g,"")}"` : "";
     const contents=voice==="left"?singleLeftBars[bar] ?? "" : voiceBar(exercise,bar,voice,preferences);
-    return `${separator}| ${annotation}${contents}`;
+    return `${separator}| ${contents}`;
   }).join("")+" |]";
   return [
     "X:1", `T:${title.replace(/[\r\n]/g," ")}`,
     needsPolyphony?"%%score 1 (2 3)":"%%score 1 2",
-    "%%staffsep 18", "%%stretchlast 0",
+    "%%staffsep 64", "%%stretchlast 0",
     `M:${exercise.meter}`,`L:1/${exercise.meter.split("/")[1]}`,
-    "K:C", "V:1 clef=treble name=Treble",
-    needsPolyphony?"V:2 clef=bass name=Bass":"V:2 clef=bass name=Stradella",
-    ...(needsPolyphony?["V:3 clef=bass name=Chords"]:[]),
+    "K:C", "V:1 clef=treble",
+    needsPolyphony?"V:2 clef=bass":"V:2 clef=bass",
+    ...(needsPolyphony?["V:3 clef=bass"]:[]),
     `[V:1]${measure("treble")}`,
     `[V:2]${measure(needsPolyphony?"bass":"left")}`,
     ...(needsPolyphony?[`[V:3]${measure("chord")}`]:[]),

@@ -41,6 +41,9 @@ export interface DiagramGeometryInputs {
   finderFooterEnabled: boolean;
 }
 
+/** Clear space kept to the right of the last Stradella button. */
+const STRADELLA_RIGHT_MARGIN = 28;
+
 export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
   const {
     side, isPianoTreble, pianoTrebleRange, trebleSize, buttonSize, spacing,
@@ -52,7 +55,14 @@ export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
   } = inputs;
   const viewWidth =
     side === "stradella"
-      ? Math.max(1040, 275 + visibleRootCount * buttonSize * spacing * 1.15)
+      ? Math.max(
+          1040,
+          275 + visibleRootCount * buttonSize * spacing * 1.15,
+          // The lowest row is shifted right by the diagonal, so with wide
+          // spacing or large buttons its last button passes the nominal
+          // width. Always leave room for it and its highlight ring.
+          Math.max(0, ...buttons.map((button) => button.x)) + buttonSize + STRADELLA_RIGHT_MARGIN,
+        )
       : isPianoTreble
         ? Math.max(
             880,

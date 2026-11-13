@@ -1,8 +1,10 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { fittedRowLabelFontSize, measureRowLabelWidth, ROW_LABEL_FONT_SIZE } from "../../diagram/rowLabelFit";
 import type { DiagramButton, Side } from "../../types";
 import { AbcHandsDiagram } from "../../diagram/components/AbcHandsDiagram";
 import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimeline";
-import { RhythmNotationPanel } from "../../app/inspector/RhythmNotationInspector";
+import { NotationWorkspaceContent } from "../inspector/NotationWorkspaceContent";
+import type { NotationKind } from "../../notation/notationSelection";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { PlaybackBar, type PlaybackTransport } from "../components/PlaybackBar";
 import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
@@ -14,9 +16,7 @@ import { DiagramButtonLayer } from "../../diagram/components/DiagramButtonLayer"
 import { DiagramConnections } from "../../diagram/components/DiagramConnections";
 import { DiagramAnnotationsLayer } from "../../diagram/components/DiagramAnnotationsLayer";
 import { DiagramSvgSurface } from "../../diagram/components/DiagramSvgSurface";
-import { downloadRenderedNotationSvg } from "../../notation/notationService";
 import type { CSSProperties } from "react";
-import { bassPatternName, progressionName } from "../../i18n/optionLabels";
 import { fontClass, musicLabelText } from "../../music";
 import { stradellaRowLabel } from "../../stradella";
 import { stopAllSound } from "../../sound";
@@ -51,9 +51,11 @@ const HarmonicCircle = lazy(() => import("../../tools/harmonyExplorer/components
 import type { AppControllerModel } from "../useAppController";
 
 /** View-only component: all state and commands originate in the controller. */
-export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector, abcNotationInInspector = false, rhythmNotationInInspector = false,
+export function WorkspaceView({ model, tools, notationKind, isPhone = false, phoneSheetOpen = false, onOpenPhonePanel, inspectorAvailable = false, inspectorVisible = false, onToggleInspector, notationInInspector = false,
   panelHandles }: {
   model: AppControllerModel["workspace"];
+  tools: AppControllerModel["tools"];
+  notationKind: NotationKind | null;
   isPhone?: boolean;
   phoneSheetOpen?: boolean;
   onOpenPhonePanel?: (mode: "tools" | "settings") => void;
@@ -61,30 +63,29 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   inspectorVisible?: boolean;
   onToggleInspector?: () => void;
   /** The ABC notation is in the results panel, so it is not drawn below the diagram. */
-  abcNotationInInspector?: boolean;
-  rhythmNotationInInspector?: boolean;
+  notationInInspector?: boolean;
   /** Width handles on the workspace's left and right edges. */
   panelHandles?: ReactNode;
 }) {
   const {
-    abcHandsView, setAbcHands, renderNotationInto, rhythmTrainer,
-    abcActiveButtonIdSet, abcNotationRef, abcParseResult, abcRenderedNotationVisible, abcText, accidentalStyle,
+    abcHandsView, setAbcHands, rhythmTrainer,
+    abcActiveButtonIdSet, abcRenderedNotationVisible, abcText, accidentalStyle,
     activeToolSection, annotateMode, annotationButtonAnchor, annotationEditorRef, annotationLevelForLine, annotationPointForButton, bassPatternActiveButtonIdSet,
-    bassPatternEvents, bassPatternNotationRef, bassPatternRenderedNotationVisible, bellowsEndLabel, bellowsLabelY, bellowsStartLabel,
+    bassPatternEvents, bassPatternRenderedNotationVisible, bellowsEndLabel, bellowsLabelY, bellowsStartLabel,
     bellowsStripY, buttonSize, buttonTrebleFooter, buttons, cancelInlineAnnotation, chordDisplayStyle,
     chordFinderActive, chordFinderButtons, chordLabelMode, clearHarmonyWork, colorTheme, commitInlineAnnotation,
     downloadCurrentDiagram, downloadFormat, effectiveTitleSize, finalTitle, diagramNoteRoot, diagramNotePattern, finderAnnotationDisplayLines, finderArrowheadMarkerId,
     finderButtonIds, finderExplanationFontSize, finderFooterEnabled, finderFooterHeight, finderVoicingAnalysis, finderVoicingChartVisible,
     fingeringPosition, getMainLabel, handleHarmonyChordActivated, handleSvgClick, harmonyAllFamiliesMode, harmonyAvailableCounts,
     harmonyColorByFamily, harmonyCounts, harmonyDiameter, harmonyEffectiveDiatonicOnly, harmonyEffectiveHighlightDiatonic, harmonyExplanation,
-    harmonyFocusedReferenceRootPc, harmonyFontSize, harmonyPlaybackStyle, harmonyProgressionActiveButtonIdSet, harmonyProgressionNotationRef, harmonyProgressionNotationVisible,
-    harmonyProgressionPlan, harmonyRecordedNotationRef, harmonyRecordedNotationVisible, harmonyRecordedProgression, harmonyReferenceFamily, harmonyReferenceFamilyId,
+    harmonyFocusedReferenceRootPc, harmonyFontSize, harmonyPlaybackStyle, harmonyProgressionActiveButtonIdSet, harmonyProgressionNotationVisible,
+    harmonyProgressionPlan, harmonyRecordedNotationVisible, harmonyRecordedProgression, harmonyReferenceFamily, harmonyReferenceFamilyId,
     harmonyRelatedFamilyId, harmonyRelatedName, harmonyScale, harmonyScaleId, harmonySectors, harmonyShowEnharmonics,
     harmonyShowExplanation, harmonyShowLegend, harmonyShowNoteRing, harmonyShowSeparators, harmonyShowToneTooltips, harmonySvgRef,
     harmonyVoicingStyle, inlineAnnotationEditor, labelFont, labelFontSize, language, leftPanelMode,
     mobileDiagramView, navigateToTool, overlays, playHarmonyChord, playHarmonyChordRelationship, playHarmonyNote,
     progressionPreviewButtonIds, resetCurrentToolDefaults, resetDiagramWork, scaleFinderArrowStyle, scaleFinderButtons, selectAccordionSide,
-    selectedBassPattern, selectedChordProgression, sequenceArrowStyle, sequenceArrowheadMarkerId, sequenceArrowheadSize, sequenceNotationRef,
+    sequenceArrowStyle, sequenceArrowheadMarkerId, sequenceArrowheadSize,
     sequenceNumberPosition, sequenceRenderedNotationVisible, sequenceSteps, sequenceStepsWithButtons, setDownloadFormat, setHarmonySelection,
     setInlineAnnotationEditor, setMobileDiagramView, setPanel, setSoundEnabled, showBellowsGuide, showButtonLabels,
     showScaleFinderArrows, showScaleFinderNumbers, showSequenceArrows, showSequenceNumbers, showStatusBar, showStradellaRowLabels,
@@ -137,14 +138,6 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
   useEffect(() => {
     scrollDiagramToFocus(canvasWrapRef.current);
   }, [diagramFocusKey]);
-  // The notation moves back under the diagram when the results panel is hidden;
-  // its new host element is empty until drawn again.
-  useEffect(() => {
-    if (!abcNotationInInspector && abcRenderedNotationVisible) renderNotationInto(abcNotationRef.current, abcText);
-    // Only the move matters here; text changes are drawn by the notation hook.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [abcNotationInInspector]);
-
   // Phones show one manual at a time in the ABC Player's Both hands view.
   const [phoneHand, setPhoneHand] = useState<Side | null>(null);
   const shownPhoneHand = phoneHand ?? side;
@@ -468,24 +461,26 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
 
             {side === "stradella" &&
               showStradellaRowLabels &&
-              visibleRows.map((kind) => {
-                const sample = buttons.find(
-                  (button) => button.kind === kind && button.column === 0,
-                );
-                if (!sample) return null;
-
-                return (
+              (() => {
+                const rows = visibleRows.flatMap((kind) => {
+                  const sample = buttons.find((button) => button.kind === kind && button.column === 0);
+                  return sample ? [{ kind, sample, label: stradellaDiagramRowLabel(kind, stradellaRowLabel(kind), language) }] : [];
+                });
+                const fontSize = fittedRowLabelFontSize(
+                  rows.map(({ sample, label }) => ({ label, rightEdge: sample.x - buttonSize - 10 })), measureRowLabelWidth);
+                return rows.map(({ kind, sample, label }) => (
                   <text
                     key={kind}
                     x={sample.x - buttonSize - 10}
                     y={sample.y + 4}
                     textAnchor="end"
                     className="stradella-row-label"
+                    style={fontSize < ROW_LABEL_FONT_SIZE ? { fontSize } : undefined}
                   >
-                    {stradellaDiagramRowLabel(kind, stradellaRowLabel(kind), language)}
+                    {label}
                   </text>
-                );
-              })}
+                ));
+              })()}
 
             <DiagramButtonLayer
               buttons={buttons} overlays={overlays} sequenceSteps={sequenceSteps}
@@ -543,152 +538,11 @@ export function WorkspaceView({ model, isPhone = false, phoneSheetOpen = false, 
 
         {transport && <PlaybackBar transport={transport} loading={samplesLoading || rhythmTrainer.loading} t={t} />}
 
-        {workspaceMode === "harmony" &&
-          harmonyRecordedProgression.length > 0 &&
-          harmonyRecordedNotationVisible && (
-            <div
-              className="rendered-notation-panel"
-              aria-label={t("ui.recordedHarmonyAria")}
-            >
-              <div className="rendered-notation-header">
-                <div className="rendered-notation-title">{t("ui.recordedHarmonyProgression")}</div>
-                <button
-                  type="button"
-                  className="small-button notation-download-button"
-                  onClick={() =>
-                    downloadRenderedNotationSvg(
-                      harmonyRecordedNotationRef.current,
-                      "recorded-harmony-progression-notation",
-                    )
-                  }
-                >
-                  {t("ui.downloadSVG")}
-                </button>
-              </div>
-              <div ref={harmonyRecordedNotationRef} className="rendered-abc" />
-            </div>
-          )}
-
-        {workspaceMode === "accordion" && activeToolSection === "rhythmTrainer" &&
-          rhythmTrainer.notationVisible && !rhythmNotationInInspector &&
-          rhythmTrainer.exercise.barCount > 0 && (
-            <div className="rendered-notation-panel">
-              <RhythmNotationPanel trainer={rhythmTrainer} renderNotationInto={renderNotationInto} />
-            </div>
-          )}
-
-        {workspaceMode === "accordion" && side === "stradella" &&
-          activeToolSection === "bassPatternPlayer" &&
-          bassPatternEvents.length > 0 &&
-          bassPatternRenderedNotationVisible && (
-            <div
-              className="rendered-notation-panel"
-              aria-label={t("ui.renderedStradellaAria")}
-            >
-              <div className="rendered-notation-header">
-                <div className="rendered-notation-title">
-                  {selectedBassPattern ? bassPatternName(selectedBassPattern.id, selectedBassPattern.name, language) : t("ui.bassPatternPlayer")} {t("ui.over")}{" "}
-                  {selectedChordProgression ? progressionName(selectedChordProgression.id, selectedChordProgression.name, language) : t("ui.progression")}
-                </div>
-                <button
-                  type="button"
-                  className="small-button notation-download-button"
-                  onClick={() =>
-                    downloadRenderedNotationSvg(
-                      bassPatternNotationRef.current,
-                      `${selectedBassPattern?.id ?? "bass-pattern"}-notation`,
-                    )
-                  }
-                >
-                  {t("ui.downloadSVG")}
-                </button>
-              </div>
-              <div ref={bassPatternNotationRef} className="rendered-abc" />
-            </div>
-          )}
-
-        {workspaceMode === "accordion" && side === "stradella" &&
-          activeToolSection === "progressionAssistant" &&
-          harmonyProgressionPlan.playable &&
-          harmonyProgressionNotationVisible && (
-            <div
-              className="rendered-notation-panel"
-              aria-label={t("ui.renderedProgressionAria")}
-            >
-              <div className="rendered-notation-header">
-                <div className="rendered-notation-title">
-                  {t("ui.optimizedStradellaProgression")}
-                </div>
-                <button
-                  type="button"
-                  className="small-button notation-download-button"
-                  onClick={() =>
-                    downloadRenderedNotationSvg(
-                      harmonyProgressionNotationRef.current,
-                      "optimized-stradella-progression-notation",
-                    )
-                  }
-                >
-                  {t("ui.downloadSVG")}
-                </button>
-              </div>
-              <div ref={harmonyProgressionNotationRef} className="rendered-abc" />
-            </div>
-          )}
-
-        {workspaceMode === "accordion" && activeToolSection === "abcPlayer" &&
-          abcText.trim() && !abcNotationInInspector &&
-          abcRenderedNotationVisible && (
-            <div
-              className="rendered-notation-panel"
-              aria-label={t("ui.renderedABCAria")}
-            >
-              <div className="rendered-notation-header">
-                <div className="rendered-notation-title">
-                  {abcParseResult.title || "ABC notation"}
-                </div>
-                <button
-                  type="button"
-                  className="small-button notation-download-button"
-                  onClick={() =>
-                    downloadRenderedNotationSvg(
-                      abcNotationRef.current,
-                      `${abcParseResult.title || "abc"}-notation`,
-                    )
-                  }
-                >
-                  {t("ui.downloadSVG")}
-                </button>
-              </div>
-              <div ref={abcNotationRef} className="rendered-abc" />
-            </div>
-          )}
-
-        {workspaceMode === "accordion" && sequenceModeActive &&
-          sequenceStepsWithButtons.length > 0 &&
-          sequenceRenderedNotationVisible && (
-            <div
-              className="rendered-notation-panel"
-              aria-label={t("ui.renderedSequenceAria")}
-            >
-              <div className="rendered-notation-header">
-                <div className="rendered-notation-title">{t("ui.sequenceNotation")}</div>
-                <button
-                  type="button"
-                  className="small-button notation-download-button"
-                  onClick={() =>
-                    downloadRenderedNotationSvg(
-                      sequenceNotationRef.current,
-                      "sequence-notation",
-                    )
-                  }
-                >
-                  {t("ui.downloadSVG")}
-                </button>
-              </div>
-              <div ref={sequenceNotationRef} className="rendered-abc" />
-            </div>
-          )}
+        {notationKind && !notationInInspector && (
+          <div className="rendered-notation-panel">
+            <NotationWorkspaceContent kind={notationKind} tools={tools} />
+          </div>
+        )}
       </section>
   );
 }

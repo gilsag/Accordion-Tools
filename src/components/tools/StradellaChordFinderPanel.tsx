@@ -9,7 +9,6 @@ import {
   STRADELLA_CHORD_FINDER_MODE_OPTIONS,
   type StradellaChordFinderResult,
 } from "../../tools/stradellaChordFinderTools";
-import { CollapsibleSection } from "../ui/CollapsibleSection";
 import { HelpTip } from "../ui/HelpTip";
 import { BinaryChoiceButton } from "../ui/BinaryChoiceButton";
 import { useI18n } from "../../i18n/useI18n";
@@ -19,8 +18,6 @@ import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagr
 import type { MinimumNominalGap } from "../../tools/stradellaChordFinder/voicingDensity";
 
 type StradellaChordFinderPanelProps = {
-  isOpen: boolean;
-  onToggle: () => void;
   root: string;
   onRootChange: (value: string) => void;
   pattern: FinderChordPattern;
@@ -70,8 +67,6 @@ type StradellaChordFinderPanelProps = {
 
 /** Left-hand chord finder panel for Stradella layouts. */
 export function StradellaChordFinderPanel({
-  isOpen,
-  onToggle,
   root,
   onRootChange,
   pattern,
@@ -124,7 +119,7 @@ export function StradellaChordFinderPanel({
   ] as const;
 
   return (
-    <CollapsibleSection title={t("tools.chordFinder")} summary={t("tools.summary.stradellaChordFinder")} isOpen={isOpen} onToggle={onToggle}>
+    <>
       <p className="hint">
         {t("tools.stradellaIntro")}
       </p>
@@ -305,6 +300,6 @@ export function StradellaChordFinderPanel({
           )}
         </div>
       </fieldset>
-    </CollapsibleSection>
+    </>
   );
 }

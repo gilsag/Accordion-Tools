@@ -1,31 +1,29 @@
-name: Deploy static content to Pages
+name: Verify and deploy
 
 on:
   push:
     branches: ['main']
-
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: 'pages'
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
+  verify:
+    name: Lint, tests and bundle budget
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          # Tags are needed by the release check that compares the package
+          # version with the newest published tag.
+          fetch-depth: 0
 
       - name: Set up Node
         uses: actions/setup-node@v6
@@ -36,16 +34,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Lint, unit tests, release checks and bundle budget
+        run: npm run verify:release
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
+      - name: Install the test browser
+        run: npx playwright install --with-deps chromium
 
-      - name: Upload artifact
+      - name: Browser tests
+        run: npm run test:e2e
+
+      - name: Keep browser traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
+
+      - name: Upload the verified build
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v5
         with:
           path: './dist'
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: verify
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
 
       - name: Deploy to GitHub Pages
         id: deployment

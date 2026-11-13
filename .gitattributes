@@ -1,0 +1,13 @@
+# Store text with LF in the repository on every machine; each checkout uses
+# its platform's native line endings.
+* text=auto
+
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.sh  text eol=lf
+
+*.wav binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.zip binary

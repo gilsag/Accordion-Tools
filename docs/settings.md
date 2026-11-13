@@ -5,7 +5,7 @@ Open **Settings** from the top bar. The panel shows only the sections that affec
 - **Stradella and Treble:** Instrument, Notation, Music notation, Appearance, Sound, Title and About.
 - **Harmony:** Appearance, Sound, Harmony and About.
 
-Settings take effect immediately. To keep them, or to move them to another computer, use **Save settings JSON** in the About section (see **Saving and loading your settings** below).
+Settings take effect immediately and are remembered by this browser, so the app opens the way you left it. To move them to another computer or keep a backup, use **Save settings JSON** in the About section (see **Saving and loading your settings** below).
 
 ## Toolbar and playback bar
 
@@ -68,8 +68,8 @@ These are model pitches, not measurements of a particular instrument. They chang
 Controls the staff notation shown under the diagram by the ABC Player, Bass Pattern Player, Sequence and Progression Assistant:
 
 - **Include title**, **Include description** and **Include summary note** add text above or below the staff.
-- **Limit bars per line** and **Bars per line** wrap long music onto several lines.
-- **Chord text size**, **Notation scale**, **Staff width** and **Staff spacing** adjust the size and layout.
+- **Limit bars per line** and **Bars per line** control engraving systems. With four bars selected, the notation scales the complete four-bar system into the available width, including the right panel, without horizontal scrolling. Dense passages may render smaller on narrow panels.
+- **Text size**, **Notation scale**, **Staff width** and **Staff spacing** adjust the size and layout.
 
 ## Appearance
 
@@ -128,13 +128,14 @@ Shows the version, the author, the sample credits and the license, and opens the
 In **About**:
 
 - **Save settings JSON** downloads your current settings as `accordion-tools-settings.json`.
-- **Load settings JSON** applies a saved file to the current session.
+- **Load settings JSON** applies a saved file.
+- **Reset to defaults** returns every setting to its starting value after you confirm. Your own bass patterns are kept.
 
-This is the easiest way to keep a backup or to use the same settings on another computer. Files saved by earlier versions of Accordion Tools still load; settings that no longer exist are ignored, and new settings keep their defaults.
+Your settings are also saved automatically in the browser you are using. They are kept until you reset them or clear the browser's site data, and they are not shared with other browsers or devices. A settings file is the way to keep a backup or to use the same settings on another computer. Files saved by earlier versions of Accordion Tools still load; settings that no longer exist are ignored, and new settings keep their defaults.
 
 ## Reset
 
-The **Reset** menu in the top bar has two actions: **Clear current work** clears the active selection and stops playback; **Restore current tool defaults** puts the open tool back to its starting values. Neither changes your Sound or Stradella register settings.
+The **Reset** menu in the top bar has two actions: **Clear current work** clears the active selection and stops playback; **Restore current tool defaults** puts the open tool back to its starting values. Neither changes your Sound or Stradella register settings. To return every setting to its starting value, use **Reset to defaults** in **About**.
 
 If you publish your own copy of the app and want different starting settings, see the [settings file reference](https://github.com/gilsag/Accordion-Tools/blob/main/docs/internal/settings-file-reference.md).
 
@@ -148,4 +149,16 @@ The **Music notation** section also controls how the generated Stradella left-ha
 
 Written Stradella staff positions depend on **button pitch class and button function** (bass versus chord), not on the configured bass/chord reed register, sample transposition, or playback octave. Thus changing the instrument's audio register does not transpose its standard Stradella notation. A D on the third line of the bass staff may be either a bass or a chord; the chord-quality symbol identifies a D chord button.
 
-These preferences participate in settings export/import and editable `default-settings.json`. When notation is visible, changes take effect in the displayed score and in the Bass Pattern Player's exported score ABC. The separate MIDI export and audio playback are unaffected.
+These preferences are saved in settings files. When notation is visible, a change shows at once in the score and in the Bass Pattern Player's ABC download. MIDI export and playback are not affected.
+
+#### Note names below notes
+
+**Show note names below notes** is off by default. When it is on, each note's letter name is printed under it. Noteheads, stems, rests and note lengths are unchanged, and the tune you loaded is never rewritten. In the ABC Player, note names are added only to tunes in C major or A minor; other tunes are shown as written.
+
+#### Notation position
+
+**Notation position** chooses where every score appears: **Right panel** (the default) or **Below diagram**. It applies to the Rhythm Trainer, ABC Player, Bass Pattern Player, sequences, the Progression Assistant and Harmony recordings. On phones, or when the right panel is closed, the score is shown below the diagram. A score in the right panel stays there when you switch between Tools and Settings or hide the left panel.
+
+#### Which options apply where
+
+**Include title**, **Text size**, **Notation scale**, **Staff width**, **Staff spacing** and **Bars per line** apply to every score the app generates. Tunes loaded in the ABC Player are shown as written, so the Stradella chord-label and counterbass preferences do not change them. **Description** and **Summary** add text only for bass patterns. **Expanded voicing** applies to the Progression Assistant only.

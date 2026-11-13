@@ -37,3 +37,13 @@ test("the guides open in the documentation viewer", async ({ page }) => {
   await dialog.locator(".documentation-header button").click();
   await expect(dialog).toBeHidden();
 });
+
+test("the status bar names the open tool", async ({ page }) => {
+  await openApp(page);
+  const status = page.locator(".status-bar");
+  await expect(status).toContainText("No active tool");
+  await openTool(page, "ABC Player");
+  await closeToolsSheet(page);
+  await expect(status).toContainText("ABC Player");
+  await expect(status).not.toContainText("No active tool");
+});
