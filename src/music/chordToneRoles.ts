@@ -2,12 +2,25 @@
 import type { FinderChordPattern } from "../types";
 import { intervalsForChordFinder } from "./chordDefinitions";
 
-export type ChordToneRole = "root" | "third" | "fifth" | "altered-fifth" | "sixth"
-  | "seventh" | "suspension" | "added-ninth" | "ninth" | "altered-ninth"
-  | "eleventh" | "altered-eleventh" | "thirteenth";
+export type ChordToneRole =
+  | "root"
+  | "third"
+  | "fifth"
+  | "altered-fifth"
+  | "sixth"
+  | "seventh"
+  | "suspension"
+  | "added-ninth"
+  | "ninth"
+  | "altered-ninth"
+  | "eleventh"
+  | "altered-eleventh"
+  | "thirteenth";
 
 export function chordToneFunctions(pattern: FinderChordPattern): Array<{
-  interval: number; role: ChordToneRole; defining: boolean;
+  interval: number;
+  role: ChordToneRole;
+  defining: boolean;
 }> {
   const intervals = intervalsForChordFinder(pattern);
   const is11 = ["dominant11", "major11", "minor11"].includes(pattern);
@@ -28,7 +41,8 @@ export function chordToneFunctions(pattern: FinderChordPattern): Array<{
     else if (interval === 17) role = "eleventh";
     else if (interval === 18) role = "altered-eleventh";
     else role = "thirteenth";
-    const omittable = (role === "fifth" && intervals.length >= 4) ||
+    const omittable =
+      (role === "fifth" && intervals.length >= 4) ||
       (role === "ninth" && (is11 || is13)) ||
       (role === "eleventh" && is13) ||
       (role === "third" && interval === 4 && ["dominant11", "major11"].includes(pattern));

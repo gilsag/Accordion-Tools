@@ -1,7 +1,11 @@
 /** Settings file I/O: fetching startup defaults, importing a saved file and
  * downloading the current settings, run against the real module. */
 import assert from "node:assert/strict";
-import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "../../../src/settings/settingsPersistence";
+import {
+  fetchDefaultSettingsDocument,
+  parseSettingsDocumentFile,
+  downloadSettingsDocument,
+} from "../../../src/settings/settingsPersistence";
 import { SETTINGS_VERSION } from "../../../src/settings/settingsMigrations";
 import { test } from "vitest";
 
@@ -16,12 +20,22 @@ const respond = (ok: boolean, body: unknown): FetchLike =>
 
 test("Settings I/O: fetch, migrate on import, malformed JSON and download", async () => {
   try {
-    globalThis.fetch = respond(true, { side: "stradella", basses: "96", progressionAllowApproximations: true });
+    globalThis.fetch = respond(true, {
+      side: "stradella",
+      basses: "96",
+      progressionAllowApproximations: true,
+    });
     const value = await fetchDefaultSettingsDocument("/base/default-settings.json");
-    assert.deepEqual(fetchCall, { url: "/base/default-settings.json", options: { cache: "no-store" } });
+    assert.deepEqual(fetchCall, {
+      url: "/base/default-settings.json",
+      options: { cache: "no-store" },
+    });
     assert.equal(value?.basses, "96");
     assert.equal(value?.settingsVersion, SETTINGS_VERSION, "fetched defaults are migrated");
-    assert.ok(value && !("progressionAllowApproximations" in value), "retired keys are dropped on fetch");
+    assert.ok(
+      value && !("progressionAllowApproximations" in value),
+      "retired keys are dropped on fetch",
+    );
     globalThis.fetch = respond(false, null);
     assert.equal(await fetchDefaultSettingsDocument("/base/default-settings.json"), null);
     globalThis.fetch = respond(true, null);
@@ -31,7 +45,11 @@ test("Settings I/O: fetch, migrate on import, malformed JSON and download", asyn
   }
   const fileWith = (text: string) => ({ text: async () => text }) as File;
   const partial = await parseSettingsDocumentFile(fileWith('{"basses":"72"}'));
-  assert.deepEqual(partial, { basses: "72", settingsVersion: SETTINGS_VERSION }, "partial legacy imports keep their keys");
+  assert.deepEqual(
+    partial,
+    { basses: "72", settingsVersion: SETTINGS_VERSION },
+    "partial legacy imports keep their keys",
+  );
   await assert.rejects(parseSettingsDocumentFile(fileWith("{bad json")), SyntaxError);
   // Download name and DOM cleanup, without a browser.
   const globals = globalThis as unknown as { document?: unknown };
@@ -40,10 +58,19 @@ test("Settings I/O: fetch, migrate on import, malformed JSON and download", asyn
   const oldRevoke = URL.revokeObjectURL;
   let downloaded: [string, string] | undefined;
   let revoked: string | undefined;
-  const anchor = { href: "", download: "", click() { downloaded = [this.href, this.download]; }, remove() {} };
+  const anchor = {
+    href: "",
+    download: "",
+    click() {
+      downloaded = [this.href, this.download];
+    },
+    remove() {},
+  };
   globals.document = { createElement: () => anchor, body: { appendChild() {} } };
   URL.createObjectURL = () => "blob:settings";
-  URL.revokeObjectURL = (url: string) => { revoked = url; };
+  URL.revokeObjectURL = (url: string) => {
+    revoked = url;
+  };
   try {
     downloadSettingsDocument(partial);
     assert.deepEqual(downloaded, ["blob:settings", "accordion-tools-settings.json"]);

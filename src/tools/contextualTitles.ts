@@ -24,7 +24,13 @@ type StradellaTitleInput = {
 export function stradellaContextualTitle(input: StradellaTitleInput): string {
   const { root, pattern, requestedBass, exact, buttonCount, bassOnly, modeledLowest } = input;
   const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
-  const identity = realizedChordName(root, pattern, requestedBass, modeledLowest?.replace(/-?\d+$/, ""), requestedSymbol);
+  const identity = realizedChordName(
+    root,
+    pattern,
+    requestedBass,
+    modeledLowest?.replace(/-?\d+$/, ""),
+    requestedSymbol,
+  );
   const countLabel = `${buttonCount} ${bassOnly ? "bass " : ""}${buttonCount === 1 ? "button" : "buttons"}`;
   // Keep the selected harmonic root/quality. When there is no explicitly
   // requested bass, the slash describes the nominal inversion of this result.
@@ -48,7 +54,11 @@ type TrebleTitleInput = {
 };
 
 export function trebleContextualTitle(input: TrebleTitleInput): string {
-  const identity = displayFinderChord(input.root, input.pattern, input.displayStyle ?? LEGACY_CHORD_DISPLAY_STYLE);
+  const identity = displayFinderChord(
+    input.root,
+    input.pattern,
+    input.displayStyle ?? LEGACY_CHORD_DISPLAY_STYLE,
+  );
   const inversion = selectedInversion[input.inversion];
   // "Selected" describes the UI request; missing buttons may prevent that
   // inversion from being fully represented on a compact treble keyboard.

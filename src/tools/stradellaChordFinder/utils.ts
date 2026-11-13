@@ -24,9 +24,7 @@ export function orderedTargetPitches(root: string, pattern: FinderChordPattern) 
   if (!(root in PITCH_INDEX)) return [];
   const rootIndex = PITCH_INDEX[root];
   return unique(
-    intervalsForChordFinder(pattern).map(
-      (interval) => INDEX_TO_PITCH[(rootIndex + interval) % 12],
-    ),
+    intervalsForChordFinder(pattern).map((interval) => INDEX_TO_PITCH[(rootIndex + interval) % 12]),
   );
 }
 
@@ -42,16 +40,13 @@ export function distance(a: DiagramButton, b: DiagramButton) {
 // follows the Stradella circle-of-fifths direction, which is vertical on the
 // physical accordion. Apply a modest ergonomic penalty in that direction.
 // This is a heuristic for hand movement, not a measurement of finger comfort.
-export const STRADELLA_VERTICAL_WEIGHT = 1.10;
+export const STRADELLA_VERTICAL_WEIGHT = 1.1;
 
 /** Weighted distance in diagram coordinates. The fifths direction is
  * physical vertical but diagram horizontal; both offsets are normalized by
  * column spacing later in the ranking calculation. */
 export function ergonomicDistance(a: DiagramButton, b: DiagramButton) {
-  return Math.hypot(
-    STRADELLA_VERTICAL_WEIGHT * (a.x - b.x),
-    a.y - b.y,
-  );
+  return Math.hypot(STRADELLA_VERTICAL_WEIGHT * (a.x - b.x), a.y - b.y);
 }
 
 export function rootBassCandidates(buttons: DiagramButton[], root: string) {
@@ -65,7 +60,11 @@ export function rootBassCandidates(buttons: DiagramButton[], root: string) {
 }
 
 export function chooseRootReference(buttons: DiagramButton[], root: string) {
-  return rootBassCandidates(buttons, root)[0] ?? buttons.find((button) => button.chordRoot === root) ?? buttons[0];
+  return (
+    rootBassCandidates(buttons, root)[0] ??
+    buttons.find((button) => button.chordRoot === root) ??
+    buttons[0]
+  );
 }
 
 export function chooseClosestBassForPitch(
@@ -82,7 +81,8 @@ export function chooseClosestBassForPitch(
 
   return [...candidates].sort((a, b) => {
     if (rootReference) {
-      const distanceDifference = ergonomicDistance(a, rootReference) - ergonomicDistance(b, rootReference);
+      const distanceDifference =
+        ergonomicDistance(a, rootReference) - ergonomicDistance(b, rootReference);
       if (Math.abs(distanceDifference) > 0.001) return distanceDifference;
     }
     if (a.kind !== b.kind) return a.kind === "bass-root" ? -1 : 1;
@@ -125,11 +125,7 @@ export function chooseClosestChordButton(
   })[0];
 }
 
-export function recipeButtons(
-  buttons: DiagramButton[],
-  root: string,
-  recipe: ChordButtonRecipe,
-) {
+export function recipeButtons(buttons: DiagramButton[], root: string, recipe: ChordButtonRecipe) {
   const usedIds = new Set<string>();
   const selectedButtons: DiagramButton[] = [];
   const primaryButtonIds: string[] = [];

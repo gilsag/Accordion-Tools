@@ -6,7 +6,12 @@
 */
 
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   color: #172033;
   background: #f6f7fb;
 }
@@ -61,7 +66,6 @@ body {
   border-right: 1px solid #d9deea;
 }
 
-
 .left-panel * {
   max-width: 100%;
   box-sizing: border-box;
@@ -101,8 +105,12 @@ body {
   touch-action: none;
   background: transparent;
 }
-.panel-resize-left { left: -5px; }
-.panel-resize-inspector { right: -5px; }
+.panel-resize-left {
+  left: -5px;
+}
+.panel-resize-inspector {
+  right: -5px;
+}
 .panel-resize-handle::after {
   content: "";
   position: absolute;
@@ -115,10 +123,20 @@ body {
   transition: background-color 120ms;
 }
 .panel-resize-handle:hover::after,
-.panel-resize-handle:focus-visible::after { background: #8aa4e8; }
-.panel-resize-handle:focus-visible { outline: none; }
-body.panel-resizing { cursor: col-resize; user-select: none; }
-body.panel-resizing iframe, body.panel-resizing svg { pointer-events: none; }
+.panel-resize-handle:focus-visible::after {
+  background: #8aa4e8;
+}
+.panel-resize-handle:focus-visible {
+  outline: none;
+}
+body.panel-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+body.panel-resizing iframe,
+body.panel-resizing svg {
+  pointer-events: none;
+}
 
 .topbar {
   min-height: 48px;
@@ -291,13 +309,36 @@ input[type="range"] {
 }
 
 /* ABC Player, Both hands: treble and Stradella manuals in one diagram. */
-.abc-hand-caption { font-size: 17px; font-weight: 800; fill: #33405a; }
-.abc-hand-divider { stroke: #d9deea; stroke-width: 1.5; }
-.abc-hand-switch { padding: 4px 6px 0; }
-.abc-hand-switch .segmented-choice-control { flex-direction: row; align-items: center; gap: 8px; }
-.abc-hand-switch .label-line { flex: none; white-space: nowrap; font-size: 12px; font-weight: 700; color: #526078; }
+.abc-hand-caption {
+  font-size: 17px;
+  font-weight: 800;
+  fill: #33405a;
+}
+.abc-hand-divider {
+  stroke: #d9deea;
+  stroke-width: 1.5;
+}
+.abc-hand-switch {
+  padding: 4px 6px 0;
+}
+.abc-hand-switch .segmented-choice-control {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.abc-hand-switch .label-line {
+  flex: none;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: #526078;
+}
 /* Three short names in a narrow sidebar: keep each word whole. */
-.segmented-choice.whole-words .segmented-choice-button { overflow-wrap: normal; padding-left: 2px; padding-right: 2px; }
+.segmented-choice.whole-words .segmented-choice-button {
+  overflow-wrap: normal;
+  padding-left: 2px;
+  padding-right: 2px;
+}
 
 .diagram {
   width: 100%;
@@ -455,7 +496,9 @@ input[type="range"] {
    a symbol font, enlarge and embolden, and keep them on the letter baseline.
    CSS overrides the baselineShift attribute set in renderMusicLabel(). */
 .accidental-symbol {
-  font-family: "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", "Noto Music", "DejaVu Sans", sans-serif;
+  font-family:
+    "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", "Noto Music", "DejaVu Sans",
+    sans-serif;
   font-size: 128%;
   font-weight: 900;
   baseline-shift: 2%;
@@ -623,7 +666,12 @@ input[type="range"] {
 }
 
 .font-system {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 .font-serif {
@@ -1110,7 +1158,9 @@ input[type="range"] {
 }
 
 /* Keep assistance next to the control text, never as an orphaned flex item. */
-.label-line > .help-tip { align-self: center; }
+.label-line > .help-tip {
+  align-self: center;
+}
 .left-panel .tool-fieldset > legend {
   color: #34425d;
   font-size: var(--ui-control-font);
@@ -1126,14 +1176,20 @@ input[type="range"] {
   padding-top: 11px;
   margin-top: 2px;
 }
-.left-panel .section-content > .hint { max-width: 68ch; }
+.left-panel .section-content > .hint {
+  max-width: 68ch;
+}
 .left-panel .check-row,
-.left-panel .checkbox-line { line-height: var(--ui-control-leading); }
+.left-panel .checkbox-line {
+  line-height: var(--ui-control-leading);
+}
 .left-panel .segmented-choice-control > .label-line {
   font-size: var(--ui-control-font);
   font-weight: 700;
 }
-.left-panel .result-card { gap: 6px; }
+.left-panel .result-card {
+  gap: 6px;
+}
 
 .label-line .help-tip {
   margin-left: 0;
@@ -1257,7 +1313,6 @@ input[type="range"] {
   display: none;
 }
 
-
 @media (max-width: 640px) {
   .label-line {
     white-space: normal;
@@ -1273,7 +1328,12 @@ input[type="range"] {
   border: 1px solid #c9d1e3;
   border-radius: 10px;
   padding: 8px;
-  font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font:
+    12px/1.35 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
   color: #172033;
   background: #ffffff;
 }
@@ -1681,9 +1741,19 @@ input[type="range"] {
   display: block;
 }
 
-.rendered-abc.abc-notation-inspector { max-height: none; overflow: visible; margin-top: 10px; }
-.rendered-abc.abc-notation-inspector .abcjs-container { width: 100% !important; }
-.rendered-abc.abc-notation-inspector svg { width: 100% !important; max-width: 100%; height: auto; }
+.rendered-abc.abc-notation-inspector {
+  max-height: none;
+  overflow: visible;
+  margin-top: 10px;
+}
+.rendered-abc.abc-notation-inspector .abcjs-container {
+  width: 100% !important;
+}
+.rendered-abc.abc-notation-inspector svg {
+  width: 100% !important;
+  max-width: 100%;
+  height: auto;
+}
 
 .rendered-abc .abcjs-title,
 .rendered-abc .abcjs-subtitle,
@@ -1743,7 +1813,6 @@ input[type="range"] {
   white-space: nowrap;
   padding: 7px 9px;
 }
-
 
 .compact-help-details {
   margin: 0.2rem 0 0.55rem;
@@ -1885,7 +1954,12 @@ input[type="range"] {
   resize: none;
   outline: none;
   background: transparent;
-  font: 700 13px/1.25 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font:
+    700 13px/1.25 system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   color: #172033;
 }
 
@@ -1949,15 +2023,29 @@ input[type="range"] {
   text-decoration: underline;
 }
 
-.harmonic-diagram .reference-label { font-weight: 850; }
-.harmonic-diagram .related-label { font-weight: 570; }
-.harmonic-diagram .diatonic-highlight { fill: #1746d0; font-weight: 820; }
+.harmonic-diagram .reference-label {
+  font-weight: 850;
+}
+.harmonic-diagram .related-label {
+  font-weight: 570;
+}
+.harmonic-diagram .diatonic-highlight {
+  fill: #1746d0;
+  font-weight: 820;
+}
 .harmonic-diagram .legend-heading,
 .harmonic-diagram .legend-row,
 .harmonic-diagram .explanation-heading,
-.harmonic-diagram .explanation-text { fill: #181b22; }
-.harmonic-diagram .legend-note { fill: #4d5668; font-style: italic; }
-.harmonic-diagram .explanation-text { fill: #3f485a; }
+.harmonic-diagram .explanation-text {
+  fill: #181b22;
+}
+.harmonic-diagram .legend-note {
+  fill: #4d5668;
+  font-style: italic;
+}
+.harmonic-diagram .explanation-text {
+  fill: #3f485a;
+}
 
 .harmonic-diagram .diatonic-family-highlight {
   font-weight: 850;
@@ -1979,13 +2067,25 @@ input[type="range"] {
   stroke-linejoin: round;
 }
 
-.harmonic-diagram .selected-reference { text-decoration-style: double; }
-.harmonic-diagram .focused-reference { fill: #1746d0; }
-.harmonic-diagram .comparison-roman { fill: #596477; }
-.harmonic-diagram .comparison-shared { fill: #1746d0; }
-.harmonic-diagram .comparison-motion { fill: #596477; }
+.harmonic-diagram .selected-reference {
+  text-decoration-style: double;
+}
+.harmonic-diagram .focused-reference {
+  fill: #1746d0;
+}
+.harmonic-diagram .comparison-roman {
+  fill: #596477;
+}
+.harmonic-diagram .comparison-shared {
+  fill: #1746d0;
+}
+.harmonic-diagram .comparison-motion {
+  fill: #596477;
+}
 
-.harmonic-diagram .rich-tooltip-host { overflow: visible; }
+.harmonic-diagram .rich-tooltip-host {
+  overflow: visible;
+}
 .harmonic-diagram .rich-tooltip {
   box-sizing: border-box;
   width: 100%;
@@ -2001,11 +2101,26 @@ input[type="range"] {
   line-height: 1.35;
 }
 
-.harmonic-diagram .tooltip-title { font-size: 14px; font-weight: 850; }
-.harmonic-diagram .tooltip-family { margin-bottom: 6px; color: #667187; font-size: 11px; font-weight: 700; }
-.harmonic-diagram .tooltip-row { margin-top: 3px; }
-.harmonic-diagram .tooltip-label { font-weight: 800; }
-.harmonic-diagram .shared-tone { color: #1746d0; font-weight: 850; }
+.harmonic-diagram .tooltip-title {
+  font-size: 14px;
+  font-weight: 850;
+}
+.harmonic-diagram .tooltip-family {
+  margin-bottom: 6px;
+  color: #667187;
+  font-size: 11px;
+  font-weight: 700;
+}
+.harmonic-diagram .tooltip-row {
+  margin-top: 3px;
+}
+.harmonic-diagram .tooltip-label {
+  font-weight: 800;
+}
+.harmonic-diagram .shared-tone {
+  color: #1746d0;
+  font-weight: 850;
+}
 
 .harmony-empty-result {
   margin: 10px 12px 0;
@@ -2031,7 +2146,9 @@ input[type="range"] {
   flex: 0 0 auto;
 }
 
-.disabled-row { opacity: 0.5; }
+.disabled-row {
+  opacity: 0.5;
+}
 
 .ring-control-block {
   display: flex;
@@ -2055,10 +2172,17 @@ input[type="range"] {
   align-items: end;
   margin-bottom: 12px;
 }
-.progression-preset-controls label { min-width: 0; }
-.progression-preset-controls select { max-width: 100%; width: 100%; }
+.progression-preset-controls label {
+  min-width: 0;
+}
+.progression-preset-controls select {
+  max-width: 100%;
+  width: 100%;
+}
 @media (max-width: 440px) {
-  .progression-preset-controls { grid-template-columns: minmax(0, 1fr); }
+  .progression-preset-controls {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* Harmony progression / Stradella voice-leading assistant. */
@@ -2076,16 +2200,30 @@ input[type="range"] {
   gap: 8px;
   margin: 9px 0 12px;
 }
-.progression-entry-actions > button { flex: 0 1 auto; }
+.progression-entry-actions > button {
+  flex: 0 1 auto;
+}
 .progression-chord-name {
   display: flex;
   gap: 6px;
   align-items: center;
   min-width: 0;
 }
-.progression-note-eye { display: inline-flex; align-items: center; justify-content: center; flex: none; min-width: 30px; height: 30px; }
-.progression-note-eye[aria-pressed="true"] { border-color: var(--accent, #3654ac); }
-.progression-note-eye:focus-visible { outline: 2px solid var(--accent, #3654ac); outline-offset: 2px; }
+.progression-note-eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+}
+.progression-note-eye[aria-pressed="true"] {
+  border-color: var(--accent, #3654ac);
+}
+.progression-note-eye:focus-visible {
+  outline: 2px solid var(--accent, #3654ac);
+  outline-offset: 2px;
+}
 
 .harmony-progression-list {
   list-style: none;
@@ -2243,7 +2381,7 @@ input[type="range"] {
   border: 1px solid rgba(23, 32, 51, 0.22);
   border-radius: 999px;
   padding: 0.2rem 0.48rem;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   font-size: 0.88rem;
 }
 
@@ -2315,20 +2453,66 @@ input[type="range"] {
 }
 
 /* Persistent two-way settings show the active choice rather than the next action. */
-.segmented-choice-control { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-width: 0; }
-.segmented-choice { display: flex; width: 100%; border: 1px solid #c9d1e3; border-radius: 9px; overflow: hidden; }
-.segmented-choice-button { flex: 1 1 0; min-width: 0; padding: 7px 6px; font: inherit; font-size: 12px; background: #fff; color: #172033; border: 0; cursor: pointer; overflow-wrap: anywhere; }
-.segmented-choice-button + .segmented-choice-button { border-left: 1px solid #c9d1e3; }
-.segmented-choice-button.selected { background: #e9efff; color: #173fa6; font-weight: 800; }
-.segmented-choice-button:focus-visible { position: relative; z-index: 1; outline: 2px solid #1746d0; outline-offset: -2px; }
+.segmented-choice-control {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+}
+.segmented-choice {
+  display: flex;
+  width: 100%;
+  border: 1px solid #c9d1e3;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.segmented-choice-button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 6px;
+  font: inherit;
+  font-size: 12px;
+  background: #fff;
+  color: #172033;
+  border: 0;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.segmented-choice-button + .segmented-choice-button {
+  border-left: 1px solid #c9d1e3;
+}
+.segmented-choice-button.selected {
+  background: #e9efff;
+  color: #173fa6;
+  font-weight: 800;
+}
+.segmented-choice-button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #1746d0;
+  outline-offset: -2px;
+}
 /* Four choices in a narrow sidebar: two rows of two keep every label whole. */
-.segmented-choice.two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.segmented-choice.two-columns .segmented-choice-button:nth-child(odd) { border-left: 0; }
-.segmented-choice.two-columns .segmented-choice-button:nth-child(n + 3) { border-top: 1px solid #c9d1e3; }
+.segmented-choice.two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.segmented-choice.two-columns .segmented-choice-button:nth-child(odd) {
+  border-left: 0;
+}
+.segmented-choice.two-columns .segmented-choice-button:nth-child(n + 3) {
+  border-top: 1px solid #c9d1e3;
+}
 
 /* The toolbar format selector is deliberately compact beside Download. */
-.topbar-format-choice { flex: 0 0 auto; width: 126px; }
-.topbar-format-choice .segmented-choice-control { gap: 2px; }
+.topbar-format-choice {
+  flex: 0 0 auto;
+  width: 126px;
+}
+.topbar-format-choice .segmented-choice-control {
+  gap: 2px;
+}
 .topbar-format-choice .label-line {
   position: absolute;
   width: 1px;
@@ -2339,15 +2523,23 @@ input[type="range"] {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
 }
-.topbar-after-reset-space { flex: 0 0 20px; }
-@media (max-width: 860px) {
-  .topbar-after-reset-space { display: none; }
+.topbar-after-reset-space {
+  flex: 0 0 20px;
 }
-.topbar-format-choice .segmented-choice-button { padding: 5px 3px; }
+@media (max-width: 860px) {
+  .topbar-after-reset-space {
+    display: none;
+  }
+}
+.topbar-format-choice .segmented-choice-button {
+  padding: 5px 3px;
+}
 
 /* Responsive UI: presentation-only. No standalone exported SVG can match
    rules requiring the .canvas-wrap ancestor. */
-.mobile-diagram-view-control { display: none; }
+.mobile-diagram-view-control {
+  display: none;
+}
 
 @media (max-width: 860px) {
   .mobile-diagram-view-control {
@@ -2377,29 +2569,78 @@ input[type="range"] {
     width: 100%;
     min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
   }
-  .canvas-wrap.diagram-fit > .diagram { width: 100%; min-width: 0; }
+  .canvas-wrap.diagram-fit > .diagram {
+    width: 100%;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 620px) {
-  .app { overflow-x: hidden; overflow-y: auto; min-width: 0; }
-  .workspace { min-height: 60dvh; }
-  .canvas-wrap { min-height: 38dvh; }
-  .topbar { gap: 6px; padding: 7px 9px; }
-  .topbar-spacer, .topbar-separator { display: none; }
-  .topbar-button { min-height: 40px; padding: 7px 10px; }
-  .small-button, .tiny-button, .style-toggle,
-  .realization-navigation .small-button, .segmented-choice-button { min-height: 40px; }
-  .tiny-button { min-width: 40px; }
-  .style-toggle { min-width: 40px; }
-  .realization-navigation .small-button { min-width: 44px; }
-  .help-tip { min-width: 40px; min-height: 40px; width: 40px; height: 40px; }
-  .label-line { white-space: normal; align-items: center; }
-  .help-tip::after { max-width: min(220px, 65vw); }
+  .app {
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-width: 0;
+  }
+  .workspace {
+    min-height: 60dvh;
+  }
+  .canvas-wrap {
+    min-height: 38dvh;
+  }
+  .topbar {
+    gap: 6px;
+    padding: 7px 9px;
+  }
+  .topbar-spacer,
+  .topbar-separator {
+    display: none;
+  }
+  .topbar-button {
+    min-height: 40px;
+    padding: 7px 10px;
+  }
+  .small-button,
+  .tiny-button,
+  .style-toggle,
+  .realization-navigation .small-button,
+  .segmented-choice-button {
+    min-height: 40px;
+  }
+  .tiny-button {
+    min-width: 40px;
+  }
+  .style-toggle {
+    min-width: 40px;
+  }
+  .realization-navigation .small-button {
+    min-width: 44px;
+  }
+  .help-tip {
+    min-width: 40px;
+    min-height: 40px;
+    width: 40px;
+    height: 40px;
+  }
+  .label-line {
+    white-space: normal;
+    align-items: center;
+  }
+  .help-tip::after {
+    max-width: min(220px, 65vw);
+  }
 }
 @media (max-width: 860px) and (pointer: coarse) {
-  .small-button, .topbar-button, .segmented-choice-button,
-  .tiny-button, .style-toggle { min-height: 40px; }
-  .help-tip { min-width: 40px; min-height: 40px; }
+  .small-button,
+  .topbar-button,
+  .segmented-choice-button,
+  .tiny-button,
+  .style-toggle {
+    min-height: 40px;
+  }
+  .help-tip {
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
 
 /* Finder footers: use a consistent label/value grid so wrapped explanatory text
@@ -2411,7 +2652,7 @@ input[type="range"] {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   column-gap: 10px;
-  row-gap: 0.20em;
+  row-gap: 0.2em;
 }
 
 .finder-annotation-line {
@@ -2444,15 +2685,45 @@ input[type="range"] {
   overflow: visible;
 }
 
-.voicing-interval-leader { stroke: #a8b3c3; stroke-width: 1; stroke-dasharray: 2 2; }
-.voicing-interval-track { stroke: #bdc6d4; stroke-width: 2.4; }
-.voicing-interval-gap-tight { stroke: #c43f35; stroke-width: 4.5; }
-.voicing-interval-close { stroke: #c77736; stroke-width: 4; }
-.voicing-interval-open { stroke: #509c8a; stroke-width: 3.5; }
-.voicing-interval-bass { fill: #3266aa; stroke: #fff; stroke-width: 1.8; }
-.voicing-interval-chord { fill: #426c5d; stroke: #fff; stroke-width: 1.8; }
-.voicing-interval-distance { fill: #495567; font-weight: 800; }
-.voicing-interval-note { fill: #172033; font-weight: 800; }
+.voicing-interval-leader {
+  stroke: #a8b3c3;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+.voicing-interval-track {
+  stroke: #bdc6d4;
+  stroke-width: 2.4;
+}
+.voicing-interval-gap-tight {
+  stroke: #c43f35;
+  stroke-width: 4.5;
+}
+.voicing-interval-close {
+  stroke: #c77736;
+  stroke-width: 4;
+}
+.voicing-interval-open {
+  stroke: #509c8a;
+  stroke-width: 3.5;
+}
+.voicing-interval-bass {
+  fill: #3266aa;
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+.voicing-interval-chord {
+  fill: #426c5d;
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+.voicing-interval-distance {
+  fill: #495567;
+  font-weight: 800;
+}
+.voicing-interval-note {
+  fill: #172033;
+  font-weight: 800;
+}
 
 /* Keep exported SVG footer geometry independent of the browser viewport.
    Narrow screens can scroll the diagram; changing columns via a media query
@@ -2460,9 +2731,17 @@ input[type="range"] {
 
 /* One Reset control with two explicit scopes; do not conflate clearing work
    with changing the current tool's options. */
-.reset-menu { position: relative; flex: 0 0 auto; }
-.reset-menu > summary { list-style: none; user-select: none; }
-.reset-menu > summary::-webkit-details-marker { display: none; }
+.reset-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+.reset-menu > summary {
+  list-style: none;
+  user-select: none;
+}
+.reset-menu > summary::-webkit-details-marker {
+  display: none;
+}
 .reset-menu-options {
   position: absolute;
   z-index: 400;
@@ -2474,7 +2753,7 @@ input[type="range"] {
   border: 1px solid #c9d1e3;
   border-radius: 10px;
   background: #fff;
-  box-shadow: 0 8px 22px rgba(25, 35, 60, .18);
+  box-shadow: 0 8px 22px rgba(25, 35, 60, 0.18);
 }
 .reset-menu-options button {
   display: block;
@@ -2489,13 +2768,17 @@ input[type="range"] {
   text-align: left;
   cursor: pointer;
 }
-.reset-menu-options button:hover, .reset-menu-options button:focus-visible {
+.reset-menu-options button:hover,
+.reset-menu-options button:focus-visible {
   background: #eef3ff;
 }
 
 /* Batch export is related to the realization list, not to playback controls. */
-.finder-download-all { width: 100%; margin: 6px 0 10px; text-align: center; }
-
+.finder-download-all {
+  width: 100%;
+  margin: 6px 0 10px;
+  text-align: center;
+}
 
 /* Stradella register model: mirrored groups, without changing nominal pitch semantics. */
 .stradella-register-settings {
@@ -2514,7 +2797,9 @@ input[type="range"] {
   font-size: var(--ui-support-font);
   line-height: var(--ui-control-leading);
 }
-.stradella-register-intro-help .help-tip { flex-shrink: 0; }
+.stradella-register-intro-help .help-tip {
+  flex-shrink: 0;
+}
 .stradella-register-group {
   display: flex;
   flex-direction: column;
@@ -2541,8 +2826,12 @@ input[type="range"] {
   font-weight: 700;
   line-height: 1.35;
 }
-.density-compact .stradella-register-group > .segmented-choice-control > .label-line { font-size: 11px; }
-.density-comfortable .stradella-register-group > .segmented-choice-control > .label-line { font-size: 12.5px; }
+.density-compact .stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 11px;
+}
+.density-comfortable .stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 12.5px;
+}
 .stradella-register-range {
   margin: 0;
   color: #526078;
@@ -2551,12 +2840,24 @@ input[type="range"] {
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-.density-compact .stradella-register-group { gap: 6px; }
-.density-compact .stradella-register-group + .stradella-register-group { padding-top: 10px; }
-.density-comfortable .stradella-register-group { gap: 9px; }
-.density-comfortable .stradella-register-group + .stradella-register-group { padding-top: 15px; }
-.density-compact .stradella-register-range { font-size: 11px; }
-.density-comfortable .stradella-register-range { font-size: 12.5px; }
+.density-compact .stradella-register-group {
+  gap: 6px;
+}
+.density-compact .stradella-register-group + .stradella-register-group {
+  padding-top: 10px;
+}
+.density-comfortable .stradella-register-group {
+  gap: 9px;
+}
+.density-comfortable .stradella-register-group + .stradella-register-group {
+  padding-top: 15px;
+}
+.density-compact .stradella-register-range {
+  font-size: 11px;
+}
+.density-comfortable .stradella-register-range {
+  font-size: 12.5px;
+}
 
 /* Instrument section: independently configured nominal Stradella registers. */
 .instrument-stradella-details {
@@ -2574,7 +2875,9 @@ input[type="range"] {
   line-height: var(--ui-control-leading);
   flex-wrap: wrap;
 }
-.notation-stradella-chord-labels { min-width: 0; }
+.notation-stradella-chord-labels {
+  min-width: 0;
+}
 
 /* Shared workspace inspector frame: independent scroll, no SVG geometry changes. */
 .workspace-inspector {
@@ -2587,46 +2890,169 @@ input[type="range"] {
   border-left: 1px solid #d9deea;
   scrollbar-gutter: stable;
 }
-.workspace-inspector h2 { font-size: var(--ui-heading-font); line-height: 1.3; margin: 0 0 12px; }
-.workspace-inspector h3 { font-size: var(--ui-section-font); line-height: 1.35; margin: 12px 0 8px; }
-.inspector-filters { display: flex; flex-wrap: wrap; gap: 6px 12px; }
-.inspector-filter-option { display: inline-flex; align-items: center; gap: 2px; }
-.inspector-filters label { display: inline-flex; gap: 5px; align-items: center; font-size: var(--ui-control-font); cursor: pointer; }
-.inspector-filter-option .help-tip { flex-shrink: 0; }
-.inspector-filters input { accent-color: #1746d0; }
-.inspector-meta, .inspector-selection-note, .inspector-empty { font-size: var(--ui-support-font); line-height: 1.45; }
-.inspector-meta { color: #526078; }
-.inspector-selection-note { color: #744608; }
-.inspector-table-scroll { overflow: auto; max-height: min(44dvh, 425px); border: 1px solid #d9deea; border-radius: 9px; }
-.inspector-table { width: 100%; border-collapse: collapse; font-size: var(--ui-dense-font); line-height: 1.4; }
-.inspector-table th { position: sticky; top: 0; background: #eef2fa; color: #27334d; text-align: left; z-index: 1; }
-.inspector-table td, .inspector-table th { padding: 7px 6px; border-bottom: 1px solid #e4e8f0; vertical-align: top; }
-.inspector-table td { overflow-wrap: anywhere; }
-.inspector-table tbody tr { cursor: pointer; }
-.inspector-table tbody tr:hover { background: #f2f6ff; }
-.inspector-table .inspector-row-selected { background: #e3edff; box-shadow: inset 3px 0 #1746d0; }
-.inspector-select { background: transparent; border: 0; font: inherit; color: #1746d0; font-weight: 800; cursor: pointer; min-width: 32px; min-height: 28px; }
-.inspector-select:focus-visible { outline: 2px solid #1746d0; border-radius: 4px; outline-offset: 2px; }
-.inspector-details { border-top: 1px solid #d9deea; margin-top: 12px; padding-top: 4px; }
-.inspector-details p { font-size: var(--ui-support-font); color: #526078; line-height: 1.5; margin: 8px 0; overflow-wrap: anywhere; }
+.workspace-inspector h2 {
+  font-size: var(--ui-heading-font);
+  line-height: 1.3;
+  margin: 0 0 12px;
+}
+.workspace-inspector h3 {
+  font-size: var(--ui-section-font);
+  line-height: 1.35;
+  margin: 12px 0 8px;
+}
+.inspector-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.inspector-filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.inspector-filters label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-size: var(--ui-control-font);
+  cursor: pointer;
+}
+.inspector-filter-option .help-tip {
+  flex-shrink: 0;
+}
+.inspector-filters input {
+  accent-color: #1746d0;
+}
+.inspector-meta,
+.inspector-selection-note,
+.inspector-empty {
+  font-size: var(--ui-support-font);
+  line-height: 1.45;
+}
+.inspector-meta {
+  color: #526078;
+}
+.inspector-selection-note {
+  color: #744608;
+}
+.inspector-table-scroll {
+  overflow: auto;
+  max-height: min(44dvh, 425px);
+  border: 1px solid #d9deea;
+  border-radius: 9px;
+}
+.inspector-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ui-dense-font);
+  line-height: 1.4;
+}
+.inspector-table th {
+  position: sticky;
+  top: 0;
+  background: #eef2fa;
+  color: #27334d;
+  text-align: left;
+  z-index: 1;
+}
+.inspector-table td,
+.inspector-table th {
+  padding: 7px 6px;
+  border-bottom: 1px solid #e4e8f0;
+  vertical-align: top;
+}
+.inspector-table td {
+  overflow-wrap: anywhere;
+}
+.inspector-table tbody tr {
+  cursor: pointer;
+}
+.inspector-table tbody tr:hover {
+  background: #f2f6ff;
+}
+.inspector-table .inspector-row-selected {
+  background: #e3edff;
+  box-shadow: inset 3px 0 #1746d0;
+}
+.inspector-select {
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: #1746d0;
+  font-weight: 800;
+  cursor: pointer;
+  min-width: 32px;
+  min-height: 28px;
+}
+.inspector-select:focus-visible {
+  outline: 2px solid #1746d0;
+  border-radius: 4px;
+  outline-offset: 2px;
+}
+.inspector-details {
+  border-top: 1px solid #d9deea;
+  margin-top: 12px;
+  padding-top: 4px;
+}
+.inspector-details p {
+  font-size: var(--ui-support-font);
+  color: #526078;
+  line-height: 1.5;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 1120px) {
-  .app:has(> .workspace-inspector) { grid-template-columns: 1fr !important; overflow: auto; }
-  .app:has(> .workspace-inspector) .panel-resize-handle { display: none; }
-  .app:has(> .workspace-inspector) > .left-panel { max-height: 40dvh; }
-  .app:has(> .workspace-inspector) > .workspace { min-height: 45dvh; }
-  .workspace-inspector { border-left: 0; border-top: 1px solid #d9deea; overflow: visible; }
-  .inspector-table-scroll { max-height: 48dvh; }
+  .app:has(> .workspace-inspector) {
+    grid-template-columns: 1fr !important;
+    overflow: auto;
+  }
+  .app:has(> .workspace-inspector) .panel-resize-handle {
+    display: none;
+  }
+  .app:has(> .workspace-inspector) > .left-panel {
+    max-height: 40dvh;
+  }
+  .app:has(> .workspace-inspector) > .workspace {
+    min-height: 45dvh;
+  }
+  .workspace-inspector {
+    border-left: 0;
+    border-top: 1px solid #d9deea;
+    overflow: visible;
+  }
+  .inspector-table-scroll {
+    max-height: 48dvh;
+  }
 }
 
 /* Phone workspace: controls are a modal bottom sheet rather than an inline
    panel. The controller and mounted tool forms retain their existing state. */
-.phone-sheet-backdrop, .phone-sheet-header, .phone-tools-button, .phone-overflow { display: none; }
-.topbar-secondary { display: contents; }
-.diagram-mobile-frame { display: flex; position: relative; flex: 1 1 auto; min-height: 0; min-width: 0; }
-.diagram-mobile-frame > .canvas-wrap { width: 100%; }
+.phone-sheet-backdrop,
+.phone-sheet-header,
+.phone-tools-button,
+.phone-overflow {
+  display: none;
+}
+.topbar-secondary {
+  display: contents;
+}
+.diagram-mobile-frame {
+  display: flex;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+.diagram-mobile-frame > .canvas-wrap {
+  width: 100%;
+}
 
 @media (max-width: 620px) {
-  .app { display: block; overflow-x: hidden; overflow-y: auto; }
+  .app {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
   .app > .left-panel {
     display: none;
     position: fixed;
@@ -2646,8 +3072,12 @@ input[type="range"] {
     overflow: auto;
     overscroll-behavior: contain;
   }
-  .app > .left-panel.phone-sheet-open { display: block; }
-  .app > .left-panel h1 { display: none; }
+  .app > .left-panel.phone-sheet-open {
+    display: block;
+  }
+  .app > .left-panel h1 {
+    display: none;
+  }
   .phone-sheet-backdrop {
     display: block;
     position: fixed;
@@ -2683,18 +3113,62 @@ input[type="range"] {
     color: #172033;
     cursor: pointer;
   }
-  .phone-sheet-close:focus-visible, .mobile-diagram-toggle:focus-visible,
-  .phone-overflow-toggle:focus-visible { outline: 3px solid #1746d0; outline-offset: 2px; }
-  .app > .workspace { min-height: 56dvh; }
-  .app > .workspace-inspector { min-height: 0; }
-  .topbar { flex-wrap: nowrap; gap: 5px; padding: 6px 7px; min-height: 56px; }
-  .topbar-primary { min-width: 0; flex: 1 1 0; font-size: 11px; padding: 8px 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .topbar-secondary { display: none; }
-  .phone-tools-button { display: block; flex: 0 0 auto; padding: 8px 7px; font-size: 12px; }
-  .phone-overflow { display: block; flex: 0 0 auto; position: relative; }
-  .phone-overflow > summary { list-style: none; }
-  .phone-overflow > summary::-webkit-details-marker { display: none; }
-  .phone-overflow-toggle { display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; font-size: 24px; padding: 0 6px; }
+  .phone-sheet-close:focus-visible,
+  .mobile-diagram-toggle:focus-visible,
+  .phone-overflow-toggle:focus-visible {
+    outline: 3px solid #1746d0;
+    outline-offset: 2px;
+  }
+  .app > .workspace {
+    min-height: 56dvh;
+  }
+  .app > .workspace-inspector {
+    min-height: 0;
+  }
+  .topbar {
+    flex-wrap: nowrap;
+    gap: 5px;
+    padding: 6px 7px;
+    min-height: 56px;
+  }
+  .topbar-primary {
+    min-width: 0;
+    flex: 1 1 0;
+    font-size: 11px;
+    padding: 8px 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar-secondary {
+    display: none;
+  }
+  .phone-tools-button {
+    display: block;
+    flex: 0 0 auto;
+    padding: 8px 7px;
+    font-size: 12px;
+  }
+  .phone-overflow {
+    display: block;
+    flex: 0 0 auto;
+    position: relative;
+  }
+  .phone-overflow > summary {
+    list-style: none;
+  }
+  .phone-overflow > summary::-webkit-details-marker {
+    display: none;
+  }
+  .phone-overflow-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 24px;
+    padding: 0 6px;
+  }
   .phone-overflow-menu {
     position: absolute;
     top: calc(100% + 8px);
@@ -2722,13 +3196,34 @@ input[type="range"] {
     font: inherit;
     cursor: pointer;
   }
-  .phone-overflow-menu button:focus-visible { outline: 2px solid #1746d0; outline-offset: 1px; }
-  .phone-overflow-group { display: grid; gap: 6px; border-top: 1px solid #e1e6f0; padding-top: 9px; }
-  .phone-overflow-group > span { font-weight: 700; font-size: var(--ui-support-font); }
-  .workspace > .status-bar { max-height: 45px; overflow: hidden; }
-  .diagram-mobile-frame { flex: 1 1 auto; min-height: 42dvh; }
-  .workspace > .canvas-wrap { min-height: 0; }
-  .inspector-table-scroll { max-height: 46dvh; }
+  .phone-overflow-menu button:focus-visible {
+    outline: 2px solid #1746d0;
+    outline-offset: 1px;
+  }
+  .phone-overflow-group {
+    display: grid;
+    gap: 6px;
+    border-top: 1px solid #e1e6f0;
+    padding-top: 9px;
+  }
+  .phone-overflow-group > span {
+    font-weight: 700;
+    font-size: var(--ui-support-font);
+  }
+  .workspace > .status-bar {
+    max-height: 45px;
+    overflow: hidden;
+  }
+  .diagram-mobile-frame {
+    flex: 1 1 auto;
+    min-height: 42dvh;
+  }
+  .workspace > .canvas-wrap {
+    min-height: 0;
+  }
+  .inspector-table-scroll {
+    max-height: 46dvh;
+  }
 }
 
 /* Panel consistency. These sub-headings inherited the 18px body size and read
@@ -2778,7 +3273,9 @@ input[type="range"] {
 }
 
 /* Toolbar: one Download menu (SVG / PNG) and an icon-only sound toggle. */
-.export-menu .reset-menu-options { min-width: 170px; }
+.export-menu .reset-menu-options {
+  min-width: 170px;
+}
 .topbar-icon-button {
   display: inline-flex;
   align-items: center;
@@ -2838,14 +3335,35 @@ input[type="range"] {
   font-weight: 800;
   cursor: pointer;
 }
-.playback-bar-button:hover:not(:disabled) { background: #eef3ff; }
-.playback-bar-button:disabled { opacity: 0.45; cursor: not-allowed; }
-.playback-bar-play { border-color: #1746d0; color: #1746d0; }
-.playback-bar-play.active { background: #1746d0; color: #fff; opacity: 1; }
+.playback-bar-button:hover:not(:disabled) {
+  background: #eef3ff;
+}
+.playback-bar-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.playback-bar-play {
+  border-color: #1746d0;
+  color: #1746d0;
+}
+.playback-bar-play.active {
+  background: #1746d0;
+  color: #fff;
+  opacity: 1;
+}
 @media (max-width: 620px) {
-  .playback-bar { margin: 6px 6px 0; }
-  .playback-bar-buttons { margin-left: 0; width: 100%; }
-  .playback-bar-button { flex: 1 1 0; justify-content: center; min-height: 44px; }
+  .playback-bar {
+    margin: 6px 6px 0;
+  }
+  .playback-bar-buttons {
+    margin-left: 0;
+    width: 100%;
+  }
+  .playback-bar-button {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+  }
 }
 
 /* Progression Assistant path: numbered steps and arrows on the diagram. */
@@ -2858,16 +3376,38 @@ input[type="range"] {
   opacity: 0.85;
   pointer-events: none;
 }
-.progression-path-arrowhead { fill: #c2410c; }
-.progression-path-badge { pointer-events: none; }
-.progression-path-badge rect { fill: #c2410c; stroke: #fff; stroke-width: 1.5; }
-.progression-path-badge text { fill: #fff; font-weight: 900; font-family: system-ui, sans-serif; }
+.progression-path-arrowhead {
+  fill: #c2410c;
+}
+.progression-path-badge {
+  pointer-events: none;
+}
+.progression-path-badge rect {
+  fill: #c2410c;
+  stroke: #fff;
+  stroke-width: 1.5;
+}
+.progression-path-badge text {
+  fill: #fff;
+  font-weight: 900;
+  font-family: system-ui, sans-serif;
+}
 
 /* Tighter toolbar so it fits on one row beside the results panel at 1440 px. */
-.topbar { gap: 6px; }
-.topbar-separator { width: 4px; }
-.topbar-after-reset-space { flex-basis: 4px; }
-.reset-menu-options button:disabled { opacity: 0.45; cursor: not-allowed; background: transparent; }
+.topbar {
+  gap: 6px;
+}
+.topbar-separator {
+  width: 4px;
+}
+.topbar-after-reset-space {
+  flex-basis: 4px;
+}
+.reset-menu-options button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: transparent;
+}
 
 /* Toolbar: Settings, Tools, Show notation, Reset and Download carry a label
    and an icon. On wider screens the toolbar is laid out on one row; when that
@@ -2882,67 +3422,234 @@ input[type="range"] {
   align-items: center;
   gap: 6px;
 }
-.topbar-labelled-icon-button svg { flex: none; }
-.topbar-compact-icon { display: none; }
+.topbar-labelled-icon-button svg {
+  flex: none;
+}
+.topbar-compact-icon {
+  display: none;
+}
 @media (min-width: 621px) {
-  .topbar:not(.topbar-compact) { flex-wrap: nowrap; }
-  .topbar > *:not(.topbar-spacer), .topbar-secondary > *:not(.topbar-spacer) { flex-shrink: 0; }
+  .topbar:not(.topbar-compact) {
+    flex-wrap: nowrap;
+  }
+  .topbar > *:not(.topbar-spacer),
+  .topbar-secondary > *:not(.topbar-spacer) {
+    flex-shrink: 0;
+  }
 }
-.topbar-compact { gap: 4px; }
-.topbar-compact .topbar-compact-icon { display: block; }
-.topbar-compact .topbar-button { padding-inline: 9px; }
+.topbar-compact {
+  gap: 4px;
+}
+.topbar-compact .topbar-compact-icon {
+  display: block;
+}
+.topbar-compact .topbar-button {
+  padding-inline: 9px;
+}
 .topbar-compact .topbar-icon-button,
-.topbar-compact .topbar-labelled-icon-button { padding-inline: 8px; gap: 2px; }
-.topbar-compact .topbar-labelled-icon-button .topbar-label {
-  position: absolute; width: 1px; height: 1px; overflow: hidden;
-  clip-path: inset(50%); white-space: nowrap;
+.topbar-compact .topbar-labelled-icon-button {
+  padding-inline: 8px;
+  gap: 2px;
 }
-.topbar-compact .topbar-after-reset-space { display: none; }
+.topbar-compact .topbar-labelled-icon-button .topbar-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.topbar-compact .topbar-after-reset-space {
+  display: none;
+}
 
 /* Bass–Treble Rhythm Trainer. The two-lane timeline is independent of the
    ABC notation renderer; bar widths follow meter-denominator units. */
 /* Timeline and combined diagram share an 880px maximum and center axis. */
-.rhythm-timeline { box-sizing: border-box; width: min(calc(100% - 16px), 880px); margin: 5px auto; padding: 8px 10px; border: 1px solid var(--border-color, #b9c3ce); border-radius: 10px; }
-.rhythm-timeline-title { display:flex; gap:12px; flex-wrap:wrap; justify-content:space-between; align-items:center; margin-bottom:8px; }
-.rhythm-timeline-title span,.rhythm-timeline-note {font-size:.8rem;opacity:.72;}
+.rhythm-timeline {
+  box-sizing: border-box;
+  width: min(calc(100% - 16px), 880px);
+  margin: 5px auto;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color, #b9c3ce);
+  border-radius: 10px;
+}
+.rhythm-timeline-title {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.rhythm-timeline-title span,
+.rhythm-timeline-note {
+  font-size: 0.8rem;
+  opacity: 0.72;
+}
 /* Four bars fill each desktop row, regardless of inspector width. A short
    progression stays centered; narrow phone layouts use two readable columns. */
-.rhythm-timeline-bars { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-height: 235px; overflow-y: auto; }
-.rhythm-timeline-bar {box-sizing:border-box; flex: 0 0 calc((100% - 18px)/4); border:1px solid var(--border-color,#c8cdd3);border-radius:6px;padding:5px;min-width:0;}
-@media (max-width: 620px) {
-  .rhythm-timeline-bar { flex-basis: calc((100% - 6px)/2); }
+.rhythm-timeline-bars {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-height: 235px;
+  overflow-y: auto;
 }
-.rhythm-timeline-bar.active {outline:2px solid #188a90;outline-offset:0;}
-.rhythm-bar-header {font-size:.8rem;font-weight:600;margin-bottom:5px;}
-.rhythm-beat-ruler {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;margin-left:40px;text-align:center;font-size:.72rem;opacity:.92;}
-.rhythm-strong-beat {font-weight:800;}
-.rhythm-lane {display:flex;gap:4px;align-items:center;margin-top:5px;}
-.rhythm-lane-caption {flex:0 0 36px;font-size:.65rem;}
-.rhythm-lane-grid {height:28px;position:relative;min-width:0;flex:1;background:rgba(100,110,125,.14);border:1px solid rgba(80,90,105,.30);border-radius:4px;overflow:hidden;}
-.rhythm-lane-grid i {position:absolute;top:0;bottom:0;border-left:1px solid rgba(30,45,65,.43);z-index:3;pointer-events:none;}
-.rhythm-event {position:absolute;top:3px;bottom:3px;display:flex;align-items:center;justify-content:space-between;gap:2px;border-radius:3px;box-shadow:inset -3px 0 0 rgba(250,250,255,.92);min-width:2px;color:#fff;font-size:10px;padding:0 5px 0 3px;overflow:hidden;box-sizing:border-box;z-index:1;}
-.rhythm-event-bass {background:#7c889a;}
-.rhythm-event-treble {background:#16878c;}
+.rhythm-timeline-bar {
+  box-sizing: border-box;
+  flex: 0 0 calc((100% - 18px) / 4);
+  border: 1px solid var(--border-color, #c8cdd3);
+  border-radius: 6px;
+  padding: 5px;
+  min-width: 0;
+}
+@media (max-width: 620px) {
+  .rhythm-timeline-bar {
+    flex-basis: calc((100% - 6px) / 2);
+  }
+}
+.rhythm-timeline-bar.active {
+  outline: 2px solid #188a90;
+  outline-offset: 0;
+}
+.rhythm-bar-header {
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.rhythm-beat-ruler {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  margin-left: 40px;
+  text-align: center;
+  font-size: 0.72rem;
+  opacity: 0.92;
+}
+.rhythm-strong-beat {
+  font-weight: 800;
+}
+.rhythm-lane {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-top: 5px;
+}
+.rhythm-lane-caption {
+  flex: 0 0 36px;
+  font-size: 0.65rem;
+}
+.rhythm-lane-grid {
+  height: 28px;
+  position: relative;
+  min-width: 0;
+  flex: 1;
+  background: rgba(100, 110, 125, 0.14);
+  border: 1px solid rgba(80, 90, 105, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.rhythm-lane-grid i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid rgba(30, 45, 65, 0.43);
+  z-index: 3;
+  pointer-events: none;
+}
+.rhythm-event {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  border-radius: 3px;
+  box-shadow: inset -3px 0 0 rgba(250, 250, 255, 0.92);
+  min-width: 2px;
+  color: #fff;
+  font-size: 10px;
+  padding: 0 5px 0 3px;
+  overflow: hidden;
+  box-sizing: border-box;
+  z-index: 1;
+}
+.rhythm-event-bass {
+  background: #7c889a;
+}
+.rhythm-event-treble {
+  background: #16878c;
+}
 /* Active attacks light up for their scheduled audible duration, including
    overlapping left/right events and repeated notes on the same button. */
-.rhythm-event.is-sounding { background: #c97912; box-shadow: inset 0 0 0 2px #fff4c9; z-index: 2; overflow: visible; }
-.rhythm-duration-value {font-size:.65rem;font-weight:700;line-height:1;opacity:.95;text-shadow:0 1px 1px rgba(0,0,0,.2);}
-/* Notation notes follow the same timed events as the diagram and timeline. */
-.rhythm-score-active { color:#c97912 !important; filter:drop-shadow(0 0 2px rgba(201,121,18,.4)); }
-.rhythm-score-active .abcjs-notehead, .rhythm-score-active .abcjs-stem,
-.rhythm-score-active .abcjs-beam, .rhythm-score-active .abcjs-flag {fill:#c97912 !important;stroke:#c97912 !important;}
-.rhythm-event .rhythm-attack-dot {display:inline-flex;align-items:center;justify-content:center; min-width:12px; height:100%; line-height:1;transform-origin:center;}
-.rhythm-event.is-sounding .rhythm-attack-dot { color:#fff; text-shadow:0 0 5px #fff; transform:scale(1.35); }
-@media (prefers-reduced-motion: no-preference) {
-  .rhythm-event.is-sounding .rhythm-attack-dot {animation:rhythm-attack-pulse 240ms ease-out both;}
-  @keyframes rhythm-attack-pulse {from{transform:scale(1.7);}to{transform:scale(1.35);}}
+.rhythm-event.is-sounding {
+  background: #c97912;
+  box-shadow: inset 0 0 0 2px #fff4c9;
+  z-index: 2;
+  overflow: visible;
 }
-.rhythm-timeline-note {margin:4px 0 0;}
-.rhythm-trainer-controls .playback-bar-buttons {margin-top:10px;}
+.rhythm-duration-value {
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.95;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+/* Notation notes follow the same timed events as the diagram and timeline. */
+.rhythm-score-active {
+  color: #c97912 !important;
+  filter: drop-shadow(0 0 2px rgba(201, 121, 18, 0.4));
+}
+.rhythm-score-active .abcjs-notehead,
+.rhythm-score-active .abcjs-stem,
+.rhythm-score-active .abcjs-beam,
+.rhythm-score-active .abcjs-flag {
+  fill: #c97912 !important;
+  stroke: #c97912 !important;
+}
+.rhythm-event .rhythm-attack-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 12px;
+  height: 100%;
+  line-height: 1;
+  transform-origin: center;
+}
+.rhythm-event.is-sounding .rhythm-attack-dot {
+  color: #fff;
+  text-shadow: 0 0 5px #fff;
+  transform: scale(1.35);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rhythm-event.is-sounding .rhythm-attack-dot {
+    animation: rhythm-attack-pulse 240ms ease-out both;
+  }
+  @keyframes rhythm-attack-pulse {
+    from {
+      transform: scale(1.7);
+    }
+    to {
+      transform: scale(1.35);
+    }
+  }
+}
+.rhythm-timeline-note {
+  margin: 4px 0 0;
+}
+.rhythm-trainer-controls .playback-bar-buttons {
+  margin-top: 10px;
+}
 
 /* Rhythm Trainer: readable two-hand view without modifying SVG button
    geometry, click targets, or export behavior. */
-.canvas-wrap.rhythm-compact-diagrams { justify-content: center; padding-top: 4px; }
+.canvas-wrap.rhythm-compact-diagrams {
+  justify-content: center;
+  padding-top: 4px;
+}
 .canvas-wrap.rhythm-compact-diagrams .abc-hands-diagram {
   max-width: min(100%, 880px);
   box-shadow: 0 5px 14px rgba(25, 35, 60, 0.08);
@@ -2951,21 +3658,59 @@ input[type="range"] {
   .canvas-wrap.rhythm-compact-diagrams.diagram-readable > .diagram {
     min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
   }
-  .canvas-wrap.rhythm-compact-diagrams.diagram-fit > .diagram { min-width: 0; }
+  .canvas-wrap.rhythm-compact-diagrams.diagram-fit > .diagram {
+    min-width: 0;
+  }
 }
 
-
 /* Shared music notation: one presentation for right inspector and below view. */
-.shared-notation-score { width: 100%; min-width: 0; }
-.notation-inspector .shared-notation-score { padding: 0.35rem; }
-.notation-header-actions { display: inline-flex; align-items: center; gap: 0.4rem; margin-left: auto; flex: 0 0 auto; }
-.notation-help { width: 24px; height: 24px; padding: 0; border-radius: 50%; border: 1px solid #c9d1e3;
-  color: #42526e; background: #f8faff; font-size: 12px; font-weight: 700; cursor: help; }
-.shared-notation-score .rendered-abc { min-width: 0; overflow-x: hidden; max-height: none; }
+.shared-notation-score {
+  width: 100%;
+  min-width: 0;
+}
+.notation-inspector .shared-notation-score {
+  padding: 0.35rem;
+}
+.notation-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+.notation-help {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid #c9d1e3;
+  color: #42526e;
+  background: #f8faff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: help;
+}
+.shared-notation-score .rendered-abc {
+  min-width: 0;
+  overflow-x: hidden;
+  max-height: none;
+}
 /* Compact full-width systems fit narrow notation panels without scrolling. */
-.shared-notation-score .rendered-abc .abcjs-container { width: 100% !important; min-width: 0; }
-.shared-notation-score .rendered-abc svg { display: block; width: 100% !important; min-width: 0; max-width: 100%; height: auto; }
-.shared-notation-score .rendered-notation-title { line-height: 1.3; overflow-wrap: anywhere; }
+.shared-notation-score .rendered-abc .abcjs-container {
+  width: 100% !important;
+  min-width: 0;
+}
+.shared-notation-score .rendered-abc svg {
+  display: block;
+  width: 100% !important;
+  min-width: 0;
+  max-width: 100%;
+  height: auto;
+}
+.shared-notation-score .rendered-notation-title {
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
 
 /* Recovery screen shown by ErrorBoundary; it renders outside .app. */
 .app-error {
@@ -3006,7 +3751,9 @@ input[type="range"] {
    segmented control. The panel toggles beside it keep the outlined pill, so
    "what am I looking at" and "which panel is open" look different. Phones lay
    the three buttons out as equal columns of the toolbar instead. */
-.topbar-workspace-switch { display: contents; }
+.topbar-workspace-switch {
+  display: contents;
+}
 
 @media (min-width: 621px) {
   .topbar-workspace-switch {
@@ -3035,4 +3782,6 @@ input[type="range"] {
 }
 
 /* A kept-mounted section stays in the DOM while closed. */
-.section-content[hidden] { display: none; }
+.section-content[hidden] {
+  display: none;
+}

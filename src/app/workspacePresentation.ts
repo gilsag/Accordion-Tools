@@ -8,8 +8,13 @@ import type { translate } from "../i18n/catalog";
  * selection.
  */
 export function activeToolStatusLabel({
-  side, bassPatternPlaybackState, abcPlaybackState, activeToolSection,
-  scaleFinderActive, stradellaChordFinderActive, chordFinderActive,
+  side,
+  bassPatternPlaybackState,
+  abcPlaybackState,
+  activeToolSection,
+  scaleFinderActive,
+  stradellaChordFinderActive,
+  chordFinderActive,
   t,
 }: {
   side: Side;
@@ -21,23 +26,30 @@ export function activeToolStatusLabel({
   chordFinderActive: boolean;
   t: (key: Parameters<typeof translate>[1]) => string;
 }): string {
-  if (side === "stradella" && bassPatternPlaybackState === "playing") return t("ui.bassPatternPlayer");
+  if (side === "stradella" && bassPatternPlaybackState === "playing")
+    return t("ui.bassPatternPlayer");
   if (abcPlaybackState === "playing" || abcPlaybackState === "paused") return t("ui.abcDefault");
-  if (side === "stradella" && activeToolSection === "progressionAssistant") return t("ui.progressionAssistant");
+  if (side === "stradella" && activeToolSection === "progressionAssistant")
+    return t("ui.progressionAssistant");
   if (scaleFinderActive) return t("ui.scaleFinder");
-  if (side === "stradella" ? stradellaChordFinderActive : chordFinderActive) return t("tools.chordFinder");
+  if (side === "stradella" ? stradellaChordFinderActive : chordFinderActive)
+    return t("tools.chordFinder");
   // A Finder can stay active with its section closed; every other tool is
   // active exactly while its section is open.
-  if (activeToolSection && toolOfferedOn(activeToolSection, side)) return t(TOOL_REGISTRY[activeToolSection].titleKey);
+  if (activeToolSection && toolOfferedOn(activeToolSection, side))
+    return t(TOOL_REGISTRY[activeToolSection].titleKey);
   return t("ui.noActiveTool");
 }
 
 /** Layout-only width policy: hiding the sidebar must keep the entire
  * workspace accessible without an empty left grid track. */
-export function workspaceGridColumns(density: "compact" | "comfortable" | string, leftPanelMode: string,
-  leftPanelTrack?: string) {
-  const sidebarWidth = leftPanelTrack ?? (density === "compact"
-    ? "clamp(230px, 15vw, 270px)"
-    : "clamp(300px, 20vw, 380px)");
+export function workspaceGridColumns(
+  density: "compact" | "comfortable" | string,
+  leftPanelMode: string,
+  leftPanelTrack?: string,
+) {
+  const sidebarWidth =
+    leftPanelTrack ??
+    (density === "compact" ? "clamp(230px, 15vw, 270px)" : "clamp(300px, 20vw, 380px)");
   return `${leftPanelMode === "hidden" ? "" : `${sidebarWidth} `}minmax(0, 1fr)`;
 }

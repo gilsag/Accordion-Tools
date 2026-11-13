@@ -1,7 +1,16 @@
 import assert from "node:assert/strict";
 import {
-  EN, ES, FR, PT, IT, DE, SUPPORTED_LANGUAGES, detectBrowserLanguage, resolveInterfaceLanguage,
-  isInterfaceLanguagePreference, translate,
+  EN,
+  ES,
+  FR,
+  PT,
+  IT,
+  DE,
+  SUPPORTED_LANGUAGES,
+  detectBrowserLanguage,
+  resolveInterfaceLanguage,
+  isInterfaceLanguagePreference,
+  translate,
 } from "../../../src/i18n/allCatalogs";
 import { test } from "vitest";
 
@@ -34,10 +43,16 @@ test("Interface language detection, manual override, key coverage and interpolat
   assert.equal(translate("en", "nav.settings"), "Settings");
   assert.equal(translate("fr", "nav.settings"), "Paramètres");
   assert.equal(translate("fr", "tools.upTo", { count: 3 }), "Jusqu’à 3");
-  assert.deepEqual(SUPPORTED_LANGUAGES.map((entry) => entry.code), ["en", "es", "fr", "pt", "it", "de"]);
+  assert.deepEqual(
+    SUPPORTED_LANGUAGES.map((entry) => entry.code),
+    ["en", "es", "fr", "pt", "it", "de"],
+  );
   assert.equal(translate("es", "tools.upTo", { count: 4 }), "Hasta 4");
   assert.equal(translate("en", "tools.upTo", { count: 2 }), "Up to 2");
   for (const catalog of [ES, FR, PT, IT, DE]) {
-    assert.deepEqual(Object.keys(EN).filter(key => catalog[key as keyof typeof EN] === undefined), []);
+    assert.deepEqual(
+      Object.keys(EN).filter((key) => catalog[key as keyof typeof EN] === undefined),
+      [],
+    );
   }
 });

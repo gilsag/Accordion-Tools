@@ -17,8 +17,11 @@ export function filterRealizationRows(
   return realizations.flatMap((candidate, originalIndex) => {
     if (!candidate.playable) return [];
     const played = candidate.playbackButtons;
-    if (filters.rootInBass && !played.some((button) =>
-      button.kind.startsWith("bass-") && button.pitchClass === root)) return [];
+    if (
+      filters.rootInBass &&
+      !played.some((button) => button.kind.startsWith("bass-") && button.pitchClass === root)
+    )
+      return [];
     if (filters.exactOnly && !candidate.exact) return [];
     if (filters.atMostTwo && played.length > 2) return [];
     return [{ candidate, originalIndex }];

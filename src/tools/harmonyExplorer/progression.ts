@@ -1,11 +1,28 @@
 import type { DiagramButton, FinderChordPattern } from "../../types";
 import { intervalsForChordFinder, chordFinderLabel } from "../../music/chordDefinitions";
 import { displayFinderChord, type ChordDisplayStyle } from "../chordDisplay";
-import { getStradellaChordFinderResults, nextWiderHandSpan, type StradellaChordFinderResult } from "../stradellaChordFinderTools";
-import { DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "../stradellaChordFinder/registerModel";
+import {
+  getStradellaChordFinderResults,
+  nextWiderHandSpan,
+  type StradellaChordFinderResult,
+} from "../stradellaChordFinderTools";
+import {
+  DEFAULT_STRADELLA_REGISTER_MODEL,
+  type StradellaRegisterModel,
+} from "../stradellaChordFinder/registerModel";
 import type { MinimumNominalGap } from "../stradellaChordFinder/voicingDensity";
-import { analyzeVoiceLeading, chordFamily, chordLabel, pitchClassesForChord, type ChordFamilyId } from "./music";
-import { finderPatternForHarmonyFamily, pitchClassNameFromNumber, pitchClassNumberFromName } from "./integration";
+import {
+  analyzeVoiceLeading,
+  chordFamily,
+  chordLabel,
+  pitchClassesForChord,
+  type ChordFamilyId,
+} from "./music";
+import {
+  finderPatternForHarmonyFamily,
+  pitchClassNameFromNumber,
+  pitchClassNumberFromName,
+} from "./integration";
 
 /** Harmony transfers retain their established family IDs. New Progression
  * Assistant entries instead retain the exact shared Finder chord identifier.
@@ -19,24 +36,35 @@ export type HarmonyRecordedChord = {
   sectorIndex: number;
 };
 
-export type HarmonyProgressionChord = HarmonyRecordedChord | {
-  id: string;
-  kind?: "chord";
-  rootPc: number;
-  pattern: FinderChordPattern;
-  sectorIndex: number;
-};
+export type HarmonyProgressionChord =
+  | HarmonyRecordedChord
+  | {
+      id: string;
+      kind?: "chord";
+      rootPc: number;
+      pattern: FinderChordPattern;
+      sectorIndex: number;
+    };
 
 /** The only conversion into the search engine: existing Harmony adapters or
  * the Finder's own canonical pattern. Unsupported Harmony chords stay unknown.
  */
-export function progressionFinderPattern(chord: HarmonyProgressionChord): FinderChordPattern | null {
+export function progressionFinderPattern(
+  chord: HarmonyProgressionChord,
+): FinderChordPattern | null {
   return "pattern" in chord ? chord.pattern : finderPatternForHarmonyFamily(chord.familyId);
 }
 
-export function progressionChordLabel(chord: HarmonyProgressionChord, style?: ChordDisplayStyle): string {
+export function progressionChordLabel(
+  chord: HarmonyProgressionChord,
+  style?: ChordDisplayStyle,
+): string {
   if ("pattern" in chord) {
-    return displayFinderChord(pitchClassNameFromNumber(chord.rootPc), chord.pattern, style ?? "compact");
+    return displayFinderChord(
+      pitchClassNameFromNumber(chord.rootPc),
+      chord.pattern,
+      style ?? "compact",
+    );
   }
   return chordLabel(chord.rootPc, chord.familyId, chord.sectorIndex, false, style);
 }
@@ -141,22 +169,22 @@ function median(values: number[]) {
   if (values.length === 0) return 1;
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0
-    ? (sorted[middle - 1] + sorted[middle]) / 2
-    : sorted[middle];
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
 }
 
 /** Typical nearest-neighbour spacing in the current Stradella layout. */
 export function estimateStradellaButtonSpacing(buttons: DiagramButton[]) {
   const relevant = buttons.filter((button) => button.kind !== "treble-note");
-  const nearest = relevant.map((button, index) => {
-    let best = Number.POSITIVE_INFINITY;
-    for (let otherIndex = 0; otherIndex < relevant.length; otherIndex += 1) {
-      if (otherIndex === index) continue;
-      best = Math.min(best, buttonDistance(button, relevant[otherIndex]));
-    }
-    return Number.isFinite(best) ? best : 0;
-  }).filter((value) => value > 0);
+  const nearest = relevant
+    .map((button, index) => {
+      let best = Number.POSITIVE_INFINITY;
+      for (let otherIndex = 0; otherIndex < relevant.length; otherIndex += 1) {
+        if (otherIndex === index) continue;
+        best = Math.min(best, buttonDistance(button, relevant[otherIndex]));
+      }
+      return Number.isFinite(best) ? best : 0;
+    })
+    .filter((value) => value > 0);
   return Math.max(1, median(nearest));
 }
 
@@ -170,10 +198,12 @@ function centroid(buttons: DiagramButton[]) {
 
 function directedNearestDistance(from: DiagramButton[], to: DiagramButton[]) {
   if (from.length === 0 || to.length === 0) return 0;
-  return from.reduce((sum, button) => {
-    const nearest = Math.min(...to.map((other) => buttonDistance(button, other)));
-    return sum + nearest;
-  }, 0) / from.length;
+  return (
+    from.reduce((sum, button) => {
+      const nearest = Math.min(...to.map((other) => buttonDistance(button, other)));
+      return sum + nearest;
+    }, 0) / from.length
+  );
 }
 
 /**
@@ -189,13 +219,8 @@ export function physicalButtonMovement(
   if (from.length === 0 || to.length === 0) return 0;
   const fromCentroid = centroid(from);
   const toCentroid = centroid(to);
-  const centreTravel = Math.hypot(
-    fromCentroid.x - toCentroid.x,
-    fromCentroid.y - toCentroid.y,
-  );
-  const continuity = (
-    directedNearestDistance(from, to) + directedNearestDistance(to, from)
-  ) / 2;
+  const centreTravel = Math.hypot(fromCentroid.x - toCentroid.x, fromCentroid.y - toCentroid.y);
+  const continuity = (directedNearestDistance(from, to) + directedNearestDistance(to, from)) / 2;
   return (0.45 * centreTravel + 0.55 * continuity) / Math.max(1, spacingUnit);
 }
 
@@ -224,27 +249,25 @@ export function progressionBassPulseButtons(
     (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
   );
 
-  const matchingRealizationBass = realizationBassButtons.filter(
-    (button) => {
-      if (!button.pitchClass) return false;
-      return pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc;
-    },
-  );
+  const matchingRealizationBass = realizationBassButtons.filter((button) => {
+    if (!button.pitchClass) return false;
+    return pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc;
+  });
   if (matchingRealizationBass.length > 0) return matchingRealizationBass;
 
   const fundamental = allButtons.find(
     (button) =>
-      button.kind === "bass-root"
-      && !!button.pitchClass
-      && pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
+      button.kind === "bass-root" &&
+      !!button.pitchClass &&
+      pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
   );
   if (fundamental) return [fundamental];
 
   const counterbass = allButtons.find(
     (button) =>
-      button.kind === "bass-counterbass"
-      && !!button.pitchClass
-      && pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
+      button.kind === "bass-counterbass" &&
+      !!button.pitchClass &&
+      pitchClassNumberFromName(button.pitchClass) === step.chord.rootPc,
   );
   return counterbass ? [counterbass] : realizationBassButtons;
 }
@@ -256,7 +279,11 @@ function pitchClassesFromResult(result: StradellaChordFinderResult) {
     .filter((value): value is number => value !== null);
 }
 
-function transitionMetrics(from: Candidate, to: Candidate, spacingUnit: number): ProgressionTransitionMetrics {
+function transitionMetrics(
+  from: Candidate,
+  to: Candidate,
+  spacingUnit: number,
+): ProgressionTransitionMetrics {
   const voice = analyzeVoiceLeading(from.soundingPcs, to.soundingPcs);
   return {
     harmonicMotion: voice.totalMotion,
@@ -275,7 +302,10 @@ function chordDisplayLabel(chord: HarmonyProgressionChord) {
 
 /** Stable physical recipe identity, excluding visually highlighted reference buttons. */
 export function progressionRealizationKey(result: StradellaChordFinderResult) {
-  return result.playbackButtons.map((button) => button.id).sort().join("|");
+  return result.playbackButtons
+    .map((button) => button.id)
+    .sort()
+    .join("|");
 }
 
 /* Chord Finder results depend only on the physical layout, the chord and the
@@ -285,7 +315,9 @@ export function progressionRealizationKey(result: StradellaChordFinderResult) {
 const finderResultCache = new WeakMap<DiagramButton[], Map<string, StradellaChordFinderResult[]>>();
 
 function progressionFinderResults(
-  buttons: DiagramButton[], root: string, pattern: FinderChordPattern,
+  buttons: DiagramButton[],
+  root: string,
+  pattern: FinderChordPattern,
   search: ProgressionSearchSettings = DEFAULT_PROGRESSION_SEARCH,
 ) {
   let byChord = finderResultCache.get(buttons);
@@ -293,24 +325,48 @@ function progressionFinderResults(
     byChord = new Map();
     finderResultCache.set(buttons, byChord);
   }
-  const key = [root, pattern, search.rootPosition, search.requestedBassOnBassButton, search.maxButtons,
-    search.spanColumns, search.minimumNominalGap, JSON.stringify(search.registerModel)].join("|");
+  const key = [
+    root,
+    pattern,
+    search.rootPosition,
+    search.requestedBassOnBassButton,
+    search.maxButtons,
+    search.spanColumns,
+    search.minimumNominalGap,
+    JSON.stringify(search.registerModel),
+  ].join("|");
   let results = byChord.get(key);
   if (!results) {
-    const find = (requestedBass: string | null, onBassButton: boolean, span = search.spanColumns) => getStradellaChordFinderResults(
-      buttons, root, pattern, "bass-and-chords", true, search.maxButtons, span,
-      requestedBass, search.registerModel, search.minimumNominalGap, onBassButton,
-    );
+    const find = (requestedBass: string | null, onBassButton: boolean, span = search.spanColumns) =>
+      getStradellaChordFinderResults(
+        buttons,
+        root,
+        pattern,
+        "bass-and-chords",
+        true,
+        search.maxButtons,
+        span,
+        requestedBass,
+        search.registerModel,
+        search.minimumNominalGap,
+        onBassButton,
+      );
     const playable = (list: StradellaChordFinderResult[]) => list.some((result) => result.playable);
     // The same preferences as the Chord Finder, in the same order: the root on
     // a bass button, the same with one step more hand span, then the root as
     // the lowest note, then any bass.
     results = find(search.rootPosition ? root : null, search.requestedBassOnBassButton);
     const widerSpan = nextWiderHandSpan(search.spanColumns);
-    if (search.rootPosition && search.requestedBassOnBassButton && widerSpan !== null && !playable(results)) {
+    if (
+      search.rootPosition &&
+      search.requestedBassOnBassButton &&
+      widerSpan !== null &&
+      !playable(results)
+    ) {
       results = find(root, true, widerSpan);
     }
-    if (search.rootPosition && search.requestedBassOnBassButton && !playable(results)) results = find(root, false);
+    if (search.rootPosition && search.requestedBassOnBassButton && !playable(results))
+      results = find(root, false);
     if (search.rootPosition && !playable(results)) results = find(null, false);
     byChord.set(key, results);
   }
@@ -329,7 +385,8 @@ export function progressionRealizationsForChord(
 ) {
   const pattern = progressionFinderPattern(chord);
   if (!pattern) return [];
-  return progressionFinderResults(buttons, pitchClassNameFromNumber(chord.rootPc), pattern, search).map((result, realizationIndex) => ({ result, realizationIndex }))
+  return progressionFinderResults(buttons, pitchClassNameFromNumber(chord.rootPc), pattern, search)
+    .map((result, realizationIndex) => ({ result, realizationIndex }))
     .filter(({ result }) => result.playable && (allowApproximations || result.exact));
 }
 
@@ -361,15 +418,23 @@ function candidatesForChord(
   // spells the triad as single bass notes to save hand movement. Original
   // Finder ranks are kept, and the ← → arrows can still pin any realization.
   const ownButton = ownChordButtonKind(pattern);
-  const usesOwnButton = (result: StradellaChordFinderResult) => result.playbackButtons.some((button) =>
-    button.kind === ownButton && pitchClassNumberFromName(button.chordRoot ?? "") === chord.rootPc);
-  const auto = ownButton && indexed.some(({ result }) => result.playable && usesOwnButton(result))
-    ? indexed.filter(({ result }) => usesOwnButton(result)) : indexed;
+  const usesOwnButton = (result: StradellaChordFinderResult) =>
+    result.playbackButtons.some(
+      (button) =>
+        button.kind === ownButton &&
+        pitchClassNumberFromName(button.chordRoot ?? "") === chord.rootPc,
+    );
+  const auto =
+    ownButton && indexed.some(({ result }) => result.playable && usesOwnButton(result))
+      ? indexed.filter(({ result }) => usesOwnButton(result))
+      : indexed;
   // A pinned result may lie well below the automatic top-five candidates.
   // Never silently replace it with another sounding recipe.
-  const playable = (pinnedKey
-    ? indexed.filter(({ result }) => progressionRealizationKey(result) === pinnedKey)
-    : auto.slice(0, maxResults))
+  const playable = (
+    pinnedKey
+      ? indexed.filter(({ result }) => progressionRealizationKey(result) === pinnedKey)
+      : auto.slice(0, maxResults)
+  )
     .filter(({ result }) => result.playable)
     .filter(({ result }) => options.allowApproximations || result.exact);
 
@@ -438,13 +503,15 @@ export function optimizeStradellaProgression(
   // distance (2 button spacings or 4 semitones). Independent coefficients mean
   // turning both to zero disables all transition optimization, unlike the old
   // complementary cross-fade. These constants should be tuned with user tests.
-  const handWeight = 3 * Math.max(0, Math.min(1, options.handMovementWeight)) / 2;
-  const harmonicWeight = 3 * Math.max(0, Math.min(1, options.voiceLeadingWeight ?? 0)) / 4;
-  const states: DynamicState[][] = candidateLayers.map((layer) => layer.map(() => ({
-    cost: Number.POSITIVE_INFINITY,
-    previousIndex: null,
-    transition: null,
-  })));
+  const handWeight = (3 * Math.max(0, Math.min(1, options.handMovementWeight))) / 2;
+  const harmonicWeight = (3 * Math.max(0, Math.min(1, options.voiceLeadingWeight ?? 0))) / 4;
+  const states: DynamicState[][] = candidateLayers.map((layer) =>
+    layer.map(() => ({
+      cost: Number.POSITIVE_INFINITY,
+      previousIndex: null,
+      transition: null,
+    })),
+  );
 
   candidateLayers[0].forEach((candidate, index) => {
     states[0][index] = {
@@ -463,11 +530,8 @@ export function optimizeStradellaProgression(
         if (!Number.isFinite(previousState.cost)) return;
         const transition = transitionMetrics(previous, candidate, spacingUnit);
         const transitionCost =
-          handWeight * transition.physicalMovement +
-          harmonicWeight * transition.harmonicMotion;
-        const cost = previousState.cost
-          + transitionCost
-          + candidate.rankCost;
+          handWeight * transition.physicalMovement + harmonicWeight * transition.harmonicMotion;
+        const cost = previousState.cost + transitionCost + candidate.rankCost;
         if (cost < states[layerIndex][currentIndex].cost) {
           states[layerIndex][currentIndex] = {
             cost,
@@ -532,6 +596,10 @@ export function progressionChordFamilyName(chord: HarmonyProgressionChord) {
 
 export function progressionTargetPitchClasses(chord: HarmonyProgressionChord) {
   return "pattern" in chord
-    ? [...new Set(intervalsForChordFinder(chord.pattern).map((interval) => (chord.rootPc + interval) % 12))]
+    ? [
+        ...new Set(
+          intervalsForChordFinder(chord.pattern).map((interval) => (chord.rootPc + interval) % 12),
+        ),
+      ]
     : pitchClassesForChord(chord.rootPc, chord.familyId);
 }

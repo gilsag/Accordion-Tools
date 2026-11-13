@@ -2,38 +2,82 @@ import { ProgressionAssistantPanel } from "../../components/tools/ProgressionAss
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type ProgressionAssistantSectionModel = Pick<AppControllerModel["tools"],
-  "addManualHarmonyProgressionChord" | "chordDisplayStyle" | "chordProgressionDefinitions" |
-  "cycleHarmonyProgressionRealization" | "harmonyProgression" |
-  "harmonyProgressionHandMovementWeight" | "harmonyProgressionManualPattern" |
-  "harmonyProgressionManualRoot" | "harmonyProgressionNoteStepId" | "harmonyProgressionPlan" |
-  "harmonyProgressionRealizationKeys" | "harmonyProgressionRealizationOptions" |
-  "harmonyProgressionRhythmPattern" | "harmonyProgressionRootPosition" |
-  "harmonyProgressionVoiceLeadingWeight" | "moveHarmonyProgressionChord" |
-  "progressionPathVisible" | "removeHarmonyProgressionChord" | "setHarmonyProgression" |
-  "setHarmonyProgressionHandMovementWeight" | "setHarmonyProgressionManualPattern" |
-  "setHarmonyProgressionManualRoot" | "setHarmonyProgressionNoteStepId" |
-  "setHarmonyProgressionPreviewIndex" | "setHarmonyProgressionRhythmPattern" |
-  "setHarmonyProgressionRootPosition" | "setHarmonyProgressionVoiceLeadingWeight" |
-  "setProgressionPathVisible" | "setSoundSequenceTempoBpm" | "soundSequenceTempoBpm" |
-  "stopSoundPlayback" | "toggleHarmonyProgressionStepNotes" | "useHarmonyProgressionPreset">;
+type ProgressionAssistantSectionModel = Pick<
+  AppControllerModel["tools"],
+  | "addManualHarmonyProgressionChord"
+  | "chordDisplayStyle"
+  | "chordProgressionDefinitions"
+  | "cycleHarmonyProgressionRealization"
+  | "harmonyProgression"
+  | "harmonyProgressionHandMovementWeight"
+  | "harmonyProgressionManualPattern"
+  | "harmonyProgressionManualRoot"
+  | "harmonyProgressionNoteStepId"
+  | "harmonyProgressionPlan"
+  | "harmonyProgressionRealizationKeys"
+  | "harmonyProgressionRealizationOptions"
+  | "harmonyProgressionRhythmPattern"
+  | "harmonyProgressionRootPosition"
+  | "harmonyProgressionVoiceLeadingWeight"
+  | "moveHarmonyProgressionChord"
+  | "progressionPathVisible"
+  | "removeHarmonyProgressionChord"
+  | "setHarmonyProgression"
+  | "setHarmonyProgressionHandMovementWeight"
+  | "setHarmonyProgressionManualPattern"
+  | "setHarmonyProgressionManualRoot"
+  | "setHarmonyProgressionNoteStepId"
+  | "setHarmonyProgressionPreviewIndex"
+  | "setHarmonyProgressionRhythmPattern"
+  | "setHarmonyProgressionRootPosition"
+  | "setHarmonyProgressionVoiceLeadingWeight"
+  | "setProgressionPathVisible"
+  | "setSoundSequenceTempoBpm"
+  | "soundSequenceTempoBpm"
+  | "stopSoundPlayback"
+  | "toggleHarmonyProgressionStepNotes"
+  | "useHarmonyProgressionPreset"
+>;
 
 /** Progression Assistant: connects the panel to the progression state. */
-export default function ProgressionAssistantSection({ model }: { model: ProgressionAssistantSectionModel }) {
+export default function ProgressionAssistantSection({
+  model,
+}: {
+  model: ProgressionAssistantSectionModel;
+}) {
   const {
-    addManualHarmonyProgressionChord, chordDisplayStyle, chordProgressionDefinitions,
-    cycleHarmonyProgressionRealization, harmonyProgression, harmonyProgressionHandMovementWeight,
-    harmonyProgressionManualPattern, harmonyProgressionManualRoot, harmonyProgressionNoteStepId,
-    harmonyProgressionPlan, harmonyProgressionRealizationKeys,
-    harmonyProgressionRealizationOptions, harmonyProgressionRhythmPattern,
-    harmonyProgressionRootPosition, harmonyProgressionVoiceLeadingWeight,
-    moveHarmonyProgressionChord, progressionPathVisible, removeHarmonyProgressionChord,
-    setHarmonyProgression, setHarmonyProgressionHandMovementWeight,
-    setHarmonyProgressionManualPattern, setHarmonyProgressionManualRoot,
-    setHarmonyProgressionNoteStepId, setHarmonyProgressionPreviewIndex,
-    setHarmonyProgressionRhythmPattern, setHarmonyProgressionRootPosition,
-    setHarmonyProgressionVoiceLeadingWeight, setProgressionPathVisible, setSoundSequenceTempoBpm,
-    soundSequenceTempoBpm, stopSoundPlayback, toggleHarmonyProgressionStepNotes,
+    addManualHarmonyProgressionChord,
+    chordDisplayStyle,
+    chordProgressionDefinitions,
+    cycleHarmonyProgressionRealization,
+    harmonyProgression,
+    harmonyProgressionHandMovementWeight,
+    harmonyProgressionManualPattern,
+    harmonyProgressionManualRoot,
+    harmonyProgressionNoteStepId,
+    harmonyProgressionPlan,
+    harmonyProgressionRealizationKeys,
+    harmonyProgressionRealizationOptions,
+    harmonyProgressionRhythmPattern,
+    harmonyProgressionRootPosition,
+    harmonyProgressionVoiceLeadingWeight,
+    moveHarmonyProgressionChord,
+    progressionPathVisible,
+    removeHarmonyProgressionChord,
+    setHarmonyProgression,
+    setHarmonyProgressionHandMovementWeight,
+    setHarmonyProgressionManualPattern,
+    setHarmonyProgressionManualRoot,
+    setHarmonyProgressionNoteStepId,
+    setHarmonyProgressionPreviewIndex,
+    setHarmonyProgressionRhythmPattern,
+    setHarmonyProgressionRootPosition,
+    setHarmonyProgressionVoiceLeadingWeight,
+    setProgressionPathVisible,
+    setSoundSequenceTempoBpm,
+    soundSequenceTempoBpm,
+    stopSoundPlayback,
+    toggleHarmonyProgressionStepNotes,
     useHarmonyProgressionPreset,
   } = model;
   return (
@@ -52,14 +96,29 @@ export default function ProgressionAssistantSection({ model }: { model: Progress
       onManualPatternChange={setHarmonyProgressionManualPattern}
       handMovementWeight={harmonyProgressionHandMovementWeight}
       rootPosition={harmonyProgressionRootPosition}
-      onRootPositionChange={(value) => { stopSoundPlayback(); setHarmonyProgressionRootPosition(value); }}
+      onRootPositionChange={(value) => {
+        stopSoundPlayback();
+        setHarmonyProgressionRootPosition(value);
+      }}
       voiceLeadingWeight={harmonyProgressionVoiceLeadingWeight}
-      onVoiceLeadingWeightChange={(value) => { stopSoundPlayback(); setHarmonyProgressionVoiceLeadingWeight(value); }}
-      onHandMovementWeightChange={(value) => { stopSoundPlayback(); setHarmonyProgressionHandMovementWeight(value); }}
+      onVoiceLeadingWeightChange={(value) => {
+        stopSoundPlayback();
+        setHarmonyProgressionVoiceLeadingWeight(value);
+      }}
+      onHandMovementWeightChange={(value) => {
+        stopSoundPlayback();
+        setHarmonyProgressionHandMovementWeight(value);
+      }}
       rhythmPattern={harmonyProgressionRhythmPattern}
-      onRhythmPatternChange={(value) => { stopSoundPlayback(); setHarmonyProgressionRhythmPattern(value); }}
+      onRhythmPatternChange={(value) => {
+        stopSoundPlayback();
+        setHarmonyProgressionRhythmPattern(value);
+      }}
       tempoBpm={soundSequenceTempoBpm}
-      onTempoBpmChange={(value) => { stopSoundPlayback(); setSoundSequenceTempoBpm(value); }}
+      onTempoBpmChange={(value) => {
+        stopSoundPlayback();
+        setSoundSequenceTempoBpm(value);
+      }}
       noteStepId={harmonyProgressionNoteStepId}
       onToggleStepNotes={toggleHarmonyProgressionStepNotes}
       onAddManualChord={addManualHarmonyProgressionChord}

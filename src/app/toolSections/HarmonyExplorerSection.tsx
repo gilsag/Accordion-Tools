@@ -2,27 +2,59 @@ import { HarmonyExplorerPanel } from "../../components/tools/HarmonyExplorerPane
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type HarmonyExplorerSectionModel = Pick<AppControllerModel["tools"],
-  "addSelectedHarmonyRelationshipToProgression" | "chordDisplayStyle" |
-  "clearHarmonyRecordedProgression" | "harmonyDiatonicOnly" | "harmonyHighlightDiatonic" |
-  "harmonyProgressionRecording" | "harmonyRecordedProgression" | "harmonyReferenceFamilyId" |
-  "harmonyRelatedFamilyId" | "harmonyScaleId" | "harmonySelection" | "harmonyShowEnharmonics" |
-  "harmonyShowNoteRing" | "resetHarmonyExplorer" | "sendHarmonyRecordedProgressionToAssistant" |
-  "setHarmonyDiatonicOnly" | "setHarmonyHighlightDiatonic" | "setHarmonyReferenceFamilyId" |
-  "setHarmonyRelatedFamilyId" | "setHarmonyScaleId" | "setHarmonyShowNoteRing" |
-  "showHarmonySelectionOnStradella" | "toggleHarmonyProgressionRecording">;
+type HarmonyExplorerSectionModel = Pick<
+  AppControllerModel["tools"],
+  | "addSelectedHarmonyRelationshipToProgression"
+  | "chordDisplayStyle"
+  | "clearHarmonyRecordedProgression"
+  | "harmonyDiatonicOnly"
+  | "harmonyHighlightDiatonic"
+  | "harmonyProgressionRecording"
+  | "harmonyRecordedProgression"
+  | "harmonyReferenceFamilyId"
+  | "harmonyRelatedFamilyId"
+  | "harmonyScaleId"
+  | "harmonySelection"
+  | "harmonyShowEnharmonics"
+  | "harmonyShowNoteRing"
+  | "resetHarmonyExplorer"
+  | "sendHarmonyRecordedProgressionToAssistant"
+  | "setHarmonyDiatonicOnly"
+  | "setHarmonyHighlightDiatonic"
+  | "setHarmonyReferenceFamilyId"
+  | "setHarmonyRelatedFamilyId"
+  | "setHarmonyScaleId"
+  | "setHarmonyShowNoteRing"
+  | "showHarmonySelectionOnStradella"
+  | "toggleHarmonyProgressionRecording"
+>;
 
 /** Harmony Explorer: connects the panel to the explorer state. */
 export default function HarmonyExplorerSection({ model }: { model: HarmonyExplorerSectionModel }) {
   const {
-    addSelectedHarmonyRelationshipToProgression, chordDisplayStyle,
-    clearHarmonyRecordedProgression, harmonyDiatonicOnly, harmonyHighlightDiatonic,
-    harmonyProgressionRecording, harmonyRecordedProgression, harmonyReferenceFamilyId,
-    harmonyRelatedFamilyId, harmonyScaleId, harmonySelection, harmonyShowEnharmonics,
-    harmonyShowNoteRing, resetHarmonyExplorer, sendHarmonyRecordedProgressionToAssistant,
-    setHarmonyDiatonicOnly, setHarmonyHighlightDiatonic, setHarmonyReferenceFamilyId,
-    setHarmonyRelatedFamilyId, setHarmonyScaleId, setHarmonyShowNoteRing,
-    showHarmonySelectionOnStradella, toggleHarmonyProgressionRecording,
+    addSelectedHarmonyRelationshipToProgression,
+    chordDisplayStyle,
+    clearHarmonyRecordedProgression,
+    harmonyDiatonicOnly,
+    harmonyHighlightDiatonic,
+    harmonyProgressionRecording,
+    harmonyRecordedProgression,
+    harmonyReferenceFamilyId,
+    harmonyRelatedFamilyId,
+    harmonyScaleId,
+    harmonySelection,
+    harmonyShowEnharmonics,
+    harmonyShowNoteRing,
+    resetHarmonyExplorer,
+    sendHarmonyRecordedProgressionToAssistant,
+    setHarmonyDiatonicOnly,
+    setHarmonyHighlightDiatonic,
+    setHarmonyReferenceFamilyId,
+    setHarmonyRelatedFamilyId,
+    setHarmonyScaleId,
+    setHarmonyShowNoteRing,
+    showHarmonySelectionOnStradella,
+    toggleHarmonyProgressionRecording,
   } = model;
   return (
     <HarmonyExplorerPanel

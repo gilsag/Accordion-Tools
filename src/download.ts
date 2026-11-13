@@ -8,14 +8,19 @@ import { makeSvgCanvasSafe } from "./svgRasterExport";
 function cloneSvgWithEmbeddedStyles(svgElement: SVGSVGElement, pngSafe = false) {
   const clone = svgElement.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-  clone.querySelectorAll("[data-export-ignore='true'], .annotation-editor-object").forEach((element) => element.remove());
+  clone
+    .querySelectorAll("[data-export-ignore='true'], .annotation-editor-object")
+    .forEach((element) => element.remove());
   // Keyboard and screen-reader attributes belong to the live page, not the file.
   clone.querySelectorAll(".button-group").forEach((element) => {
-    for (const name of ["role", "tabindex", "aria-label", "data-focus", "data-button-id"]) element.removeAttribute(name);
+    for (const name of ["role", "tabindex", "aria-label", "data-focus", "data-button-id"])
+      element.removeAttribute(name);
   });
-  clone.querySelectorAll(".selected-chord, .selected-reference, .focused-reference").forEach((element) => {
-    element.classList.remove("selected-chord", "selected-reference", "focused-reference");
-  });
+  clone
+    .querySelectorAll(".selected-chord, .selected-reference, .focused-reference")
+    .forEach((element) => {
+      element.classList.remove("selected-chord", "selected-reference", "focused-reference");
+    });
 
   let cssText = "";
 
@@ -78,7 +83,11 @@ export async function downloadPng(svgElement: SVGSVGElement, filename: string): 
 
 /** Render an already-serialized diagram independently of the current React
  * selection, so multi-diagram PNG conversion can happen after state restore. */
-export async function svgStringToPngBytes(svgString: string, width: number, height: number): Promise<Uint8Array> {
+export async function svgStringToPngBytes(
+  svgString: string,
+  width: number,
+  height: number,
+): Promise<Uint8Array> {
   const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   try {
@@ -96,8 +105,12 @@ export async function svgStringToPngBytes(svgString: string, width: number, heig
     context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    const png = await new Promise<Blob>((resolve, reject) => canvas.toBlob((value) =>
-      value ? resolve(value) : reject(new Error("PNG encoding failed.")), "image/png"));
+    const png = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (value) => (value ? resolve(value) : reject(new Error("PNG encoding failed."))),
+        "image/png",
+      ),
+    );
     return new Uint8Array(await png.arrayBuffer());
   } finally {
     URL.revokeObjectURL(url);
@@ -105,6 +118,9 @@ export async function svgStringToPngBytes(svgString: string, width: number, heig
 }
 
 /** Trigger one download containing all the selected diagrams. */
-export function downloadZip(entries: ReadonlyArray<{ name: string; data: Uint8Array }>, filename: string) {
+export function downloadZip(
+  entries: ReadonlyArray<{ name: string; data: Uint8Array }>,
+  filename: string,
+) {
   downloadBlob(createZip(entries), filename);
 }

@@ -29,6 +29,12 @@ test("Stradella search budget: queries on 120 bass, p95 ms, max ms", () => {
   times.sort((a, b) => a - b);
   const p95 = times[Math.floor(times.length * 0.95)];
   const max = times[times.length - 1];
-  assert.ok(p95 <= P95_BUDGET_MS, `Stradella search p95 ${p95.toFixed(1)} ms exceeds ${P95_BUDGET_MS} ms`);
-  assert.ok(max <= MAX_BUDGET_MS, `Slowest Stradella search ${max.toFixed(1)} ms exceeds ${MAX_BUDGET_MS} ms`);
+  assert.ok(
+    p95 <= P95_BUDGET_MS,
+    `Stradella search p95 ${p95.toFixed(1)} ms exceeds ${P95_BUDGET_MS} ms`,
+  );
+  assert.ok(
+    max <= MAX_BUDGET_MS,
+    `Slowest Stradella search ${max.toFixed(1)} ms exceeds ${MAX_BUDGET_MS} ms`,
+  );
 });

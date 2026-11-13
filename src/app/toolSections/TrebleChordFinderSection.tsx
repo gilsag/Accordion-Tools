@@ -2,24 +2,59 @@ import { TrebleChordFinderPanel } from "../../components/tools/TrebleChordFinder
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type TrebleChordFinderSectionModel = Pick<AppControllerModel["tools"],
-  "chordFinderActive" | "chordFinderButtons" | "chordFinderInversion" | "chordFinderOctave" |
-  "chordFinderPattern" | "chordFinderRoot" | "formatTrebleChordFinderPitches" |
-  "playChordFinder" | "setChordFinderActive" | "setChordFinderInversion" |
-  "setChordFinderOctave" | "setChordFinderPattern" | "setChordFinderRoot" |
-  "setScaleFinderActive" | "setShowTrebleVoicingNote" | "setStradellaChordFinderActive" |
-  "setTrebleChordVoicingMode" | "showTrebleVoicingNote" | "t" | "trebleChordExplanation" |
-  "trebleChordVoicingMode">;
+type TrebleChordFinderSectionModel = Pick<
+  AppControllerModel["tools"],
+  | "chordFinderActive"
+  | "chordFinderButtons"
+  | "chordFinderInversion"
+  | "chordFinderOctave"
+  | "chordFinderPattern"
+  | "chordFinderRoot"
+  | "formatTrebleChordFinderPitches"
+  | "playChordFinder"
+  | "setChordFinderActive"
+  | "setChordFinderInversion"
+  | "setChordFinderOctave"
+  | "setChordFinderPattern"
+  | "setChordFinderRoot"
+  | "setScaleFinderActive"
+  | "setShowTrebleVoicingNote"
+  | "setStradellaChordFinderActive"
+  | "setTrebleChordVoicingMode"
+  | "showTrebleVoicingNote"
+  | "t"
+  | "trebleChordExplanation"
+  | "trebleChordVoicingMode"
+>;
 
 /** Treble Chord Finder: connects the panel to the finder state. */
-export default function TrebleChordFinderSection({ model }: { model: TrebleChordFinderSectionModel }) {
+export default function TrebleChordFinderSection({
+  model,
+}: {
+  model: TrebleChordFinderSectionModel;
+}) {
   const {
-    chordFinderActive, chordFinderButtons, chordFinderInversion, chordFinderOctave,
-    chordFinderPattern, chordFinderRoot, formatTrebleChordFinderPitches, playChordFinder,
-    setChordFinderActive, setChordFinderInversion, setChordFinderOctave, setChordFinderPattern,
-    setChordFinderRoot, setScaleFinderActive, setShowTrebleVoicingNote,
-    setStradellaChordFinderActive, setTrebleChordVoicingMode, showTrebleVoicingNote, t,
-    trebleChordExplanation, trebleChordVoicingMode,
+    chordFinderActive,
+    chordFinderButtons,
+    chordFinderInversion,
+    chordFinderOctave,
+    chordFinderPattern,
+    chordFinderRoot,
+    formatTrebleChordFinderPitches,
+    playChordFinder,
+    setChordFinderActive,
+    setChordFinderInversion,
+    setChordFinderOctave,
+    setChordFinderPattern,
+    setChordFinderRoot,
+    setScaleFinderActive,
+    setShowTrebleVoicingNote,
+    setStradellaChordFinderActive,
+    setTrebleChordVoicingMode,
+    showTrebleVoicingNote,
+    t,
+    trebleChordExplanation,
+    trebleChordVoicingMode,
   } = model;
   return (
     <TrebleChordFinderPanel

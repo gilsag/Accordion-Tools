@@ -6,7 +6,12 @@
   become cluttered by every duplicate pitch on the keyboard.
 */
 
-import type { DiagramButton, FinderChordInversion, FinderChordOctave, FinderChordPattern } from "../types";
+import type {
+  DiagramButton,
+  FinderChordInversion,
+  FinderChordOctave,
+  FinderChordPattern,
+} from "../types";
 import { INDEX_TO_PITCH, PITCH_INDEX } from "../music";
 import { treblePreferredIntervals } from "../music/chordVoicingPolicy";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
@@ -113,7 +118,9 @@ export function getChordFinderTrebleButtons(
   if (!(root in PITCH_INDEX)) return [];
 
   const full = applyChordFinderInversion(intervalsForChordFinder(pattern), inversion);
-  const practicalPitches = new Set(treblePreferredIntervals(pattern).map((interval) => interval % 12));
+  const practicalPitches = new Set(
+    treblePreferredIntervals(pattern).map((interval) => interval % 12),
+  );
   const rootAbsolute = rootOctave * 12 + PITCH_INDEX[root];
 
   function select(intervals: number[]): DiagramButton[] {
@@ -122,9 +129,10 @@ export function getChordFinderTrebleButtons(
     intervals.forEach((interval, index) => {
       const { pitchClass, octave } = absoluteToPitch(rootAbsolute + interval);
       const candidates = candidatesForPitch(buttons, pitchClass, octave);
-      const selected = index === 0 && inversion === "root"
-        ? chooseRootCandidate(candidates)
-        : chooseNextCandidate(candidates, result[result.length - 1], usedIds);
+      const selected =
+        index === 0 && inversion === "root"
+          ? chooseRootCandidate(candidates)
+          : chooseNextCandidate(candidates, result[result.length - 1], usedIds);
       if (selected) {
         usedIds.add(selected.id);
         result.push(selected);

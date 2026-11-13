@@ -9,7 +9,12 @@ import type { DiagramBatchSnapshot } from "./diagramExport";
  * selection even when a candidate, SVG lookup or serialization fails.
  */
 export function captureStradellaBatch({
-  candidates, originalIndex, selectIndex, currentSvg, filenameKey, format,
+  candidates,
+  originalIndex,
+  selectIndex,
+  currentSvg,
+  filenameKey,
+  format,
 }: {
   candidates: readonly { candidate: StradellaChordFinderResult; index: number }[];
   originalIndex: number;
@@ -26,9 +31,13 @@ export function captureStradellaBatch({
       const svg = currentSvg();
       if (!svg) throw new Error("Diagram SVG is unavailable.");
       const safeName = (filenameKey(candidate, index) ?? `realization-${index + 1}`)
-        .replace(/#/g, "sharp").replace(/♯/g, "sharp").replace(/♭/g, "flat")
-        .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "")
+        .replace(/#/g, "sharp")
+        .replace(/♯/g, "sharp")
+        .replace(/♭/g, "flat")
+        .normalize("NFKD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
         .slice(0, 140);
       const rect = svg.viewBox.baseVal;
       snapshots.push({

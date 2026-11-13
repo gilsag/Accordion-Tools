@@ -14,11 +14,7 @@ import type { DiagramButton } from "../../types";
 import { buttonTones, isBassButton, isChordButton } from "./voicings";
 
 export type StradellaBassRole =
-  | "none"
-  | "root"
-  | "non-root"
-  | "multiple-with-root"
-  | "multiple-without-root";
+  "none" | "root" | "non-root" | "multiple-with-root" | "multiple-without-root";
 
 /** A proposed voicing character, never a claim about exact reed octaves. */
 export type StradellaInversionCharacter = "root-supported" | "potential-slash" | "indeterminate";
@@ -63,9 +59,12 @@ export function analyzeStradellaRegistralVoicing(
   const chordButtons = playbackButtons.filter(isChordButton);
   const bassPitchClasses = [...new Set(bassButtons.flatMap(buttonTones))];
   const presetChordPitchClasses = [...new Set(chordButtons.flatMap(buttonTones))];
-  const bassChordOverlaps = bassPitchClasses.filter((pitch) => presetChordPitchClasses.includes(pitch));
+  const bassChordOverlaps = bassPitchClasses.filter((pitch) =>
+    presetChordPitchClasses.includes(pitch),
+  );
   const rootBassSupported = rootPitchClass !== null && bassPitchClasses.includes(rootPitchClass);
-  const rootInPresetChords = rootPitchClass !== null && presetChordPitchClasses.includes(rootPitchClass);
+  const rootInPresetChords =
+    rootPitchClass !== null && presetChordPitchClasses.includes(rootPitchClass);
   const rootPitchClassPresent = rootBassSupported || rootInPresetChords;
   const emphasizedBassPitchClass = bassPitchClasses.length === 1 ? bassPitchClasses[0] : null;
 
@@ -76,10 +75,14 @@ export function analyzeStradellaRegistralVoicing(
     bassRole = rootBassSupported ? "multiple-with-root" : "multiple-without-root";
   }
 
-  const potentialSlashBass = chordButtons.length > 0 && emphasizedBassPitchClass !== null &&
-    !rootBassSupported && rootPitchClass !== null && rootPitchClassPresent
-    ? emphasizedBassPitchClass
-    : null;
+  const potentialSlashBass =
+    chordButtons.length > 0 &&
+    emphasizedBassPitchClass !== null &&
+    !rootBassSupported &&
+    rootPitchClass !== null &&
+    rootPitchClassPresent
+      ? emphasizedBassPitchClass
+      : null;
 
   const inversionCharacter: StradellaInversionCharacter =
     rootBassSupported && bassPitchClasses.length === 1 && chordButtons.length > 0

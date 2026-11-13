@@ -2,12 +2,11 @@ import { translateKnownLabel } from "../../i18n/catalog";
 /* Treble Chord Finder controls. Full theoretical harmony and a practical
    keyboard voicing are distinct options, even for the same chord symbol. */
 
-import type {
-  FinderChordInversion,
-  FinderChordOctave,
-  FinderChordPattern,
-} from "../../types";
-import { CHORD_FINDER_INVERSION_OPTIONS, type TrebleChordVoicingMode } from "../../tools/chordFinderTools";
+import type { FinderChordInversion, FinderChordOctave, FinderChordPattern } from "../../types";
+import {
+  CHORD_FINDER_INVERSION_OPTIONS,
+  type TrebleChordVoicingMode,
+} from "../../tools/chordFinderTools";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
 import { isExtendedChord } from "../../music/chordVoicingPolicy";
@@ -61,20 +60,18 @@ export function TrebleChordFinderPanel({
   const { t, language } = useI18n();
   return (
     <>
-      <p className="hint">
-        {t("tools.trebleIntro")}
-      </p>
+      <p className="hint">{t("tools.trebleIntro")}</p>
       <details className="tool-details">
         <summary>{t("tools.moreExplanation")}</summary>
-        <p className="hint">
-          {t("ui.trebleMoreHelp")}
-        </p>
+        <p className="hint">{t("ui.trebleMoreHelp")}</p>
         {isActive && <p className="hint">{realizationExplanation}</p>}
       </details>
 
       <fieldset className="tool-fieldset">
         <label>
-          <span className="label-line">{t("tools.chordRoot")} <HelpTip text={t("tools.chordRootHelp")} /></span>
+          <span className="label-line">
+            {t("tools.chordRoot")} <HelpTip text={t("tools.chordRootHelp")} />
+          </span>
           <select value={root} onChange={(event) => onRootChange(event.target.value)}>
             {FINDER_ROOT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -85,7 +82,9 @@ export function TrebleChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">{t("tools.rootOctave")} <HelpTip text={t("ui.trebleRootOctaveHelp")} /></span>
+          <span className="label-line">
+            {t("tools.rootOctave")} <HelpTip text={t("ui.trebleRootOctaveHelp")} />
+          </span>
           <select
             value={octave}
             onChange={(event) => onOctaveChange(Number(event.target.value) as FinderChordOctave)}
@@ -99,7 +98,9 @@ export function TrebleChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">{t("tools.chordType")} <HelpTip text={t("ui.trebleChordTypeHelp")} /></span>
+          <span className="label-line">
+            {t("tools.chordType")} <HelpTip text={t("ui.trebleChordTypeHelp")} />
+          </span>
           <select
             value={pattern}
             onChange={(event) => onPatternChange(event.target.value as FinderChordPattern)}
@@ -113,7 +114,9 @@ export function TrebleChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">{t("tools.inversion")} <HelpTip text={t("ui.trebleInversionHelp")} /></span>
+          <span className="label-line">
+            {t("tools.inversion")} <HelpTip text={t("ui.trebleInversionHelp")} />
+          </span>
           <select
             value={inversion}
             onChange={(event) => onInversionChange(event.target.value as FinderChordInversion)}
@@ -127,7 +130,9 @@ export function TrebleChordFinderPanel({
         </label>
 
         <label>
-          <span className="label-line">{t("tools.voicing")} <HelpTip text={t("ui.trebleVoicingHelp")} /></span>
+          <span className="label-line">
+            {t("tools.voicing")} <HelpTip text={t("ui.trebleVoicingHelp")} />
+          </span>
           <select
             value={voicingMode}
             onChange={(event) => onVoicingModeChange(event.target.value as TrebleChordVoicingMode)}
@@ -137,19 +142,30 @@ export function TrebleChordFinderPanel({
             <option value="practical">{t("tools.practicalVoicing")}</option>
           </select>
         </label>
-        {isExtendedChord(pattern) && (
-          <p className="hint">{t("ui.extendedTrebleHint")}</p>
-        )}
+        {isExtendedChord(pattern) && <p className="hint">{t("ui.extendedTrebleHint")}</p>}
         <div className="result-card">
           <div className="result-card-title">{t("tools.trebleResult")}</div>
-          <p>{t("tools.target")}: {targetToneText}</p>
-          <p>{t("tools.buttons")}: <strong>{buttonCount}</strong></p>
-          <p>{t("tools.realizationStatus")}: <strong>{realizationStatus}</strong></p>
-          <p>{t("tools.status")}: <strong>{isActive && buttonCount > 0 ? t("tools.shown") : t("tools.ready")}</strong></p>
+          <p>
+            {t("tools.target")}: {targetToneText}
+          </p>
+          <p>
+            {t("tools.buttons")}: <strong>{buttonCount}</strong>
+          </p>
+          <p>
+            {t("tools.realizationStatus")}: <strong>{realizationStatus}</strong>
+          </p>
+          <p>
+            {t("tools.status")}:{" "}
+            <strong>{isActive && buttonCount > 0 ? t("tools.shown") : t("tools.ready")}</strong>
+          </p>
         </div>
 
         <div className="button-row">
-          <button type="button" className={`small-button ${isActive ? "active-tool" : ""}`} onClick={onToggleActive}>
+          <button
+            type="button"
+            className={`small-button ${isActive ? "active-tool" : ""}`}
+            onClick={onToggleActive}
+          >
             {isActive ? t("tools.hideChord") : t("tools.showChord")}
           </button>
           <button className="small-button" onClick={onPlay} disabled={buttonCount === 0}>

@@ -125,8 +125,7 @@ export function intervalsForScaleFinder(pattern: FinderScalePattern) {
 /** Converts an absolute semitone number into normalized pitch class and octave. */
 function absoluteToPitch(absoluteSemitone: number) {
   const octave = Math.floor(absoluteSemitone / 12);
-  const pitchClass =
-    INDEX_TO_PITCH[((absoluteSemitone % 12) + 12) % 12];
+  const pitchClass = INDEX_TO_PITCH[((absoluteSemitone % 12) + 12) % 12];
 
   return { pitchClass, octave };
 }
@@ -176,8 +175,7 @@ function chooseNextCandidate(
   if (!previous) return chooseRootCandidate(pool);
 
   return [...pool].sort((a, b) => {
-    const distanceDifference =
-      buttonDistance(a, previous) - buttonDistance(b, previous);
+    const distanceDifference = buttonDistance(a, previous) - buttonDistance(b, previous);
 
     if (Math.abs(distanceDifference) > 0.001) {
       return distanceDifference;
@@ -203,25 +201,14 @@ export function getScaleFinderTrebleButtons(
   const result: DiagramButton[] = [];
 
   intervals.forEach((interval, index) => {
-    const { pitchClass, octave } = absoluteToPitch(
-      rootAbsolute + interval,
-    );
+    const { pitchClass, octave } = absoluteToPitch(rootAbsolute + interval);
 
-    const candidates = candidatesForPitch(
-      buttons,
-      pitchClass,
-      octave,
-      rowLimit,
-    );
+    const candidates = candidatesForPitch(buttons, pitchClass, octave, rowLimit);
 
     const selected =
       index === 0
         ? chooseRootCandidate(candidates)
-        : chooseNextCandidate(
-            candidates,
-            result[result.length - 1],
-            usedIds,
-          );
+        : chooseNextCandidate(candidates, result[result.length - 1], usedIds);
 
     if (selected) {
       usedIds.add(selected.id);

@@ -20,7 +20,8 @@ export function registralPreferenceAdjustment(registral: StradellaRegistralAnaly
   // an unambiguous root-versus-chord-register distinction. Multiple sounding
   // bass pitches have no reliable lowest-note interpretation in this model.
   return registral.inversionCharacter === "root-supported" &&
-    registral.rootBassSupported && registral.chordButtonCount > 0 &&
+    registral.rootBassSupported &&
+    registral.chordButtonCount > 0 &&
     registral.bassPitchClasses.length === 1
     ? -ROOT_BASS_SUPPORT_BONUS
     : 0;

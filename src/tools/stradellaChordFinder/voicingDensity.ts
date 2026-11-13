@@ -18,12 +18,20 @@ export type CloseVoicingObservation = {
 };
 
 /** Order matters only for choosing the most informative pair, not harmonic identity. */
-export function analyzeVoicingDensity(notes: readonly ModeledStradellaNote[]): CloseVoicingObservation {
-  const unique = [...new Map(notes.map((note) => [note.midi, note])).values()]
-    .sort((a, b) => a.midi - b.midi);
-  const empty: CloseVoicingObservation = { closestSemitone: null, clusterSize: 0, penalty: 0, note: null };
+export function analyzeVoicingDensity(
+  notes: readonly ModeledStradellaNote[],
+): CloseVoicingObservation {
+  const unique = [...new Map(notes.map((note) => [note.midi, note])).values()].sort(
+    (a, b) => a.midi - b.midi,
+  );
+  const empty: CloseVoicingObservation = {
+    closestSemitone: null,
+    clusterSize: 0,
+    penalty: 0,
+    note: null,
+  };
   if (unique.length < 2) return empty;
-  const semitones: Array<[typeof unique[number], typeof unique[number]]> = [];
+  const semitones: Array<[(typeof unique)[number], (typeof unique)[number]]> = [];
   let clusterSize = 1;
   let running = 1;
   for (let i = 1; i < unique.length; i += 1) {
@@ -40,14 +48,23 @@ export function analyzeVoicingDensity(notes: readonly ModeledStradellaNote[]): C
   // A semitone clash has a meaningful ranking cost but does not make a
   // realization harmonically invalid. Keep physical ergonomics independent.
   const highPairs = semitones.length - lowPairs - middlePairs;
-  const penalty = Math.min(8, lowPairs * 4 + middlePairs * 3 + highPairs * 1.75 +
-    (clusterSize >= 4 ? 0.35 : clusterSize >= 3 ? 0.2 : 0));
-  const closestSemitone: [string,string] | null = closest
-    ? [`${closest[0].pitchClass}${closest[0].octave}`, `${closest[1].pitchClass}${closest[1].octave}`] : null;
+  const penalty = Math.min(
+    8,
+    lowPairs * 4 +
+      middlePairs * 3 +
+      highPairs * 1.75 +
+      (clusterSize >= 4 ? 0.35 : clusterSize >= 3 ? 0.2 : 0),
+  );
+  const closestSemitone: [string, string] | null = closest
+    ? [
+        `${closest[0].pitchClass}${closest[0].octave}`,
+        `${closest[1].pitchClass}${closest[1].octave}`,
+      ]
+    : null;
   const parts: string[] = [];
   if (closestSemitone) parts.push(`close ${closestSemitone[0]}–${closestSemitone[1]} semitone`);
   if (clusterSize >= 4) parts.push(`${clusterSize}-note close cluster`);
-  return { closestSemitone, clusterSize, penalty, note: parts.length ? parts.join('; ') : null };
+  return { closestSemitone, clusterSize, penalty, note: parts.length ? parts.join("; ") : null };
 }
 
 /** More consequential, register-dependent congestion cost for five-plus-tone
@@ -78,7 +95,8 @@ export function extendedVoicingDensityPenalty(notes: readonly ModeledStradellaNo
 export type MinimumNominalGap = 0 | 2 | 3;
 
 export function passesNominalGapFilter(
-  notes: readonly ModeledStradellaNote[], minimumGap: MinimumNominalGap,
+  notes: readonly ModeledStradellaNote[],
+  minimumGap: MinimumNominalGap,
 ): boolean {
   if (minimumGap === 0) return true;
   const pitches = [...new Set(notes.map((note) => note.midi))].sort((a, b) => a - b);

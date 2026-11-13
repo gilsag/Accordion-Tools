@@ -35,7 +35,7 @@ import type {
   StradellaChordFinderMode,
   TrebleLayout,
   TrebleSizePreset,
-  TitleMode
+  TitleMode,
 } from "../types";
 import type { StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
 import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";

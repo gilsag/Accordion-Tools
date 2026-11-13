@@ -11,14 +11,23 @@ const TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];
 describe("Tools panel", () => {
   test("the Stradella side lists its finder, the assistant and the bass player", () => {
     expect(toolsListedFor("accordion", "stradella")).toEqual([
-      "scaleFinder", "stradellaChordFinder", "progressionAssistant",
-      "annotateDiagram", "bassPatternPlayer", "rhythmTrainer", "abcPlayer",
+      "scaleFinder",
+      "stradellaChordFinder",
+      "progressionAssistant",
+      "annotateDiagram",
+      "bassPatternPlayer",
+      "rhythmTrainer",
+      "abcPlayer",
     ]);
   });
 
   test("the treble side lists its own Chord Finder and no Stradella-only tool", () => {
     expect(toolsListedFor("accordion", "treble")).toEqual([
-      "scaleFinder", "chordFinder", "annotateDiagram", "rhythmTrainer", "abcPlayer",
+      "scaleFinder",
+      "chordFinder",
+      "annotateDiagram",
+      "rhythmTrainer",
+      "abcPlayer",
     ]);
   });
 
@@ -29,7 +38,9 @@ describe("Tools panel", () => {
 
   test("every registered tool has controls, a name and a summary, and is listed somewhere", () => {
     const listed = new Set([
-      ...toolsListedFor("accordion", "stradella"), ...toolsListedFor("accordion", "treble"), ...toolsListedFor("harmony", "treble"),
+      ...toolsListedFor("accordion", "stradella"),
+      ...toolsListedFor("accordion", "treble"),
+      ...toolsListedFor("harmony", "treble"),
     ]);
     for (const tool of TOOL_IDS) {
       expect(TOOL_SECTIONS[tool], `${tool} has no section component`).toBeTruthy();
@@ -44,14 +55,30 @@ describe("Tools panel", () => {
 
 describe("Settings panel", () => {
   const listedIn = (workspace: "accordion" | "harmony") =>
-    SETTINGS_SECTIONS.filter((section) => section.workspace === "both" || section.workspace === workspace).map(({ id }) => id);
+    SETTINGS_SECTIONS.filter(
+      (section) => section.workspace === "both" || section.workspace === workspace,
+    ).map(({ id }) => id);
 
   test("accordion workspaces list the instrument, notation, appearance, sound and title sections", () => {
-    expect(listedIn("accordion")).toEqual(["instrument", "notation", "musicNotation", "appearance", "sound", "title", "about"]);
+    expect(listedIn("accordion")).toEqual([
+      "instrument",
+      "notation",
+      "musicNotation",
+      "appearance",
+      "sound",
+      "title",
+      "about",
+    ]);
   });
 
   test("the Harmony workspace lists its own appearance and Harmony sections", () => {
-    expect(listedIn("harmony")).toEqual(["musicNotation", "appearance", "sound", "harmony", "about"]);
+    expect(listedIn("harmony")).toEqual([
+      "musicNotation",
+      "appearance",
+      "sound",
+      "harmony",
+      "about",
+    ]);
   });
 
   test("a section id appears once per workspace, so one section is open at a time", () => {

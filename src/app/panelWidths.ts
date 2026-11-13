@@ -18,7 +18,12 @@ export const MAX_PANEL_VIEWPORT_SHARE = "40vw";
 
 /** Clamps a dragged width to the panel's limits and to what the window can
  * spare beside the other panel and the diagram. */
-export function clampPanelWidth(panel: ResizablePanel, width: number, viewportWidth: number, otherPanelWidth: number) {
+export function clampPanelWidth(
+  panel: ResizablePanel,
+  width: number,
+  viewportWidth: number,
+  otherPanelWidth: number,
+) {
   const { min, max } = PANEL_WIDTH_LIMITS[panel];
   const room = viewportWidth - otherPanelWidth - MIN_WORKSPACE_WIDTH;
   return Math.round(Math.max(min, Math.min(max, room, width)));
@@ -37,7 +42,8 @@ export function parseStoredPanelWidths(raw: string | null): PanelWidths {
     for (const panel of ["left", "inspector"] as const) {
       const value = parsed?.[panel];
       const { min, max } = PANEL_WIDTH_LIMITS[panel];
-      if (typeof value === "number" && Number.isFinite(value)) widths[panel] = Math.max(min, Math.min(max, Math.round(value)));
+      if (typeof value === "number" && Number.isFinite(value))
+        widths[panel] = Math.max(min, Math.min(max, Math.round(value)));
     }
   } catch {
     // A damaged entry falls back to the default widths.

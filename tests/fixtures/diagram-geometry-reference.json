@@ -123,10 +123,7 @@
       "titleSize": 32,
       "finalTitle": "CmMaj9",
       "trebleVoicingNote": "",
-      "finderAnnotationDisplayLines": [
-        "Identity: CmMaj9",
-        "Registral voicing: C3, E♭3, B3"
-      ],
+      "finderAnnotationDisplayLines": ["Identity: CmMaj9", "Registral voicing: C3, E♭3, B3"],
       "finderExplanationFontSize": 17,
       "finderVoicingChartVisible": true,
       "voicingChartHeight": 195,

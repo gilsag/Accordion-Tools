@@ -1,11 +1,20 @@
 /** Stable display options and label normalization extracted from the application
  * coordinator. These remain presentation-only: no React state or musical search. */
-import type { BassCount, PianoTrebleRange, SequenceColorPreset, SequenceDisplayMode, TrebleSizePreset } from "../types";
+import type {
+  BassCount,
+  PianoTrebleRange,
+  SequenceColorPreset,
+  SequenceDisplayMode,
+  TrebleSizePreset,
+} from "../types";
 import { PIANO_TREBLE_RANGE_PRESETS } from "../pianoTreble";
 import type { InterfaceLanguage } from "../i18n/catalog";
 import { translate } from "../i18n/catalog";
 import { progressionName } from "../i18n/optionLabels";
-import { chordProgressionSteps, type ChordProgressionDefinition } from "../tools/bassPatternPlayerTools";
+import {
+  chordProgressionSteps,
+  type ChordProgressionDefinition,
+} from "../tools/bassPatternPlayerTools";
 
 /** Dropdown options for the supported Stradella bass presets. */
 export const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [
@@ -83,7 +92,10 @@ function normalizeProgressionText(value: string) {
     .toLowerCase();
 }
 
-export function formatProgressionOptionLabel(progression: ChordProgressionDefinition, language: InterfaceLanguage) {
+export function formatProgressionOptionLabel(
+  progression: ChordProgressionDefinition,
+  language: InterfaceLanguage,
+) {
   const localizedName = progressionName(progression.id, progression.name, language);
   const chordList = chordProgressionSteps(progression)
     .map((step) => step.symbol)
@@ -92,7 +104,8 @@ export function formatProgressionOptionLabel(progression: ChordProgressionDefini
 
   const normalizedName = normalizeProgressionText(progression.name);
   const normalizedChords = normalizeProgressionText(chordList);
-  if (normalizedName.includes(normalizedChords)) return `${translate(language, "ui.progression")} — ${chordList}`;
+  if (normalizedName.includes(normalizedChords))
+    return `${translate(language, "ui.progression")} — ${chordList}`;
 
   return `${localizedName} — ${chordList}`;
 }

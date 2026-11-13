@@ -1,4 +1,13 @@
-import { test, expect, openApp, openTool, closeToolsSheet, isPhone, recordAudioStarts, type Page } from "./fixtures";
+import {
+  test,
+  expect,
+  openApp,
+  openTool,
+  closeToolsSheet,
+  isPhone,
+  recordAudioStarts,
+  type Page,
+} from "./fixtures";
 
 async function playThenStop(page: Page, audioStarts: () => Promise<number>) {
   const bar = page.locator(".playback-bar");
@@ -49,7 +58,10 @@ test("the Sequence player shows it is playing until the sequence ends", async ({
   const audioStarts = await recordAudioStarts(page);
   await openApp(page);
   await openTool(page, "Annotate Diagram");
-  await page.getByRole("group", { name: "Click mode" }).getByRole("button", { name: "Sequence" }).click();
+  await page
+    .getByRole("group", { name: "Click mode" })
+    .getByRole("button", { name: "Sequence" })
+    .click();
   await closeToolsSheet(page);
   const diagramButtons = page.locator("svg [data-button-id]");
   for (const index of [20, 21, 22]) await diagramButtons.nth(index).click();
@@ -71,7 +83,6 @@ test("the Bass Pattern tempo names its beat", async ({ page }) => {
   await expect(tempo).toContainText("dotted-quarter beat");
 });
 
-
 test("a two-voice tune plays both hands at once, or one side when chosen", async ({ page }) => {
   const audioStarts = await recordAudioStarts(page);
   await openApp(page);
@@ -91,7 +102,9 @@ test("a two-voice tune plays both hands at once, or one side when chosen", async
   const stradella = both.locator("[data-hand='stradella']");
   await expect(both).toHaveCount(1);
   await expect(page.locator("svg .bellows-strip"), "no bellows guide in Both view").toHaveCount(0);
-  await expect(page.locator("svg .stradella-row-label"), "no row names in Both view").toHaveCount(0);
+  await expect(page.locator("svg .stradella-row-label"), "no row names in Both view").toHaveCount(
+    0,
+  );
   if (isPhone(page)) {
     // Phones show one manual at a time: the current side first, Treble on request.
     const show = page.getByRole("group", { name: "Show" });
@@ -113,8 +126,12 @@ test("a two-voice tune plays both hands at once, or one side when chosen", async
   await bar.locator(".playback-bar-play").click();
   await expect.poll(audioStarts, { timeout: 15_000 }).toBeGreaterThan(before + 1);
   if (!isPhone(page)) {
-    await expect(treble.locator(".abc-match").first(), "melody lights the treble").toBeVisible({ timeout: 10_000 });
-    await expect(stradella.locator(".abc-match").first(), "bass lights the Stradella").toBeVisible({ timeout: 10_000 });
+    await expect(treble.locator(".abc-match").first(), "melody lights the treble").toBeVisible({
+      timeout: 10_000,
+    });
+    await expect(stradella.locator(".abc-match").first(), "bass lights the Stradella").toBeVisible({
+      timeout: 10_000,
+    });
   }
   await bar.getByRole("button", { name: "Pause" }).click();
   if (!isPhone(page)) {

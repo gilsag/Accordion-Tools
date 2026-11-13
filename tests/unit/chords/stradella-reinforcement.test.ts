@@ -1,26 +1,46 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../../../src/stradella.ts";
 import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
-import { combinationTones, isBassButton } from "../../../src/tools/stradellaChordFinder/voicings.ts";
+import {
+  combinationTones,
+  isBassButton,
+} from "../../../src/tools/stradellaChordFinder/voicings.ts";
 import type { DiagramButton, FinderChordPattern } from "../../../src/types.ts";
 import { test } from "vitest";
 
 const buttons = generateStradella("96", 38, 1.18, "natural");
 const find = (root: string, pattern: FinderChordPattern, maxButtons = 4, spanColumns = 5.5) =>
-  getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true, maxButtons, spanColumns);
-const labels = (played: DiagramButton[]) => played.map((button) =>
-  isBassButton(button) ? `${button.kind}:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`);
+  getStradellaChordFinderResults(
+    buttons,
+    root,
+    pattern,
+    "bass-and-chords",
+    true,
+    maxButtons,
+    spanColumns,
+  );
+const labels = (played: DiagramButton[]) =>
+  played.map((button) =>
+    isBassButton(button)
+      ? `${button.kind}:${button.pitchClass}`
+      : `${button.kind}:${button.chordRoot}`,
+  );
 
 test("Root reinforcement is a separate sounding button even when it adds no *new* pitch class to a triad", () => {
   // Root reinforcement is a separate sounding button even when it adds
   // no *new* pitch class to a triad. The regular chord-only option is retained.
   {
     const results = find("C", "major-triad", 2);
-    const chordOnly = results.find((item) => labels(item.playbackButtons).join("|") === "chord-major:C");
+    const chordOnly = results.find(
+      (item) => labels(item.playbackButtons).join("|") === "chord-major:C",
+    );
     assert.ok(chordOnly && chordOnly.exact && !chordOnly.registral.rootBassSupported);
-    const supported = results.find((item) =>
-      item.playbackButtons.length === 2 && item.registral.rootBassSupported &&
-      item.registral.bassChordOverlaps.includes("C"));
+    const supported = results.find(
+      (item) =>
+        item.playbackButtons.length === 2 &&
+        item.registral.rootBassSupported &&
+        item.registral.bassChordOverlaps.includes("C"),
+    );
     assert.ok(supported, "C bass + C major must survive pitch-class-redundancy filtering");
     assert.equal(supported.exact, true);
     assert.equal(supported.registral.bassButtonCount, 1);
@@ -29,10 +49,18 @@ test("Root reinforcement is a separate sounding button even when it adds no *new
     assert.deepEqual(supported.extraPitches, []);
     assert.deepEqual(supported.missingPitches, []);
     assert.equal(supported.registral.inversionCharacter, "root-supported");
-    assert.equal(find("C", "major-triad", 1).some((item) => item.registral.bassChordOverlaps.includes("C")), false,
-      "A reinforcing bass must respect the maximum button count");
-    assert.equal(find("C", "major-triad", 2, 0.1).some((item) => item.registral.bassChordOverlaps.includes("C")), false,
-      "A reinforcing bass must respect the configured maximum physical span");
+    assert.equal(
+      find("C", "major-triad", 1).some((item) => item.registral.bassChordOverlaps.includes("C")),
+      false,
+      "A reinforcing bass must respect the maximum button count",
+    );
+    assert.equal(
+      find("C", "major-triad", 2, 0.1).some((item) =>
+        item.registral.bassChordOverlaps.includes("C"),
+      ),
+      false,
+      "A reinforcing bass must respect the configured maximum physical span",
+    );
   }
 });
 
@@ -40,8 +68,12 @@ test("This search adds one root bass only to chord-button-only bases", () => {
   // This search adds one root bass only to chord-button-only bases; no second
   // bass note or alternative non-root reinforcement is introduced.
   for (const [root, pattern] of [
-    ["C", "major-triad"], ["C", "dominant11"], ["C", "minor11"],
-    ["C", "major13"], ["C", "dominant13"], ["E", "minor7"],
+    ["C", "major-triad"],
+    ["C", "dominant11"],
+    ["C", "minor11"],
+    ["C", "major13"],
+    ["C", "dominant13"],
+    ["E", "minor7"],
   ] as [string, FinderChordPattern][]) {
     const candidates = find(root, pattern);
     const seen = new Set<string>();
@@ -58,17 +90,39 @@ test("This search adds one root bass only to chord-button-only bases", () => {
       });
       if (redundant.length) {
         assert.equal(redundant.length, 1, `${root} ${pattern}: at most one redundant button`);
-        assert.equal(isBassButton(redundant[0]), true, `${root} ${pattern}: only bass reinforcement may be redundant`);
-        assert.equal(redundant[0].pitchClass, root, `${root} ${pattern}: only root reinforcement permitted`);
-        assert.equal(candidate.registral.bassButtonCount, 1,
-          `${root} ${pattern}: no secondary bass combined with reinforced root`);
-        assert.ok(candidate.registral.bassChordOverlaps.includes(root), `${root} ${pattern}: root must also sound in chords`);
+        assert.equal(
+          isBassButton(redundant[0]),
+          true,
+          `${root} ${pattern}: only bass reinforcement may be redundant`,
+        );
+        assert.equal(
+          redundant[0].pitchClass,
+          root,
+          `${root} ${pattern}: only root reinforcement permitted`,
+        );
+        assert.equal(
+          candidate.registral.bassButtonCount,
+          1,
+          `${root} ${pattern}: no secondary bass combined with reinforced root`,
+        );
+        assert.ok(
+          candidate.registral.bassChordOverlaps.includes(root),
+          `${root} ${pattern}: root must also sound in chords`,
+        );
       }
       // Canonicalize sounded musical button roles to catch duplicate realizations
       // at alternative physical positions or bass/counterbass locations.
-      const recipe = candidate.playbackButtons.map((button) => isBassButton(button)
-        ? `bass:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`).sort().join("|");
-      assert.equal(seen.has(recipe), false, `${root} ${pattern}: duplicate musical recipe ${recipe}`);
+      const recipe = candidate.playbackButtons
+        .map((button) =>
+          isBassButton(button) ? `bass:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`,
+        )
+        .sort()
+        .join("|");
+      assert.equal(
+        seen.has(recipe),
+        false,
+        `${root} ${pattern}: duplicate musical recipe ${recipe}`,
+      );
       seen.add(recipe);
     }
   }
@@ -83,12 +137,20 @@ test("Established musical realizations remain accessible even as the candidate l
     const cmaj7 = find("C", "major7", 3)[0];
     assert.deepEqual(labels(cmaj7.playbackButtons), ["bass-counterbass:B", "chord-major:C"]);
     const cmaj13 = find("C", "major13");
-    assert.ok(cmaj13.some((item) => labels(item.playbackButtons).join("|") ===
-      "chord-minor:A|chord-diminished7:D"));
-    assert.ok(cmaj13.some((item) => labels(item.playbackButtons).join("|") ===
-      "chord-minor:A|bass-root:B"));
-    assert.ok(cmaj13.some((item) => item.registral.rootBassSupported &&
-      item.registral.bassChordOverlaps.includes("C")),
-      "Extended chords should also expose physically feasible root reinforcement");
+    assert.ok(
+      cmaj13.some(
+        (item) => labels(item.playbackButtons).join("|") === "chord-minor:A|chord-diminished7:D",
+      ),
+    );
+    assert.ok(
+      cmaj13.some((item) => labels(item.playbackButtons).join("|") === "chord-minor:A|bass-root:B"),
+    );
+    assert.ok(
+      cmaj13.some(
+        (item) =>
+          item.registral.rootBassSupported && item.registral.bassChordOverlaps.includes("C"),
+      ),
+      "Extended chords should also expose physically feasible root reinforcement",
+    );
   }
 });

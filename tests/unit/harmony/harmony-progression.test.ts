@@ -1,8 +1,19 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../../../src/stradella";
-import { estimateStradellaButtonSpacing, optimizeStradellaProgression, physicalButtonMovement, progressionBassPulseButtons, progressionRealizationsForChord, progressionRealizationKey, type HarmonyProgressionChord } from "../../../src/tools/harmonyExplorer/progression";
+import {
+  estimateStradellaButtonSpacing,
+  optimizeStradellaProgression,
+  physicalButtonMovement,
+  progressionBassPulseButtons,
+  progressionRealizationsForChord,
+  progressionRealizationKey,
+  type HarmonyProgressionChord,
+} from "../../../src/tools/harmonyExplorer/progression";
 import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
-import { finderPatternForHarmonyFamily, pitchClassNameFromNumber } from "../../../src/tools/harmonyExplorer/integration";
+import {
+  finderPatternForHarmonyFamily,
+  pitchClassNameFromNumber,
+} from "../../../src/tools/harmonyExplorer/integration";
 import type { ChordFamilyId } from "../../../src/tools/harmonyExplorer/music";
 import { test } from "vitest";
 
@@ -47,12 +58,14 @@ test("Whole-progression optimization should beat simply choosing the first-ranke
       true,
     )[0];
   });
-  const independentPhysical = independent.slice(1).reduce((sum, result, index) =>
-    sum + physicalButtonMovement(
-      independent[index].playbackButtons,
-      result.playbackButtons,
-      spacing,
-    ), 0);
+  const independentPhysical = independent
+    .slice(1)
+    .reduce(
+      (sum, result, index) =>
+        sum +
+        physicalButtonMovement(independent[index].playbackButtons, result.playbackButtons, spacing),
+      0,
+    );
   assert.ok(plan.totalPhysicalMovement < independentPhysical);
 });
 
@@ -61,17 +74,29 @@ test("Augmented dominant sevenths now have an exact Finder mapping (7#5)", () =>
     allowApproximations: false,
     handMovementWeight: 0.65,
   });
-  assert.equal(supportedAug7.playable, true, "augmented dominant sevenths should be supported exactly");
+  assert.equal(
+    supportedAug7.playable,
+    true,
+    "augmented dominant sevenths should be supported exactly",
+  );
   assert.equal(supportedAug7.approximateCount, 0);
   assert.deepEqual(supportedAug7.unsupportedLabels, []);
 });
 
 test("Augmented major sevenths remain unmapped", () => {
-  const unsupportedAugMaj7 = optimizeStradellaProgression(buttons, [chord("augMaj7", 0, "augmentedMajor7")], {
-    allowApproximations: false,
-    handMovementWeight: 0.65,
-  });
-  assert.equal(unsupportedAugMaj7.playable, false, "unsupported Harmony family should be reported, not guessed");
+  const unsupportedAugMaj7 = optimizeStradellaProgression(
+    buttons,
+    [chord("augMaj7", 0, "augmentedMajor7")],
+    {
+      allowApproximations: false,
+      handMovementWeight: 0.65,
+    },
+  );
+  assert.equal(
+    unsupportedAugMaj7.playable,
+    false,
+    "unsupported Harmony family should be reported, not guessed",
+  );
   assert.deepEqual(unsupportedAugMaj7.unsupportedLabels, ["C+maj7"]);
 });
 
@@ -79,9 +104,11 @@ test("Browse the entire unchanged Finder ranking (beyond the automatic top-five)
   // Browse the entire unchanged Finder ranking (beyond the automatic top-five)
   // and pin the C-major preset chord button rather than bass/counterbass only.
   const cMajorOptions = progressionRealizationsForChord(buttons, progression[0], false);
-  const cPreset = cMajorOptions.find(({ result }) => result.playbackButtons.some(
-    (button) => button.kind === "chord-major" && button.chordRoot === "C",
-  ));
+  const cPreset = cMajorOptions.find(({ result }) =>
+    result.playbackButtons.some(
+      (button) => button.kind === "chord-major" && button.chordRoot === "C",
+    ),
+  );
   assert.ok(cPreset, "C-major preset chord must remain an available manual realization");
   const cPresetKey = progressionRealizationKey(cPreset.result);
   const manualPlan = optimizeStradellaProgression(buttons, progression, {
@@ -93,9 +120,11 @@ test("Browse the entire unchanged Finder ranking (beyond the automatic top-five)
   assert.equal(manualPlan.playable, true);
   assert.equal(manualPlan.steps[0].realizationIndex, cPreset.realizationIndex);
   assert.equal(progressionRealizationKey(manualPlan.steps[0].result), cPresetKey);
-  assert.ok(manualPlan.steps[0].result.playbackButtons.some((button) =>
-    button.kind === "chord-major" && button.chordRoot === "C",
-  ));
+  assert.ok(
+    manualPlan.steps[0].result.playbackButtons.some(
+      (button) => button.kind === "chord-major" && button.chordRoot === "C",
+    ),
+  );
   assert.ok(manualPlan.steps.slice(1).every((step) => step.result.playable));
   assert.equal(manualPlan.steps[0].transitionFromPrevious, null);
   assert.ok(manualPlan.steps[1].transitionFromPrevious !== null);
@@ -125,9 +154,15 @@ test("Finder results are cached per layout", () => {
   // result objects, and a fresh layout (a new button array) is searched again.
   const g7Again = progressionRealizationsForChord(buttons, chord("g7b", 7, "dominant7"), true);
   const g7Once = progressionRealizationsForChord(buttons, chord("g7c", 7, "dominant7"), true);
-  assert.ok(g7Again.length > 0 && g7Again.every((entry, index) => entry.result === g7Once[index].result), "cached results are reused");
+  assert.ok(
+    g7Again.length > 0 && g7Again.every((entry, index) => entry.result === g7Once[index].result),
+    "cached results are reused",
+  );
   const freshLayout = generateStradella("120", 24, 6, "natural", 0);
   const g7Fresh = progressionRealizationsForChord(freshLayout, chord("g7d", 7, "dominant7"), true);
   assert.notEqual(g7Fresh[0].result, g7Once[0].result, "a new layout is searched again");
-  assert.deepEqual(g7Fresh.map(({ result }) => progressionRealizationKey(result)), g7Once.map(({ result }) => progressionRealizationKey(result)));
+  assert.deepEqual(
+    g7Fresh.map(({ result }) => progressionRealizationKey(result)),
+    g7Once.map(({ result }) => progressionRealizationKey(result)),
+  );
 });

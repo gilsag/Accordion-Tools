@@ -13,7 +13,11 @@ function stepAnchor(buttons: readonly DiagramButton[]) {
  * curved arrow from step to step. Purely visual; it is included in exports
  * because the path is the content being shown.
  */
-export function ProgressionPathLayer({ steps, buttonSize, arrowheadMarkerId }: {
+export function ProgressionPathLayer({
+  steps,
+  buttonSize,
+  arrowheadMarkerId,
+}: {
   steps: readonly (readonly DiagramButton[])[];
   buttonSize: number;
   arrowheadMarkerId: string;
@@ -33,9 +37,12 @@ export function ProgressionPathLayer({ steps, buttonSize, arrowheadMarkerId }: {
         const to = anchors[index + 1];
         if (!from || !to || from.id === to.id) return null;
         return (
-          <path key={`progression-path-${index}`} className="progression-path-arrow"
+          <path
+            key={`progression-path-${index}`}
+            className="progression-path-arrow"
             d={makeSequenceArrowPath(from, to, index, buttonSize, "curved")}
-            markerEnd={`url(#${arrowheadMarkerId})`} />
+            markerEnd={`url(#${arrowheadMarkerId})`}
+          />
         );
       })}
       {[...badges.values()].map(({ button, numbers }) => {
@@ -46,8 +53,22 @@ export function ProgressionPathLayer({ steps, buttonSize, arrowheadMarkerId }: {
         const cy = button.y - buttonSize * 0.46;
         return (
           <g key={`progression-badge-${button.id}`} className="progression-path-badge">
-            <rect x={cx - width / 2} y={cy - radius} width={width} height={2 * radius} rx={radius} />
-            <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central" fontSize={radius * 1.2}>{text}</text>
+            <rect
+              x={cx - width / 2}
+              y={cy - radius}
+              width={width}
+              height={2 * radius}
+              rx={radius}
+            />
+            <text
+              x={cx}
+              y={cy}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fontSize={radius * 1.2}
+            >
+              {text}
+            </text>
           </g>
         );
       })}

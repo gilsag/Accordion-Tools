@@ -12,14 +12,32 @@ type SegmentedChoiceProps<T extends string> = {
 
 /** Both persistent choices remain visible. aria-pressed communicates which is
  * selected; this is not a Show/Hide action whose label should describe a click. */
-export function SegmentedChoice<T extends string>({ label, ariaLabel, value, options, onChange, groupClassName }: SegmentedChoiceProps<T>) {
+export function SegmentedChoice<T extends string>({
+  label,
+  ariaLabel,
+  value,
+  options,
+  onChange,
+  groupClassName,
+}: SegmentedChoiceProps<T>) {
   return (
     <div className="segmented-choice-control">
       <span className="label-line">{label}</span>
-      <div className={groupClassName ? `segmented-choice ${groupClassName}` : "segmented-choice"} role="group" aria-label={ariaLabel ?? (typeof label === "string" ? label : "Choose setting")}>
+      <div
+        className={groupClassName ? `segmented-choice ${groupClassName}` : "segmented-choice"}
+        role="group"
+        aria-label={ariaLabel ?? (typeof label === "string" ? label : "Choose setting")}
+      >
         {options.map((option) => (
-          <button key={option.value} type="button" className={`segmented-choice-button ${value === option.value ? "selected" : ""}`}
-            aria-pressed={value === option.value} onClick={() => onChange(option.value)}>{option.label}</button>
+          <button
+            key={option.value}
+            type="button"
+            className={`segmented-choice-button ${value === option.value ? "selected" : ""}`}
+            aria-pressed={value === option.value}
+            onClick={() => onChange(option.value)}
+          >
+            {option.label}
+          </button>
         ))}
       </div>
     </div>

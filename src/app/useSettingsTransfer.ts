@@ -1,9 +1,23 @@
 import type { ChordDisplayStyle } from "../tools/chordDisplay";
 import { useEffect, useRef } from "react";
 import type { DefaultSettingsFile } from "../settings/settingsSchema";
-import { applyStartupSettings, applyImportedSettings, collectCurrentSettings, type SettingsSetters } from "../settings/settingsController";
-import { fetchDefaultSettingsDocument, parseSettingsDocumentFile, downloadSettingsDocument } from "../settings/settingsPersistence";
-import { clearSavedSession, readSavedSession, serializeSession, writeSavedSession } from "../settings/settingsSession";
+import {
+  applyStartupSettings,
+  applyImportedSettings,
+  collectCurrentSettings,
+  type SettingsSetters,
+} from "../settings/settingsController";
+import {
+  fetchDefaultSettingsDocument,
+  parseSettingsDocumentFile,
+  downloadSettingsDocument,
+} from "../settings/settingsPersistence";
+import {
+  clearSavedSession,
+  readSavedSession,
+  serializeSession,
+  writeSavedSession,
+} from "../settings/settingsSession";
 import type { useLanguageSettings } from "../settings/useLanguageSettings";
 import type { useInstrumentState } from "../instrument/useInstrumentState";
 import type { useDiagramAppearanceState } from "../diagram/useDiagramAppearanceState";
@@ -19,109 +33,294 @@ import type { useScaleFinderState } from "../features/scaleFinder/useScaleFinder
 import type { useTrebleChordFinderState } from "../features/trebleChordFinder/useTrebleChordFinder";
 import type { useSoundSettings } from "../audio/useSoundSettings";
 import type { useNotationSettings } from "../notation/useNotationSettings";
-import type { AccidentalMode, ChordLabelMode, DownloadFormat, InterfaceDensity, NotationMode } from "../types";
+import type {
+  AccidentalMode,
+  ChordLabelMode,
+  DownloadFormat,
+  InterfaceDensity,
+  NotationMode,
+} from "../types";
 import type { Dispatch, SetStateAction } from "react";
 
 /** Quiet period after the last change before the session is stored. */
 const SESSION_SAVE_DELAY_MS = 500;
 
-export type UseSettingsTransferDeps = Pick<ReturnType<typeof useAbcPlayerState>,
-    "abcStradellaMode" | "abcTempoBpm" | "abcTrebleChordSymbolsMode" | "setAbcStradellaMode" |
-    "setAbcTempoBpm" | "setAbcTrebleChordSymbolsMode" | "abcHands" | "setAbcHands"> &
-  Pick<ReturnType<typeof useDiagramAppearanceState>,
-    "accidentalStyle" | "buttonSize" | "buttonStrokeWidth" | "chordFillStrength" |
-    "colorTheme" | "customTitle" | "diagramScale" | "diagramVerticalSpacing" | "labelFont" |
-    "labelFontSize" | "pianoBlackKeyHeightScale" | "pianoBlackKeyWidthScale" |
-    "pianoKeyHeightScale" | "pianoKeyWidthScale" | "referenceStrokeWidth" |
-    "setAccidentalStyle" | "setButtonSize" | "setButtonStrokeWidth" | "setChordFillStrength" |
-    "setColorTheme" | "setCustomTitle" | "setDiagramScale" | "setDiagramVerticalSpacing" |
-    "setLabelFont" | "setLabelFontSize" | "setPianoBlackKeyHeightScale" |
-    "setPianoBlackKeyWidthScale" | "setPianoKeyHeightScale" | "setPianoKeyWidthScale" |
-    "setReferenceStrokeWidth" | "setShowBellowsGuide" | "setShowButtonLabels" |
-    "setShowStatusBar" | "setShowStradellaRowLabels" | "setSpacing" | "setTitleFont" |
-    "setTitleMode" | "setTitleSize" | "setTrebleAngle" | "showBellowsGuide" |
-    "showButtonLabels" | "showStatusBar" | "showStradellaRowLabels" | "spacing" | "titleFont" |
-    "titleMode" | "titleSize" | "trebleAngle"> &
-  Pick<ReturnType<typeof useDiagramAnnotations>,
-    "annotationBold" | "annotationButtonAnchor" | "annotationItalic" |
-    "annotationOffsetPercent" | "setAnnotationBold" | "setAnnotationButtonAnchor" |
-    "setAnnotationItalic" | "setAnnotationOffsetPercent" | "setTextNoteColor" |
-    "setTextNoteFont" | "setTextNoteFontSize" | "textNoteColor" | "textNoteFont" |
-    "textNoteFontSize"> &
-  Pick<ReturnType<typeof useBassPatternState>,
-    "bassPatternBarsPerChord" | "bassPatternChordVoicing" | "bassPatternLoopCount" |
-    "bassPatternLoopMode" | "bassPatternRoot" | "bassPatternTempoBpm" |
-    "setBassPatternBarsPerChord" | "setBassPatternChordVoicing" | "setBassPatternLoopCount" |
-    "setBassPatternLoopMode" | "setBassPatternRoot" | "setBassPatternTempoBpm"> &
-  Pick<ReturnType<typeof useInstrumentState>,
-    "basses" | "pianoTrebleRange" | "setBasses" | "setPianoTrebleRange" |
-    "setShowTrebleOctaves" | "setSide" | "setStradellaBassRegisterGrouping" |
-    "setStradellaBassRegisterOctave" | "setStradellaChordRegisterGrouping" |
-    "setStradellaChordRegisterOctave" | "setTrebleLayout" | "setTrebleRows" | "setTrebleSize" |
-    "showTrebleOctaves" | "side" | "stradellaBassRegisterGrouping" |
-    "stradellaBassRegisterOctave" | "stradellaChordRegisterGrouping" |
-    "stradellaChordRegisterOctave" | "trebleLayout" | "trebleRows" | "trebleSize"> &
-  Pick<ReturnType<typeof useLanguageSettings>,
-    "changeLanguage" | "languagePreference" | "setLanguagePreference" | "t"> &
-  Pick<ReturnType<typeof useTrebleChordFinderState>,
-    "chordFinderInversion" | "chordFinderOctave" | "chordFinderPattern" | "chordFinderRoot" |
-    "setChordFinderInversion" | "setChordFinderOctave" | "setChordFinderPattern" |
-    "setChordFinderRoot"> &
-  Pick<ReturnType<typeof useDiagramOverlays>,
-    "fingeringPosition" | "setFingeringPosition"> &
-  Pick<ReturnType<typeof useHarmonyExplorerState>,
-    "harmonyColorByFamily" | "harmonyDiameter" | "harmonyFontSize" | "harmonyPlaybackStyle" |
-    "harmonyRingVisibility" | "harmonyShowEnharmonics" | "harmonyShowExplanation" |
-    "harmonyShowLegend" | "harmonyShowNoteRing" | "harmonyShowSeparators" |
-    "harmonyShowToneTooltips" | "harmonyVoicingStyle" | "setHarmonyColorByFamily" |
-    "setHarmonyDiameter" | "setHarmonyFontSize" | "setHarmonyPlaybackStyle" |
-    "setHarmonyRingVisibility" | "setHarmonyShowEnharmonics" | "setHarmonyShowExplanation" |
-    "setHarmonyShowLegend" | "setHarmonyShowNoteRing" | "setHarmonyShowSeparators" |
-    "setHarmonyShowToneTooltips" | "setHarmonyVoicingStyle"> &
-  Pick<ReturnType<typeof useHarmonyProgressionState>,
-    "harmonyProgressionHandMovementWeight" | "harmonyProgressionRhythmPattern" |
-    "harmonyProgressionRootPosition" | "setHarmonyProgressionHandMovementWeight" |
-    "setHarmonyProgressionRhythmPattern" | "setHarmonyProgressionRootPosition"> &
-  Pick<ReturnType<typeof useSoundSettings>,
-    "laMelodiosaBassRegister" | "laMelodiosaFollowStradellaRegisters" |
-    "laMelodiosaTrebleRegister" | "setLaMelodiosaBassRegister" |
-    "setLaMelodiosaFollowStradellaRegisters" | "setLaMelodiosaTrebleRegister" |
-    "setSoundArticulation" | "setSoundAttackMs" | "setSoundEnabled" |
-    "setSoundMusetteDetuneCents" | "setSoundNoteDurationMs" | "setSoundReleaseMs" |
-    "setSoundSequenceTempoBpm" | "setSoundSource" | "setSoundVoicePreset" | "setSoundVolume" |
-    "setSoundWaveform" | "setStradellaBassVoicing" | "soundArticulation" | "soundAttackMs" |
-    "soundEnabled" | "soundMusetteDetuneCents" | "soundNoteDurationMs" | "soundReleaseMs" |
-    "soundSequenceTempoBpm" | "soundSource" | "soundVoicePreset" | "soundVolume" |
-    "soundWaveform" | "stradellaBassVoicing"> &
-  Pick<ReturnType<typeof useNotationSettings>,
-    "musicNotationBarsPerLine" | "musicNotationChordFontSize" |
-    "musicNotationIncludeDescription" | "musicNotationIncludeSummary" |
-    "musicNotationIncludeTitle" | "musicNotationScale" | "musicNotationStaffSeparator" |
-    "musicNotationStaffWidth" | "musicNotationUseBarsPerLine" |
-    "stradellaNotationMode" | "stradellaChordQualityLabels" | "stradellaMarkCounterbass" | "musicNotationNoteNamesInNoteheads" | "musicNotationPlacement" | "setMusicNotationPlacement" |
-    "setStradellaNotationMode" | "setStradellaChordQualityLabels" | "setStradellaMarkCounterbass" | "setMusicNotationNoteNamesInNoteheads" |
-    "setMusicNotationBarsPerLine" |
-    "setMusicNotationChordFontSize" | "setMusicNotationIncludeDescription" |
-    "setMusicNotationIncludeSummary" | "setMusicNotationIncludeTitle" |
-    "setMusicNotationScale" | "setMusicNotationStaffSeparator" | "setMusicNotationStaffWidth" |
-    "setMusicNotationUseBarsPerLine"> &
-  Pick<ReturnType<typeof useScaleFinderState>,
-    "scaleFinderDisplayMode" | "scaleFinderPattern" | "scaleFinderRoot" |
-    "scaleFinderRowLimit" | "setScaleFinderDisplayMode" | "setScaleFinderPattern" |
-    "setScaleFinderRoot" | "setScaleFinderRowLimit"> &
-  Pick<ReturnType<typeof useSequenceState>,
-    "sequenceArrowheadSize" | "sequenceColorPreset" | "sequenceDisplayMode" |
-    "sequenceNumberColorPreset" | "sequenceNumberFontSize" | "sequenceNumberPosition" |
-    "sequenceThickness" | "setSequenceArrowheadSize" | "setSequenceColorPreset" |
-    "setSequenceDisplayMode" | "setSequenceNumberColorPreset" | "setSequenceNumberFontSize" |
-    "setSequenceNumberPosition" | "setSequenceThickness"> &
-  Pick<ReturnType<typeof useStradellaChordFinderState>,
-    "setStradellaChordFinderMarkRootBass" | "setStradellaChordFinderMode" |
-    "setStradellaMinimumNominalGap" | "setStradellaNoteLevels" |
-    "setStradellaRequestedBassOnBassButton" | "stradellaChordFinderMarkRootBass" |
-    "stradellaChordFinderMode" | "stradellaMinimumNominalGap" | "stradellaNoteLevels" |
-    "stradellaRequestedBassOnBassButton"> &
-  {
+export type UseSettingsTransferDeps = Pick<
+  ReturnType<typeof useAbcPlayerState>,
+  | "abcStradellaMode"
+  | "abcTempoBpm"
+  | "abcTrebleChordSymbolsMode"
+  | "setAbcStradellaMode"
+  | "setAbcTempoBpm"
+  | "setAbcTrebleChordSymbolsMode"
+  | "abcHands"
+  | "setAbcHands"
+> &
+  Pick<
+    ReturnType<typeof useDiagramAppearanceState>,
+    | "accidentalStyle"
+    | "buttonSize"
+    | "buttonStrokeWidth"
+    | "chordFillStrength"
+    | "colorTheme"
+    | "customTitle"
+    | "diagramScale"
+    | "diagramVerticalSpacing"
+    | "labelFont"
+    | "labelFontSize"
+    | "pianoBlackKeyHeightScale"
+    | "pianoBlackKeyWidthScale"
+    | "pianoKeyHeightScale"
+    | "pianoKeyWidthScale"
+    | "referenceStrokeWidth"
+    | "setAccidentalStyle"
+    | "setButtonSize"
+    | "setButtonStrokeWidth"
+    | "setChordFillStrength"
+    | "setColorTheme"
+    | "setCustomTitle"
+    | "setDiagramScale"
+    | "setDiagramVerticalSpacing"
+    | "setLabelFont"
+    | "setLabelFontSize"
+    | "setPianoBlackKeyHeightScale"
+    | "setPianoBlackKeyWidthScale"
+    | "setPianoKeyHeightScale"
+    | "setPianoKeyWidthScale"
+    | "setReferenceStrokeWidth"
+    | "setShowBellowsGuide"
+    | "setShowButtonLabels"
+    | "setShowStatusBar"
+    | "setShowStradellaRowLabels"
+    | "setSpacing"
+    | "setTitleFont"
+    | "setTitleMode"
+    | "setTitleSize"
+    | "setTrebleAngle"
+    | "showBellowsGuide"
+    | "showButtonLabels"
+    | "showStatusBar"
+    | "showStradellaRowLabels"
+    | "spacing"
+    | "titleFont"
+    | "titleMode"
+    | "titleSize"
+    | "trebleAngle"
+  > &
+  Pick<
+    ReturnType<typeof useDiagramAnnotations>,
+    | "annotationBold"
+    | "annotationButtonAnchor"
+    | "annotationItalic"
+    | "annotationOffsetPercent"
+    | "setAnnotationBold"
+    | "setAnnotationButtonAnchor"
+    | "setAnnotationItalic"
+    | "setAnnotationOffsetPercent"
+    | "setTextNoteColor"
+    | "setTextNoteFont"
+    | "setTextNoteFontSize"
+    | "textNoteColor"
+    | "textNoteFont"
+    | "textNoteFontSize"
+  > &
+  Pick<
+    ReturnType<typeof useBassPatternState>,
+    | "bassPatternBarsPerChord"
+    | "bassPatternChordVoicing"
+    | "bassPatternLoopCount"
+    | "bassPatternLoopMode"
+    | "bassPatternRoot"
+    | "bassPatternTempoBpm"
+    | "setBassPatternBarsPerChord"
+    | "setBassPatternChordVoicing"
+    | "setBassPatternLoopCount"
+    | "setBassPatternLoopMode"
+    | "setBassPatternRoot"
+    | "setBassPatternTempoBpm"
+  > &
+  Pick<
+    ReturnType<typeof useInstrumentState>,
+    | "basses"
+    | "pianoTrebleRange"
+    | "setBasses"
+    | "setPianoTrebleRange"
+    | "setShowTrebleOctaves"
+    | "setSide"
+    | "setStradellaBassRegisterGrouping"
+    | "setStradellaBassRegisterOctave"
+    | "setStradellaChordRegisterGrouping"
+    | "setStradellaChordRegisterOctave"
+    | "setTrebleLayout"
+    | "setTrebleRows"
+    | "setTrebleSize"
+    | "showTrebleOctaves"
+    | "side"
+    | "stradellaBassRegisterGrouping"
+    | "stradellaBassRegisterOctave"
+    | "stradellaChordRegisterGrouping"
+    | "stradellaChordRegisterOctave"
+    | "trebleLayout"
+    | "trebleRows"
+    | "trebleSize"
+  > &
+  Pick<
+    ReturnType<typeof useLanguageSettings>,
+    "changeLanguage" | "languagePreference" | "setLanguagePreference" | "t"
+  > &
+  Pick<
+    ReturnType<typeof useTrebleChordFinderState>,
+    | "chordFinderInversion"
+    | "chordFinderOctave"
+    | "chordFinderPattern"
+    | "chordFinderRoot"
+    | "setChordFinderInversion"
+    | "setChordFinderOctave"
+    | "setChordFinderPattern"
+    | "setChordFinderRoot"
+  > &
+  Pick<ReturnType<typeof useDiagramOverlays>, "fingeringPosition" | "setFingeringPosition"> &
+  Pick<
+    ReturnType<typeof useHarmonyExplorerState>,
+    | "harmonyColorByFamily"
+    | "harmonyDiameter"
+    | "harmonyFontSize"
+    | "harmonyPlaybackStyle"
+    | "harmonyRingVisibility"
+    | "harmonyShowEnharmonics"
+    | "harmonyShowExplanation"
+    | "harmonyShowLegend"
+    | "harmonyShowNoteRing"
+    | "harmonyShowSeparators"
+    | "harmonyShowToneTooltips"
+    | "harmonyVoicingStyle"
+    | "setHarmonyColorByFamily"
+    | "setHarmonyDiameter"
+    | "setHarmonyFontSize"
+    | "setHarmonyPlaybackStyle"
+    | "setHarmonyRingVisibility"
+    | "setHarmonyShowEnharmonics"
+    | "setHarmonyShowExplanation"
+    | "setHarmonyShowLegend"
+    | "setHarmonyShowNoteRing"
+    | "setHarmonyShowSeparators"
+    | "setHarmonyShowToneTooltips"
+    | "setHarmonyVoicingStyle"
+  > &
+  Pick<
+    ReturnType<typeof useHarmonyProgressionState>,
+    | "harmonyProgressionHandMovementWeight"
+    | "harmonyProgressionRhythmPattern"
+    | "harmonyProgressionRootPosition"
+    | "setHarmonyProgressionHandMovementWeight"
+    | "setHarmonyProgressionRhythmPattern"
+    | "setHarmonyProgressionRootPosition"
+  > &
+  Pick<
+    ReturnType<typeof useSoundSettings>,
+    | "laMelodiosaBassRegister"
+    | "laMelodiosaFollowStradellaRegisters"
+    | "laMelodiosaTrebleRegister"
+    | "setLaMelodiosaBassRegister"
+    | "setLaMelodiosaFollowStradellaRegisters"
+    | "setLaMelodiosaTrebleRegister"
+    | "setSoundArticulation"
+    | "setSoundAttackMs"
+    | "setSoundEnabled"
+    | "setSoundMusetteDetuneCents"
+    | "setSoundNoteDurationMs"
+    | "setSoundReleaseMs"
+    | "setSoundSequenceTempoBpm"
+    | "setSoundSource"
+    | "setSoundVoicePreset"
+    | "setSoundVolume"
+    | "setSoundWaveform"
+    | "setStradellaBassVoicing"
+    | "soundArticulation"
+    | "soundAttackMs"
+    | "soundEnabled"
+    | "soundMusetteDetuneCents"
+    | "soundNoteDurationMs"
+    | "soundReleaseMs"
+    | "soundSequenceTempoBpm"
+    | "soundSource"
+    | "soundVoicePreset"
+    | "soundVolume"
+    | "soundWaveform"
+    | "stradellaBassVoicing"
+  > &
+  Pick<
+    ReturnType<typeof useNotationSettings>,
+    | "musicNotationBarsPerLine"
+    | "musicNotationChordFontSize"
+    | "musicNotationIncludeDescription"
+    | "musicNotationIncludeSummary"
+    | "musicNotationIncludeTitle"
+    | "musicNotationScale"
+    | "musicNotationStaffSeparator"
+    | "musicNotationStaffWidth"
+    | "musicNotationUseBarsPerLine"
+    | "stradellaNotationMode"
+    | "stradellaChordQualityLabels"
+    | "stradellaMarkCounterbass"
+    | "musicNotationNoteNamesInNoteheads"
+    | "musicNotationPlacement"
+    | "setMusicNotationPlacement"
+    | "setStradellaNotationMode"
+    | "setStradellaChordQualityLabels"
+    | "setStradellaMarkCounterbass"
+    | "setMusicNotationNoteNamesInNoteheads"
+    | "setMusicNotationBarsPerLine"
+    | "setMusicNotationChordFontSize"
+    | "setMusicNotationIncludeDescription"
+    | "setMusicNotationIncludeSummary"
+    | "setMusicNotationIncludeTitle"
+    | "setMusicNotationScale"
+    | "setMusicNotationStaffSeparator"
+    | "setMusicNotationStaffWidth"
+    | "setMusicNotationUseBarsPerLine"
+  > &
+  Pick<
+    ReturnType<typeof useScaleFinderState>,
+    | "scaleFinderDisplayMode"
+    | "scaleFinderPattern"
+    | "scaleFinderRoot"
+    | "scaleFinderRowLimit"
+    | "setScaleFinderDisplayMode"
+    | "setScaleFinderPattern"
+    | "setScaleFinderRoot"
+    | "setScaleFinderRowLimit"
+  > &
+  Pick<
+    ReturnType<typeof useSequenceState>,
+    | "sequenceArrowheadSize"
+    | "sequenceColorPreset"
+    | "sequenceDisplayMode"
+    | "sequenceNumberColorPreset"
+    | "sequenceNumberFontSize"
+    | "sequenceNumberPosition"
+    | "sequenceThickness"
+    | "setSequenceArrowheadSize"
+    | "setSequenceColorPreset"
+    | "setSequenceDisplayMode"
+    | "setSequenceNumberColorPreset"
+    | "setSequenceNumberFontSize"
+    | "setSequenceNumberPosition"
+    | "setSequenceThickness"
+  > &
+  Pick<
+    ReturnType<typeof useStradellaChordFinderState>,
+    | "setStradellaChordFinderMarkRootBass"
+    | "setStradellaChordFinderMode"
+    | "setStradellaMinimumNominalGap"
+    | "setStradellaNoteLevels"
+    | "setStradellaRequestedBassOnBassButton"
+    | "stradellaChordFinderMarkRootBass"
+    | "stradellaChordFinderMode"
+    | "stradellaMinimumNominalGap"
+    | "stradellaNoteLevels"
+    | "stradellaRequestedBassOnBassButton"
+  > & {
     accidental: AccidentalMode;
     chordDisplayStyle: ChordDisplayStyle;
     chordLabelMode: ChordLabelMode;
@@ -141,70 +340,257 @@ export type UseSettingsTransferDeps = Pick<ReturnType<typeof useAbcPlayerState>,
 /** Settings files: applies the startup defaults once, imports a saved file, and collects the current settings for download. Setters and values come from the feature hooks that own them. */
 export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
   const {
-    abcStradellaMode, abcTempoBpm, abcTrebleChordSymbolsMode, abcHands, setAbcHands, accidental, accidentalStyle,
-    annotationBold, annotationButtonAnchor, annotationItalic, annotationOffsetPercent,
-    bassPatternBarsPerChord, bassPatternChordVoicing, bassPatternLoopCount, bassPatternLoopMode,
-    bassPatternRoot, bassPatternTempoBpm, basses, buttonSize, buttonStrokeWidth, changeLanguage,
-    chordDisplayStyle, chordFillStrength, chordFinderInversion, chordFinderOctave,
-    chordFinderPattern, chordFinderRoot, chordLabelMode, colorTheme, customTitle, diagramScale,
-    diagramVerticalSpacing, downloadFormat, fingeringPosition, harmonyColorByFamily, harmonyDiameter,
-    harmonyFontSize, harmonyPlaybackStyle, harmonyProgressionHandMovementWeight,
-    harmonyProgressionRhythmPattern, harmonyProgressionRootPosition, harmonyRingVisibility,
-    harmonyShowEnharmonics, harmonyShowExplanation, harmonyShowLegend, harmonyShowNoteRing,
-    harmonyShowSeparators, harmonyShowToneTooltips, harmonyVoicingStyle, interfaceDensity,
-    laMelodiosaBassRegister, laMelodiosaFollowStradellaRegisters, laMelodiosaTrebleRegister,
-    labelFont, labelFontSize, languagePreference, musicNotationBarsPerLine,
-    musicNotationChordFontSize, musicNotationIncludeDescription, musicNotationIncludeSummary,
-    musicNotationIncludeTitle, musicNotationScale, musicNotationStaffSeparator,
-    musicNotationStaffWidth, musicNotationUseBarsPerLine, stradellaNotationMode,
-    stradellaChordQualityLabels, stradellaMarkCounterbass, musicNotationNoteNamesInNoteheads, musicNotationPlacement, notation, pianoBlackKeyHeightScale,
-    pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale, pianoTrebleRange,
-    referenceStrokeWidth, scaleFinderDisplayMode, scaleFinderPattern, scaleFinderRoot,
-    scaleFinderRowLimit, sequenceArrowheadSize, sequenceColorPreset,
-    sequenceDisplayMode, sequenceNumberColorPreset, sequenceNumberFontSize, sequenceNumberPosition,
-    sequenceThickness, setAbcStradellaMode, setAbcTempoBpm, setAbcTrebleChordSymbolsMode,
-    setAccidental, setAccidentalStyle, setAnnotationBold, setAnnotationButtonAnchor,
-    setAnnotationItalic, setAnnotationOffsetPercent, setBassPatternBarsPerChord,
-    setBassPatternChordVoicing, setBassPatternLoopCount, setBassPatternLoopMode, setBassPatternRoot,
-    setBassPatternTempoBpm, setBasses, setButtonSize, setButtonStrokeWidth, setChordDisplayStyle,
-    setChordFillStrength, setChordFinderInversion, setChordFinderOctave, setChordFinderPattern,
-    setChordFinderRoot, setChordLabelMode, setColorTheme, setCustomTitle, setDiagramScale,
-    setDiagramVerticalSpacing, setDownloadFormat, setFingeringPosition, setHarmonyColorByFamily,
-    setHarmonyDiameter, setHarmonyFontSize, setHarmonyPlaybackStyle,
-    setHarmonyProgressionHandMovementWeight, setHarmonyProgressionRhythmPattern,
-    setHarmonyProgressionRootPosition, setHarmonyRingVisibility, setHarmonyShowEnharmonics,
-    setHarmonyShowExplanation, setHarmonyShowLegend, setHarmonyShowNoteRing,
-    setHarmonyShowSeparators, setHarmonyShowToneTooltips, setHarmonyVoicingStyle,
-    setInterfaceDensity, setLaMelodiosaBassRegister, setLaMelodiosaFollowStradellaRegisters,
-    setLaMelodiosaTrebleRegister, setLabelFont, setLabelFontSize, setLanguagePreference,
-    setMusicNotationBarsPerLine, setMusicNotationChordFontSize, setMusicNotationIncludeDescription,
-    setMusicNotationIncludeSummary, setMusicNotationIncludeTitle, setMusicNotationScale,
-    setMusicNotationStaffSeparator, setMusicNotationStaffWidth, setMusicNotationUseBarsPerLine,
-    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass, setMusicNotationNoteNamesInNoteheads, setMusicNotationPlacement,
-    setNotation, setPianoBlackKeyHeightScale, setPianoBlackKeyWidthScale, setPianoKeyHeightScale,
-    setPianoKeyWidthScale, setPianoTrebleRange, setReferenceStrokeWidth, setScaleFinderDisplayMode,
-    setScaleFinderPattern, setScaleFinderRoot, setScaleFinderRowLimit,
-    setSequenceArrowheadSize, setSequenceColorPreset, setSequenceDisplayMode,
-    setSequenceNumberColorPreset, setSequenceNumberFontSize, setSequenceNumberPosition,
-    setSequenceThickness, setShowBellowsGuide, setShowButtonLabels, setShowStatusBar,
-    setShowStradellaRowLabels, setShowStradellaVoicingIntervals, setShowTrebleOctaves, setSide,
-    setSoundArticulation, setSoundAttackMs, setSoundEnabled, setSoundMusetteDetuneCents,
-    setSoundNoteDurationMs, setSoundReleaseMs, setSoundSequenceTempoBpm, setSoundSource,
-    setSoundVoicePreset, setSoundVolume, setSoundWaveform, setSpacing,
-    setStradellaBassRegisterGrouping, setStradellaBassRegisterOctave, setStradellaBassVoicing,
-    setStradellaChordFinderMarkRootBass, setStradellaChordFinderMode,
-    setStradellaChordRegisterGrouping, setStradellaChordRegisterOctave,
-    setStradellaMinimumNominalGap, setStradellaNoteLevels, setStradellaRequestedBassOnBassButton,
-    setTextNoteColor, setTextNoteFont, setTextNoteFontSize, setTitleFont, setTitleMode, setTitleSize,
-    setTrebleAngle, setTrebleLayout, setTrebleRows, setTrebleSize, showBellowsGuide,
-    showButtonLabels, showStatusBar, showStradellaRowLabels, showStradellaVoicingIntervals,
-    showTrebleOctaves, side, soundArticulation, soundAttackMs, soundEnabled, soundMusetteDetuneCents,
-    soundNoteDurationMs, soundReleaseMs, soundSequenceTempoBpm, soundSource, soundVoicePreset,
-    soundVolume, soundWaveform, spacing, stradellaBassRegisterGrouping, stradellaBassRegisterOctave,
-    stradellaBassVoicing, stradellaChordFinderMarkRootBass, stradellaChordFinderMode,
-    stradellaChordRegisterGrouping, stradellaChordRegisterOctave, stradellaMinimumNominalGap,
-    stradellaNoteLevels, stradellaRequestedBassOnBassButton, t, textNoteColor, textNoteFont,
-    textNoteFontSize, titleFont, titleMode, titleSize, trebleAngle, trebleLayout, trebleRows,
+    abcStradellaMode,
+    abcTempoBpm,
+    abcTrebleChordSymbolsMode,
+    abcHands,
+    setAbcHands,
+    accidental,
+    accidentalStyle,
+    annotationBold,
+    annotationButtonAnchor,
+    annotationItalic,
+    annotationOffsetPercent,
+    bassPatternBarsPerChord,
+    bassPatternChordVoicing,
+    bassPatternLoopCount,
+    bassPatternLoopMode,
+    bassPatternRoot,
+    bassPatternTempoBpm,
+    basses,
+    buttonSize,
+    buttonStrokeWidth,
+    changeLanguage,
+    chordDisplayStyle,
+    chordFillStrength,
+    chordFinderInversion,
+    chordFinderOctave,
+    chordFinderPattern,
+    chordFinderRoot,
+    chordLabelMode,
+    colorTheme,
+    customTitle,
+    diagramScale,
+    diagramVerticalSpacing,
+    downloadFormat,
+    fingeringPosition,
+    harmonyColorByFamily,
+    harmonyDiameter,
+    harmonyFontSize,
+    harmonyPlaybackStyle,
+    harmonyProgressionHandMovementWeight,
+    harmonyProgressionRhythmPattern,
+    harmonyProgressionRootPosition,
+    harmonyRingVisibility,
+    harmonyShowEnharmonics,
+    harmonyShowExplanation,
+    harmonyShowLegend,
+    harmonyShowNoteRing,
+    harmonyShowSeparators,
+    harmonyShowToneTooltips,
+    harmonyVoicingStyle,
+    interfaceDensity,
+    laMelodiosaBassRegister,
+    laMelodiosaFollowStradellaRegisters,
+    laMelodiosaTrebleRegister,
+    labelFont,
+    labelFontSize,
+    languagePreference,
+    musicNotationBarsPerLine,
+    musicNotationChordFontSize,
+    musicNotationIncludeDescription,
+    musicNotationIncludeSummary,
+    musicNotationIncludeTitle,
+    musicNotationScale,
+    musicNotationStaffSeparator,
+    musicNotationStaffWidth,
+    musicNotationUseBarsPerLine,
+    stradellaNotationMode,
+    stradellaChordQualityLabels,
+    stradellaMarkCounterbass,
+    musicNotationNoteNamesInNoteheads,
+    musicNotationPlacement,
+    notation,
+    pianoBlackKeyHeightScale,
+    pianoBlackKeyWidthScale,
+    pianoKeyHeightScale,
+    pianoKeyWidthScale,
+    pianoTrebleRange,
+    referenceStrokeWidth,
+    scaleFinderDisplayMode,
+    scaleFinderPattern,
+    scaleFinderRoot,
+    scaleFinderRowLimit,
+    sequenceArrowheadSize,
+    sequenceColorPreset,
+    sequenceDisplayMode,
+    sequenceNumberColorPreset,
+    sequenceNumberFontSize,
+    sequenceNumberPosition,
+    sequenceThickness,
+    setAbcStradellaMode,
+    setAbcTempoBpm,
+    setAbcTrebleChordSymbolsMode,
+    setAccidental,
+    setAccidentalStyle,
+    setAnnotationBold,
+    setAnnotationButtonAnchor,
+    setAnnotationItalic,
+    setAnnotationOffsetPercent,
+    setBassPatternBarsPerChord,
+    setBassPatternChordVoicing,
+    setBassPatternLoopCount,
+    setBassPatternLoopMode,
+    setBassPatternRoot,
+    setBassPatternTempoBpm,
+    setBasses,
+    setButtonSize,
+    setButtonStrokeWidth,
+    setChordDisplayStyle,
+    setChordFillStrength,
+    setChordFinderInversion,
+    setChordFinderOctave,
+    setChordFinderPattern,
+    setChordFinderRoot,
+    setChordLabelMode,
+    setColorTheme,
+    setCustomTitle,
+    setDiagramScale,
+    setDiagramVerticalSpacing,
+    setDownloadFormat,
+    setFingeringPosition,
+    setHarmonyColorByFamily,
+    setHarmonyDiameter,
+    setHarmonyFontSize,
+    setHarmonyPlaybackStyle,
+    setHarmonyProgressionHandMovementWeight,
+    setHarmonyProgressionRhythmPattern,
+    setHarmonyProgressionRootPosition,
+    setHarmonyRingVisibility,
+    setHarmonyShowEnharmonics,
+    setHarmonyShowExplanation,
+    setHarmonyShowLegend,
+    setHarmonyShowNoteRing,
+    setHarmonyShowSeparators,
+    setHarmonyShowToneTooltips,
+    setHarmonyVoicingStyle,
+    setInterfaceDensity,
+    setLaMelodiosaBassRegister,
+    setLaMelodiosaFollowStradellaRegisters,
+    setLaMelodiosaTrebleRegister,
+    setLabelFont,
+    setLabelFontSize,
+    setLanguagePreference,
+    setMusicNotationBarsPerLine,
+    setMusicNotationChordFontSize,
+    setMusicNotationIncludeDescription,
+    setMusicNotationIncludeSummary,
+    setMusicNotationIncludeTitle,
+    setMusicNotationScale,
+    setMusicNotationStaffSeparator,
+    setMusicNotationStaffWidth,
+    setMusicNotationUseBarsPerLine,
+    setStradellaNotationMode,
+    setStradellaChordQualityLabels,
+    setStradellaMarkCounterbass,
+    setMusicNotationNoteNamesInNoteheads,
+    setMusicNotationPlacement,
+    setNotation,
+    setPianoBlackKeyHeightScale,
+    setPianoBlackKeyWidthScale,
+    setPianoKeyHeightScale,
+    setPianoKeyWidthScale,
+    setPianoTrebleRange,
+    setReferenceStrokeWidth,
+    setScaleFinderDisplayMode,
+    setScaleFinderPattern,
+    setScaleFinderRoot,
+    setScaleFinderRowLimit,
+    setSequenceArrowheadSize,
+    setSequenceColorPreset,
+    setSequenceDisplayMode,
+    setSequenceNumberColorPreset,
+    setSequenceNumberFontSize,
+    setSequenceNumberPosition,
+    setSequenceThickness,
+    setShowBellowsGuide,
+    setShowButtonLabels,
+    setShowStatusBar,
+    setShowStradellaRowLabels,
+    setShowStradellaVoicingIntervals,
+    setShowTrebleOctaves,
+    setSide,
+    setSoundArticulation,
+    setSoundAttackMs,
+    setSoundEnabled,
+    setSoundMusetteDetuneCents,
+    setSoundNoteDurationMs,
+    setSoundReleaseMs,
+    setSoundSequenceTempoBpm,
+    setSoundSource,
+    setSoundVoicePreset,
+    setSoundVolume,
+    setSoundWaveform,
+    setSpacing,
+    setStradellaBassRegisterGrouping,
+    setStradellaBassRegisterOctave,
+    setStradellaBassVoicing,
+    setStradellaChordFinderMarkRootBass,
+    setStradellaChordFinderMode,
+    setStradellaChordRegisterGrouping,
+    setStradellaChordRegisterOctave,
+    setStradellaMinimumNominalGap,
+    setStradellaNoteLevels,
+    setStradellaRequestedBassOnBassButton,
+    setTextNoteColor,
+    setTextNoteFont,
+    setTextNoteFontSize,
+    setTitleFont,
+    setTitleMode,
+    setTitleSize,
+    setTrebleAngle,
+    setTrebleLayout,
+    setTrebleRows,
+    setTrebleSize,
+    showBellowsGuide,
+    showButtonLabels,
+    showStatusBar,
+    showStradellaRowLabels,
+    showStradellaVoicingIntervals,
+    showTrebleOctaves,
+    side,
+    soundArticulation,
+    soundAttackMs,
+    soundEnabled,
+    soundMusetteDetuneCents,
+    soundNoteDurationMs,
+    soundReleaseMs,
+    soundSequenceTempoBpm,
+    soundSource,
+    soundVoicePreset,
+    soundVolume,
+    soundWaveform,
+    spacing,
+    stradellaBassRegisterGrouping,
+    stradellaBassRegisterOctave,
+    stradellaBassVoicing,
+    stradellaChordFinderMarkRootBass,
+    stradellaChordFinderMode,
+    stradellaChordRegisterGrouping,
+    stradellaChordRegisterOctave,
+    stradellaMinimumNominalGap,
+    stradellaNoteLevels,
+    stradellaRequestedBassOnBassButton,
+    t,
+    textNoteColor,
+    textNoteFont,
+    textNoteFontSize,
+    titleFont,
+    titleMode,
+    titleSize,
+    trebleAngle,
+    trebleLayout,
+    trebleRows,
     trebleSize,
   } = deps;
 
@@ -275,7 +661,11 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
     setMusicNotationStaffSeparator,
     setMusicNotationStaffWidth,
     setMusicNotationUseBarsPerLine,
-    setStradellaNotationMode, setStradellaChordQualityLabels, setStradellaMarkCounterbass, setMusicNotationNoteNamesInNoteheads, setMusicNotationPlacement,
+    setStradellaNotationMode,
+    setStradellaChordQualityLabels,
+    setStradellaMarkCounterbass,
+    setMusicNotationNoteNamesInNoteheads,
+    setMusicNotationPlacement,
     setNotation,
     setPianoBlackKeyHeightScale,
     setPianoBlackKeyWidthScale,
@@ -352,7 +742,8 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
           `${import.meta.env.BASE_URL}default-settings.json`,
         );
         if (cancelled) return;
-        if (defaults && typeof defaults === "object") applyStartupSettings(defaults, settingsSettersRef.current);
+        if (defaults && typeof defaults === "object")
+          applyStartupSettings(defaults, settingsSettersRef.current);
       } catch {
         /* The app still runs with built-in defaults if the editable file is missing or invalid. */
       }
@@ -375,10 +766,18 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
       cancelled = true;
     };
   }, [
-    setBasses, setLanguagePreference, setPianoTrebleRange, setShowTrebleOctaves,
-    setSide, setStradellaBassRegisterGrouping, setStradellaBassRegisterOctave,
-    setStradellaChordRegisterGrouping, setStradellaChordRegisterOctave,
-    setTrebleLayout, setTrebleRows, setTrebleSize,
+    setBasses,
+    setLanguagePreference,
+    setPianoTrebleRange,
+    setShowTrebleOctaves,
+    setSide,
+    setStradellaBassRegisterGrouping,
+    setStradellaBassRegisterOctave,
+    setStradellaChordRegisterGrouping,
+    setStradellaChordRegisterOctave,
+    setTrebleLayout,
+    setTrebleRows,
+    setTrebleSize,
   ]);
 
   /** Applies a settings JSON object without changing the editable default-settings.json file. */
@@ -448,7 +847,11 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
       musicNotationStaffSeparator,
       musicNotationStaffWidth,
       musicNotationUseBarsPerLine,
-      stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass, musicNotationNoteNamesInNoteheads, musicNotationPlacement,
+      stradellaNotationMode,
+      stradellaChordQualityLabels,
+      stradellaMarkCounterbass,
+      musicNotationNoteNamesInNoteheads,
+      musicNotationPlacement,
       notation,
       pianoBlackKeyHeightScale,
       pianoBlackKeyWidthScale,
@@ -542,13 +945,13 @@ export function useSettingsTransfer(deps: UseSettingsTransferDeps) {
       const settings = await parseSettingsDocumentFile(file);
       applyImportedSettings(settings, settingsSettersRef.current);
     } catch {
-      window.alert(
-        t("ui.invalidSettingsFile"),
-      );
+      window.alert(t("ui.invalidSettingsFile"));
     }
   }
 
   return {
-    downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults,
+    downloadCurrentSettings,
+    importSettingsFile,
+    resetSettingsToDefaults,
   };
 }

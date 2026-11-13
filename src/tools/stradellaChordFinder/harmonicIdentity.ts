@@ -29,7 +29,11 @@ export function permittedRequestedBasses(root: string, pattern: FinderChordPatte
   return orderedTargetPitches(root, pattern);
 }
 
-export function validRequestedBass(root: string, pattern: FinderChordPattern, bass: string | null): boolean {
+export function validRequestedBass(
+  root: string,
+  pattern: FinderChordPattern,
+  bass: string | null,
+): boolean {
   return bass === null || permittedRequestedBasses(root, pattern).includes(bass);
 }
 
@@ -48,7 +52,8 @@ export function requestedBassRole(identity: StradellaHarmonicIdentity): string |
   if ([3, 4].includes(semitones)) return "third";
   if (semitones === 5) return "fourth";
   if ([6, 7, 8].includes(semitones)) return "fifth";
-  if (semitones === 9) return ["major6", "minor6"].includes(pattern) ? "sixth" : "diminished seventh or sixth";
+  if (semitones === 9)
+    return ["major6", "minor6"].includes(pattern) ? "sixth" : "diminished seventh or sixth";
   if ([10, 11].includes(semitones)) return "seventh";
   if ([13, 14].includes(semitones)) return "ninth";
   if (semitones === 17) return "eleventh";

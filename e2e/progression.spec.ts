@@ -1,7 +1,16 @@
-import { test, expect, openApp, openTool, closeToolsSheet, recordAudioStarts, type Page } from "./fixtures";
+import {
+  test,
+  expect,
+  openApp,
+  openTool,
+  closeToolsSheet,
+  recordAudioStarts,
+  type Page,
+} from "./fixtures";
 
 const rows = (page: Page) => page.locator(".harmony-progression-list > li");
-const chordName = (page: Page, index: number) => rows(page).nth(index).locator(".progression-chord-name strong");
+const chordName = (page: Page, index: number) =>
+  rows(page).nth(index).locator(".progression-chord-name strong");
 
 async function loadPreset(page: Page) {
   await openApp(page);
@@ -49,7 +58,12 @@ test("presets with secondary dominants and minor-key numerals load", async ({ pa
   await openTool(page, "Progression Assistant");
   await page.getByRole("button", { name: "Use preset" }).click();
   const preset = page.locator("select:has(option[value='bird-blues'])");
-  for (const [id, chords] of [["bird-blues", 12], ["coltrane-changes", 7], ["andalusian-cadence", 4], ["folia", 9]] as const) {
+  for (const [id, chords] of [
+    ["bird-blues", 12],
+    ["coltrane-changes", 7],
+    ["andalusian-cadence", 4],
+    ["folia", 9],
+  ] as const) {
     await preset.selectOption(id);
     await expect(page.getByText(/Unsupported/i)).toHaveCount(0);
     await page.getByRole("button", { name: /Load preset/i }).click();
@@ -68,9 +82,13 @@ test("in root position every chord has its root on a bass button", async ({ page
   await page.locator("select:has(option[value='fifties'])").selectOption("fifties");
   await page.getByRole("button", { name: /Load preset/i }).click();
   await expect(page.locator(".progression-chord-recipe")).toHaveText([
-    "C bass + C major", "A bass + A minor", "F bass + F major", "G bass + G major",
+    "C bass + C major",
+    "A bass + A minor",
+    "F bass + F major",
+    "G bass + G major",
   ]);
   await page.getByRole("button", { name: "Any bass", exact: true }).click();
-  await expect(page.locator(".progression-chord-recipe").first()).not.toHaveText("C bass + C major");
+  await expect(page.locator(".progression-chord-recipe").first()).not.toHaveText(
+    "C bass + C major",
+  );
 });
-

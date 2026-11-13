@@ -22,7 +22,6 @@ import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 import { convertProgressionPreset } from "../../tools/harmonyExplorer/progressionPresets";
 import type { ChordProgressionDefinition } from "../../tools/bassPatternPlayerTools";
 
-
 type ProgressionAssistantPanelProps = {
   chordDisplayStyle: ChordDisplayStyle;
   progression: HarmonyProgressionChord[];
@@ -94,17 +93,16 @@ export function ProgressionAssistantPanel({
   const [presetId, setPresetId] = useState("i-iv-v-i");
   const [presetRoot, setPresetRoot] = useState("C");
   const [entryMode, setEntryMode] = useState<"manual" | "preset">("manual");
-  const selectedPreset = presetDefinitions.find((item) => item.id === presetId) ?? presetDefinitions[0];
+  const selectedPreset =
+    presetDefinitions.find((item) => item.id === presetId) ?? presetDefinitions[0];
   const presetConversion = useMemo(
-    () => selectedPreset ? convertProgressionPreset(selectedPreset, presetRoot) : null,
+    () => (selectedPreset ? convertProgressionPreset(selectedPreset, presetRoot) : null),
     [selectedPreset, presetRoot],
   );
 
   return (
     <>
-      <p className="hint">
-        {t("ui.progressionIntro")}
-      </p>
+      <p className="hint">{t("ui.progressionIntro")}</p>
 
       <fieldset className="tool-fieldset">
         <legend>{t("ui.progression")}</legend>
@@ -117,45 +115,102 @@ export function ProgressionAssistantPanel({
           ]}
           onChange={setEntryMode}
         />
-        {entryMode === "preset" ? <>
-          <div className="progression-preset-controls">
-            <label>{t("ui.progressionPreset")}
-              <select value={selectedPreset?.id ?? ""} disabled={presetDefinitions.length === 0} onChange={(event) => setPresetId(event.target.value)}>
-                {presetDefinitions.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}
+        {entryMode === "preset" ? (
+          <>
+            <div className="progression-preset-controls">
+              <label>
+                {t("ui.progressionPreset")}
+                <select
+                  value={selectedPreset?.id ?? ""}
+                  disabled={presetDefinitions.length === 0}
+                  onChange={(event) => setPresetId(event.target.value)}
+                >
+                  {presetDefinitions.map((entry) => (
+                    <option key={entry.id} value={entry.id}>
+                      {entry.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                {t("ui.progressionPresetKey")}
+                <select value={presetRoot} onChange={(event) => setPresetRoot(event.target.value)}>
+                  {FINDER_ROOT_OPTIONS.map((entry) => (
+                    <option key={entry.value} value={entry.value}>
+                      {entry.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {presetConversion && presetConversion.unsupported.length > 0 && (
+              <p className="hint" role="status">
+                {t("ui.progressionUnsupportedPreset")}: {presetConversion.unsupported.join(", ")}
+              </p>
+            )}
+          </>
+        ) : (
+          <div className="progression-add-grid">
+            <label>
+              {t("ui.root")}
+              <select
+                value={manualRoot}
+                onChange={(event) => onManualRootChange(event.target.value)}
+              >
+                {FINDER_ROOT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             </label>
-            <label>{t("ui.progressionPresetKey")}
-              <select value={presetRoot} onChange={(event) => setPresetRoot(event.target.value)}>
-                {FINDER_ROOT_OPTIONS.map((entry) => <option key={entry.value} value={entry.value}>{entry.label}</option>)}
+            <label>
+              <span className="label-line">
+                {t("tools.chordType")} <HelpTip text={t("tools.chordTypeHelp")} />
+              </span>
+              <select
+                value={manualPattern}
+                onChange={(event) =>
+                  onManualPatternChange(event.target.value as FinderChordPattern)
+                }
+              >
+                {CHORD_FINDER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {translateKnownLabel(language, option.label)}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
-          {presetConversion && presetConversion.unsupported.length > 0 && (
-            <p className="hint" role="status">{t("ui.progressionUnsupportedPreset")}: {presetConversion.unsupported.join(", ")}</p>
-          )}
-        </> : <div className="progression-add-grid">
-          <label>
-            {t("ui.root")}
-            <select value={manualRoot} onChange={(event) => onManualRootChange(event.target.value)}>
-              {FINDER_ROOT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span className="label-line">{t("tools.chordType")} <HelpTip text={t("tools.chordTypeHelp")} /></span>
-            <select value={manualPattern} onChange={(event) => onManualPatternChange(event.target.value as FinderChordPattern)}>
-              {CHORD_FINDER_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{translateKnownLabel(language, option.label)}</option>
-              ))}
-            </select>
-          </label>
-        </div>}
+        )}
         <div className="button-row progression-entry-actions">
-          {entryMode === "preset" ? <button type="button" className="small-button" disabled={!selectedPreset || !presetConversion || presetConversion.chords.length === 0 || presetConversion.unsupported.length > 0}
-            onClick={() => selectedPreset && onUsePreset(selectedPreset.id, presetRoot)}>{t("ui.progressionLoadPreset")}</button>
-            : <button className="small-button" type="button" onClick={onAddManualChord}>{t("ui.addChord")}</button>}
-          <button className="small-button" type="button" disabled={progression.length === 0} onClick={onClear}>{t("tools.clear")}</button>
+          {entryMode === "preset" ? (
+            <button
+              type="button"
+              className="small-button"
+              disabled={
+                !selectedPreset ||
+                !presetConversion ||
+                presetConversion.chords.length === 0 ||
+                presetConversion.unsupported.length > 0
+              }
+              onClick={() => selectedPreset && onUsePreset(selectedPreset.id, presetRoot)}
+            >
+              {t("ui.progressionLoadPreset")}
+            </button>
+          ) : (
+            <button className="small-button" type="button" onClick={onAddManualChord}>
+              {t("ui.addChord")}
+            </button>
+          )}
+          <button
+            className="small-button"
+            type="button"
+            disabled={progression.length === 0}
+            onClick={onClear}
+          >
+            {t("tools.clear")}
+          </button>
         </div>
 
         {progression.length === 0 ? (
@@ -167,7 +222,9 @@ export function ProgressionAssistantPanel({
             {progression.map((chord, index) => {
               const available = realizationOptions[chord.id] ?? [];
               const pinnedKey = realizationKeys[chord.id] ?? null;
-              const selected = available.find(({ result }) => progressionRealizationKey(result) === pinnedKey);
+              const selected = available.find(
+                ({ result }) => progressionRealizationKey(result) === pinnedKey,
+              );
               const step = plan.playable ? plan.steps[index] : undefined;
               const choiceLabel = selected
                 ? t("ui.progressionRealizationRank", { rank: selected.realizationIndex + 1 })
@@ -177,31 +234,108 @@ export function ProgressionAssistantPanel({
                   <div className="progression-chord-row">
                     <div className="progression-chord-detail">
                       <div className="progression-chord-name">
-                        <button type="button" className={`tiny-button progression-note-eye ${noteStepId === chord.id ? "active-tool" : ""}`}
+                        <button
+                          type="button"
+                          className={`tiny-button progression-note-eye ${noteStepId === chord.id ? "active-tool" : ""}`}
                           aria-pressed={noteStepId === chord.id}
                           disabled={!step}
-                          aria-label={t(noteStepId === chord.id ? "ui.progressionHideNotesFor" : "ui.progressionShowNotesFor", { chord: progressionChordLabel(chord, chordDisplayStyle) })}
-                          title={t(noteStepId === chord.id ? "ui.progressionHideNotesFor" : "ui.progressionShowNotesFor", { chord: progressionChordLabel(chord, chordDisplayStyle) })}
-                          onClick={() => onToggleStepNotes(chord.id)}>
-                          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          aria-label={t(
+                            noteStepId === chord.id
+                              ? "ui.progressionHideNotesFor"
+                              : "ui.progressionShowNotesFor",
+                            { chord: progressionChordLabel(chord, chordDisplayStyle) },
+                          )}
+                          title={t(
+                            noteStepId === chord.id
+                              ? "ui.progressionHideNotesFor"
+                              : "ui.progressionShowNotesFor",
+                            { chord: progressionChordLabel(chord, chordDisplayStyle) },
+                          )}
+                          onClick={() => onToggleStepNotes(chord.id)}
+                        >
+                          <svg
+                            viewBox="0 0 24 24"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
                             <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" />
                             <circle cx="12" cy="12" r="2.5" />
                           </svg>
                         </button>
                         <strong>{progressionChordLabel(chord, chordDisplayStyle)}</strong>
                       </div>
-                      {step && <span className="progression-chord-recipe">{realizationText(step, language)}</span>}
+                      {step && (
+                        <span className="progression-chord-recipe">
+                          {realizationText(step, language)}
+                        </span>
+                      )}
                     </div>
                     <div className="progression-list-actions">
-                      <div className="progression-realization-navigation" role="group" aria-label={t("ui.progressionRealizationFor", { chord: progressionChordLabel(chord, chordDisplayStyle) })}>
-                        <button className="tiny-button" type="button" disabled={available.length === 0} onClick={() => onCycleRealization(index, -1)} aria-label={t("ui.progressionPreviousRealization")}>←</button>
-                        <span className="progression-realization-position" title={choiceLabel}>{choiceLabel}</span>
-                        <button className="tiny-button" type="button" disabled={available.length === 0} onClick={() => onCycleRealization(index, 1)} aria-label={t("ui.progressionNextRealization")}>→</button>
+                      <div
+                        className="progression-realization-navigation"
+                        role="group"
+                        aria-label={t("ui.progressionRealizationFor", {
+                          chord: progressionChordLabel(chord, chordDisplayStyle),
+                        })}
+                      >
+                        <button
+                          className="tiny-button"
+                          type="button"
+                          disabled={available.length === 0}
+                          onClick={() => onCycleRealization(index, -1)}
+                          aria-label={t("ui.progressionPreviousRealization")}
+                        >
+                          ←
+                        </button>
+                        <span className="progression-realization-position" title={choiceLabel}>
+                          {choiceLabel}
+                        </span>
+                        <button
+                          className="tiny-button"
+                          type="button"
+                          disabled={available.length === 0}
+                          onClick={() => onCycleRealization(index, 1)}
+                          aria-label={t("ui.progressionNextRealization")}
+                        >
+                          →
+                        </button>
                       </div>
                       <div className="progression-order-actions">
-                        <button type="button" className="tiny-button" disabled={index === 0} onClick={() => onMoveChord(index, -1)} aria-label={t("ui.moveChordEarlier")} title={t("ui.moveChordEarlier")}>↑</button>
-                        <button type="button" className="tiny-button" disabled={index === progression.length - 1} onClick={() => onMoveChord(index, 1)} aria-label={t("ui.moveChordLater")} title={t("ui.moveChordLater")}>↓</button>
-                        <button type="button" className="tiny-button" onClick={() => onRemoveChord(index)} aria-label={t("ui.removeChord")} title={t("ui.removeChord")}>×</button>
+                        <button
+                          type="button"
+                          className="tiny-button"
+                          disabled={index === 0}
+                          onClick={() => onMoveChord(index, -1)}
+                          aria-label={t("ui.moveChordEarlier")}
+                          title={t("ui.moveChordEarlier")}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          className="tiny-button"
+                          disabled={index === progression.length - 1}
+                          onClick={() => onMoveChord(index, 1)}
+                          aria-label={t("ui.moveChordLater")}
+                          title={t("ui.moveChordLater")}
+                        >
+                          ↓
+                        </button>
+                        <button
+                          type="button"
+                          className="tiny-button"
+                          onClick={() => onRemoveChord(index)}
+                          aria-label={t("ui.removeChord")}
+                          title={t("ui.removeChord")}
+                        >
+                          ×
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -216,7 +350,11 @@ export function ProgressionAssistantPanel({
         <legend>{t("ui.optimization")}</legend>
 
         <SegmentedChoice
-          label={<>{t("ui.progressionBass")} <HelpTip text={t("ui.progressionBassHelp")} /></>}
+          label={
+            <>
+              {t("ui.progressionBass")} <HelpTip text={t("ui.progressionBassHelp")} />
+            </>
+          }
           value={rootPosition ? "root" : "any"}
           onChange={(next) => onRootPositionChange(next === "root")}
           options={[
@@ -240,11 +378,15 @@ export function ProgressionAssistantPanel({
           />
         </label>
         <label>
-          <span className="label-line">{t("ui.progressionVoiceLeading")}: {Math.round(voiceLeadingWeight * 100)}%
+          <span className="label-line">
+            {t("ui.progressionVoiceLeading")}: {Math.round(voiceLeadingWeight * 100)}%
             <HelpTip text={t("ui.progressionVoiceLeadingHelp")} />
           </span>
           <input
-            type="range" min="0" max="100" step="5"
+            type="range"
+            min="0"
+            max="100"
+            step="5"
             value={Math.round(voiceLeadingWeight * 100)}
             onChange={(event) => onVoiceLeadingWeightChange(Number(event.target.value) / 100)}
           />
@@ -257,7 +399,9 @@ export function ProgressionAssistantPanel({
           {t("ui.rhythmicPattern")}
           <select
             value={rhythmPattern}
-            onChange={(event) => onRhythmPatternChange(event.target.value as ProgressionRhythmPattern)}
+            onChange={(event) =>
+              onRhythmPatternChange(event.target.value as ProgressionRhythmPattern)
+            }
           >
             <option value="block">{t("ui.allButtonsTogether")}</option>
             <option value="oom-pah">{t("ui.basicOomPah24")}</option>
@@ -277,13 +421,18 @@ export function ProgressionAssistantPanel({
           />
         </label>
         <label className="checkbox-line">
-          <input type="checkbox" checked={pathVisible} onChange={(event) => onPathVisibleChange(event.target.checked)} />
+          <input
+            type="checkbox"
+            checked={pathVisible}
+            onChange={(event) => onPathVisibleChange(event.target.checked)}
+          />
           {t("ui.progressionShowPath")}
         </label>
-        <p className="hint">{t("ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram")}</p>
+        <p className="hint">
+          {t("ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram")}
+        </p>
         <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
       </fieldset>
-
     </>
   );
 }

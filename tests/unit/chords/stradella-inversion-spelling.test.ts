@@ -2,14 +2,25 @@ import assert from "node:assert/strict";
 import { generateStradella } from "../../../src/stradella";
 import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
 import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
-import { chordToneName, realizedInversionDescription, safeChordFilenameKey, formatChordFinderTone } from "../../../src/tools/stradellaChordFinder/chordSpelling";
+import {
+  chordToneName,
+  realizedInversionDescription,
+  safeChordFilenameKey,
+  formatChordFinderTone,
+} from "../../../src/tools/stradellaChordFinder/chordSpelling";
 import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
 import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization";
 import { test } from "vitest";
 
 test("Chord tones are spelled by chord function, including double accidentals", () => {
-  assert.deepEqual(["C", "D#", "G", "A#"].map((pc) => chordToneName("C", "minor7", pc)), ["C", "E♭", "G", "B♭"]);
-  assert.deepEqual(["C#", "F", "G#", "C"].map((pc) => chordToneName("C#", "major7", pc)), ["C♯", "E♯", "G♯", "B♯"]);
+  assert.deepEqual(
+    ["C", "D#", "G", "A#"].map((pc) => chordToneName("C", "minor7", pc)),
+    ["C", "E♭", "G", "B♭"],
+  );
+  assert.deepEqual(
+    ["C#", "F", "G#", "C"].map((pc) => chordToneName("C#", "major7", pc)),
+    ["C♯", "E♯", "G♯", "B♯"],
+  );
   assert.equal(chordToneName("C", "diminished7", "A"), "B𝄫");
   assert.equal(chordToneName("C", "dominant7b9", "C#"), "D♭");
 });
@@ -24,10 +35,21 @@ test("A 96-bass layout may label an enharmonic button C♭", () => {
   assert.equal(realizedInversionDescription("C", "major-triad", "E"), "First inversion");
   assert.equal(realizedInversionDescription("C", "major13", "B"), "seventh in bass");
   const buttons = generateStradella("96", 38, 1.18, "natural");
-  const candidates = getStradellaChordFinderResults(buttons, "C", "minor7", "bass-and-chords", false, 4, 5.5);
-  const candidate = candidates.find((r) => r.playable &&
-    r.playbackButtons.some((b) => b.kind.startsWith("bass-") && b.pitchClass === "A#") &&
-    r.playbackButtons.some((b) => b.kind === "chord-minor" && b.chordRoot === "C"));
+  const candidates = getStradellaChordFinderResults(
+    buttons,
+    "C",
+    "minor7",
+    "bass-and-chords",
+    false,
+    4,
+    5.5,
+  );
+  const candidate = candidates.find(
+    (r) =>
+      r.playable &&
+      r.playbackButtons.some((b) => b.kind.startsWith("bass-") && b.pitchClass === "A#") &&
+      r.playbackButtons.some((b) => b.kind === "chord-minor" && b.chordRoot === "C"),
+  );
   assert.ok(candidate, "Expect the B♭ bass + C minor recipe");
   const note = realizationAnnotation("C", "minor7", candidate, DEFAULT_STRADELLA_REGISTER_MODEL);
   assert.equal(note.title, "Cmin7/B♭ - Exact - 2 buttons");
@@ -38,7 +60,13 @@ test("A 96-bass layout may label an enharmonic button C♭", () => {
   assert.doesNotMatch(note.detail, /bass unspecified|modeled lowest|D#|A#/i);
   assert.match(note.filenameKey, /^Cmin7-over-Bflat-Exact-2buttons-Bflat-bass-C-minor$/);
   assert.match(note.filenameKey, /^[A-Za-z0-9-]+$/);
-  const more = explainStradellaRealization("C", "minor7", candidate, "bass-and-chords", DEFAULT_STRADELLA_REGISTER_MODEL);
+  const more = explainStradellaRealization(
+    "C",
+    "minor7",
+    candidate,
+    "bass-and-chords",
+    DEFAULT_STRADELLA_REGISTER_MODEL,
+  );
   assert.match(more, /Cmin7\/B♭/);
   assert.match(more, /third inversion/i);
   assert.match(more, /C–E♭–G–B♭/);

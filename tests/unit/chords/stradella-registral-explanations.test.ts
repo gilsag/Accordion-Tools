@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../../../src/stradella.ts";
-import { getStradellaChordFinderResults, getStradellaChordFinderResult } from "../../../src/tools/stradellaChordFinderTools.ts";
+import {
+  getStradellaChordFinderResults,
+  getStradellaChordFinderResult,
+} from "../../../src/tools/stradellaChordFinderTools.ts";
 import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization.ts";
 import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations.ts";
 import type { DiagramButton, FinderChordPattern } from "../../../src/types.ts";
@@ -9,8 +12,12 @@ import { test } from "vitest";
 const buttons = generateStradella("96", 38, 1.18, "natural");
 const find = (root: string, pattern: FinderChordPattern, maxButtons = 4) =>
   getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true, maxButtons, 5.5);
-const recipe = (played: DiagramButton[]) => played.map((button) =>
-  button.kind.startsWith("bass-") ? `bass:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`);
+const recipe = (played: DiagramButton[]) =>
+  played.map((button) =>
+    button.kind.startsWith("bass-")
+      ? `bass:${button.pitchClass}`
+      : `${button.kind}:${button.chordRoot}`,
+  );
 
 test("Stradella registral explanations and diagram-note tests", () => {
   const named = (root: string, pattern: FinderChordPattern, names: string[], maxButtons = 4) => {
@@ -26,14 +33,20 @@ test("Stradella registral explanations and diagram-note tests", () => {
     const text = explainStradellaRealization("E", "minor7", r);
     assert.match(text, /Registral character: root-supported/i);
     assert.match(text, /counterbass/i);
-    assert.match(realizationAnnotation("E", "minor7", r).detail, /Physical realization: E counterbass/);
+    assert.match(
+      realizationAnnotation("E", "minor7", r).detail,
+      /Physical realization: E counterbass/,
+    );
   }
   {
     const r = named("C", "major7", ["bass:B", "chord-major:C"]);
     const text = explainStradellaRealization("C", "major7", r);
     assert.match(text, /potential Cmaj7\/B/);
     assert.match(text, /not proof that B is the lowest acoustic pitch/);
-    assert.match(realizationAnnotation("C", "major7", r).detail, /Physical realization: B counterbass/);
+    assert.match(
+      realizationAnnotation("C", "major7", r).detail,
+      /Physical realization: B counterbass/,
+    );
   }
   {
     const r = named("C", "major13", ["bass:B", "chord-minor:A"]);
@@ -57,7 +70,13 @@ test("Stradella registral explanations and diagram-note tests", () => {
     assert.match(text, /rather than adding a new pitch class/);
   }
   {
-    const withMarker = getStradellaChordFinderResult(buttons, "C", "major-triad", "chord-buttons-only", true);
+    const withMarker = getStradellaChordFinderResult(
+      buttons,
+      "C",
+      "major-triad",
+      "chord-buttons-only",
+      true,
+    );
     const text = explainStradellaRealization("C", "major-triad", withMarker, "chord-buttons-only");
     assert.match(text, /preset-chord buttons only/);
     assert.doesNotMatch(text, /Registral character: root-supported/);
@@ -70,10 +89,16 @@ test("Stradella registral explanations and diagram-note tests", () => {
     assert.match(text, /Button roles alone cannot identify the lowest acoustic pitch/);
   }
   {
-    const c11 = find("C", "dominant11").find((item) => item.playable && item.coveredPitches.includes("E") && item.coveredPitches.includes("F"));
+    const c11 = find("C", "dominant11").find(
+      (item) =>
+        item.playable && item.coveredPitches.includes("E") && item.coveredPitches.includes("F"),
+    );
     assert.ok(c11);
     assert.match(explainStradellaRealization("C", "dominant11", c11), /semitone/);
-    const min11 = find("C", "minor11").find((item) => item.playable && item.coveredPitches.includes("D#") && item.coveredPitches.includes("F"));
+    const min11 = find("C", "minor11").find(
+      (item) =>
+        item.playable && item.coveredPitches.includes("D#") && item.coveredPitches.includes("F"),
+    );
     assert.ok(min11, "Expected a Cmin11 realization retaining third and eleventh");
     assert.match(explainStradellaRealization("C", "minor11", min11), /whole tone/i);
   }

@@ -69,7 +69,8 @@ function emitTextLines(source: SVGForeignObjectElement, target: SVGGElement, inv
       svgText.setAttribute("font-weight", style.fontWeight);
       svgText.setAttribute("font-style", style.fontStyle);
       svgText.setAttribute("fill", style.color);
-      if (style.letterSpacing !== "normal") svgText.setAttribute("letter-spacing", style.letterSpacing);
+      if (style.letterSpacing !== "normal")
+        svgText.setAttribute("letter-spacing", style.letterSpacing);
       svgText.textContent = line.text;
       target.appendChild(svgText);
     }
@@ -97,8 +98,9 @@ function emitNestedSvg(source: SVGForeignObjectElement, target: SVGGElement, inv
 /** Replaces each rendered foreignObject with content visible in the live diagram.
  * Must run while `source` is still attached to the document. */
 export function makeSvgCanvasSafe(source: SVGSVGElement, clone: SVGSVGElement): void {
-  const originals = Array.from(source.querySelectorAll("foreignObject"))
-    .filter((element) => !element.closest("[data-export-ignore=\"true\"], .annotation-editor-object"));
+  const originals = Array.from(source.querySelectorAll("foreignObject")).filter(
+    (element) => !element.closest('[data-export-ignore="true"], .annotation-editor-object'),
+  );
   const copies = Array.from(clone.querySelectorAll("foreignObject"));
   if (!originals.length) return;
   const screenMatrix = source.getScreenCTM();

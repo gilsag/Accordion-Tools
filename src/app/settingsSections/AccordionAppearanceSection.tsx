@@ -4,58 +4,144 @@ import type { AccidentalStyle, ColorTheme, FontFamily } from "../../types";
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type AccordionAppearanceSectionModel = Pick<AppControllerModel["settings"],
-  "accidentalStyle" | "buttonSize" | "buttonStrokeWidth" | "chordFillStrength" |
-  "colorTheme" | "diagramScale" | "diagramVerticalSpacing" | "interfaceDensity" |
-  "isPianoTreble" | "labelFont" | "labelFontSize" | "pianoBlackKeyHeightScale" |
-  "pianoBlackKeyWidthScale" | "pianoKeyHeightScale" | "pianoKeyWidthScale" |
-  "referenceStrokeWidth" | "setAccidentalStyle" | "setButtonSize" | "setButtonStrokeWidth" |
-  "setChordFillStrength" | "setColorTheme" | "setDiagramScale" | "setDiagramVerticalSpacing" |
-  "setInterfaceDensity" | "setLabelFont" | "setLabelFontSize" | "setPianoBlackKeyHeightScale" |
-  "setPianoBlackKeyWidthScale" | "setPianoKeyHeightScale" | "setPianoKeyWidthScale" |
-  "setReferenceStrokeWidth" | "setShowBellowsGuide" | "setShowButtonLabels" |
-  "setShowStatusBar" | "setShowStradellaRowLabels" | "setShowTrebleOctaves" | "setSpacing" |
-  "setTrebleAngle" | "showBellowsGuide" | "showButtonLabels" | "showStatusBar" |
-  "showStradellaRowLabels" | "showTrebleOctaves" | "side" | "spacing" | "t" | "trebleAngle" |
-  "trebleLayout">;
+type AccordionAppearanceSectionModel = Pick<
+  AppControllerModel["settings"],
+  | "accidentalStyle"
+  | "buttonSize"
+  | "buttonStrokeWidth"
+  | "chordFillStrength"
+  | "colorTheme"
+  | "diagramScale"
+  | "diagramVerticalSpacing"
+  | "interfaceDensity"
+  | "isPianoTreble"
+  | "labelFont"
+  | "labelFontSize"
+  | "pianoBlackKeyHeightScale"
+  | "pianoBlackKeyWidthScale"
+  | "pianoKeyHeightScale"
+  | "pianoKeyWidthScale"
+  | "referenceStrokeWidth"
+  | "setAccidentalStyle"
+  | "setButtonSize"
+  | "setButtonStrokeWidth"
+  | "setChordFillStrength"
+  | "setColorTheme"
+  | "setDiagramScale"
+  | "setDiagramVerticalSpacing"
+  | "setInterfaceDensity"
+  | "setLabelFont"
+  | "setLabelFontSize"
+  | "setPianoBlackKeyHeightScale"
+  | "setPianoBlackKeyWidthScale"
+  | "setPianoKeyHeightScale"
+  | "setPianoKeyWidthScale"
+  | "setReferenceStrokeWidth"
+  | "setShowBellowsGuide"
+  | "setShowButtonLabels"
+  | "setShowStatusBar"
+  | "setShowStradellaRowLabels"
+  | "setShowTrebleOctaves"
+  | "setSpacing"
+  | "setTrebleAngle"
+  | "showBellowsGuide"
+  | "showButtonLabels"
+  | "showStatusBar"
+  | "showStradellaRowLabels"
+  | "showTrebleOctaves"
+  | "side"
+  | "spacing"
+  | "t"
+  | "trebleAngle"
+  | "trebleLayout"
+>;
 
 /** Appearance of the accordion diagrams: labels, sizes, colors and layout. */
-export default function AccordionAppearanceSection({ model }: { model: AccordionAppearanceSectionModel }) {
+export default function AccordionAppearanceSection({
+  model,
+}: {
+  model: AccordionAppearanceSectionModel;
+}) {
   const {
-    accidentalStyle, buttonSize, buttonStrokeWidth, chordFillStrength, colorTheme, diagramScale,
-    diagramVerticalSpacing, interfaceDensity, isPianoTreble, labelFont, labelFontSize,
-    pianoBlackKeyHeightScale, pianoBlackKeyWidthScale, pianoKeyHeightScale, pianoKeyWidthScale,
-    referenceStrokeWidth, setAccidentalStyle, setButtonSize, setButtonStrokeWidth,
-    setChordFillStrength, setColorTheme, setDiagramScale, setDiagramVerticalSpacing,
-    setInterfaceDensity, setLabelFont, setLabelFontSize, setPianoBlackKeyHeightScale,
-    setPianoBlackKeyWidthScale, setPianoKeyHeightScale, setPianoKeyWidthScale,
-    setReferenceStrokeWidth, setShowBellowsGuide, setShowButtonLabels, setShowStatusBar,
-    setShowStradellaRowLabels, setShowTrebleOctaves, setSpacing, setTrebleAngle, showBellowsGuide,
-    showButtonLabels, showStatusBar, showStradellaRowLabels, showTrebleOctaves, side, spacing, t,
-    trebleAngle, trebleLayout,
+    accidentalStyle,
+    buttonSize,
+    buttonStrokeWidth,
+    chordFillStrength,
+    colorTheme,
+    diagramScale,
+    diagramVerticalSpacing,
+    interfaceDensity,
+    isPianoTreble,
+    labelFont,
+    labelFontSize,
+    pianoBlackKeyHeightScale,
+    pianoBlackKeyWidthScale,
+    pianoKeyHeightScale,
+    pianoKeyWidthScale,
+    referenceStrokeWidth,
+    setAccidentalStyle,
+    setButtonSize,
+    setButtonStrokeWidth,
+    setChordFillStrength,
+    setColorTheme,
+    setDiagramScale,
+    setDiagramVerticalSpacing,
+    setInterfaceDensity,
+    setLabelFont,
+    setLabelFontSize,
+    setPianoBlackKeyHeightScale,
+    setPianoBlackKeyWidthScale,
+    setPianoKeyHeightScale,
+    setPianoKeyWidthScale,
+    setReferenceStrokeWidth,
+    setShowBellowsGuide,
+    setShowButtonLabels,
+    setShowStatusBar,
+    setShowStradellaRowLabels,
+    setShowTrebleOctaves,
+    setSpacing,
+    setTrebleAngle,
+    showBellowsGuide,
+    showButtonLabels,
+    showStatusBar,
+    showStradellaRowLabels,
+    showTrebleOctaves,
+    side,
+    spacing,
+    t,
+    trebleAngle,
+    trebleLayout,
   } = model;
   return (
     <>
-      <SegmentedChoice label={<>{t("ui.interfaceDensity")} <HelpTip text={t("ui.interfaceDensityHelp")} /></>} value={interfaceDensity} onChange={setInterfaceDensity} options={[{ value: "compact", label: t("ui.compact") }, { value: "comfortable", label: t("ui.comfortable") }]} />
+      <SegmentedChoice
+        label={
+          <>
+            {t("ui.interfaceDensity")} <HelpTip text={t("ui.interfaceDensityHelp")} />
+          </>
+        }
+        value={interfaceDensity}
+        onChange={setInterfaceDensity}
+        options={[
+          { value: "compact", label: t("ui.compact") },
+          { value: "comfortable", label: t("ui.comfortable") },
+        ]}
+      />
 
       <label className="checkbox-label">
         <input
           type="checkbox"
           checked={showStatusBar}
-          onChange={(event) =>
-            setShowStatusBar(event.target.checked)
-          }
+          onChange={(event) => setShowStatusBar(event.target.checked)}
         />
         <span className="label-line">
-          {t("ui.statusBar")}{" "}
-          <HelpTip text={t("ui.statusBarHelp")} />
+          {t("ui.statusBar")} <HelpTip text={t("ui.statusBarHelp")} />
         </span>
       </label>
 
       <label>
         <span className="label-line">
-          {t("ui.diagramScale")}: {diagramScale}%{" "}
-          <HelpTip text={t("ui.diagramScaleHelp")} />
+          {t("ui.diagramScale")}: {diagramScale}% <HelpTip text={t("ui.diagramScaleHelp")} />
         </span>
         <input
           type="range"
@@ -63,9 +149,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           max={140}
           step={5}
           value={diagramScale}
-          onChange={(event) =>
-            setDiagramScale(Number(event.target.value))
-          }
+          onChange={(event) => setDiagramScale(Number(event.target.value))}
         />
       </label>
 
@@ -73,9 +157,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
         {t("ui.colorTheme")}
         <select
           value={colorTheme}
-          onChange={(event) =>
-            setColorTheme(event.target.value as ColorTheme)
-          }
+          onChange={(event) => setColorTheme(event.target.value as ColorTheme)}
         >
           <option value="default">{t("ui.defaultBlue")}</option>
           <option value="classic">{t("ui.classicInk")}</option>
@@ -90,11 +172,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
         {t("ui.accidentalButtons")}
         <select
           value={accidentalStyle}
-          onChange={(event) =>
-            setAccidentalStyle(
-              event.target.value as AccidentalStyle,
-            )
-          }
+          onChange={(event) => setAccidentalStyle(event.target.value as AccidentalStyle)}
         >
           <option value="grey">{t("ui.grey")}</option>
           <option value="dark">{t("ui.dark")}</option>
@@ -107,9 +185,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
         {t("ui.labelFont")}
         <select
           value={labelFont}
-          onChange={(event) =>
-            setLabelFont(event.target.value as FontFamily)
-          }
+          onChange={(event) => setLabelFont(event.target.value as FontFamily)}
         >
           <option value="system">{t("ui.system")}</option>
           <option value="serif">{t("ui.serif")}</option>
@@ -125,29 +201,43 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           min={8}
           max={24}
           value={labelFontSize}
-          onChange={(event) =>
-            setLabelFontSize(Number(event.target.value))
-          }
+          onChange={(event) => setLabelFontSize(Number(event.target.value))}
         />
       </label>
 
       <label className="checkbox-label">
-        <input type="checkbox" checked={showButtonLabels} onChange={(event) => setShowButtonLabels(event.target.checked)} />
+        <input
+          type="checkbox"
+          checked={showButtonLabels}
+          onChange={(event) => setShowButtonLabels(event.target.checked)}
+        />
         <span className="label-line">{t("ui.showButtonLabels")}</span>
       </label>
       <label className="checkbox-label">
-        <input type="checkbox" checked={showBellowsGuide} onChange={(event) => setShowBellowsGuide(event.target.checked)} />
+        <input
+          type="checkbox"
+          checked={showBellowsGuide}
+          onChange={(event) => setShowBellowsGuide(event.target.checked)}
+        />
         <span className="label-line">{t("ui.showBellowsGuide")}</span>
       </label>
       {side === "stradella" && (
         <label className="checkbox-label">
-          <input type="checkbox" checked={showStradellaRowLabels} onChange={(event) => setShowStradellaRowLabels(event.target.checked)} />
+          <input
+            type="checkbox"
+            checked={showStradellaRowLabels}
+            onChange={(event) => setShowStradellaRowLabels(event.target.checked)}
+          />
           <span className="label-line">{t("ui.showStradellaRowLabels")}</span>
         </label>
       )}
       {side === "treble" && (
         <label className="checkbox-label">
-          <input type="checkbox" checked={showTrebleOctaves} onChange={(event) => setShowTrebleOctaves(event.target.checked)} />
+          <input
+            type="checkbox"
+            checked={showTrebleOctaves}
+            onChange={(event) => setShowTrebleOctaves(event.target.checked)}
+          />
           <span className="label-line">{t("ui.showOctaveNumbers")}</span>
         </label>
       )}
@@ -159,9 +249,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           min={12}
           max={28}
           value={buttonSize}
-          onChange={(event) =>
-            setButtonSize(Number(event.target.value))
-          }
+          onChange={(event) => setButtonSize(Number(event.target.value))}
         />
       </label>
 
@@ -173,9 +261,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           max={3.2}
           step={0.05}
           value={spacing}
-          onChange={(event) =>
-            setSpacing(Number(event.target.value))
-          }
+          onChange={(event) => setSpacing(Number(event.target.value))}
         />
       </label>
 
@@ -190,9 +276,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           max={80}
           step={2}
           value={diagramVerticalSpacing}
-          onChange={(event) =>
-            setDiagramVerticalSpacing(Number(event.target.value))
-          }
+          onChange={(event) => setDiagramVerticalSpacing(Number(event.target.value))}
         />
       </label>
 
@@ -204,9 +288,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           max={6}
           step={0.25}
           value={buttonStrokeWidth}
-          onChange={(event) =>
-            setButtonStrokeWidth(Number(event.target.value))
-          }
+          onChange={(event) => setButtonStrokeWidth(Number(event.target.value))}
         />
       </label>
 
@@ -218,9 +300,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
           max={10}
           step={0.25}
           value={referenceStrokeWidth}
-          onChange={(event) =>
-            setReferenceStrokeWidth(Number(event.target.value))
-          }
+          onChange={(event) => setReferenceStrokeWidth(Number(event.target.value))}
         />
       </label>
 
@@ -237,9 +317,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
               max={1.45}
               step={0.05}
               value={pianoKeyWidthScale}
-              onChange={(event) =>
-                setPianoKeyWidthScale(Number(event.target.value))
-              }
+              onChange={(event) => setPianoKeyWidthScale(Number(event.target.value))}
             />
           </label>
 
@@ -254,16 +332,13 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
               max={1.8}
               step={0.05}
               value={pianoKeyHeightScale}
-              onChange={(event) =>
-                setPianoKeyHeightScale(Number(event.target.value))
-              }
+              onChange={(event) => setPianoKeyHeightScale(Number(event.target.value))}
             />
           </label>
 
           <label>
             <span className="label-line">
-              {t("ui.blackKeyWidth")}:{" "}
-              {pianoBlackKeyWidthScale.toFixed(2)}×{" "}
+              {t("ui.blackKeyWidth")}: {pianoBlackKeyWidthScale.toFixed(2)}×{" "}
               <HelpTip text={t("ui.blackKeyWidthHelp")} />
             </span>
             <input
@@ -272,18 +347,13 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
               max={1.35}
               step={0.05}
               value={pianoBlackKeyWidthScale}
-              onChange={(event) =>
-                setPianoBlackKeyWidthScale(
-                  Number(event.target.value),
-                )
-              }
+              onChange={(event) => setPianoBlackKeyWidthScale(Number(event.target.value))}
             />
           </label>
 
           <label>
             <span className="label-line">
-              {t("ui.blackKeyHeight")}:{" "}
-              {pianoBlackKeyHeightScale.toFixed(2)}×{" "}
+              {t("ui.blackKeyHeight")}: {pianoBlackKeyHeightScale.toFixed(2)}×{" "}
               <HelpTip text={t("ui.blackKeyHeightHelp")} />
             </span>
             <input
@@ -292,11 +362,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
               max={1.5}
               step={0.05}
               value={pianoBlackKeyHeightScale}
-              onChange={(event) =>
-                setPianoBlackKeyHeightScale(
-                  Number(event.target.value),
-                )
-              }
+              onChange={(event) => setPianoBlackKeyHeightScale(Number(event.target.value))}
             />
           </label>
         </>
@@ -311,9 +377,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
             max={100}
             step={5}
             value={chordFillStrength}
-            onChange={(event) =>
-              setChordFillStrength(Number(event.target.value))
-            }
+            onChange={(event) => setChordFillStrength(Number(event.target.value))}
           />
         </label>
       )}
@@ -326,9 +390,7 @@ export default function AccordionAppearanceSection({ model }: { model: Accordion
             min={-35}
             max={35}
             value={trebleAngle}
-            onChange={(event) =>
-              setTrebleAngle(Number(event.target.value))
-            }
+            onChange={(event) => setTrebleAngle(Number(event.target.value))}
           />
         </label>
       )}

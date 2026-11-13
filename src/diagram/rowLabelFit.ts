@@ -22,13 +22,14 @@ export const estimateRowLabelWidth: LabelMeasure = (label) =>
 /** One shared size: the largest at which every label fits its own strip.
  * Rows are staggered, so each label has a different right edge. */
 export function fittedRowLabelFontSize(
-  rows: ReadonlyArray<{ label: string; rightEdge: number }>, measure: LabelMeasure = estimateRowLabelWidth,
+  rows: ReadonlyArray<{ label: string; rightEdge: number }>,
+  measure: LabelMeasure = estimateRowLabelWidth,
 ): number {
   let fitted = ROW_LABEL_FONT_SIZE;
   for (const { label, rightEdge } of rows) {
     const width = measure(label);
     const available = rightEdge - ROW_LABEL_EDGE_MARGIN;
-    if (width > available) fitted = Math.min(fitted, ROW_LABEL_FONT_SIZE * available / width);
+    if (width > available) fitted = Math.min(fitted, (ROW_LABEL_FONT_SIZE * available) / width);
   }
   return Math.floor(Math.max(MIN_ROW_LABEL_FONT_SIZE, fitted) * 10) / 10;
 }
@@ -40,7 +41,9 @@ export function measureRowLabelWidth(label: string): number {
   if (typeof document === "undefined") return estimateRowLabelWidth(label);
   measuringContext ??= document.createElement("canvas").getContext("2d");
   if (!measuringContext) return estimateRowLabelWidth(label);
-  const family = getComputedStyle(document.querySelector("svg.diagram") ?? document.documentElement).fontFamily;
+  const family = getComputedStyle(
+    document.querySelector("svg.diagram") ?? document.documentElement,
+  ).fontFamily;
   measuringContext.font = `900 ${ROW_LABEL_FONT_SIZE}px ${family}`;
   return measuringContext.measureText(label).width;
 }

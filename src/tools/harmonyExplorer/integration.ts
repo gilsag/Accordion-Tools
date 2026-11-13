@@ -7,7 +7,20 @@
 import type { FinderChordPattern } from "../../types";
 import type { ChordFamilyId } from "./music";
 
-const PITCH_CLASS_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const;
+const PITCH_CLASS_NAMES = [
+  "C",
+  "C#",
+  "D",
+  "D#",
+  "E",
+  "F",
+  "F#",
+  "G",
+  "G#",
+  "A",
+  "A#",
+  "B",
+] as const;
 
 const FAMILY_TO_FINDER: Partial<Record<ChordFamilyId, FinderChordPattern>> = {
   major: "major-triad",

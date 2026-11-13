@@ -46,12 +46,29 @@ const STRADELLA_RIGHT_MARGIN = 28;
 
 export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
   const {
-    side, isPianoTreble, pianoTrebleRange, trebleSize, buttonSize, spacing,
-    pianoKeyWidthScale, pianoKeyHeightScale, diagramVerticalSpacing,
-    visibleRootCount, visibleRowCount, buttons, titleMode, titleSize, finalTitle,
-    trebleVoicingNote, finderAnnotationDisplayLines, finderExplanationFontSize,
-    finderVoicingChartVisible, voicingChartHeight, annotationLevelForLine,
-    trebleFooterEnabled, finderFooterEnabled,
+    side,
+    isPianoTreble,
+    pianoTrebleRange,
+    trebleSize,
+    buttonSize,
+    spacing,
+    pianoKeyWidthScale,
+    pianoKeyHeightScale,
+    diagramVerticalSpacing,
+    visibleRootCount,
+    visibleRowCount,
+    buttons,
+    titleMode,
+    titleSize,
+    finalTitle,
+    trebleVoicingNote,
+    finderAnnotationDisplayLines,
+    finderExplanationFontSize,
+    finderVoicingChartVisible,
+    voicingChartHeight,
+    annotationLevelForLine,
+    trebleFooterEnabled,
+    finderFooterEnabled,
   } = inputs;
   const viewWidth =
     side === "stradella"
@@ -80,25 +97,19 @@ export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
   // Longer contextual titles (especially selected treble inversions) must
   // remain within compact one-/two-octave SVG widths and exported PNGs.
   // Only contextual titles auto-fit; keep the user's custom font size intact.
-  const effectiveTitleSize = titleMode === "contextual"
-    ? Math.min(titleSize, Math.max(10, Math.floor((viewWidth - 64) / (Math.max(1, finalTitle.length) * 0.62))))
-    : titleSize;
+  const effectiveTitleSize =
+    titleMode === "contextual"
+      ? Math.min(
+          titleSize,
+          Math.max(10, Math.floor((viewWidth - 64) / (Math.max(1, finalTitle.length) * 0.62))),
+        )
+      : titleSize;
 
   const baseViewHeight =
     side === "stradella"
-      ? Math.max(
-          320,
-          220 +
-            visibleRowCount * buttonSize * spacing * 0.88 +
-            diagramVerticalSpacing,
-        )
+      ? Math.max(320, 220 + visibleRowCount * buttonSize * spacing * 0.88 + diagramVerticalSpacing)
       : isPianoTreble
-        ? Math.max(
-            360,
-            285 +
-              buttonSize * 5.9 * pianoKeyHeightScale +
-              diagramVerticalSpacing,
-          )
+        ? Math.max(360, 285 + buttonSize * 5.9 * pianoKeyHeightScale + diagramVerticalSpacing)
         : 450 + diagramVerticalSpacing;
 
   // Keep the Treble Chord Finder note close to the actual keyboard. A fixed
@@ -111,17 +122,27 @@ export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
   // Reserve enough room for explanatory notes that wrap on narrow diagrams,
   // including the one- and two-octave presets.
   const trebleFooterFontSize = viewWidth < 600 ? 21 : 26;
-  const trebleFooterLineEstimate = Math.max(1, Math.ceil(
-    trebleVoicingNote.length * trebleFooterFontSize * 0.65 * 1.18 / Math.max(1, viewWidth - 64),
-  ));
+  const trebleFooterLineEstimate = Math.max(
+    1,
+    Math.ceil(
+      (trebleVoicingNote.length * trebleFooterFontSize * 0.65 * 1.18) / Math.max(1, viewWidth - 64),
+    ),
+  );
   const trebleFooterHeight = Math.max(
     80,
     Math.ceil(trebleFooterLineEstimate * trebleFooterFontSize * 1.15 + 20),
   );
   // Match the shared CSS label column using the longest enabled translated label.
-  const finderAnnotationLabelWidth = Math.max(150, ...finderAnnotationDisplayLines.map((line) =>
-    Math.ceil(Math.max(0, line.indexOf(":") + 1) * finderExplanationFontSize * 0.65)));
-  const finderAnnotationContentWidth = Math.max(220, viewWidth - 64 - finderAnnotationLabelWidth - 18);
+  const finderAnnotationLabelWidth = Math.max(
+    150,
+    ...finderAnnotationDisplayLines.map((line) =>
+      Math.ceil(Math.max(0, line.indexOf(":") + 1) * finderExplanationFontSize * 0.65),
+    ),
+  );
+  const finderAnnotationContentWidth = Math.max(
+    220,
+    viewWidth - 64 - finderAnnotationLabelWidth - 18,
+  );
   const finderVoicingChartHeight = finderVoicingChartVisible ? voicingChartHeight : 0;
   const finderFooterHeight = (() => {
     let total = 16;
@@ -133,10 +154,15 @@ export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
       }
       const colon = line.indexOf(":");
       const value = colon > 0 ? line.slice(colon + 1).trim() : line;
-      const wrappedLines = Math.max(1, Math.ceil(
-        value.length * finderExplanationFontSize * 0.59 / Math.max(1, finderAnnotationContentWidth),
-      ));
-      total += Math.max(finderExplanationFontSize * 1.3, wrappedLines * finderExplanationFontSize * 1.3) +
+      const wrappedLines = Math.max(
+        1,
+        Math.ceil(
+          (value.length * finderExplanationFontSize * 0.59) /
+            Math.max(1, finderAnnotationContentWidth),
+        ),
+      );
+      total +=
+        Math.max(finderExplanationFontSize * 1.3, wrappedLines * finderExplanationFontSize * 1.3) +
         0.42 * finderExplanationFontSize;
     }
     return Math.max(82, Math.ceil(total));
@@ -147,14 +173,25 @@ export function calculateDiagramGeometry(inputs: DiagramGeometryInputs) {
     baseViewHeight - 90,
     Math.max(0, ...buttons.map((button) => button.y + buttonSize * 0.58)) + 24,
   );
-  const viewHeight = trebleFooterEnabled && buttonTrebleFooter
-    ? trebleFooterY + trebleFooterHeight + 8
-    : finderFooterEnabled ? stradellaFinderFooterY + finderFooterHeight + 12
-      : baseViewHeight + (trebleFooterEnabled ? 112 : 0);
+  const viewHeight =
+    trebleFooterEnabled && buttonTrebleFooter
+      ? trebleFooterY + trebleFooterHeight + 8
+      : finderFooterEnabled
+        ? stradellaFinderFooterY + finderFooterHeight + 12
+        : baseViewHeight + (trebleFooterEnabled ? 112 : 0);
 
   return {
-    viewWidth, effectiveTitleSize, buttonTrebleFooter, trebleFooterY, trebleFooterFontSize,
-    trebleFooterHeight, finderAnnotationLabelWidth, finderAnnotationContentWidth,
-    finderVoicingChartHeight, finderFooterHeight, stradellaFinderFooterY, viewHeight,
+    viewWidth,
+    effectiveTitleSize,
+    buttonTrebleFooter,
+    trebleFooterY,
+    trebleFooterFontSize,
+    trebleFooterHeight,
+    finderAnnotationLabelWidth,
+    finderAnnotationContentWidth,
+    finderVoicingChartHeight,
+    finderFooterHeight,
+    stradellaFinderFooterY,
+    viewHeight,
   };
 }

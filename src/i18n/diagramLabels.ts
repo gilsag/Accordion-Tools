@@ -21,7 +21,10 @@ export function trebleLayoutStatusLabel(layout: TrebleLayout, language: Interfac
   return translate(language, "status.piano");
 }
 
-export function pianoRangeStatusLabel(range: PianoTrebleRange, language: InterfaceLanguage): string {
+export function pianoRangeStatusLabel(
+  range: PianoTrebleRange,
+  language: InterfaceLanguage,
+): string {
   const key = {
     "two-octave": "status.pianoTwoOctaves",
     "three-octave": "status.pianoThreeOctaves",
@@ -37,12 +40,16 @@ export function diagramAutoTitle(
   trebleLayout: TrebleLayout,
   language: InterfaceLanguage,
 ): string {
-  if (side === "stradella") return language === "en"
-    ? `${basses}-Bass Stradella`
-    : translate(language, "status.stradellaDiagramTitle", { count: basses });
+  if (side === "stradella")
+    return language === "en"
+      ? `${basses}-Bass Stradella`
+      : translate(language, "status.stradellaDiagramTitle", { count: basses });
   if (trebleLayout === "piano") return translate(language, "status.pianoTrebleTitle");
   return translate(language, "status.chromaticTrebleTitle", {
-    system: trebleLayout === "c-system" ? translate(language, "status.cSystem") : translate(language, "status.bSystem"),
+    system:
+      trebleLayout === "c-system"
+        ? translate(language, "status.cSystem")
+        : translate(language, "status.bSystem"),
   });
 }
 
@@ -59,14 +66,26 @@ export type AccordionStatusOptions = {
 };
 
 export function accordionStatusText(options: AccordionStatusOptions): string {
-  const { side, basses, trebleLayout, pianoRange, trebleRows, notation, soundEnabled, activeTool, language } = options;
+  const {
+    side,
+    basses,
+    trebleLayout,
+    pianoRange,
+    trebleRows,
+    notation,
+    soundEnabled,
+    activeTool,
+    language,
+  } = options;
   const sound = `${translate(language, "status.sound")} ${translate(language, soundEnabled ? "status.soundOn" : "status.soundOff")}`;
   const notationName = notationStatusLabel(notation, language);
   if (side === "stradella") {
     return `Stradella · ${basses} ${translate(language, "status.bass")} · ${notationName} · ${sound} · ${activeTool}`;
   }
-  const size = trebleLayout === "piano" ? pianoRangeStatusLabel(pianoRange, language)
-    : `${trebleRows} ${translate(language, "status.rows")}`;
+  const size =
+    trebleLayout === "piano"
+      ? pianoRangeStatusLabel(pianoRange, language)
+      : `${trebleRows} ${translate(language, "status.rows")}`;
   return `${translate(language, "nav.treble")} · ${trebleLayoutStatusLabel(trebleLayout, language)} · ${size} · ${notationName} · ${sound} · ${activeTool}`;
 }
 
@@ -76,7 +95,8 @@ export function harmonyRelatedDisplayName(
   englishName: string,
   language: InterfaceLanguage,
 ): string {
-  return familyId === "all" ? translate(language, "ui.allDiatonicFamilies")
+  return familyId === "all"
+    ? translate(language, "ui.allDiatonicFamilies")
     : familyName(familyId, englishName, language);
 }
 
@@ -90,10 +110,18 @@ export function harmonyStatusText(options: {
   soundEnabled: boolean;
   language: InterfaceLanguage;
 }): string {
-  const { referenceFamilyId, referenceFamilyEnglishName, relatedFamilyId, relatedFamilyEnglishName, scaleId, scaleEnglishName, soundEnabled, language } = options;
+  const {
+    referenceFamilyId,
+    referenceFamilyEnglishName,
+    relatedFamilyId,
+    relatedFamilyEnglishName,
+    scaleId,
+    scaleEnglishName,
+    soundEnabled,
+    language,
+  } = options;
   return `${translate(language, "nav.harmony")} · ${familyName(referenceFamilyId, referenceFamilyEnglishName, language)} → ${harmonyRelatedDisplayName(relatedFamilyId, relatedFamilyEnglishName, language)} · ${scaleName(scaleId, scaleEnglishName, language)} · ${translate(language, "status.sound")} ${translate(language, soundEnabled ? "status.soundOn" : "status.soundOff")}`;
 }
-
 
 export function harmonyLegendFamilyText(
   relatedName: string,

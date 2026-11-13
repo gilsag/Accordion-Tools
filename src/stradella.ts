@@ -1,4 +1,10 @@
-import type { AccidentalMode, BassCount, ButtonKind, DiagramButton, StradellaPreset } from "./types";
+import type {
+  AccidentalMode,
+  BassCount,
+  ButtonKind,
+  DiagramButton,
+  StradellaPreset,
+} from "./types";
 import { FLAT_NAMES, NATURAL_NAMES, transpose } from "./music";
 
 /*
@@ -254,12 +260,12 @@ export function generateStradella(
         kind,
         pitchClass,
         naturalName: isCounterbass
-          ? counterbassName ?? naturalNameForPitch(pitchClass, accidental)
+          ? (counterbassName ?? naturalNameForPitch(pitchClass, accidental))
           : stradellaDisplayName(rootName, accidental),
         chordRoot: rootPitch,
         chordNaturalName: stradellaDisplayName(rootName, accidental),
         isReference,
       };
-    })
+    }),
   );
 }

@@ -1,4 +1,12 @@
-import { test, expect, openApp, workspace, openToolsSheet, closeToolsSheet, recordAudioStarts } from "./fixtures";
+import {
+  test,
+  expect,
+  openApp,
+  workspace,
+  openToolsSheet,
+  closeToolsSheet,
+  recordAudioStarts,
+} from "./fixtures";
 
 test("a recorded Harmony progression plays on the audio clock and stops", async ({ page }) => {
   const audioStarts = await recordAudioStarts(page);

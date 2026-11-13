@@ -1,32 +1,32 @@
 /** Inspect Vite's production manifest without depending on chunk hash names.
  * It is a release gate for feature splitting; the size budgets below are
  * enforced by audit-production-bundle.mjs. */
-import assert from 'node:assert/strict';
+import assert from "node:assert/strict";
 
 /** Modules that must never be part of the first download. */
 export const LAZY_MODULES = [
   // Each tool's controls load when its section in the Tools panel is opened.
-  'src/app/toolSections/ScaleFinderSection.tsx',
-  'src/app/toolSections/TrebleChordFinderSection.tsx',
-  'src/app/toolSections/StradellaChordFinderSection.tsx',
-  'src/app/toolSections/ProgressionAssistantSection.tsx',
-  'src/app/toolSections/AnnotateDiagramSection.tsx',
-  'src/app/toolSections/BassPatternPlayerSection.tsx',
-  'src/app/toolSections/RhythmTrainerSection.tsx',
-  'src/app/toolSections/AbcPlayerSection.tsx',
-  'src/app/toolSections/HarmonyExplorerSection.tsx',
+  "src/app/toolSections/ScaleFinderSection.tsx",
+  "src/app/toolSections/TrebleChordFinderSection.tsx",
+  "src/app/toolSections/StradellaChordFinderSection.tsx",
+  "src/app/toolSections/ProgressionAssistantSection.tsx",
+  "src/app/toolSections/AnnotateDiagramSection.tsx",
+  "src/app/toolSections/BassPatternPlayerSection.tsx",
+  "src/app/toolSections/RhythmTrainerSection.tsx",
+  "src/app/toolSections/AbcPlayerSection.tsx",
+  "src/app/toolSections/HarmonyExplorerSection.tsx",
   // The Tools panel is open at startup; Settings loads when first opened.
-  'src/app/views/SettingsView.tsx',
-  'src/tools/harmonyExplorer/components/HarmonicCircle.tsx',
-  'src/tools/abcPlayerTools.ts',
+  "src/app/views/SettingsView.tsx",
+  "src/tools/harmonyExplorer/components/HarmonicCircle.tsx",
+  "src/tools/abcPlayerTools.ts",
   // Opened only from Settings -> About; carries every guide as raw Markdown.
-  'src/components/settings/DocumentationViewer.tsx',
+  "src/components/settings/DocumentationViewer.tsx",
   // Only English is bundled at startup; the other catalogs load on demand.
-  'src/i18n/es.ts',
-  'src/i18n/fr.ts',
-  'src/i18n/pt.ts',
-  'src/i18n/it.ts',
-  'src/i18n/de.ts',
+  "src/i18n/es.ts",
+  "src/i18n/fr.ts",
+  "src/i18n/pt.ts",
+  "src/i18n/it.ts",
+  "src/i18n/de.ts",
 ];
 
 /** Gzip budget for the JavaScript and CSS a first visit must download before
@@ -38,13 +38,18 @@ export const INITIAL_GZIP_BUDGET_KIB = 200;
 export const STARTUP_ASSET_BUDGET_KIB = 16;
 
 export function auditBundleManifest(manifest) {
-  assert.ok(manifest && typeof manifest === 'object' && !Array.isArray(manifest), 'Invalid Vite manifest');
+  assert.ok(
+    manifest && typeof manifest === "object" && !Array.isArray(manifest),
+    "Invalid Vite manifest",
+  );
   const entries = Object.entries(manifest);
-  const entry = entries.find(([key, value]) => value.isEntry && (key === 'index.html' || key.endsWith('/main.tsx')));
-  assert.ok(entry, 'Missing application entrypoint in Vite manifest');
+  const entry = entries.find(
+    ([key, value]) => value.isEntry && (key === "index.html" || key.endsWith("/main.tsx")),
+  );
+  assert.ok(entry, "Missing application entrypoint in Vite manifest");
   const [entryKey] = entry;
   const eager = new Set();
-  const visit = key => {
+  const visit = (key) => {
     if (eager.has(key)) return;
     assert.ok(manifest[key], `Missing manifest import: ${key}`);
     eager.add(key);
@@ -52,7 +57,7 @@ export function auditBundleManifest(manifest) {
   };
   visit(entryKey);
 
-  const deferred = LAZY_MODULES.map(source => {
+  const deferred = LAZY_MODULES.map((source) => {
     // Vite manifests use original module paths for dynamically imported entrypoints.
     const match = entries.find(([key, value]) => key === source || value.src === source);
     assert.ok(match, `Expected lazy module missing from build manifest: ${source}`);
@@ -62,7 +67,9 @@ export function auditBundleManifest(manifest) {
     return { source, key, file: chunk.file };
   });
 
-  const abcjs = entries.filter(([key, chunk]) => /(^|\/)abcjs(\/|$)/i.test(key) || /(^|\/)abcjs(\/|$)/i.test(chunk.src ?? ''));
+  const abcjs = entries.filter(
+    ([key, chunk]) => /(^|\/)abcjs(\/|$)/i.test(key) || /(^|\/)abcjs(\/|$)/i.test(chunk.src ?? ""),
+  );
   for (const [key] of abcjs) {
     assert.equal(eager.has(key), false, `abcjs entered the initial static bundle: ${key}`);
   }

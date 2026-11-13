@@ -7,43 +7,70 @@ import type { NotationKind } from "../../notation/notationSelection";
 
 // The slot is shared; loading and inputs stay feature-specific. Do not eagerly
 // import a future tool's inspector or copy its selection into local state.
-const StradellaResultsInspector = lazy(() => import("./StradellaResultsInspector")
-  .then((module) => ({ default: module.StradellaResultsInspector })));
+const StradellaResultsInspector = lazy(() =>
+  import("./StradellaResultsInspector").then((module) => ({
+    default: module.StradellaResultsInspector,
+  })),
+);
 
-const ProgressionResultsInspector = lazy(() => import("./ProgressionResultsInspector")
-  .then((module) => ({ default: module.ProgressionResultsInspector })));
+const ProgressionResultsInspector = lazy(() =>
+  import("./ProgressionResultsInspector").then((module) => ({
+    default: module.ProgressionResultsInspector,
+  })),
+);
 
-export function WorkspaceInspectorSlot({ inspector, tools, blocked = false, notationKind }: {
+export function WorkspaceInspectorSlot({
+  inspector,
+  tools,
+  blocked = false,
+  notationKind,
+}: {
   inspector: WorkspaceInspectorId;
   tools: AppControllerModel["tools"];
   blocked?: boolean;
   notationKind?: NotationKind | null;
 }) {
-  if (inspector === "notation" && notationKind) return <aside className="workspace-inspector notation-inspector"
-    aria-label="Music notation" inert={blocked}><NotationWorkspaceContent kind={notationKind} tools={tools} /></aside>;
-  return <Suspense fallback={<aside className="workspace-inspector" aria-busy="true" inert={blocked} />}>
-    {inspector === "progressionAssistant" && <ProgressionResultsInspector
-      blocked={blocked}
-      plan={tools.harmonyProgressionPlan}
-      hasProgression={tools.harmonyProgression.length > 0}
-      previewIndex={tools.harmonyProgressionPreviewIndex}
-      onPreviewStep={tools.previewHarmonyProgressionStepOnStradella}
-    />}
-    {inspector === "stradellaChordFinder" && <StradellaResultsInspector
-      blocked={blocked}
-      root={tools.stradellaChordFinderRoot}
-      pattern={tools.stradellaChordFinderPattern}
-      requestedBass={tools.stradellaChordFinderEffectiveRequestedBass}
-      mode={tools.stradellaChordFinderMode}
-      selectedIndex={Math.min(tools.stradellaChordFinderRealizationIndex,
-        Math.max(0, tools.stradellaChordFinderRealizations.length - 1))}
-      onSelect={tools.setStradellaChordFinderRealizationIndex}
-      realizations={tools.stradellaChordFinderRealizations}
-      result={tools.stradellaChordFinderResult}
-      registerModel={tools.stradellaRegisterModel}
-      chordDisplayStyle={tools.chordDisplayStyle}
-      formatPitches={tools.formatStradellaFinderPitches}
-      formatText={tools.formatStradellaFinderText}
-    />}
-  </Suspense>;
+  if (inspector === "notation" && notationKind)
+    return (
+      <aside
+        className="workspace-inspector notation-inspector"
+        aria-label="Music notation"
+        inert={blocked}
+      >
+        <NotationWorkspaceContent kind={notationKind} tools={tools} />
+      </aside>
+    );
+  return (
+    <Suspense fallback={<aside className="workspace-inspector" aria-busy="true" inert={blocked} />}>
+      {inspector === "progressionAssistant" && (
+        <ProgressionResultsInspector
+          blocked={blocked}
+          plan={tools.harmonyProgressionPlan}
+          hasProgression={tools.harmonyProgression.length > 0}
+          previewIndex={tools.harmonyProgressionPreviewIndex}
+          onPreviewStep={tools.previewHarmonyProgressionStepOnStradella}
+        />
+      )}
+      {inspector === "stradellaChordFinder" && (
+        <StradellaResultsInspector
+          blocked={blocked}
+          root={tools.stradellaChordFinderRoot}
+          pattern={tools.stradellaChordFinderPattern}
+          requestedBass={tools.stradellaChordFinderEffectiveRequestedBass}
+          mode={tools.stradellaChordFinderMode}
+          selectedIndex={Math.min(
+            tools.stradellaChordFinderRealizationIndex,
+            Math.max(0, tools.stradellaChordFinderRealizations.length - 1),
+          )}
+          onSelect={tools.setStradellaChordFinderRealizationIndex}
+          realizations={tools.stradellaChordFinderRealizations}
+          result={tools.stradellaChordFinderResult}
+          registerModel={tools.stradellaRegisterModel}
+          chordDisplayStyle={tools.chordDisplayStyle}
+          formatPitches={tools.formatStradellaFinderPitches}
+          formatText={tools.formatStradellaFinderText}
+        />
+      )}
+    </Suspense>
+  );
 }

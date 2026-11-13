@@ -1,14 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
-import { browserLanguagePreferences, detectBrowserLanguage, isInterfaceCatalogLoaded, isInterfaceLanguagePreference, loadInterfaceCatalog, resolveInterfaceLanguage, translate, type InterfaceLanguage, type InterfaceLanguagePreference } from "../i18n/catalog";
+import {
+  browserLanguagePreferences,
+  detectBrowserLanguage,
+  isInterfaceCatalogLoaded,
+  isInterfaceLanguagePreference,
+  loadInterfaceCatalog,
+  resolveInterfaceLanguage,
+  translate,
+  type InterfaceLanguage,
+  type InterfaceLanguagePreference,
+} from "../i18n/catalog";
 
-const LANGUAGE_STORAGE_KEY = 'accordionTools.interfaceLanguage.v1';
+const LANGUAGE_STORAGE_KEY = "accordionTools.interfaceLanguage.v1";
 
 function storedLanguagePreference(): InterfaceLanguagePreference {
   try {
     const saved = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return isInterfaceLanguagePreference(saved) ? saved : 'auto';
+    return isInterfaceLanguagePreference(saved) ? saved : "auto";
   } catch {
-    return 'auto';
+    return "auto";
   }
 }
 
@@ -22,7 +32,8 @@ export function initialInterfaceLanguage(): InterfaceLanguage {
  * Keep the v1 localStorage key stable for existing installations.
  */
 export function useLanguageSettings() {
-  const [languagePreference, setLanguagePreference] = useState<InterfaceLanguagePreference>(storedLanguagePreference);
+  const [languagePreference, setLanguagePreference] =
+    useState<InterfaceLanguagePreference>(storedLanguagePreference);
   const [browserLanguage, setBrowserLanguage] = useState(() =>
     detectBrowserLanguage(browserLanguagePreferences()),
   );
@@ -30,19 +41,29 @@ export function useLanguageSettings() {
   // While a newly requested catalog chunk loads, keep showing the last language
   // whose catalog was available, instead of switching to English mid-session.
   const [loadedLanguage, setLoadedLanguage] = useState<InterfaceLanguage>(() =>
-    isInterfaceCatalogLoaded(requestedLanguage) ? requestedLanguage : 'en');
+    isInterfaceCatalogLoaded(requestedLanguage) ? requestedLanguage : "en",
+  );
   const language = isInterfaceCatalogLoaded(requestedLanguage) ? requestedLanguage : loadedLanguage;
   useEffect(() => {
     if (isInterfaceCatalogLoaded(requestedLanguage)) return;
     let cancelled = false;
     loadInterfaceCatalog(requestedLanguage).then(
-      () => { if (!cancelled) setLoadedLanguage(requestedLanguage); },
-      () => { /* Stay on the current language; a later change retries the load. */ },
+      () => {
+        if (!cancelled) setLoadedLanguage(requestedLanguage);
+      },
+      () => {
+        /* Stay on the current language; a later change retries the load. */
+      },
     );
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [requestedLanguage]);
-  const t = useCallback((key: Parameters<typeof translate>[1], params?: Record<string, string | number>) =>
-    translate(language, key, params), [language]);
+  const t = useCallback(
+    (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) =>
+      translate(language, key, params),
+    [language],
+  );
   function changeLanguage(next: InterfaceLanguagePreference) {
     setLanguagePreference(next);
     try {
@@ -56,8 +77,15 @@ export function useLanguageSettings() {
   }, [language]);
   useEffect(() => {
     const refresh = () => setBrowserLanguage(detectBrowserLanguage(browserLanguagePreferences()));
-    window.addEventListener('languagechange', refresh);
-    return () => window.removeEventListener('languagechange', refresh);
+    window.addEventListener("languagechange", refresh);
+    return () => window.removeEventListener("languagechange", refresh);
   }, []);
-  return { languagePreference, setLanguagePreference, browserLanguage, language, t, changeLanguage };
+  return {
+    languagePreference,
+    setLanguagePreference,
+    browserLanguage,
+    language,
+    t,
+    changeLanguage,
+  };
 }

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../../../src/stradella.ts";
-import { getStradellaChordFinderResult, getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
+import {
+  getStradellaChordFinderResult,
+  getStradellaChordFinderResults,
+} from "../../../src/tools/stradellaChordFinderTools.ts";
 import { analyzeStradellaRegistralVoicing } from "../../../src/tools/stradellaChordFinder/registralAnalysis.ts";
 import type { DiagramButton } from "../../../src/types.ts";
 import { test } from "vitest";
@@ -18,7 +21,8 @@ test("Registral voicings follow the register model", () => {
     assert.ok(found, `Expected ${pitch} ${kind} button`);
     return found;
   };
-  const analyze = (root: string, selected: DiagramButton[]) => analyzeStradellaRegistralVoicing(selected, root);
+  const analyze = (root: string, selected: DiagramButton[]) =>
+    analyzeStradellaRegistralVoicing(selected, root);
   // A single root bass establishes separate bass support, regardless of
   // whether the root was already supplied by the preset chord.
   {
@@ -88,11 +92,30 @@ test("Actual Chord Finder results", () => {
     assert.equal(cmaj7.registral.bassRole, "non-root");
     assert.equal(cmaj7.registral.potentialSlashBass, "B");
 
-    const withMarker = getStradellaChordFinderResult(buttons, "C", "major-triad", "chord-buttons-only", true);
-    const withoutMarker = getStradellaChordFinderResult(buttons, "C", "major-triad", "chord-buttons-only", false);
+    const withMarker = getStradellaChordFinderResult(
+      buttons,
+      "C",
+      "major-triad",
+      "chord-buttons-only",
+      true,
+    );
+    const withoutMarker = getStradellaChordFinderResult(
+      buttons,
+      "C",
+      "major-triad",
+      "chord-buttons-only",
+      false,
+    );
     assert.ok(withMarker.rootBassButtonIds.length > 0, "Visual root marker should exist");
-    assert.ok(withMarker.buttons.length > withMarker.playbackButtons.length, "Marker must not sound");
-    assert.deepEqual(withMarker.registral, withoutMarker.registral, "Visual marker must not affect registral analysis");
+    assert.ok(
+      withMarker.buttons.length > withMarker.playbackButtons.length,
+      "Marker must not sound",
+    );
+    assert.deepEqual(
+      withMarker.registral,
+      withoutMarker.registral,
+      "Visual marker must not affect registral analysis",
+    );
     assert.equal(withMarker.registral.rootBassSupported, false);
     assert.equal(withMarker.registral.bassRole, "none");
 
@@ -100,7 +123,12 @@ test("Actual Chord Finder results", () => {
     assert.equal(bassOnly.registral.bassRole, "multiple-with-root");
     assert.equal(bassOnly.registral.hasPresetChordRegister, false);
 
-    const unplayable = getStradellaChordFinderResult(buttons, "C", "augmented-triad", "chord-buttons-only");
+    const unplayable = getStradellaChordFinderResult(
+      buttons,
+      "C",
+      "augmented-triad",
+      "chord-buttons-only",
+    );
     assert.equal(unplayable.playable, false);
     assert.equal(unplayable.registral.bassRole, "none");
     assert.equal(unplayable.registral.rootPitchClassPresent, false);
@@ -111,10 +139,21 @@ test("Representative extensions", () => {
   // Representative extensions: registral fields must correspond to the exact
   // physical realization that survives existing search/ranking filtering.
   {
-    const candidates = getStradellaChordFinderResults(buttons, "C", "major13", "bass-and-chords", true, 4, 5.5);
+    const candidates = getStradellaChordFinderResults(
+      buttons,
+      "C",
+      "major13",
+      "bass-and-chords",
+      true,
+      4,
+      5.5,
+    );
     const isRecipe = (candidate: (typeof candidates)[number], requested: string[]) => {
       const names = candidate.playbackButtons.map((button) =>
-        button.kind.startsWith("bass-") ? `bass:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`);
+        button.kind.startsWith("bass-")
+          ? `bass:${button.pitchClass}`
+          : `${button.kind}:${button.chordRoot}`,
+      );
       return names.length === requested.length && requested.every((name) => names.includes(name));
     };
     const aMinorWithBBass = candidates.find((item) => isRecipe(item, ["chord-minor:A", "bass:B"]));
@@ -124,7 +163,8 @@ test("Representative extensions", () => {
     assert.equal(aMinorWithBBass.exact, false);
 
     const aMinorWithDDiminished = candidates.find((item) =>
-      isRecipe(item, ["chord-minor:A", "chord-diminished7:D"]));
+      isRecipe(item, ["chord-minor:A", "chord-diminished7:D"]),
+    );
     assert.ok(aMinorWithDDiminished, "Cmaj13 compact chord-only realization should remain present");
     assert.equal(aMinorWithDDiminished.registral.bassRole, "none");
     assert.equal(aMinorWithDDiminished.registral.hasPresetChordRegister, true);

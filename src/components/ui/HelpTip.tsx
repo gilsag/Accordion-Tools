@@ -32,9 +32,12 @@ export function HelpTip({ text }: HelpTipProps) {
       const left = Math.max(12, Math.min(window.innerWidth - width - 12, rect.left));
       const below = rect.bottom + 8;
       const above = rect.top - 8 - height;
-      const top = below + height <= window.innerHeight - 12 ? below
-        : above >= 12 ? above
-          : Math.max(12, Math.min(window.innerHeight - height - 12, below));
+      const top =
+        below + height <= window.innerHeight - 12
+          ? below
+          : above >= 12
+            ? above
+            : Math.max(12, Math.min(window.innerHeight - height - 12, below));
       setPosition({ left, top });
     }
     reposition();
@@ -48,57 +51,96 @@ export function HelpTip({ text }: HelpTipProps) {
   useEffect(() => {
     if (!open) return;
     function dismissOnOutside(event: MouseEvent) {
-      if (!ref.current?.contains(event.target as Node) &&
-          !popupRef.current?.contains(event.target as Node)) {
+      if (
+        !ref.current?.contains(event.target as Node) &&
+        !popupRef.current?.contains(event.target as Node)
+      ) {
         setPinned(false);
         setOpen(false);
       }
     }
     function dismissOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") { setPinned(false); setOpen(false); }
+      if (event.key === "Escape") {
+        setPinned(false);
+        setOpen(false);
+      }
     }
     document.addEventListener("pointerdown", dismissOnOutside);
     document.addEventListener("keydown", dismissOnEscape);
-    return () => { document.removeEventListener("pointerdown", dismissOnOutside);
-      document.removeEventListener("keydown", dismissOnEscape); };
+    return () => {
+      document.removeEventListener("pointerdown", dismissOnOutside);
+      document.removeEventListener("keydown", dismissOnEscape);
+    };
   }, [open]);
-  useEffect(() => () => {
-    if (hideTimer.current !== null) clearTimeout(hideTimer.current);
-  }, []);
-  return <>
-    <span
-      ref={ref}
-      role="button"
-      tabIndex={0}
-      className="help-tip"
-      aria-label={text}
-      aria-describedby={open ? tipId : undefined}
-      aria-expanded={open}
-      onMouseEnter={() => { cancelHide(); setOpen(true); }}
-      onMouseLeave={scheduleHide}
-      onClick={(event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        cancelHide();
-        setPinned((current) => !current);
-        setOpen(true);
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") { setPinned(false); setOpen(false); return; }
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault(); event.stopPropagation(); cancelHide(); setPinned((current) => !current); setOpen(true);
-        }
-      }}
-      onBlur={() => { if (!pinned) scheduleHide(); }}
-    >?</span>
-    {open && createPortal(
-      <span ref={popupRef} id={tipId} role="tooltip" className="help-tip-popup"
+  useEffect(
+    () => () => {
+      if (hideTimer.current !== null) clearTimeout(hideTimer.current);
+    },
+    [],
+  );
+  return (
+    <>
+      <span
+        ref={ref}
+        role="button"
         tabIndex={0}
-        onMouseEnter={cancelHide}
+        className="help-tip"
+        aria-label={text}
+        aria-describedby={open ? tipId : undefined}
+        aria-expanded={open}
+        onMouseEnter={() => {
+          cancelHide();
+          setOpen(true);
+        }}
         onMouseLeave={scheduleHide}
-        style={{ left: position.left, top: position.top }}>{text}</span>, document.body)}
-  </>;
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          cancelHide();
+          setPinned((current) => !current);
+          setOpen(true);
+        }}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            setPinned(false);
+            setOpen(false);
+            return;
+          }
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            event.stopPropagation();
+            cancelHide();
+            setPinned((current) => !current);
+            setOpen(true);
+          }
+        }}
+        onBlur={() => {
+          if (!pinned) scheduleHide();
+        }}
+      >
+        ?
+      </span>
+      {open &&
+        createPortal(
+          <span
+            ref={popupRef}
+            id={tipId}
+            role="tooltip"
+            className="help-tip-popup"
+            tabIndex={0}
+            onMouseEnter={cancelHide}
+            onMouseLeave={scheduleHide}
+            style={{ left: position.left, top: position.top }}
+          >
+            {text}
+          </span>,
+          document.body,
+        )}
+    </>
+  );
 }
 
 import { useId } from "react";
-function useStableTipId() { return useId().replace(/:/g, ""); }
+function useStableTipId() {
+  return useId().replace(/:/g, "");
+}

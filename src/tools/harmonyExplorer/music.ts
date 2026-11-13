@@ -72,20 +72,86 @@ export type SectorRelationships = {
 export const CHORD_FAMILIES: readonly ChordFamily[] = [
   { id: "major", name: "Major triad", shortName: "Major", suffix: "", intervals: [0, 4, 7] },
   { id: "minor", name: "Minor triad", shortName: "Minor", suffix: "m", intervals: [0, 3, 7] },
-  { id: "diminished", name: "Diminished triad", shortName: "Diminished", suffix: "°", intervals: [0, 3, 6] },
-  { id: "augmented", name: "Augmented triad", shortName: "Augmented", suffix: "+", intervals: [0, 4, 8] },
+  {
+    id: "diminished",
+    name: "Diminished triad",
+    shortName: "Diminished",
+    suffix: "°",
+    intervals: [0, 3, 6],
+  },
+  {
+    id: "augmented",
+    name: "Augmented triad",
+    shortName: "Augmented",
+    suffix: "+",
+    intervals: [0, 4, 8],
+  },
   { id: "sus2", name: "Suspended second", shortName: "Sus2", suffix: "sus2", intervals: [0, 2, 7] },
   { id: "sus4", name: "Suspended fourth", shortName: "Sus4", suffix: "sus4", intervals: [0, 5, 7] },
   { id: "sixth", name: "Major sixth", shortName: "Major 6", suffix: "6", intervals: [0, 4, 7, 9] },
-  { id: "minor6", name: "Minor sixth", shortName: "Minor 6", suffix: "m6", intervals: [0, 3, 7, 9] },
-  { id: "dominant7", name: "Dominant seventh", shortName: "Dominant 7", suffix: "7", intervals: [0, 4, 7, 10] },
-  { id: "major7", name: "Major seventh", shortName: "Major 7", suffix: "maj7", intervals: [0, 4, 7, 11] },
-  { id: "minor7", name: "Minor seventh", shortName: "Minor 7", suffix: "m7", intervals: [0, 3, 7, 10] },
-  { id: "minorMajor7", name: "Minor-major seventh", shortName: "Minor-major 7", suffix: "m(maj7)", intervals: [0, 3, 7, 11] },
-  { id: "halfDiminished7", name: "Half-diminished seventh", shortName: "Half-dim 7", suffix: "ø7", intervals: [0, 3, 6, 10] },
-  { id: "diminished7", name: "Diminished seventh", shortName: "Diminished 7", suffix: "°7", intervals: [0, 3, 6, 9] },
-  { id: "augmented7", name: "Augmented dominant seventh", shortName: "Augmented 7", suffix: "+7", intervals: [0, 4, 8, 10] },
-  { id: "augmentedMajor7", name: "Augmented major seventh", shortName: "Augmented maj7", suffix: "+maj7", intervals: [0, 4, 8, 11] },
+  {
+    id: "minor6",
+    name: "Minor sixth",
+    shortName: "Minor 6",
+    suffix: "m6",
+    intervals: [0, 3, 7, 9],
+  },
+  {
+    id: "dominant7",
+    name: "Dominant seventh",
+    shortName: "Dominant 7",
+    suffix: "7",
+    intervals: [0, 4, 7, 10],
+  },
+  {
+    id: "major7",
+    name: "Major seventh",
+    shortName: "Major 7",
+    suffix: "maj7",
+    intervals: [0, 4, 7, 11],
+  },
+  {
+    id: "minor7",
+    name: "Minor seventh",
+    shortName: "Minor 7",
+    suffix: "m7",
+    intervals: [0, 3, 7, 10],
+  },
+  {
+    id: "minorMajor7",
+    name: "Minor-major seventh",
+    shortName: "Minor-major 7",
+    suffix: "m(maj7)",
+    intervals: [0, 3, 7, 11],
+  },
+  {
+    id: "halfDiminished7",
+    name: "Half-diminished seventh",
+    shortName: "Half-dim 7",
+    suffix: "ø7",
+    intervals: [0, 3, 6, 10],
+  },
+  {
+    id: "diminished7",
+    name: "Diminished seventh",
+    shortName: "Diminished 7",
+    suffix: "°7",
+    intervals: [0, 3, 6, 9],
+  },
+  {
+    id: "augmented7",
+    name: "Augmented dominant seventh",
+    shortName: "Augmented 7",
+    suffix: "+7",
+    intervals: [0, 4, 8, 10],
+  },
+  {
+    id: "augmentedMajor7",
+    name: "Augmented major seventh",
+    shortName: "Augmented maj7",
+    suffix: "+maj7",
+    intervals: [0, 4, 8, 11],
+  },
 ] as const;
 
 export const SCALES: readonly ScaleDefinition[] = [
@@ -105,7 +171,20 @@ export const SCALES: readonly ScaleDefinition[] = [
 ] as const;
 
 export const CIRCLE_OF_FIFTHS = [0, 7, 2, 9, 4, 11, 6, 1, 8, 3, 10, 5] as const;
-export const CIRCLE_ROOT_NAMES = ["C", "G", "D", "A", "E", "B", "F♯", "D♭", "A♭", "E♭", "B♭", "F"] as const;
+export const CIRCLE_ROOT_NAMES = [
+  "C",
+  "G",
+  "D",
+  "A",
+  "E",
+  "B",
+  "F♯",
+  "D♭",
+  "A♭",
+  "E♭",
+  "B♭",
+  "F",
+] as const;
 
 const COMMON_NAMES = ["C", "D♭", "D", "E♭", "E", "F", "F♯", "G", "A♭", "A", "B♭", "B"] as const;
 const SHARP_NAMES = ["C", "C♯", "D", "D♯", "E", "F", "F♯", "G", "G♯", "A", "A♯", "B"] as const;
@@ -175,9 +254,12 @@ export function pitchName(pc: number, sectorIndex: number, showEnharmonics = fal
 function harmonySuffix(familyId: ChordFamilyId, style: ChordDisplayStyle): string {
   const original = chordFamily(familyId).suffix;
   const map: Partial<Record<ChordFamilyId, [string, string, string]>> = {
-    major: ["", "M", "maj"], minor: ["m", "m", "min"],
-    sixth: ["6", "M6", "maj6"], minor6: ["m6", "m6", "min6"],
-    major7: ["maj7", "M7", "maj7"], minor7: ["m7", "m7", "min7"],
+    major: ["", "M", "maj"],
+    minor: ["m", "m", "min"],
+    sixth: ["6", "M6", "maj6"],
+    minor6: ["m6", "m6", "min6"],
+    major7: ["maj7", "M7", "maj7"],
+    minor7: ["m7", "m7", "min7"],
     minorMajor7: ["m(maj7)", "m(M7)", "minMaj7"],
     halfDiminished7: ["ø7", "ø7", "ø7"],
     augmentedMajor7: ["+maj7", "+M7", "+maj7"],
@@ -185,7 +267,13 @@ function harmonySuffix(familyId: ChordFamilyId, style: ChordDisplayStyle): strin
   return map[familyId]?.[style === "compact" ? 0 : style === "letter" ? 1 : 2] ?? original;
 }
 
-export function chordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false, style?: ChordDisplayStyle) {
+export function chordLabel(
+  rootPc: number,
+  familyId: ChordFamilyId,
+  sectorIndex: number,
+  showEnharmonics = false,
+  style?: ChordDisplayStyle,
+) {
   const family = chordFamily(familyId);
   const suffix = style ? harmonySuffix(familyId, style) : family.suffix;
   const root = pitchName(rootPc, sectorIndex, showEnharmonics);
@@ -198,7 +286,13 @@ export function chordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex:
 
 /** Chord labels follow the selected visual notation; inner-ring note labels
  * remain pitch names without a chord-quality suffix. */
-export function circleChordLabel(rootPc: number, familyId: ChordFamilyId, sectorIndex: number, showEnharmonics = false, style?: ChordDisplayStyle) {
+export function circleChordLabel(
+  rootPc: number,
+  familyId: ChordFamilyId,
+  sectorIndex: number,
+  showEnharmonics = false,
+  style?: ChordDisplayStyle,
+) {
   // Preserve the previously published circle-label API for callers that have
   // not opted into a display style.
   if (style) return chordLabel(rootPc, familyId, sectorIndex, showEnharmonics, style);
@@ -237,9 +331,8 @@ export function buildSectorRelationships(
     const parentScalePitches = pitchClassesForScale(referenceRootPc, scaleId);
     const bySharedCount = new Map<number, ChordCandidate[]>();
 
-    const relatedFamilies = relatedFamilyId === "all"
-      ? CHORD_FAMILIES
-      : [chordFamily(relatedFamilyId)];
+    const relatedFamilies =
+      relatedFamilyId === "all" ? CHORD_FAMILIES : [chordFamily(relatedFamilyId)];
     const effectiveDiatonicOnly = diatonicOnly || relatedFamilyId === "all";
 
     for (const relatedFamily of relatedFamilies) {
@@ -251,7 +344,8 @@ export function buildSectorRelationships(
           relatedFamilyId === "all" &&
           relatedFamily.id === referenceFamilyId &&
           rootPc === referenceRootPc
-        ) continue;
+        )
+          continue;
 
         const pitchClasses = pitchClassesForChord(rootPc, relatedFamily.id);
         const sharedCount = sharedPitchClassCount(referencePitches, pitchClasses);
@@ -328,8 +422,6 @@ export function filterRelationshipCounts(
   return counts.filter((count) => isRelationshipRingVisible(count, visibility));
 }
 
-
-
 export type VoiceLeadingMove = {
   fromPc: number;
   toPc: number;
@@ -350,11 +442,21 @@ function pitchClassDistance(a: number, b: number) {
 }
 
 function minimumPairing(fromPcs: readonly number[], toPcs: readonly number[]) {
-  type Pairing = { pairs: Array<[number, number]>; usedFrom: Set<number>; usedTo: Set<number>; score: number };
+  type Pairing = {
+    pairs: Array<[number, number]>;
+    usedFrom: Set<number>;
+    usedTo: Set<number>;
+    score: number;
+  };
   let best: Pairing | null = null;
 
   if (fromPcs.length <= toPcs.length) {
-    const walk = (fromIndex: number, usedTo: Set<number>, pairs: Array<[number, number]>, score: number) => {
+    const walk = (
+      fromIndex: number,
+      usedTo: Set<number>,
+      pairs: Array<[number, number]>,
+      score: number,
+    ) => {
       if (fromIndex >= fromPcs.length) {
         if (!best || score < best.score) {
           best = {
@@ -371,14 +473,24 @@ function minimumPairing(fromPcs: readonly number[], toPcs: readonly number[]) {
         if (usedTo.has(toIndex)) continue;
         usedTo.add(toIndex);
         pairs.push([fromIndex, toIndex]);
-        walk(fromIndex + 1, usedTo, pairs, score + pitchClassDistance(fromPcs[fromIndex], toPcs[toIndex]));
+        walk(
+          fromIndex + 1,
+          usedTo,
+          pairs,
+          score + pitchClassDistance(fromPcs[fromIndex], toPcs[toIndex]),
+        );
         pairs.pop();
         usedTo.delete(toIndex);
       }
     };
     walk(0, new Set(), [], 0);
   } else {
-    const walk = (toIndex: number, usedFrom: Set<number>, pairs: Array<[number, number]>, score: number) => {
+    const walk = (
+      toIndex: number,
+      usedFrom: Set<number>,
+      pairs: Array<[number, number]>,
+      score: number,
+    ) => {
       if (toIndex >= toPcs.length) {
         if (!best || score < best.score) {
           best = {
@@ -395,7 +507,12 @@ function minimumPairing(fromPcs: readonly number[], toPcs: readonly number[]) {
         if (usedFrom.has(fromIndex)) continue;
         usedFrom.add(fromIndex);
         pairs.push([fromIndex, toIndex]);
-        walk(toIndex + 1, usedFrom, pairs, score + pitchClassDistance(fromPcs[fromIndex], toPcs[toIndex]));
+        walk(
+          toIndex + 1,
+          usedFrom,
+          pairs,
+          score + pitchClassDistance(fromPcs[fromIndex], toPcs[toIndex]),
+        );
         pairs.pop();
         usedFrom.delete(fromIndex);
       }
@@ -403,7 +520,14 @@ function minimumPairing(fromPcs: readonly number[], toPcs: readonly number[]) {
     walk(0, new Set(), [], 0);
   }
 
-  return (best as Pairing | null) ?? { pairs: [], usedFrom: new Set<number>(), usedTo: new Set<number>(), score: 0 };
+  return (
+    (best as Pairing | null) ?? {
+      pairs: [],
+      usedFrom: new Set<number>(),
+      usedTo: new Set<number>(),
+      score: 0,
+    }
+  );
 }
 
 /**
@@ -412,7 +536,10 @@ function minimumPairing(fromPcs: readonly number[], toPcs: readonly number[]) {
  * chords have different cardinalities, unmatched target/reference tones are
  * reported separately rather than being assigned an arbitrary movement cost.
  */
-export function analyzeVoiceLeading(referencePitches: readonly number[], targetPitches: readonly number[]): VoiceLeadingAnalysis {
+export function analyzeVoiceLeading(
+  referencePitches: readonly number[],
+  targetPitches: readonly number[],
+): VoiceLeadingAnalysis {
   const reference = [...new Set(referencePitches.map(mod12))];
   const target = [...new Set(targetPitches.map(mod12))];
   const targetSet = new Set(target);
@@ -427,7 +554,9 @@ export function analyzeVoiceLeading(referencePitches: readonly number[], targetP
     distance: pitchClassDistance(remainingReference[fromIndex], remainingTarget[toIndex]),
   }));
   const addedPitchClasses = remainingTarget.filter((_pc, index) => !pairing.usedTo.has(index));
-  const removedPitchClasses = remainingReference.filter((_pc, index) => !pairing.usedFrom.has(index));
+  const removedPitchClasses = remainingReference.filter(
+    (_pc, index) => !pairing.usedFrom.has(index),
+  );
 
   return {
     sharedPitchClasses,
@@ -441,7 +570,15 @@ export function analyzeVoiceLeading(referencePitches: readonly number[], targetP
 const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII"] as const;
 
 function familyUsesLowercaseNumeral(familyId: ChordFamilyId) {
-  return ["minor", "minor6", "minor7", "minorMajor7", "diminished", "halfDiminished7", "diminished7"].includes(familyId);
+  return [
+    "minor",
+    "minor6",
+    "minor7",
+    "minorMajor7",
+    "diminished",
+    "halfDiminished7",
+    "diminished7",
+  ].includes(familyId);
 }
 
 function romanFamilySuffix(familyId: ChordFamilyId) {

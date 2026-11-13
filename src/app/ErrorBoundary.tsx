@@ -36,7 +36,14 @@ export class ErrorBoundary extends Component<Props, State> {
           <button type="button" className="small-button" onClick={() => window.location.reload()}>
             {translate(language, "error.reload")}
           </button>
-          <button type="button" className="small-button" onClick={() => { clearSavedSession(); window.location.reload(); }}>
+          <button
+            type="button"
+            className="small-button"
+            onClick={() => {
+              clearSavedSession();
+              window.location.reload();
+            }}
+          >
             {translate(language, "error.resetAndReload")}
           </button>
         </div>

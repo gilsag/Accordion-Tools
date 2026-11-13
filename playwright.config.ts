@@ -23,8 +23,16 @@ export default defineConfig({
     launchOptions: { executablePath, args: ["--autoplay-policy=no-user-gesture-required"] },
   },
   projects: [
-    { name: "desktop", testIgnore: /performance\.spec\.ts/, use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } } },
-    { name: "phone", testIgnore: /performance\.spec\.ts/, use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } } },
+    {
+      name: "desktop",
+      testIgnore: /performance\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
+    },
+    {
+      name: "phone",
+      testIgnore: /performance\.spec\.ts/,
+      use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } },
+    },
     // Runs alone once the other projects are done, so timings are not inflated
     // by parallel workers.
     {

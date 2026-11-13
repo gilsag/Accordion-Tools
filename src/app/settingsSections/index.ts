@@ -27,13 +27,44 @@ type SettingsSectionDefinition = {
  * component per workspace because the two share a name but no controls.
  */
 export const SETTINGS_SECTIONS: readonly SettingsSectionDefinition[] = [
-  { id: "instrument", titleKey: "settings.instrument", workspace: "accordion", Component: InstrumentSection },
-  { id: "notation", titleKey: "settings.notation", workspace: "accordion", Component: NotationSection },
-  { id: "musicNotation", titleKey: "settings.musicNotation", workspace: "both", Component: MusicNotationSection },
-  { id: "appearance", titleKey: "settings.appearance", workspace: "accordion", Component: AccordionAppearanceSection },
-  { id: "appearance", titleKey: "settings.appearance", workspace: "harmony", Component: HarmonyAppearanceSection },
+  {
+    id: "instrument",
+    titleKey: "settings.instrument",
+    workspace: "accordion",
+    Component: InstrumentSection,
+  },
+  {
+    id: "notation",
+    titleKey: "settings.notation",
+    workspace: "accordion",
+    Component: NotationSection,
+  },
+  {
+    id: "musicNotation",
+    titleKey: "settings.musicNotation",
+    workspace: "both",
+    Component: MusicNotationSection,
+  },
+  {
+    id: "appearance",
+    titleKey: "settings.appearance",
+    workspace: "accordion",
+    Component: AccordionAppearanceSection,
+  },
+  {
+    id: "appearance",
+    titleKey: "settings.appearance",
+    workspace: "harmony",
+    Component: HarmonyAppearanceSection,
+  },
   { id: "sound", titleKey: "settings.sound", workspace: "both", Component: SoundSection },
   { id: "title", titleKey: "settings.title", workspace: "accordion", Component: TitleSection },
-  { id: "harmony", titleKey: "nav.harmony", workspace: "harmony", introKey: "settings.harmonyIntro", Component: HarmonySection },
+  {
+    id: "harmony",
+    titleKey: "nav.harmony",
+    workspace: "harmony",
+    introKey: "settings.harmonyIntro",
+    Component: HarmonySection,
+  },
   { id: "about", titleKey: "about.title", workspace: "both", Component: AboutSection },
 ];

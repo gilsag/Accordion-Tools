@@ -248,9 +248,7 @@ export function getStradellaScaleFinderResult(
   }
 
   const candidatePools = scaleNotes.map((note) =>
-    buttons.filter(
-      (button) => isBassNoteButton(button) && button.pitchClass === note.pitch,
-    ),
+    buttons.filter((button) => isBassNoteButton(button) && button.pitchClass === note.pitch),
   );
 
   const missingIndexes = candidatePools

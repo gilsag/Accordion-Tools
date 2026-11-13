@@ -1,9 +1,16 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { migrateSettingsDocument, SETTINGS_VERSION } from "../../../src/settings/settingsMigrations";
+import {
+  migrateSettingsDocument,
+  SETTINGS_VERSION,
+} from "../../../src/settings/settingsMigrations";
 import { test } from "vitest";
 
-const legacy = { side: "stradella", soundNoteDurationMs: 420, progressionAllowApproximations: false };
+const legacy = {
+  side: "stradella",
+  soundNoteDurationMs: 420,
+  progressionAllowApproximations: false,
+};
 const migrated = migrateSettingsDocument(legacy) as Record<string, unknown>;
 
 test("A v0.17.0 export", () => {
@@ -23,8 +30,15 @@ test("A v0.18 export (version 2)", () => {
   assert.equal(fromV2.settingsVersion, SETTINGS_VERSION);
   assert.ok(!("selectionOnClick" in fromV2), "retired selection switch dropped");
   assert.equal(fromV2.sequenceThickness, 4, "unrelated keys pass through");
-  const legacyWithSelection = migrateSettingsDocument({ selectionOnClick: false, progressionAllowApproximations: true }) as Record<string, unknown>;
-  assert.deepEqual(legacyWithSelection, { settingsVersion: SETTINGS_VERSION }, "version 1 files run every step");
+  const legacyWithSelection = migrateSettingsDocument({
+    selectionOnClick: false,
+    progressionAllowApproximations: true,
+  }) as Record<string, unknown>;
+  assert.deepEqual(
+    legacyWithSelection,
+    { settingsVersion: SETTINGS_VERSION },
+    "version 1 files run every step",
+  );
 });
 
 test("Current and future files are left alone", () => {

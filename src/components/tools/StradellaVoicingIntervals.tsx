@@ -28,7 +28,10 @@ export function StradellaVoicingIntervals({
   if (positions.length < 2) return null;
 
   return (
-    <div className={`voicing-interval-chart ${className}`.trim()} aria-label={t("ui.voicingIntervalsTitle")}>
+    <div
+      className={`voicing-interval-chart ${className}`.trim()}
+      aria-label={t("ui.voicingIntervalsTitle")}
+    >
       <svg
         viewBox={`0 0 ${width} ${metrics.height}`}
         width={width}
@@ -37,8 +40,9 @@ export function StradellaVoicingIntervals({
         preserveAspectRatio="xMinYMin meet"
         className="voicing-interval-svg"
         role="img"
-        aria-label={`${t("ui.voicingIntervalsTitle")}: ${positions.map((note) =>
-          note.label).join(" – ")}`}
+        aria-label={`${t("ui.voicingIntervalsTitle")}: ${positions
+          .map((note) => note.label)
+          .join(" – ")}`}
       >
         <line
           x1={positions[0].x}
@@ -57,11 +61,13 @@ export function StradellaVoicingIntervals({
               y1={metrics.trackY}
               x2={gap.toX}
               y2={metrics.trackY}
-              className={gap.semitones === 1
-                ? "voicing-interval-gap-tight"
-                : gap.semitones === 2
-                  ? "voicing-interval-close"
-                  : "voicing-interval-open"}
+              className={
+                gap.semitones === 1
+                  ? "voicing-interval-gap-tight"
+                  : gap.semitones === 2
+                    ? "voicing-interval-close"
+                    : "voicing-interval-open"
+              }
             />
             <text
               x={(gap.fromX + gap.toX) / 2}
@@ -80,10 +86,13 @@ export function StradellaVoicingIntervals({
               cx={note.x}
               cy={metrics.trackY}
               r={metrics.circleRadius}
-              className={note.source === "bass" ? "voicing-interval-bass" : "voicing-interval-chord"}
+              className={
+                note.source === "bass" ? "voicing-interval-bass" : "voicing-interval-chord"
+              }
             />
             <line
-              x1={note.x} x2={note.x}
+              x1={note.x}
+              x2={note.x}
               y1={metrics.leaderTopY}
               y2={metrics.leaderBottomY}
               className="voicing-interval-leader"

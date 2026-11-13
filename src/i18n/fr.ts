@@ -21,7 +21,8 @@ export const FR: Record<TranslationKey, string> = {
   "settings.layout": "Disposition",
   "settings.instrument": "Instrument",
   "ui.presetChordConstruction": "Composition des boutons d’accord",
-  "ui.presetChordConstructionHelp": "Le modèle utilise trois classes de hauteurs par bouton : septième de dominante = fondamentale, tierce majeure et septième mineure (1–3–♭7) ; septième diminuée = fondamentale, tierce mineure et septième diminuée (1–♭3–𝄫7). La quinte est omise. Il s’agit d’une convention fixe, répandue sur de nombreux accordéons modernes.",
+  "ui.presetChordConstructionHelp":
+    "Le modèle utilise trois classes de hauteurs par bouton : septième de dominante = fondamentale, tierce majeure et septième mineure (1–3–♭7) ; septième diminuée = fondamentale, tierce mineure et septième diminuée (1–♭3–𝄫7). La quinte est omise. Il s’agit d’une convention fixe, répandue sur de nombreux accordéons modernes.",
   "settings.notation": "Notation",
   "settings.musicNotation": "Notation musicale",
   "settings.appearance": "Apparence",
@@ -39,8 +40,10 @@ export const FR: Record<TranslationKey, string> = {
   "settings.blank": "Sans étiquettes",
   "settings.saveJson": "Enregistrer les paramètres JSON",
   "settings.loadJson": "Charger les paramètres JSON",
-  "settings.jsonHint": "Ces boutons enregistrent ou chargent un fichier de paramètres distinct. Ils ne remplacent pas",
-  "settings.harmonyIntro": "Les principaux choix harmoniques se trouvent dans Outils. Les préférences du diagramme et de lecture se règlent ici.",
+  "settings.jsonHint":
+    "Ces boutons enregistrent ou chargent un fichier de paramètres distinct. Ils ne remplacent pas",
+  "settings.harmonyIntro":
+    "Les principaux choix harmoniques se trouvent dans Outils. Les préférences du diagramme et de lecture se règlent ici.",
   "settings.diagram": "Diagramme",
   "settings.segmentLines": "Lignes de séparation des secteurs",
   "settings.showLegend": "Afficher la légende",
@@ -81,23 +84,29 @@ export const FR: Record<TranslationKey, string> = {
   "tools.reset": "Réinitialiser",
   "tools.chordRootHelp": "La note qui donne son nom à l’accord.",
   "tools.stradellaRootHelp": "La fondamentale utilisée pour construire l’accord demandé.",
-  "tools.chordTypeHelp": "La formule de l’accord recherché. Certaines formules sont impossibles sur Stradella sans notes de basse.",
-  "tools.stradellaIntro": "Rechercher des combinaisons de basses et de boutons d’accord Stradella, y compris des septièmes et accords étendus réduits.",
+  "tools.chordTypeHelp":
+    "La formule de l’accord recherché. Certaines formules sont impossibles sur Stradella sans notes de basse.",
+  "tools.stradellaIntro":
+    "Rechercher des combinaisons de basses et de boutons d’accord Stradella, y compris des septièmes et accords étendus réduits.",
   "tools.trebleIntro": "Trouver une position compacte à la main droite pour l’accord choisi.",
   "tools.harmonyExplorer": "Explorateur harmonique",
-  "tools.harmonyIntro": "Explorer les relations entre accords et gammes fondées sur les notes communes.",
+  "tools.harmonyIntro":
+    "Explorer les relations entre accords et gammes fondées sur les notes communes.",
   "tools.referenceFamily": "Famille de référence (anneau intérieur)",
   "tools.relatedFamily": "Famille d’accords liée (anneaux extérieurs)",
   "tools.parentScale": "Gamme / mode de référence",
   "tools.allFamilies": "Toutes les familles (diatoniques uniquement)",
-  "tools.referenceFamilyHelp": "La famille d’accords représentée dans l’anneau intérieur du cercle des quintes.",
-  "tools.relatedFamilyHelp": "Choisir une famille d’accords ou toutes les familles diatoniques prises en charge.",
+  "tools.referenceFamilyHelp":
+    "La famille d’accords représentée dans l’anneau intérieur du cercle des quintes.",
+  "tools.relatedFamilyHelp":
+    "Choisir une famille d’accords ou toutes les familles diatoniques prises en charge.",
   "tools.noteRingHelp": "Afficher les classes de hauteur individuelles dans l’anneau de référence.",
   "tools.diatonicRelationships": "Relations diatoniques",
   "tools.selectedRelationship": "Relation sélectionnée",
   "tools.resetHarmony": "Réinitialiser l’explorateur harmonique",
   "about.title": "À propos",
-  "about.description": "est un outil en ligne de représentation et d’exploration des basses Stradella, des claviers chromatiques à boutons ou à touches piano et des relations harmoniques.",
+  "about.description":
+    "est un outil en ligne de représentation et d’exploration des basses Stradella, des claviers chromatiques à boutons ou à touches piano et des relations harmoniques.",
   "about.author": "Auteur",
   "about.version": "Version",
   "about.samples": "Échantillons d’accordéon",
@@ -105,7 +114,8 @@ export const FR: Record<TranslationKey, string> = {
   "about.openDocs": "Ouvrir la documentation",
   "about.openReadme": "Ouvrir README.md",
   "tools.requestedBass": "Basse demandée / renversement",
-  "tools.requestedBassHelp": "Choisissez éventuellement la note la plus grave dans le modèle nominal. Elle dépend des registres configurés, pas des anches réelles.",
+  "tools.requestedBassHelp":
+    "Choisissez éventuellement la note la plus grave dans le modèle nominal. Elle dépend des registres configurés, pas des anches réelles.",
   "tools.anyBass": "Indifférent (basse non précisée)",
   "tools.rootPosition": " (état fondamental)",
   "tools.searchMode": "Mode de recherche",
@@ -140,7 +150,7 @@ export const FR: Record<TranslationKey, string> = {
   "tools.playBassChord": "Écouter les basses et l’accord",
   "tools.exploreHarmony": "Explorer l’harmonie",
   "tools.showNote": "Afficher la note de réalisation sous le diagramme",
-  "tools.showExplanationBelow": 'Afficher l’explication du diagramme',
+  "tools.showExplanationBelow": "Afficher l’explication du diagramme",
   "tools.explanationLevels": "Niveaux d’explication",
   "tools.noteLevels": "Niveaux d’explication concise",
   "tools.harmonicIdentity": "Identité harmonique",
@@ -168,7 +178,8 @@ export const FR: Record<TranslationKey, string> = {
   "tools.selected": "Sélectionné",
   "tools.showStradella": "Afficher sur Stradella",
   "tools.addProgression": "Ajouter la relation à la progression",
-  "tools.noSelection": "Cliquez sur un accord de l’anneau extérieur pour le sélectionner, l’écouter et activer les actions Stradella.",
+  "tools.noSelection":
+    "Cliquez sur un accord de l’anneau extérieur pour le sélectionner, l’écouter et activer les actions Stradella.",
   "common.none": "Aucun",
   "common.notFound": "Introuvable",
   "common.exactReady": "Exact / prêt",
@@ -284,9 +295,11 @@ export const FR: Record<TranslationKey, string> = {
   "ui.textColor": "Couleur du texte",
   "ui.font": "Police",
   "ui.annotations": "Annotations",
-  "ui.noAnnotationsYetClickTheDiagramToAddOne": "Aucune annotation. Cliquez sur le diagramme pour en ajouter une.",
+  "ui.noAnnotationsYetClickTheDiagramToAddOne":
+    "Aucune annotation. Cliquez sur le diagramme pour en ajouter une.",
   "ui.clearAnnotations": "Effacer les annotations",
-  "ui.playsStradellaBassPatternsOverAChordProgression": "Joue des motifs de basses Stradella sur une progression d’accords.",
+  "ui.playsStradellaBassPatternsOverAChordProgression":
+    "Joue des motifs de basses Stradella sur une progression d’accords.",
   "ui.progression": "Progression",
   "ui.root": "Fondamentale",
   "ui.rhythm": "Rythme",
@@ -319,31 +332,41 @@ export const FR: Record<TranslationKey, string> = {
   "ui.close": "Fermer ×",
   "ui.noMatchingTopics": "Aucun sujet correspondant.",
   "ui.noDocumentationFound": "Aucune documentation trouvée.",
-  "ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents": "Enregistrez une séquence en cliquant sur les accords ou les notes du diagramme. Les clics répétés restent des événements distincts.",
-  "ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly": "Les notes de l’anneau sont conservées dans l’enregistrement et la notation. L’assistant de progression ne transfère que les accords.",
-  "ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder": "La famille d’accords liée sélectionnée n’est pas encore prise en charge par la recherche Stradella.",
-  "ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant": "La famille d’accords de référence n’est pas encore prise en charge par l’assistant de progression Stradella.",
+  "ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents":
+    "Enregistrez une séquence en cliquant sur les accords ou les notes du diagramme. Les clics répétés restent des événements distincts.",
+  "ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly":
+    "Les notes de l’anneau sont conservées dans l’enregistrement et la notation. L’assistant de progression ne transfère que les accords.",
+  "ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder":
+    "La famille d’accords liée sélectionnée n’est pas encore prise en charge par la recherche Stradella.",
+  "ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant":
+    "La famille d’accords de référence n’est pas encore prise en charge par l’assistant de progression Stradella.",
   "ui.progressionAssistant": "Assistant de progression",
   "ui.chordFamily": "Famille d’accords",
   "ui.addChord": "Ajouter un accord",
   "ui.clearProgression": "Effacer la progression",
-  "ui.addChordsHereOrSendASelectedRelationshipFromHarmonyExplorer": "Ajoutez des accords ici ou envoyez une relation sélectionnée depuis l’explorateur harmonique.",
+  "ui.addChordsHereOrSendASelectedRelationshipFromHarmonyExplorer":
+    "Ajoutez des accords ici ou envoyez une relation sélectionnée depuis l’explorateur harmonique.",
   "ui.optimization": "Optimisation",
-  "ui.allowConservativeFifthOmissionApproximations": "Autoriser les approximations prudentes par omission de quinte",
+  "ui.allowConservativeFifthOmissionApproximations":
+    "Autoriser les approximations prudentes par omission de quinte",
   "ui.rhythmicPattern": "Motif rythmique",
   "ui.allButtonsTogether": "Tous les boutons ensemble",
   "ui.basicOomPah24": "Basse-accord simple (2/4)",
   "ui.waltz34": "Valse (3/4)",
   "ui.march44": "Marche (4/4)",
-  "ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram": "Les boutons Stradella actifs sont mis en évidence sur le diagramme pendant la lecture.",
+  "ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram":
+    "Les boutons Stradella actifs sont mis en évidence sur le diagramme pendant la lecture.",
   "ui.optimizedStradellaPath": "Parcours Stradella optimisé",
   "ui.notAvailableForTheCompleteProgression": "Indisponible pour la progression entière.",
   "ui.playOptimizedProgression": "Écouter la progression optimisée",
   "ui.openPreviewInChordFinder": "Ouvrir l’aperçu dans la recherche d’accords",
   "ui.rootBassReference": "Repère de basse fondamentale",
-  "ui.turnRecordingOnThenClickButtonsInOrderRepeatedButtonsAreAllowed": "Activez l’enregistrement puis cliquez sur les boutons dans l’ordre. Les répétitions sont autorisées.",
-  "ui.noChordRelationshipsSatisfyTheCurrentHarmonicFilter": "Aucune relation d’accord ne satisfait le filtre harmonique actuel.",
-  "ui.allAvailableOuterRingsAreHiddenReEnableAtLeastOneRingInHarmonyExplorer": "Tous les anneaux extérieurs disponibles sont masqués. Réactivez au moins un anneau dans l’explorateur harmonique.",
+  "ui.turnRecordingOnThenClickButtonsInOrderRepeatedButtonsAreAllowed":
+    "Activez l’enregistrement puis cliquez sur les boutons dans l’ordre. Les répétitions sont autorisées.",
+  "ui.noChordRelationshipsSatisfyTheCurrentHarmonicFilter":
+    "Aucune relation d’accord ne satisfait le filtre harmonique actuel.",
+  "ui.allAvailableOuterRingsAreHiddenReEnableAtLeastOneRingInHarmonyExplorer":
+    "Tous les anneaux extérieurs disponibles sont masqués. Réactivez au moins un anneau dans l’explorateur harmonique.",
   "ui.bellows": "Soufflet",
   "ui.recordedHarmonyProgression": "Progression harmonique enregistrée",
   "ui.downloadSVG": "Télécharger le SVG",
@@ -377,14 +400,20 @@ export const FR: Record<TranslationKey, string> = {
   "ui.release": "Relâchement :",
   "ui.noteDuration": "Durée des notes :",
   "ui.noteArticulation": "Longueur des notes dans les lecteurs",
-  "ui.noteArticulationHint": "Part de chaque note écrite qui sonne dans les lecteurs ABC, motif de basse et progressions. 100 % est entièrement legato.",
-  "ui.abcNoPlayableNotes": "Aucune note ni aucun symbole d'accord jouable n'a été trouvé dans ce texte ABC.",
+  "ui.noteArticulationHint":
+    "Part de chaque note écrite qui sonne dans les lecteurs ABC, motif de basse et progressions. 100 % est entièrement legato.",
+  "ui.abcNoPlayableNotes":
+    "Aucune note ni aucun symbole d'accord jouable n'a été trouvé dans ce texte ABC.",
   "tools.bassOnBassButton": "Jouer la note la plus grave sur un bouton de basse",
-  "tools.bassOnBassButtonHelp": "Activé : la note la plus grave demandée doit être jouée sur un bouton de basse ou de contrebasse. Désactivé : il suffit qu’elle soit la note la plus grave, ce que les boutons d’accord seuls peuvent donner.",
-  "tools.bassButtonUnavailable": "Aucune combinaison dans vos limites de boutons et d’écart ne joue la note la plus grave sur un bouton de basse ; les résultats où elle vient des boutons d’accord sont affichés.",
-  "tools.reachWidenedForBass": "Pour jouer la note la plus grave sur un bouton de basse, ces résultats utilisent l’écart de main suivant : {span}.",
+  "tools.bassOnBassButtonHelp":
+    "Activé : la note la plus grave demandée doit être jouée sur un bouton de basse ou de contrebasse. Désactivé : il suffit qu’elle soit la note la plus grave, ce que les boutons d’accord seuls peuvent donner.",
+  "tools.bassButtonUnavailable":
+    "Aucune combinaison dans vos limites de boutons et d’écart ne joue la note la plus grave sur un bouton de basse ; les résultats où elle vient des boutons d’accord sont affichés.",
+  "tools.reachWidenedForBass":
+    "Pour jouer la note la plus grave sur un bouton de basse, ces résultats utilisent l’écart de main suivant : {span}.",
   "ui.progressionBass": "Basse",
-  "ui.progressionBassHelp": "État fondamental joue chaque accord avec sa fondamentale à la basse, selon les réglages du chercheur d’accords pour le bouton de basse et les limites ; si c’est impossible, l’accord prend n’importe quelle basse. N’importe quelle basse autorise tous les renversements.",
+  "ui.progressionBassHelp":
+    "État fondamental joue chaque accord avec sa fondamentale à la basse, selon les réglages du chercheur d’accords pour le bouton de basse et les limites ; si c’est impossible, l’accord prend n’importe quelle basse. N’importe quelle basse autorise tous les renversements.",
   "ui.progressionRootPosition": "État fondamental",
   "ui.progressionAnyBass": "N’importe quelle basse",
   "ui.sequenceTempo": "Tempo de la séquence :",
@@ -405,10 +434,12 @@ export const FR: Record<TranslationKey, string> = {
   "ui.removeChord": "Supprimer l’accord",
   "ui.recordedHarmonySequence": "Séquence harmonique enregistrée",
   "ui.showPianoKeyboard": "Afficher le clavier piano",
-  "ui.progressionHandHelp": "Une valeur élevée réduit le déplacement entre les boutons joués successifs. Avec les deux réglages à 0, la première réalisation admissible du chercheur est choisie.",
+  "ui.progressionHandHelp":
+    "Une valeur élevée réduit le déplacement entre les boutons joués successifs. Avec les deux réglages à 0, la première réalisation admissible du chercheur est choisie.",
   "ui.progressionPhysicalMovement": "Déplacement physique de la main",
   "ui.progressionVoiceLeading": "Conduite harmonique des voix",
-  "ui.progressionVoiceLeadingHelp": "Une valeur élevée réduit les déplacements entre classes de hauteurs successives. À 0, ce terme est désactivé ; il ne s’agit pas de voix acoustiques mesurées.",
+  "ui.progressionVoiceLeadingHelp":
+    "Une valeur élevée réduit les déplacements entre classes de hauteurs successives. À 0, ce terme est désactivé ; il ne s’agit pas de voix acoustiques mesurées.",
   "ui.progressionPreset": "Progression prédéfinie",
   "ui.progressionPresetKey": "Tonalité",
   "ui.progressionUsePreset": "Utiliser",
@@ -418,28 +449,42 @@ export const FR: Record<TranslationKey, string> = {
   "ui.progressionShowNotesFor": "Afficher les notes du diagramme pour {chord}",
   "ui.progressionHideNotesFor": "Masquer les notes du diagramme pour {chord}",
   "ui.progressionUnsupportedPreset": "Symboles non pris en charge",
-  "ui.stradellaSearchHelp": "Les rangées de basses jouent des notes seules ; le mode boutons d’accord ignore les basses ; le mode mixte privilégie les réalisations compactes exactes ou réduites avec prudence.",
-  "ui.rootBassHelp": "Affiche le bouton de basse fondamentale comme repère de position uniquement. Il ne complète pas l’accord et ne le joue pas.",
+  "ui.stradellaSearchHelp":
+    "Les rangées de basses jouent des notes seules ; le mode boutons d’accord ignore les basses ; le mode mixte privilégie les réalisations compactes exactes ou réduites avec prudence.",
+  "ui.rootBassHelp":
+    "Affiche le bouton de basse fondamentale comme repère de position uniquement. Il ne complète pas l’accord et ne le joue pas.",
   "ui.hideRootBass": "Masquer le repère de basse fondamentale",
   "ui.showRootBass": "Afficher le repère de basse fondamentale",
-  "ui.realizationHelp": "Affiche les réalisations musicalement distinctes par ordre de préférence, avec leur ergonomie. Les accords étendus recommandés apparaissent en premier ; d’autres réalisations peuvent être tout aussi valables.",
-  "ui.modelPitchesHelp": "Calculé à partir des registres Stradella configurés, avec une note nominale par son joué. Les anches réelles peuvent produire des doublures à l’octave.",
-  "ui.diagramNoteHelp": "Concerne uniquement la note concise du diagramme et son export SVG/PNG. Les explications détaillées restent disponibles séparément. Aucune place n’est réservée si tous les niveaux sont désactivés.",
-  "ui.fourLevelsHelp": "Choisissez les explications courtes à afficher sous le diagramme et dans les exports SVG/PNG. Les quatre niveaux sont indépendants.",
+  "ui.realizationHelp":
+    "Affiche les réalisations musicalement distinctes par ordre de préférence, avec leur ergonomie. Les accords étendus recommandés apparaissent en premier ; d’autres réalisations peuvent être tout aussi valables.",
+  "ui.modelPitchesHelp":
+    "Calculé à partir des registres Stradella configurés, avec une note nominale par son joué. Les anches réelles peuvent produire des doublures à l’octave.",
+  "ui.diagramNoteHelp":
+    "Concerne uniquement la note concise du diagramme et son export SVG/PNG. Les explications détaillées restent disponibles séparément. Aucune place n’est réservée si tous les niveaux sont désactivés.",
+  "ui.fourLevelsHelp":
+    "Choisissez les explications courtes à afficher sous le diagramme et dans les exports SVG/PNG. Les quatre niveaux sont indépendants.",
   "ui.trebleRootOctaveHelp": "L’octave utilisée pour placer l’accord sur le clavier droit.",
   "ui.trebleChordTypeHelp": "La formule d’accord à mettre en évidence à la main droite.",
-  "ui.trebleInversionHelp": "Modifie la note d’accord placée au grave dans la position de main droite.",
-  "ui.trebleVoicingHelp": "Auto affiche un accord exact si cinq boutons suffisent ; Accord complet affiche toutes les notes disponibles, même les positions théoriques à six ou sept boutons ; Pratique utilise une disposition réduite.",
-  "ui.interfaceDensityHelp": "Compact économise de la place dans le panneau latéral ; Confortable espace davantage les commandes.",
-  "ui.statusBarHelp": "Affiche un résumé sur une ligne au-dessus du diagramme. Désactivez-le pour disposer de plus d’espace.",
-  "ui.diagramScaleHelp": "Modifie l’échelle du diagramme visible. Au-delà de 100 %, des barres de défilement peuvent apparaître.",
-  "ui.diagramVerticalHelp": "Ajoute ou retire de l’espace vertical entre le titre, le guide du soufflet et les boutons.",
+  "ui.trebleInversionHelp":
+    "Modifie la note d’accord placée au grave dans la position de main droite.",
+  "ui.trebleVoicingHelp":
+    "Auto affiche un accord exact si cinq boutons suffisent ; Accord complet affiche toutes les notes disponibles, même les positions théoriques à six ou sept boutons ; Pratique utilise une disposition réduite.",
+  "ui.interfaceDensityHelp":
+    "Compact économise de la place dans le panneau latéral ; Confortable espace davantage les commandes.",
+  "ui.statusBarHelp":
+    "Affiche un résumé sur une ligne au-dessus du diagramme. Désactivez-le pour disposer de plus d’espace.",
+  "ui.diagramScaleHelp":
+    "Modifie l’échelle du diagramme visible. Au-delà de 100 %, des barres de défilement peuvent apparaître.",
+  "ui.diagramVerticalHelp":
+    "Ajoute ou retire de l’espace vertical entre le titre, le guide du soufflet et les boutons.",
   "ui.whiteKeyWidthHelp": "Règle la largeur des touches blanches du piano.",
   "ui.pianoKeyHeightHelp": "Règle la hauteur des touches du piano.",
   "ui.blackKeyWidthHelp": "Règle la largeur des touches noires du piano.",
   "ui.blackKeyHeightHelp": "Règle la longueur des touches noires du piano.",
-  "ui.scaleDisplayHelp": "Détermine comment la recherche de gammes trace le parcours. Les numéros indiquent l’ordre ; les flèches indiquent le déplacement.",
-  "ui.simpleFullVoicingHelp": "Simple utilise un bouton d’accord Stradella pratique. Complet utilise la combinaison de la recherche d’accords lorsqu’elle est disponible.",
+  "ui.scaleDisplayHelp":
+    "Détermine comment la recherche de gammes trace le parcours. Les numéros indiquent l’ordre ; les flèches indiquent le déplacement.",
+  "ui.simpleFullVoicingHelp":
+    "Simple utilise un bouton d’accord Stradella pratique. Complet utilise la combinaison de la recherche d’accords lorsqu’elle est disponible.",
   "ui.stradellaRowLabels": "Étiquettes des rangées Stradella",
   "ui.showStradellaRowLabels": "Afficher les étiquettes des rangées Stradella",
   "ui.showOctaveNumbers": "Afficher les numéros d’octave",
@@ -449,7 +494,8 @@ export const FR: Record<TranslationKey, string> = {
   "ui.registerStartingOctave": "Octave de départ",
   "ui.registerGrouping": "Regroupement",
   "ui.registerConfiguredRange": "Étendue configurée",
-  "ui.registerGroupingHelp": "C–B commence sur Do dans l’octave choisie. F–E commence sur Fa et se termine sur Mi dans l’octave suivante. Les deux regroupements couvrent douze hauteurs nominales.",
+  "ui.registerGroupingHelp":
+    "C–B commence sur Do dans l’octave choisie. F–E commence sur Fa et se termine sur Mi dans l’octave suivante. Les deux regroupements couvrent douze hauteurs nominales.",
   "ui.bassCounterbassGrouping": "Regroupement des basses/contrebasses",
   "ui.presetChordGrouping": "Regroupement des accords prédéfinis",
   "ui.soundSource": "Source sonore",
@@ -491,13 +537,20 @@ export const FR: Record<TranslationKey, string> = {
   "ui.counterbass": "contrebasse",
   "ui.bass": "basse",
   "ui.note": "Note",
-  "ui.allFamiliesDiatonicHint": "Le mode toutes familles reste limité aux relations diatoniques pour éviter la surcharge.",
-  "ui.diatonicContext": "L’appartenance diatonique dépend de la gamme ou du mode de référence de chaque secteur.",
-  "ui.recordingNoteOnly": "Les notes de l’anneau sont conservées dans l’enregistrement et la notation. L’assistant de progression ne transfère que les accords.",
-  "ui.harmonyReferenceUnsupported": "La famille d’accords de référence n’est pas encore prise en charge par l’assistant de progression Stradella.",
-  "ui.harmonyRelatedUnsupported": "La famille d’accords liée sélectionnée n’est pas encore prise en charge par la recherche d’accords Stradella.",
-  "ui.recordingHelp": "Enregistrez une séquence en cliquant sur les accords ou les notes du diagramme. Les clics répétés sont conservés.",
-  "ui.noteRingRecorded": "Les événements de l’anneau des notes sont conservés dans l’enregistrement et la notation. Seuls les accords sont transmis à l’assistant de progression.",
+  "ui.allFamiliesDiatonicHint":
+    "Le mode toutes familles reste limité aux relations diatoniques pour éviter la surcharge.",
+  "ui.diatonicContext":
+    "L’appartenance diatonique dépend de la gamme ou du mode de référence de chaque secteur.",
+  "ui.recordingNoteOnly":
+    "Les notes de l’anneau sont conservées dans l’enregistrement et la notation. L’assistant de progression ne transfère que les accords.",
+  "ui.harmonyReferenceUnsupported":
+    "La famille d’accords de référence n’est pas encore prise en charge par l’assistant de progression Stradella.",
+  "ui.harmonyRelatedUnsupported":
+    "La famille d’accords liée sélectionnée n’est pas encore prise en charge par la recherche d’accords Stradella.",
+  "ui.recordingHelp":
+    "Enregistrez une séquence en cliquant sur les accords ou les notes du diagramme. Les clics répétés sont conservés.",
+  "ui.noteRingRecorded":
+    "Les événements de l’anneau des notes sont conservés dans l’enregistrement et la notation. Seuls les accords sont transmis à l’assistant de progression.",
   "ui.approxCount": "{exact} réalisations exactes, {approx} approximatives",
   "ui.recFirst": "Les réalisations recommandées apparaissent en premier.",
   "ui.tempoBpm": "Tempo : {tempo} BPM",
@@ -521,54 +574,93 @@ export const FR: Record<TranslationKey, string> = {
   "analysis.exact": "Exacte",
   "analysis.approx": "Approx.",
   "analysis.trebleUnavailable": "Aucun bouton correspondant",
-  "analysis.trebleNoButtons": "Aucun bouton d’accord n’est disponible dans l’étendue du clavier choisie.",
-  "analysis.trebleNoRoot": "Aucune note d’accord trouvée à cette octave de la fondamentale. Essayez une autre octave ou un clavier plus étendu.",
+  "analysis.trebleNoButtons":
+    "Aucun bouton d’accord n’est disponible dans l’étendue du clavier choisie.",
+  "analysis.trebleNoRoot":
+    "Aucune note d’accord trouvée à cette octave de la fondamentale. Essayez une autre octave ou un clavier plus étendu.",
   "analysis.trebleStatus": "{status} ({played}/{total} notes)",
   "analysis.trebleOmitted": "Omissions : {list}",
   "analysis.trebleAll": "Toutes les notes de l’accord sont présentes",
   "analysis.trebleHands": "Nécessite plus de cinq doigts",
   "analysis.trebleSuspended": "Caractère suspendu",
-  "analysis.trebleCompleteTheoretical": "{notes} contient toutes les notes de l’accord. Cette disposition complète à {count} boutons est une illustration théorique, pas un doigté simultané d’une seule main.",
-  "analysis.trebleComplete": "{notes} contient toutes les notes de l’accord. Les boutons sélectionnés produisent toutes les classes de hauteur de l’accord à la main droite.",
-  "analysis.trebleReducedUnavailable": "Les boutons sélectionnés produisent {notes}. Omissions : {omissions}. Certaines notes demandées sont indisponibles à cette octave de la fondamentale avec le clavier sélectionné.",
-  "analysis.trebleReduced": "Les boutons sélectionnés produisent {notes}. Omissions : {omissions}. Il s’agit d’une disposition réduite. Choisissez Accord complet pour afficher toutes les notes disponibles.",
-  "analysis.trebleSuspendedAppend": "L’omission de la tierce majeure donne à cette disposition un caractère suspendu.",
-  "analysis.harmonyInner": "L’anneau intérieur des accords montre les accords {reference}. Les anneaux extérieurs montrent les accords {related} ; ceux qui partagent le plus de notes se trouvent plus près du centre.",
-  "analysis.harmonyAll": "L’anneau intérieur des accords montre les accords {reference}. Les anneaux extérieurs regroupent toutes les familles d’accords prises en charge ; celles qui partagent le plus de notes se trouvent plus près du centre.",
-  "analysis.harmonyOnlyDiatonic": "Seuls les accords diatoniques à {scale}, transposés à la fondamentale de chaque secteur, sont inclus.",
-  "analysis.harmonyAllDiatonic": "Les diagrammes toutes familles sont limités aux accords diatoniques à {scale}, transposés à la fondamentale de chaque secteur, afin de conserver une représentation lisible.",
-  "analysis.harmonyNoSupported": "Aucun accord diatonique pris en charge ne satisfait les paramètres actuels de relation ; aucun anneau n’est disponible.",
-  "analysis.harmonyOnlyAvailable": "Seuls les nombres de notes communes représentés par au moins un accord diatonique sont disponibles comme anneaux.",
-  "analysis.harmonyNoDiatonic": "Aucun accord lié ne satisfait le filtre diatonique ; aucun anneau n’est disponible.",
-  "analysis.harmonyFilteredOne": "L’anneau des accords partageant {count} {unit} est indisponible : aucun accord diatonique ne présente ce recouvrement.",
-  "analysis.harmonyFilteredMany": "Les anneaux des accords partageant {counts} notes sont indisponibles : aucun accord diatonique ne présente ces recouvrements.",
-  "analysis.harmonyHighlight": "Tous les accords admissibles sont disponibles ; les étiquettes bleues sont diatoniques à {scale} dans leur secteur.",
-  "analysis.harmonyWithoutHighlight": "Tous les accords admissibles sont disponibles, sans distinction des relations diatoniques.",
-  "analysis.harmonyRingOne": "L’anneau des accords partageant {count} {unit} est masqué par les paramètres d’affichage.",
-  "analysis.harmonyRingMany": "Les anneaux des accords partageant {counts} notes sont masqués par les paramètres d’affichage.",
+  "analysis.trebleCompleteTheoretical":
+    "{notes} contient toutes les notes de l’accord. Cette disposition complète à {count} boutons est une illustration théorique, pas un doigté simultané d’une seule main.",
+  "analysis.trebleComplete":
+    "{notes} contient toutes les notes de l’accord. Les boutons sélectionnés produisent toutes les classes de hauteur de l’accord à la main droite.",
+  "analysis.trebleReducedUnavailable":
+    "Les boutons sélectionnés produisent {notes}. Omissions : {omissions}. Certaines notes demandées sont indisponibles à cette octave de la fondamentale avec le clavier sélectionné.",
+  "analysis.trebleReduced":
+    "Les boutons sélectionnés produisent {notes}. Omissions : {omissions}. Il s’agit d’une disposition réduite. Choisissez Accord complet pour afficher toutes les notes disponibles.",
+  "analysis.trebleSuspendedAppend":
+    "L’omission de la tierce majeure donne à cette disposition un caractère suspendu.",
+  "analysis.harmonyInner":
+    "L’anneau intérieur des accords montre les accords {reference}. Les anneaux extérieurs montrent les accords {related} ; ceux qui partagent le plus de notes se trouvent plus près du centre.",
+  "analysis.harmonyAll":
+    "L’anneau intérieur des accords montre les accords {reference}. Les anneaux extérieurs regroupent toutes les familles d’accords prises en charge ; celles qui partagent le plus de notes se trouvent plus près du centre.",
+  "analysis.harmonyOnlyDiatonic":
+    "Seuls les accords diatoniques à {scale}, transposés à la fondamentale de chaque secteur, sont inclus.",
+  "analysis.harmonyAllDiatonic":
+    "Les diagrammes toutes familles sont limités aux accords diatoniques à {scale}, transposés à la fondamentale de chaque secteur, afin de conserver une représentation lisible.",
+  "analysis.harmonyNoSupported":
+    "Aucun accord diatonique pris en charge ne satisfait les paramètres actuels de relation ; aucun anneau n’est disponible.",
+  "analysis.harmonyOnlyAvailable":
+    "Seuls les nombres de notes communes représentés par au moins un accord diatonique sont disponibles comme anneaux.",
+  "analysis.harmonyNoDiatonic":
+    "Aucun accord lié ne satisfait le filtre diatonique ; aucun anneau n’est disponible.",
+  "analysis.harmonyFilteredOne":
+    "L’anneau des accords partageant {count} {unit} est indisponible : aucun accord diatonique ne présente ce recouvrement.",
+  "analysis.harmonyFilteredMany":
+    "Les anneaux des accords partageant {counts} notes sont indisponibles : aucun accord diatonique ne présente ces recouvrements.",
+  "analysis.harmonyHighlight":
+    "Tous les accords admissibles sont disponibles ; les étiquettes bleues sont diatoniques à {scale} dans leur secteur.",
+  "analysis.harmonyWithoutHighlight":
+    "Tous les accords admissibles sont disponibles, sans distinction des relations diatoniques.",
+  "analysis.harmonyRingOne":
+    "L’anneau des accords partageant {count} {unit} est masqué par les paramètres d’affichage.",
+  "analysis.harmonyRingMany":
+    "Les anneaux des accords partageant {counts} notes sont masqués par les paramètres d’affichage.",
   "analysis.noteSingular": "note",
   "analysis.notePlural": "notes",
-  "analysis.stradellaFirstExact": "{chord} utilise {count} {unit} : {buttons}. Ensemble, ils produisent les classes de hauteur {notes}. Exact signifie que toutes les classes de hauteur requises sont présentes ; les extensions ne sonnent pas nécessairement dans leurs octaves théoriques supérieures.",
-  "analysis.stradellaFirstApprox": "{chord} utilise {count} {unit} : {buttons}. Ensemble, ils produisent les classes de hauteur {notes}. Cette réalisation approximative omet {missing} sans ajouter de notes étrangères à l’accord.",
-  "analysis.stradellaRequestedBass": "Identité harmonique : {chord}. La basse demandée est {bass} ({role}) ; la fondamentale théorique reste {root}.",
-  "analysis.stradellaModelLowest": "Dans le modèle des registres configurés, {pitch} est la note la plus grave.",
-  "analysis.stradellaModelCaution": "La note acoustique la plus grave dépend de l’instrument et des registres.",
-  "analysis.stradellaUnspecifiedBass": "Identité harmonique : {chord}. La basse et le renversement réalisés dépendent des registres nominaux configurés ; une autre interprétation des mêmes classes de hauteur ne change pas l’identité harmonique.",
+  "analysis.stradellaFirstExact":
+    "{chord} utilise {count} {unit} : {buttons}. Ensemble, ils produisent les classes de hauteur {notes}. Exact signifie que toutes les classes de hauteur requises sont présentes ; les extensions ne sonnent pas nécessairement dans leurs octaves théoriques supérieures.",
+  "analysis.stradellaFirstApprox":
+    "{chord} utilise {count} {unit} : {buttons}. Ensemble, ils produisent les classes de hauteur {notes}. Cette réalisation approximative omet {missing} sans ajouter de notes étrangères à l’accord.",
+  "analysis.stradellaRequestedBass":
+    "Identité harmonique : {chord}. La basse demandée est {bass} ({role}) ; la fondamentale théorique reste {root}.",
+  "analysis.stradellaModelLowest":
+    "Dans le modèle des registres configurés, {pitch} est la note la plus grave.",
+  "analysis.stradellaModelCaution":
+    "La note acoustique la plus grave dépend de l’instrument et des registres.",
+  "analysis.stradellaUnspecifiedBass":
+    "Identité harmonique : {chord}. La basse et le renversement réalisés dépendent des registres nominaux configurés ; une autre interprétation des mêmes classes de hauteur ne change pas l’identité harmonique.",
   "analysis.stradellaRegisterNote": "Analyse des registres nominaux : {notes}.",
-  "analysis.stradellaDensity": "Densité des voix : {note}. Les intervalles rapprochés peuvent être tendus ou chargés, surtout dans le grave ; il s’agit d’une observation nominale, pas d’une mesure acoustique.",
-  "analysis.stradellaExtended": "Les noms d’accords étendus décrivent des fonctions harmoniques et des classes de hauteur, sans garantir que la neuvième, la onzième ou la treizième sonnent dans des octaves supérieures.",
-  "analysis.stradella13": "La treizième appartient à la même classe de hauteur que la sixte. La septième aide à distinguer un accord de treizième d’un accord à sixte ajoutée.",
-  "analysis.stradella11Clash": "La tierce majeure et la onzième naturelle peuvent créer une tension de demi-ton rapproché. Une disposition réduite sans onzième peut être plus claire.",
-  "analysis.stradella13Shell": "C’est une structure fonctionnelle 1–3–7–13 ; elle privilégie l’identité harmonique et la clarté plutôt que la présence de toutes les classes de hauteur.",
-  "analysis.stradella11Suspended": "Si la tierce est omise et la onzième conservée, la réalisation a un caractère suspendu.",
-  "analysis.stradellaAdd9": "La neuvième ajoutée appartient à la classe de hauteur de la seconde et ne nécessite pas de septième.",
-  "analysis.stradellaAltered": "La note altérée définissant l’accord est conservée dans la réalisation demandée.",
-  "analysis.stradellaNine": "La neuvième partage la classe de hauteur de la seconde ; sur Stradella, elle ne sonne pas nécessairement au-dessus de la fondamentale.",
-  "analysis.stradellaDiminished": "Un bouton d’accord diminué Stradella standard produit trois classes de hauteur ; il ne contient pas nécessairement les quatre notes d’un accord de septième diminuée.",
+  "analysis.stradellaDensity":
+    "Densité des voix : {note}. Les intervalles rapprochés peuvent être tendus ou chargés, surtout dans le grave ; il s’agit d’une observation nominale, pas d’une mesure acoustique.",
+  "analysis.stradellaExtended":
+    "Les noms d’accords étendus décrivent des fonctions harmoniques et des classes de hauteur, sans garantir que la neuvième, la onzième ou la treizième sonnent dans des octaves supérieures.",
+  "analysis.stradella13":
+    "La treizième appartient à la même classe de hauteur que la sixte. La septième aide à distinguer un accord de treizième d’un accord à sixte ajoutée.",
+  "analysis.stradella11Clash":
+    "La tierce majeure et la onzième naturelle peuvent créer une tension de demi-ton rapproché. Une disposition réduite sans onzième peut être plus claire.",
+  "analysis.stradella13Shell":
+    "C’est une structure fonctionnelle 1–3–7–13 ; elle privilégie l’identité harmonique et la clarté plutôt que la présence de toutes les classes de hauteur.",
+  "analysis.stradella11Suspended":
+    "Si la tierce est omise et la onzième conservée, la réalisation a un caractère suspendu.",
+  "analysis.stradellaAdd9":
+    "La neuvième ajoutée appartient à la classe de hauteur de la seconde et ne nécessite pas de septième.",
+  "analysis.stradellaAltered":
+    "La note altérée définissant l’accord est conservée dans la réalisation demandée.",
+  "analysis.stradellaNine":
+    "La neuvième partage la classe de hauteur de la seconde ; sur Stradella, elle ne sonne pas nécessairement au-dessus de la fondamentale.",
+  "analysis.stradellaDiminished":
+    "Un bouton d’accord diminué Stradella standard produit trois classes de hauteur ; il ne contient pas nécessairement les quatre notes d’un accord de septième diminuée.",
   "analysis.stradellaWhy": "Pourquoi recommandé : {reason}",
-  "analysis.stradellaWhyDefault": "Un compromis pratique entre contenu harmonique, nombre de boutons et déplacement de la main.",
-  "analysis.stradellaAlternative": "C’est une solution valable. Les exemples recommandés illustrent des approches complètes, réduites ou fonctionnelles ; d’autres réalisations peuvent être tout aussi légitimes.",
-  "ui.extendedTrebleHint": "Les accords complets de onzième et treizième comportent six ou sept notes. Les dispositions pratiques omettent certaines notes pour rester jouables à la main droite.",
+  "analysis.stradellaWhyDefault":
+    "Un compromis pratique entre contenu harmonique, nombre de boutons et déplacement de la main.",
+  "analysis.stradellaAlternative":
+    "C’est une solution valable. Les exemples recommandés illustrent des approches complètes, réduites ou fonctionnelles ; d’autres réalisations peuvent être tout aussi légitimes.",
+  "ui.extendedTrebleHint":
+    "Les accords complets de onzième et treizième comportent six ou sept notes. Les dispositions pratiques omettent certaines notes pour rester jouables à la main droite.",
   "ui.major": "Majeur",
   "ui.minor": "Mineur",
   "ui.diminished": "Diminué",
@@ -627,13 +719,20 @@ export const FR: Record<TranslationKey, string> = {
   "ui.smallCba": "Petit clavier à boutons, environ 3 octaves",
   "ui.fullCba": "Clavier à boutons standard, environ 3¾–4 octaves",
   "ui.largeCba": "Grand clavier à boutons, environ 5 octaves ou plus",
-  "ui.notesScope": "Ces réglages concernent les panneaux de notation affichés. Les fichiers ABC, LilyPond et MIDI exportés conservent leurs paramètres propres à chaque format.",
-  "ui.soundSourceHint": "Choisissez le synthétiseur intégré ou l’accordéon échantillonné La Melodiosa. Le bouton Son en haut active ou désactive la lecture.",
-  "ui.harmonySoundHint": "L’explorateur harmonique utilise la source sonore et le registre de basses Stradella définis dans Son.",
-  "ui.fingerHint": "Saisissez un numéro de doigt, puis appliquez-le aux boutons sélectionnés ou activez le mode d’étiquetage au clic.",
-  "ui.annotationHint": "Cliquez sur un bouton ou un espace vide du diagramme, puis saisissez une annotation.",
-  "ui.customPatternHint": "Modifiez un motif, vérifiez-le et enregistrez-le dans la bibliothèque locale du navigateur.",
-  "ui.progressionIntro": "Créez une suite d’accords et optimisez les réalisations Stradella sur toute la progression. Cliquez sur une étape optimisée pour prévisualiser ses boutons.",
+  "ui.notesScope":
+    "Ces réglages concernent les panneaux de notation affichés. Les fichiers ABC, LilyPond et MIDI exportés conservent leurs paramètres propres à chaque format.",
+  "ui.soundSourceHint":
+    "Choisissez le synthétiseur intégré ou l’accordéon échantillonné La Melodiosa. Le bouton Son en haut active ou désactive la lecture.",
+  "ui.harmonySoundHint":
+    "L’explorateur harmonique utilise la source sonore et le registre de basses Stradella définis dans Son.",
+  "ui.fingerHint":
+    "Saisissez un numéro de doigt, puis appliquez-le aux boutons sélectionnés ou activez le mode d’étiquetage au clic.",
+  "ui.annotationHint":
+    "Cliquez sur un bouton ou un espace vide du diagramme, puis saisissez une annotation.",
+  "ui.customPatternHint":
+    "Modifiez un motif, vérifiez-le et enregistrez-le dans la bibliothèque locale du navigateur.",
+  "ui.progressionIntro":
+    "Créez une suite d’accords et optimisez les réalisations Stradella sur toute la progression. Cliquez sur une étape optimisée pour prévisualiser ses boutons.",
   "ui.harmony": "Harmonie",
   "ui.soundOn": "Son activé",
   "ui.soundOff": "Son désactivé",
@@ -650,17 +749,21 @@ export const FR: Record<TranslationKey, string> = {
   "ui.length": "Longueur",
   "ui.meterUnits": "unités de mesure",
   "ui.andMore": "…et {count} autres.",
-  "ui.bassPatternHelp": "Les basses et contrebasses sont écrites à la première position correspondante sur ou sous la ligne médiane ré de la clé de fa. Les boutons d’accord utilisent la première position correspondante au-dessus de cette ligne.",
+  "ui.bassPatternHelp":
+    "Les basses et contrebasses sont écrites à la première position correspondante sur ou sous la ligne médiane ré de la clé de fa. Les boutons d’accord utilisent la première position correspondante au-dessus de cette ligne.",
   "ui.abchelp": "Utilisez Afficher la notation pour afficher le fichier ABC sur une portée.",
-  "ui.noteRecordingHelp": "Afficher la notation représente la séquence enregistrée sous le diagramme.",
+  "ui.noteRecordingHelp":
+    "Afficher la notation représente la séquence enregistrée sous le diagramme.",
   "ui.abcDefault": "Lecteur ABC",
   "ui.resizeLeftPanel": "Redimensionner le panneau des outils (double-clic pour réinitialiser)",
-  "ui.resizeResultsPanel": "Redimensionner le panneau des résultats (double-clic pour réinitialiser)",
+  "ui.resizeResultsPanel":
+    "Redimensionner le panneau des résultats (double-clic pour réinitialiser)",
   "ui.abcHands": "Mains",
   "ui.abcHandsBoth": "Les deux",
   "ui.abcShowHand": "Afficher",
   "ui.abcHandCaption": "{hand}, voix {voice}",
-  "ui.abcHandsHint": "Les morceaux à deux voix jouent la voix 1 à la main droite et la voix 2 au Stradella en même temps.",
+  "ui.abcHandsHint":
+    "Les morceaux à deux voix jouent la voix 1 à la main droite et la voix 2 au Stradella en même temps.",
   "ui.abcHandsOneVoice": "Ce morceau n’a qu’une voix : il est joué uniquement sur le côté affiché.",
   "ui.abcVoicesBoth": "Voix 1 + 2",
   "ui.bassPatternPlayer": "Lecteur de motifs de basses",
@@ -672,8 +775,10 @@ export const FR: Record<TranslationKey, string> = {
   "ui.annotateModeFinger": "Doigts",
   "ui.annotateModeSequence": "Séquence",
   "ui.annotateModeNotes": "Notes",
-  "ui.annotateModeHint": "Un clic sur le diagramme ne fait que l’action du mode choisi. Toutes les marques restent visibles quel que soit le mode.",
-  "ui.selectionIntro": "Cliquez sur les boutons pour les sélectionner ou les désélectionner. Chaque clic joue aussi le bouton.",
+  "ui.annotateModeHint":
+    "Un clic sur le diagramme ne fait que l’action du mode choisi. Toutes les marques restent visibles quel que soit le mode.",
+  "ui.selectionIntro":
+    "Cliquez sur les boutons pour les sélectionner ou les désélectionner. Chaque clic joue aussi le bouton.",
   "ui.selection": "Sélection",
   "ui.noActiveTool": "Aucun outil actif",
   "ui.allDiatonicFamilies": "Toutes les familles diatoniques",
@@ -696,17 +801,26 @@ export const FR: Record<TranslationKey, string> = {
   "ui.tags": "Étiquettes",
   "ui.repeatsPerChord": "Répétitions par accord",
   "ui.tempo": "Tempo",
-  "ui.stradellaRegisterIntro": "Configurez séparément les octaves nominales des basses/contrebasses et des accords prédéfinis. Elles déterminent les hauteurs ordonnées et les renversements demandés dans la recherche ; La Melodiosa peut également suivre ces réglages.",
-  "ui.melodiosaOriginal": "La lecture utilise la correspondance originale des basses C2–B2 et des accords C3–B3, indépendamment des registres Stradella configurés.",
+  "ui.stradellaRegisterIntro":
+    "Configurez séparément les octaves nominales des basses/contrebasses et des accords prédéfinis. Elles déterminent les hauteurs ordonnées et les renversements demandés dans la recherche ; La Melodiosa peut également suivre ces réglages.",
+  "ui.melodiosaOriginal":
+    "La lecture utilise la correspondance originale des basses C2–B2 et des accords C3–B3, indépendamment des registres Stradella configurés.",
   "ui.melodiosaConfiguredShort": "Suit les registres configurés des basses et des accords.",
   "ui.melodiosaOriginalShort": "Utilise la correspondance originale des échantillons.",
-  "ui.melodiosaConfigured": "La lecture suit les étendues de basses et d’accords prédéfinis des registres Stradella configurés. Les notes hors de la plage utilisent des échantillons La Melodiosa transposés, sans recours au synthétiseur.",
-  "ui.melodiosaCredit": "La Melodiosa a été échantillonnée et programmée par Petri Pohjanmies (2026) ; utilisation sous licence CC-BY.",
-  "ui.sequenceNotationHint": "Afficher la notation représente la séquence enregistrée sous le diagramme. En mode Stradella, les basses et les accords suivent les règles de placement sur la portée du lecteur de motifs de basses.",
-  "ui.annotateHintDetailed": "Cliquez sur un bouton ou un espace vide du diagramme, puis saisissez votre annotation. Entrée pour enregistrer, Maj+Entrée pour une nouvelle ligne et Échap pour annuler.",
-  "ui.bassPatternNotationHelp": "Les notes de basse et de contrebasse sont écrites à la première position correspondante sur ou sous le ré médian de la clé de fa. Les boutons d’accord utilisent la première position au-dessus ; M, m, 7 ou d au-dessus de la note indique la qualité de l’accord.",
-  "ui.abcNotationHelp": "Utilisez Afficher la notation pour représenter le fichier ABC sur une portée.",
-  "ui.jsonSaveInfo": "Ces boutons enregistrent ou chargent un fichier de paramètres distinct. Ils ne remplacent pas",
+  "ui.melodiosaConfigured":
+    "La lecture suit les étendues de basses et d’accords prédéfinis des registres Stradella configurés. Les notes hors de la plage utilisent des échantillons La Melodiosa transposés, sans recours au synthétiseur.",
+  "ui.melodiosaCredit":
+    "La Melodiosa a été échantillonnée et programmée par Petri Pohjanmies (2026) ; utilisation sous licence CC-BY.",
+  "ui.sequenceNotationHint":
+    "Afficher la notation représente la séquence enregistrée sous le diagramme. En mode Stradella, les basses et les accords suivent les règles de placement sur la portée du lecteur de motifs de basses.",
+  "ui.annotateHintDetailed":
+    "Cliquez sur un bouton ou un espace vide du diagramme, puis saisissez votre annotation. Entrée pour enregistrer, Maj+Entrée pour une nouvelle ligne et Échap pour annuler.",
+  "ui.bassPatternNotationHelp":
+    "Les notes de basse et de contrebasse sont écrites à la première position correspondante sur ou sous le ré médian de la clé de fa. Les boutons d’accord utilisent la première position au-dessus ; M, m, 7 ou d au-dessus de la note indique la qualité de l’accord.",
+  "ui.abcNotationHelp":
+    "Utilisez Afficher la notation pour représenter le fichier ABC sur une portée.",
+  "ui.jsonSaveInfo":
+    "Ces boutons enregistrent ou chargent un fichier de paramètres distinct. Ils ne remplacent pas",
   "ui.patternErrors": "Erreurs de format du motif :",
   "ui.editorValidation": "Validation de l’éditeur :",
   "ui.firstInversion": "Premier renversement",
@@ -719,8 +833,10 @@ export const FR: Record<TranslationKey, string> = {
   "ui.attribution": "par Petri Pohjanmies",
   "ui.whySpanish": "Recommandée",
   "ui.compact": "Compact",
-  "ui.scaleIntroBass": "Utilise uniquement les boutons de basse et contrebasse Stradella, en privilégiant ceux proches de la fondamentale.",
-  "ui.scaleIntroTreble": "Recherche un parcours de gamme sur une octave. Sur un clavier chromatique à boutons, vous pouvez limiter le parcours aux 3, 4 ou 5 premières rangées.",
+  "ui.scaleIntroBass":
+    "Utilise uniquement les boutons de basse et contrebasse Stradella, en privilégiant ceux proches de la fondamentale.",
+  "ui.scaleIntroTreble":
+    "Recherche un parcours de gamme sur une octave. Sur un clavier chromatique à boutons, vous pouvez limiter le parcours aux 3, 4 ou 5 premières rangées.",
   "ui.scaleButtons": "Boutons de la gamme : {count}",
   "ui.targetNotes": "Notes recherchées",
   "ui.hideScale": "Masquer la gamme",
@@ -729,26 +845,34 @@ export const FR: Record<TranslationKey, string> = {
   "ui.buttonGeneric": "bouton",
   "ui.columnShort": "col.",
   "ui.rowShort": "rangée",
-  "ui.fingeringIntro": "Choisissez un numéro de doigt, puis cliquez sur les boutons pour les étiqueter. Un clic sur un bouton qui affiche déjà ce numéro le retire. Chaque clic joue aussi le bouton.",
+  "ui.fingeringIntro":
+    "Choisissez un numéro de doigt, puis cliquez sur les boutons pour les étiqueter. Un clic sur un bouton qui affiche déjà ce numéro le retire. Chaque clic joue aussi le bouton.",
   "ui.sequence": "Séquence",
-  "ui.sequenceIntro": "Cliquez sur les boutons dans l’ordre pour ajouter des étapes. Les répétitions sont autorisées. Chaque clic joue aussi le bouton.",
+  "ui.sequenceIntro":
+    "Cliquez sur les boutons dans l’ordre pour ajouter des étapes. Les répétitions sont autorisées. Chaque clic joue aussi le bouton.",
   "ui.annotateTextSize": "Taille du texte",
   "ui.bold": "Gras",
   "ui.italic": "Italique",
   "ui.deleteAnnotation": "Supprimer l’annotation {count}",
   "ui.deleteAnnotationTooltip": "Supprimer l’annotation",
-  "ui.patternEditorIntro": "Modifiez un motif, validez-le puis enregistrez-le dans la bibliothèque locale des motifs personnalisés.",
-  "ui.abcIntroStradella": "Charge un morceau ABC simple. Il peut mettre en évidence les basses, les symboles d’accord ABC entre guillemets, ou les deux. Les accords de notes entre crochets peuvent également être joués simultanément.",
-  "ui.abcIntroTreble": "Charge un morceau ABC simple à une voix et met en évidence les notes correspondantes à la main droite pendant la lecture. Les dyades et accords entre crochets peuvent sonner ensemble.",
+  "ui.patternEditorIntro":
+    "Modifiez un motif, validez-le puis enregistrez-le dans la bibliothèque locale des motifs personnalisés.",
+  "ui.abcIntroStradella":
+    "Charge un morceau ABC simple. Il peut mettre en évidence les basses, les symboles d’accord ABC entre guillemets, ou les deux. Les accords de notes entre crochets peuvent également être joués simultanément.",
+  "ui.abcIntroTreble":
+    "Charge un morceau ABC simple à une voix et met en évidence les notes correspondantes à la main droite pendant la lecture. Les dyades et accords entre crochets peuvent sonner ensemble.",
   "ui.abcStradellaMapping": "Correspondance Stradella",
-  "ui.abcStradellaMappingHelp": "Les basses utilisent les hauteurs écrites en ABC. Les symboles d’accord utilisent les noms d’harmonie entre guillemets, comme « C », « G7 » ou « Am ».",
-  "ui.abcTrebleSymbolsHelp": "Les symboles d’accord ABC entre guillemets, comme « C » ou « G7 », peuvent être ignorés ou joués comme accords en bloc à la main droite.",
+  "ui.abcStradellaMappingHelp":
+    "Les basses utilisent les hauteurs écrites en ABC. Les symboles d’accord utilisent les noms d’harmonie entre guillemets, comme « C », « G7 » ou « Am ».",
+  "ui.abcTrebleSymbolsHelp":
+    "Les symboles d’accord ABC entre guillemets, comme « C » ou « G7 », peuvent être ignorés ou joués comme accords en bloc à la main droite.",
   "ui.ignore": "Ignorer",
   "ui.key": "Tonalité",
   "ui.beats": "temps",
   "ui.noAbcLoaded": "Aucun fichier ABC chargé",
   "ui.continue": "Continuer",
-  "ui.abcNotationInstructions": "Utilisez Afficher la notation pour représenter le fichier ABC sur une portée sous le diagramme. Si le texte ABC est invalide, une erreur apparaît dans le panneau de notation sans interrompre l’application.",
+  "ui.abcNotationInstructions":
+    "Utilisez Afficher la notation pour représenter le fichier ABC sur une portée sous le diagramme. Si le texte ABC est invalide, une erreur apparaît dans le panneau de notation sans interrompre l’application.",
   "ui.unavailableNotes": "Notes indisponibles",
   "ui.missingShort": "Manquantes",
   "ui.scaleTypeDisplay": "Affichage",
@@ -762,15 +886,18 @@ export const FR: Record<TranslationKey, string> = {
   "ui.maxFontSize": "Taille de police maximale",
   "ui.showButtonLabels": "Afficher les étiquettes des boutons",
   "ui.showBellowsGuide": "Afficher le guide du soufflet",
-  "ui.soundBassVoicingHelp": "Concerne uniquement les boutons de basse Stradella individuels. Les accordéons et registres réels présentent des dispositions de voix différentes ; le réglage reste configurable.",
+  "ui.soundBassVoicingHelp":
+    "Concerne uniquement les boutons de basse Stradella individuels. Les accordéons et registres réels présentent des dispositions de voix différentes ; le réglage reste configurable.",
   "ui.ringShared": "Afficher l’anneau des accords partageant {count} notes",
-  "ui.trebleMoreHelp": "La recherche main droite sélectionne les boutons ou touches proches pour l’octave et le renversement choisis. Auto affiche toutes les notes si cinq boutons suffisent. Pratique utilise une disposition réduite pour les accords étendus ; Accord complet montre toutes les notes, même les positions théoriques à six ou sept notes.",
+  "ui.trebleMoreHelp":
+    "La recherche main droite sélectionne les boutons ou touches proches pour l’octave et le renversement choisis. Auto affiche toutes les notes si cinq boutons suffisent. Pratique utilise une disposition réduite pour les accords étendus ; Accord complet montre toutes les notes, même les positions théoriques à six ou sept notes.",
   "ui.handMovementEmphasis": "Importance du déplacement de la main",
   "ui.harmonicCircleAria": "Cercle des relations harmoniques",
   "ui.noteRingLegendTitle": "Anneau des notes",
   "ui.noteRingLegendDetail": "12 classes de hauteur · cliquer pour jouer une note",
   "ui.referenceChordRing": "Anneau des accords",
-  "analysis.harmonyNoteRing": "L’anneau intérieur des notes affiche les douze classes de hauteur. En sélectionner une joue cette note, et non un accord.",
+  "analysis.harmonyNoteRing":
+    "L’anneau intérieur des notes affiche les douze classes de hauteur. En sélectionner une joue cette note, et non un accord.",
   "ui.innerRing": "Anneau intérieur",
   "ui.ringOrdinal": "Anneau {count}",
   "ui.diatonicAll": "Accords diatoniques (toutes les familles)",
@@ -779,10 +906,13 @@ export const FR: Record<TranslationKey, string> = {
   "ui.sharedCount": "partagent {count} {tone}",
   "ui.oneNote": "note",
   "ui.manyNotes": "notes",
-  "ui.parentScaleContext": "Gamme/mode de référence : {scale} (relative à la fondamentale de chaque secteur).",
+  "ui.parentScaleContext":
+    "Gamme/mode de référence : {scale} (relative à la fondamentale de chaque secteur).",
   "ui.diatonicBoldLegend": "Les étiquettes en gras ou soulignées sont diatoniques.",
-  "ui.diatonicBlueLegend": "Les étiquettes bleues sont diatoniques à la gamme ou au mode sélectionné.",
-  "ui.familyColorsLegend": "Les couleurs indiquent les familles d’accords ; les infobulles les identifient.",
+  "ui.diatonicBlueLegend":
+    "Les étiquettes bleues sont diatoniques à la gamme ou au mode sélectionné.",
+  "ui.familyColorsLegend":
+    "Les couleurs indiquent les familles d’accords ; les infobulles les identifient.",
   "ui.explanationHeading": "Explication",
   "ui.tonesTooltip": "Notes",
   "ui.sharedTooltip": "Communes",
@@ -797,8 +927,10 @@ export const FR: Record<TranslationKey, string> = {
   "ui.semitoneMotion": "déplacement de {count} {unit}",
   "ui.oneSemitone": "demi-ton",
   "ui.manySemitones": "demi-tons",
-  "ui.invalidSettingsFile": "Impossible de lire ce fichier de paramètres. Choisissez un fichier JSON Accordion Tools valide.",
-  "ui.onlyChordsTransferred": "Les notes individuelles ne peuvent pas être envoyées à l’assistant de progression. Seuls les accords seront transférés.",
+  "ui.invalidSettingsFile":
+    "Impossible de lire ce fichier de paramètres. Choisissez un fichier JSON Accordion Tools valide.",
+  "ui.onlyChordsTransferred":
+    "Les notes individuelles ne peuvent pas être envoyées à l’assistant de progression. Seuls les accords seront transférés.",
   "ui.cannotSave": "Enregistrement impossible : {reason}",
   "ui.savedCustomPattern": "Motif personnalisé « {name} » enregistré.",
   "ui.invalidJSON": "JSON invalide.",
@@ -813,32 +945,41 @@ export const FR: Record<TranslationKey, string> = {
   "ui.rowDominantSeventh": "Accord de septième de dominante",
   "ui.rowDiminishedSeventh": "Accord de septième diminuée",
   "ui.showVoicingIntervals": "Afficher les écarts nominaux entre notes",
-  "ui.voicingIntervalsHelp": "Affiche les intervalles entre notes nominales distinctes consécutives près de la disposition des registres et dans les exports. Les positions horizontales sont proportionnelles aux demi-tons ; les étiquettes sont placées sur des rangées distinctes. Les hauteurs proviennent des registres configurés, et non de mesures acoustiques.",
+  "ui.voicingIntervalsHelp":
+    "Affiche les intervalles entre notes nominales distinctes consécutives près de la disposition des registres et dans les exports. Les positions horizontales sont proportionnelles aux demi-tons ; les étiquettes sont placées sur des rangées distinctes. Les hauteurs proviennent des registres configurés, et non de mesures acoustiques.",
   "ui.voicingIntervalsTitle": "Écarts entre les notes de l’accord",
-  "ui.voicingIntervalsCaption": "Les nombres indiquent les demi-tons entre hauteurs nominales voisines · registres configurés, pas de mesures audio",
-  "ui.maxButtonsHelp": "Limite le nombre de boutons Stradella pressés simultanément dans chaque combinaison candidate.",
+  "ui.voicingIntervalsCaption":
+    "Les nombres indiquent les demi-tons entre hauteurs nominales voisines · registres configurés, pas de mesures audio",
+  "ui.maxButtonsHelp":
+    "Limite le nombre de boutons Stradella pressés simultanément dans chaque combinaison candidate.",
   "ui.maxSpanHelp": "Limite l’écartement des boutons sélectionnés sur le clavier Stradella.",
-  "ui.parentScaleHelp": "Sélectionne la gamme ou le mode de référence qui détermine les relations diatoniques.",
+  "ui.parentScaleHelp":
+    "Sélectionne la gamme ou le mode de référence qui détermine les relations diatoniques.",
   "ui.diatonicOnlyHelp": "Restreint les anneaux aux accords de la gamme ou du mode sélectionné.",
-  "ui.progressionApproxHelp": "Autorise les réductions prudentes quand un accord complet est injouable avec les boutons Stradella disponibles. Les notes définissant l’accord sont conservées.",
-  'ui.nominalGapFilter': 'Écart minimal entre notes nominales',
-  'ui.nominalGapFilterHelp': 'Filtre les réalisations selon les intervalles entre notes nominales distinctes adjacentes des registres configurés. Autoriser tous les écarts, exclure un demi-ton ou exclure un et deux demi-tons. Les doublures à l’unisson sont ignorées.',
-  'ui.nominalGapAllowAll': 'Autoriser tous les écarts',
-  'ui.nominalGapNoSemitone': 'Exclure les écarts de 1 demi-ton',
-  'ui.nominalGapNoWholeTone': 'Exclure les écarts de 1–2 demi-tons',
-  'ui.downloadAllRealizations': 'Télécharger tous les diagrammes (ZIP)',
-  'ui.batchExportWorking': 'Préparation du ZIP…',
-  'ui.clearCurrentWork': 'Effacer le travail en cours',
-  'ui.restoreToolDefaults': 'Rétablir les réglages de l’outil',
-  'ui.resetScope': 'Effacer la sélection actuelle ou rétablir les paramètres de cet outil sans modifier les réglages globaux.',
+  "ui.progressionApproxHelp":
+    "Autorise les réductions prudentes quand un accord complet est injouable avec les boutons Stradella disponibles. Les notes définissant l’accord sont conservées.",
+  "ui.nominalGapFilter": "Écart minimal entre notes nominales",
+  "ui.nominalGapFilterHelp":
+    "Filtre les réalisations selon les intervalles entre notes nominales distinctes adjacentes des registres configurés. Autoriser tous les écarts, exclure un demi-ton ou exclure un et deux demi-tons. Les doublures à l’unisson sont ignorées.",
+  "ui.nominalGapAllowAll": "Autoriser tous les écarts",
+  "ui.nominalGapNoSemitone": "Exclure les écarts de 1 demi-ton",
+  "ui.nominalGapNoWholeTone": "Exclure les écarts de 1–2 demi-tons",
+  "ui.downloadAllRealizations": "Télécharger tous les diagrammes (ZIP)",
+  "ui.batchExportWorking": "Préparation du ZIP…",
+  "ui.clearCurrentWork": "Effacer le travail en cours",
+  "ui.restoreToolDefaults": "Rétablir les réglages de l’outil",
+  "ui.resetScope":
+    "Effacer la sélection actuelle ou rétablir les paramètres de cet outil sans modifier les réglages globaux.",
   "inspector.title": "Réalisations",
   "inspector.filters": "Filtres",
   "inspector.rootInBass": "Fondamentale à la basse",
   "inspector.exactOnly": "Exactes uniquement",
   "inspector.atMostTwo": "≤ 2 boutons",
   "inspector.showing": "{visible} réalisations sur {total}",
-  "inspector.bassHelp": "Inclut une basse ou contrebasse jouée sur la fondamentale, éventuellement avec d’autres basses ; ne désigne pas nécessairement la note acoustique la plus grave.",
-  "inspector.hiddenSelection": "La réalisation sélectionnée est masquée par les filtres ; le diagramme reste inchangé.",
+  "inspector.bassHelp":
+    "Inclut une basse ou contrebasse jouée sur la fondamentale, éventuellement avec d’autres basses ; ne désigne pas nécessairement la note acoustique la plus grave.",
+  "inspector.hiddenSelection":
+    "La réalisation sélectionnée est masquée par les filtres ; le diagramme reste inchangé.",
   "inspector.tableLabel": "Comparaison des réalisations",
   "inspector.rank": "Rang initial",
   "inspector.played": "Boutons joués",
@@ -857,102 +998,119 @@ export const FR: Record<TranslationKey, string> = {
   "ui.progressionPreviousRealization": "Réalisation précédente",
   "ui.progressionNextRealization": "Réalisation suivante",
   "ui.progressionRealizationFor": "Réalisation pour {chord}",
-  "ui.progressionChoiceHint": "Parcourez les réalisations avec ← / →. Auto optimise toute la progression ; un rang fixe cet accord à la réalisation du chercheur.",
+  "ui.progressionChoiceHint":
+    "Parcourez les réalisations avec ← / →. Auto optimise toute la progression ; un rang fixe cet accord à la réalisation du chercheur.",
   "ui.progressionStradellaPath": "Parcours de progression Stradella",
   "ui.progressionPlay": "Jouer la progression",
   "ui.hideResults": "Masquer les résultats",
   "ui.showResults": "Afficher les résultats",
   "inspector.diminished": "dim.",
   "tools.summary.scaleFinder": "Affiche les notes d’une gamme sur le diagramme.",
-  "tools.summary.stradellaChordFinder": "Trouve les boutons de basse et d’accord pour n’importe quel accord.",
-  "tools.summary.trebleChordFinder": "Trouve une position de main droite pour n’importe quel accord.",
-  "tools.summary.progressionAssistant": "Planifie une progression avec des mouvements de main et de voix fluides.",
-  "tools.summary.bassPatternPlayer": "Joue des motifs de basses (polka, valse, etc.) sur une progression.",
+  "tools.summary.stradellaChordFinder":
+    "Trouve les boutons de basse et d’accord pour n’importe quel accord.",
+  "tools.summary.trebleChordFinder":
+    "Trouve une position de main droite pour n’importe quel accord.",
+  "tools.summary.progressionAssistant":
+    "Planifie une progression avec des mouvements de main et de voix fluides.",
+  "tools.summary.bassPatternPlayer":
+    "Joue des motifs de basses (polka, valse, etc.) sur une progression.",
   "tools.summary.abcPlayer": "Joue des airs ABC sur le diagramme, note par note.",
-  "tools.summary.annotateDiagram": "Sélectionne des boutons, ajoute des doigtés, enregistre des séquences et écrit des notes.",
-  "tools.summary.harmonyExplorer": "Montre les relations entre accords et gammes sur le cercle harmonique.",
+  "tools.summary.annotateDiagram":
+    "Sélectionne des boutons, ajoute des doigtés, enregistre des séquences et écrit des notes.",
+  "tools.summary.harmonyExplorer":
+    "Montre les relations entre accords et gammes sur le cercle harmonique.",
   "ui.progressionShowPath": "Afficher le parcours sur le diagramme",
   "ui.loadingSounds": "Chargement des sons…",
   "ui.playbackBarHint": "Lecture, pause et arrêt avec la barre sous le diagramme.",
-  "tools.rootPositionUnavailable": "La position fondamentale n’est pas disponible pour cet accord avec les limites actuelles de boutons et d’écart ; des résultats avec d’autres basses sont affichés.",
+  "tools.rootPositionUnavailable":
+    "La position fondamentale n’est pas disponible pour cet accord avec les limites actuelles de boutons et d’écart ; des résultats avec d’autres basses sont affichés.",
 
-  "rhythm.title": 'Entraîneur rythmique basse–aigu',
-  "rhythm.intro": 'Coordonnez les deux mains et choisissez les notes du chant pour chaque accord.',
-  "rhythm.needsMultipleAttacks": 'Choisissez un rythme du chant avec plusieurs attaques pour entendre l’arpège.',
-  "rhythm.trebleNotes": 'Notes du chant',
-  "rhythm.notes.root": 'Fondamentale répétée',
-  "rhythm.notes.rootFifth": 'Fondamentale–quinte',
-  "rhythm.notes.rootThird": 'Fondamentale–tierce',
-  "rhythm.notes.triadUp": 'Accord ascendant',
-  "rhythm.notes.triadDown": 'Accord descendant',
-  "rhythm.notes.triadWave": 'Accord aller–retour',
-  "rhythm.notes.brokenChord": 'Accord brisé (fondamentale–quinte–tierce–quinte)',
-  "rhythm.notes.upperNeighbor": 'Note voisine supérieure',
-  "rhythm.notes.rootOctave": 'Fondamentale–octave',
-  "rhythm.notes.rootSeventh": 'Fondamentale–septième (ou octave)',
-  "rhythm.notes.guideTones": 'Notes guides (tierce–septième)',
-  "rhythm.notes.seventhUp": 'Arpège de septième ascendant',
-  "rhythm.notes.seventhDown": 'Arpège de septième descendant',
-  "rhythm.notes.seventhWave": 'Arpège de septième aller-retour',
-  "rhythm.notes.seventhOstinato": 'Ostinato de septième (fondamentale–quinte–septième–quinte)',
-  "rhythm.pitchSource": 'Chant selon l’accord',
-  "rhythm.durationUnits": 'unités de mesure',
-  "rhythm.meter": 'Mesure',
-  "rhythm.bass": 'Accompagnement basse',
-  "rhythm.treble": 'Rythme aigu',
-  "rhythm.key": 'Tonique',
-  "rhythm.notationTitle": 'Partition basse–aigu',
-  "rhythm.notationHelp": 'La partition présente les notes aiguës et les boutons de basse/accord Stradella symboliquement ; les accords ne décrivent pas toutes les anches sonores.',
-  "rhythm.harmony": 'Progression d’accords',
-  "rhythm.oneChord": 'Un accord',
-  "rhythm.repeats": 'Répétitions',
-  "rhythm.rootRule": 'Le motif de notes recommence à chaque accord, selon sa fondamentale et sa qualité.',
-  "rhythm.progression": 'Fondamentales',
-  "rhythm.timeline": 'Frise rythmique',
-  "rhythm.rootRuleShort": 'Fondamentale à l’aigu',
-  "rhythm.bar": 'Mesure',
-  "rhythm.left": 'Gauche',
-  "rhythm.right": 'Droite',
-  "rhythm.legend": '● = attaque ; la longueur et le nombre dans chaque segment indiquent la durée en unités de mesure.',
-  "rhythm.summary": 'Explorez des rythmes coordonnés entre les deux mains.',
-  "rhythm.cueca": 'Cueca (basses ABC)',
-  "rhythm.template.sustain2": 'Note tenue (2)',
-  "rhythm.template.sustain4": 'Note tenue (4)',
-  "rhythm.template.fourEighths": 'Quatre croches',
-  "rhythm.template.threePlusOneEighths": '3+1 croches',
-  "rhythm.template.onePlusThreeEighths": '1+3 croches',
-  "rhythm.template.sustain3": 'Note tenue (3)',
-  "rhythm.template.twoAgainstThree": '2 contre 3',
-  "rhythm.template.sixEighths": 'Six croches',
-  "rhythm.template.eightEighths": 'Huit croches',
-  "rhythm.template.offbeats": 'Croches sur les contretemps',
-  "rhythm.template.sustain6": 'Note tenue (6)',
-  "rhythm.template.compound": 'Une note par temps (3+3)',
-  "rhythm.template.hemiola": 'Hémiole 2+2+2',
-  "rhythm.template.cuecaEcho": 'Écho des basses de cueca',
-  "rhythm.template.dottedEighths": 'Quatre croches pointées',
+  "rhythm.title": "Entraîneur rythmique basse–aigu",
+  "rhythm.intro": "Coordonnez les deux mains et choisissez les notes du chant pour chaque accord.",
+  "rhythm.needsMultipleAttacks":
+    "Choisissez un rythme du chant avec plusieurs attaques pour entendre l’arpège.",
+  "rhythm.trebleNotes": "Notes du chant",
+  "rhythm.notes.root": "Fondamentale répétée",
+  "rhythm.notes.rootFifth": "Fondamentale–quinte",
+  "rhythm.notes.rootThird": "Fondamentale–tierce",
+  "rhythm.notes.triadUp": "Accord ascendant",
+  "rhythm.notes.triadDown": "Accord descendant",
+  "rhythm.notes.triadWave": "Accord aller–retour",
+  "rhythm.notes.brokenChord": "Accord brisé (fondamentale–quinte–tierce–quinte)",
+  "rhythm.notes.upperNeighbor": "Note voisine supérieure",
+  "rhythm.notes.rootOctave": "Fondamentale–octave",
+  "rhythm.notes.rootSeventh": "Fondamentale–septième (ou octave)",
+  "rhythm.notes.guideTones": "Notes guides (tierce–septième)",
+  "rhythm.notes.seventhUp": "Arpège de septième ascendant",
+  "rhythm.notes.seventhDown": "Arpège de septième descendant",
+  "rhythm.notes.seventhWave": "Arpège de septième aller-retour",
+  "rhythm.notes.seventhOstinato": "Ostinato de septième (fondamentale–quinte–septième–quinte)",
+  "rhythm.pitchSource": "Chant selon l’accord",
+  "rhythm.durationUnits": "unités de mesure",
+  "rhythm.meter": "Mesure",
+  "rhythm.bass": "Accompagnement basse",
+  "rhythm.treble": "Rythme aigu",
+  "rhythm.key": "Tonique",
+  "rhythm.notationTitle": "Partition basse–aigu",
+  "rhythm.notationHelp":
+    "La partition présente les notes aiguës et les boutons de basse/accord Stradella symboliquement ; les accords ne décrivent pas toutes les anches sonores.",
+  "rhythm.harmony": "Progression d’accords",
+  "rhythm.oneChord": "Un accord",
+  "rhythm.repeats": "Répétitions",
+  "rhythm.rootRule":
+    "Le motif de notes recommence à chaque accord, selon sa fondamentale et sa qualité.",
+  "rhythm.progression": "Fondamentales",
+  "rhythm.timeline": "Frise rythmique",
+  "rhythm.rootRuleShort": "Fondamentale à l’aigu",
+  "rhythm.bar": "Mesure",
+  "rhythm.left": "Gauche",
+  "rhythm.right": "Droite",
+  "rhythm.legend":
+    "● = attaque ; la longueur et le nombre dans chaque segment indiquent la durée en unités de mesure.",
+  "rhythm.summary": "Explorez des rythmes coordonnés entre les deux mains.",
+  "rhythm.cueca": "Cueca (basses ABC)",
+  "rhythm.template.sustain2": "Note tenue (2)",
+  "rhythm.template.sustain4": "Note tenue (4)",
+  "rhythm.template.fourEighths": "Quatre croches",
+  "rhythm.template.threePlusOneEighths": "3+1 croches",
+  "rhythm.template.onePlusThreeEighths": "1+3 croches",
+  "rhythm.template.sustain3": "Note tenue (3)",
+  "rhythm.template.twoAgainstThree": "2 contre 3",
+  "rhythm.template.sixEighths": "Six croches",
+  "rhythm.template.eightEighths": "Huit croches",
+  "rhythm.template.offbeats": "Croches sur les contretemps",
+  "rhythm.template.sustain6": "Note tenue (6)",
+  "rhythm.template.compound": "Une note par temps (3+3)",
+  "rhythm.template.hemiola": "Hémiole 2+2+2",
+  "rhythm.template.cuecaEcho": "Écho des basses de cueca",
+  "rhythm.template.dottedEighths": "Quatre croches pointées",
 
-  "ui.stradellaNotationMode": 'Notation de la main gauche',
-  "ui.stradellaNotationSymbolic": 'Stradella standard',
-  "ui.stradellaNotationSounding": 'Voix étendues (si disponibles)',
-  "ui.stradellaNotationModeHelp": 'La notation étendue est disponible dans l’Assistant de progressions. Les partitions ABC importées restent inchangées.',
-  "ui.stradellaChordLabels": 'Symboles de qualité des accords',
-  "ui.stradellaChordLabelsAlways": 'Afficher sur chaque accord',
-  "ui.stradellaChordLabelsChanges": 'Afficher lors du changement de qualité',
-  "ui.stradellaCounterbassDash": 'Marquer les contrebasses d’un trait',
+  "ui.stradellaNotationMode": "Notation de la main gauche",
+  "ui.stradellaNotationSymbolic": "Stradella standard",
+  "ui.stradellaNotationSounding": "Voix étendues (si disponibles)",
+  "ui.stradellaNotationModeHelp":
+    "La notation étendue est disponible dans l’Assistant de progressions. Les partitions ABC importées restent inchangées.",
+  "ui.stradellaChordLabels": "Symboles de qualité des accords",
+  "ui.stradellaChordLabelsAlways": "Afficher sur chaque accord",
+  "ui.stradellaChordLabelsChanges": "Afficher lors du changement de qualité",
+  "ui.stradellaCounterbassDash": "Marquer les contrebasses d’un trait",
   "ui.musicNotationPlacement": "Position de la partition",
   "ui.musicNotationRight": "Panneau de droite",
   "ui.musicNotationBelow": "Sous le diagramme",
   "ui.musicNotationNoteNamesInNoteheads": "Afficher les noms sous les notes",
-  "ui.musicNotationNoteNamesInNoteheadsHelp": "Utilise des annotations natives sans modifier les têtes de notes.",
-  "ui.stradellaOctaveHelp": 'La notation écrite est indépendante des registres audio.',
+  "ui.musicNotationNoteNamesInNoteheadsHelp":
+    "Utilise des annotations natives sans modifier les têtes de notes.",
+  "ui.stradellaOctaveHelp": "La notation écrite est indépendante des registres audio.",
   "ui.cancel": "Annuler",
-  "settings.autoSaveHint": "Vos paramètres sont enregistrés automatiquement dans ce navigateur et rétablis à la prochaine visite.",
+  "settings.autoSaveHint":
+    "Vos paramètres sont enregistrés automatiquement dans ce navigateur et rétablis à la prochaine visite.",
   "settings.resetDefaults": "Rétablir les valeurs par défaut",
-  "settings.resetConfirm": "Rétablir tous les paramètres par défaut ? La page sera rechargée. Les motifs de basse personnalisés sont conservés.",
+  "settings.resetConfirm":
+    "Rétablir tous les paramètres par défaut ? La page sera rechargée. Les motifs de basse personnalisés sont conservés.",
   "settings.resetConfirmYes": "Rétablir",
   "error.title": "Une erreur s’est produite",
-  "error.body": "Accordion Tools s’est arrêté à cause d’une erreur inattendue. Recharger la page suffit généralement. Si l’erreur revient, réinitialisez les paramètres enregistrés.",
+  "error.body":
+    "Accordion Tools s’est arrêté à cause d’une erreur inattendue. Recharger la page suffit généralement. Si l’erreur revient, réinitialisez les paramètres enregistrés.",
   "error.reload": "Recharger",
   "error.resetAndReload": "Réinitialiser les paramètres et recharger",
   "error.details": "Détails techniques",

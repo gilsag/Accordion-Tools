@@ -25,7 +25,6 @@ export const FLAT_NAMES: Record<string, string> = {
   B: "B",
 };
 
-
 export const ENHARMONIC_ENGLISH: Record<string, string> = {
   C: "C",
   "C#": "C#/Db",
@@ -100,7 +99,6 @@ export const SOLFEGE_FLAT: Record<string, string> = {
   "A#": "Sib",
   B: "Si",
 };
-
 
 export const GERMAN_DEFAULT: Record<string, string> = {
   C: "C",
@@ -192,20 +190,7 @@ export const PITCH_INDEX: Record<string, number> = {
   B: 11,
 };
 
-export const INDEX_TO_PITCH = [
-  "C",
-  "C#",
-  "D",
-  "D#",
-  "E",
-  "F",
-  "F#",
-  "G",
-  "G#",
-  "A",
-  "A#",
-  "B",
-];
+export const INDEX_TO_PITCH = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
 /**
  * Transposes a pitch class by a number of semitones.
@@ -223,7 +208,7 @@ export function formatPitch(
   notation: NotationMode,
   accidental: AccidentalMode,
   defaultDisplayName?: string,
-  octave?: number
+  octave?: number,
 ): string {
   if (!pitch || notation === "blank") return "";
 
@@ -234,22 +219,22 @@ export function formatPitch(
   if (notation === "solfege") {
     const solfegeName =
       accidental === "enharmonic"
-        ? ENHARMONIC_SOLFEGE[pitch] ?? pitch
+        ? (ENHARMONIC_SOLFEGE[pitch] ?? pitch)
         : accidental === "sharps"
-          ? SOLFEGE_SHARP[pitch] ?? pitch
-          : SOLFEGE_FLAT[pitch] ?? pitch;
+          ? (SOLFEGE_SHARP[pitch] ?? pitch)
+          : (SOLFEGE_FLAT[pitch] ?? pitch);
     return `${solfegeName}${octaveSuffix}`;
   }
 
   if (notation === "german") {
     const germanName =
       accidental === "enharmonic"
-        ? ENHARMONIC_GERMAN[pitch] ?? pitch
+        ? (ENHARMONIC_GERMAN[pitch] ?? pitch)
         : accidental === "sharps"
-          ? GERMAN_SHARP[pitch] ?? pitch
+          ? (GERMAN_SHARP[pitch] ?? pitch)
           : accidental === "flats"
-            ? GERMAN_FLAT[pitch] ?? pitch
-            : GERMAN_DEFAULT[pitch] ?? pitch;
+            ? (GERMAN_FLAT[pitch] ?? pitch)
+            : (GERMAN_DEFAULT[pitch] ?? pitch);
     return `${germanName}${octaveSuffix}`;
   }
 
@@ -283,7 +268,7 @@ export function renderMusicLabel(label: string) {
       parts.push(
         <tspan key={index} className="accidental-symbol double-sharp-symbol" baselineShift="-14%">
           𝄪
-        </tspan>
+        </tspan>,
       );
       index += 1;
       continue;
@@ -293,7 +278,7 @@ export function renderMusicLabel(label: string) {
       parts.push(
         <tspan key={index} className="accidental-symbol" baselineShift="-18%">
           ♯
-        </tspan>
+        </tspan>,
       );
       continue;
     }
@@ -302,7 +287,7 @@ export function renderMusicLabel(label: string) {
       parts.push(
         <tspan key={index} className="accidental-symbol" baselineShift="-18%">
           ♭
-        </tspan>
+        </tspan>,
       );
       continue;
     }
@@ -358,7 +343,7 @@ export function chordTones(
   root: string,
   kind: ButtonKind,
   notation: NotationMode,
-  accidental: AccidentalMode
+  accidental: AccidentalMode,
 ) {
   if (notation === "blank") return "";
 
@@ -366,12 +351,12 @@ export function chordTones(
     kind === "chord-major"
       ? [0, 4, 7]
       : kind === "chord-minor"
-      ? [0, 3, 7]
-      : kind === "chord-dominant7"
-      ? [0, 4, 10]
-      : kind === "chord-diminished7"
-      ? [0, 3, 9]
-      : [0];
+        ? [0, 3, 7]
+        : kind === "chord-dominant7"
+          ? [0, 4, 10]
+          : kind === "chord-diminished7"
+            ? [0, 3, 9]
+            : [0];
 
   return intervals.map((i) => formatPitch(transpose(root, i), notation, accidental)).join("-");
 }

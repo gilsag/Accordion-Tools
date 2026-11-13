@@ -1,5 +1,10 @@
 import { progressionPulsePlan } from "./audio/progressionPulsePlan";
-import { audioTimelineOrigin, msUntilAudioTime, scheduleAtAudioOffset, type AudioClockPorts } from "./audio/audioClock";
+import {
+  audioTimelineOrigin,
+  msUntilAudioTime,
+  scheduleAtAudioOffset,
+  type AudioClockPorts,
+} from "./audio/audioClock";
 import type {
   DiagramButton,
   SampleRegister,
@@ -9,7 +14,10 @@ import type {
   StradellaBassVoicing,
 } from "./types";
 import { PITCH_INDEX, transpose } from "./music";
-import { nominalRegisterNote, type StradellaRegisterModel } from "./tools/stradellaChordFinder/registerModel";
+import {
+  nominalRegisterNote,
+  type StradellaRegisterModel,
+} from "./tools/stradellaChordFinder/registerModel";
 import {
   LA_MELODIOSA_REGIONS,
   LA_MELODIOSA_SAMPLE_BASE,
@@ -198,10 +206,7 @@ function scheduleTone(
 
   const safeVolume = clamp(options.volume, 0, 1);
   const attackSeconds = clamp(options.attackMs, 1, 250) / 1000;
-  const releaseSeconds = Math.min(
-    clamp(options.releaseMs, 10, 700) / 1000,
-    durationSeconds * 0.65,
-  );
+  const releaseSeconds = Math.min(clamp(options.releaseMs, 10, 700) / 1000, durationSeconds * 0.65);
   const releaseStart = Math.max(
     startTime + attackSeconds,
     startTime + durationSeconds - releaseSeconds,
@@ -223,9 +228,7 @@ function scheduleTone(
 
     oscillator.type = part.waveform;
     oscillator.frequency.setValueAtTime(
-      frequency *
-        Math.pow(2, part.octaveShift ?? 0) *
-        centsToFrequencyRatio(part.detuneCents ?? 0),
+      frequency * Math.pow(2, part.octaveShift ?? 0) * centsToFrequencyRatio(part.detuneCents ?? 0),
       startTime,
     );
 
@@ -237,9 +240,7 @@ function scheduleTone(
 
     activeOscillators.push(oscillator);
     oscillator.onended = () => {
-      activeOscillators = activeOscillators.filter(
-        (active) => active !== oscillator,
-      );
+      activeOscillators = activeOscillators.filter((active) => active !== oscillator);
     };
   });
 }
@@ -253,19 +254,14 @@ function registerForNote(note: SoundNote, options: SoundOptions) {
 /** Pick the SFZ region matching a nominal MIDI note, extending the nearest
  * region at the edges instead of silently changing sound engine. Such octave
  * assignments are software playback conventions, not physical reed claims. */
-function findLaMelodiosaRegion(
-  note: SoundNote,
-  options: SoundOptions,
-): LaMelodiosaRegion | null {
+function findLaMelodiosaRegion(note: SoundNote, options: SoundOptions): LaMelodiosaRegion | null {
   const midi = midiForNote(note.pitchClass, note.octave);
   if (midi === null) return null;
   const register = registerForNote(note, options);
   const candidates = LA_MELODIOSA_REGIONS.filter(
     (region) => region.side === note.side && region.register === register,
   );
-  const exact = candidates.find(
-    (region) => midi >= region.lowMidi && midi <= region.highMidi,
-  );
+  const exact = candidates.find((region) => midi >= region.lowMidi && midi <= region.highMidi);
   if (exact) return exact;
 
   // Keep La Melodiosa selected outside its native mapped range by extending the
@@ -344,8 +340,9 @@ async function scheduleSampleNote(
   // giving up. Falling back to the synthesizer here makes missing assets sound
   // like an intentional timbre change and masks the actual loading problem.
   const register = registerForNote(note, options);
-  const nearbyRegions = LA_MELODIOSA_REGIONS
-    .filter((candidate) => candidate.side === note.side && candidate.register === register)
+  const nearbyRegions = LA_MELODIOSA_REGIONS.filter(
+    (candidate) => candidate.side === note.side && candidate.register === register,
+  )
     .slice()
     .sort((a, b) => {
       const distanceA = Math.min(
@@ -389,10 +386,7 @@ async function scheduleSampleNote(
   const now = context.currentTime;
   const actualStart = Math.max(startTime, now + 0.005);
   const attackSeconds = Math.min(clamp(options.attackMs, 1, 250) / 1000, 0.08);
-  const releaseSeconds = Math.min(
-    clamp(options.releaseMs, 10, 900) / 1000,
-    durationSeconds * 0.75,
-  );
+  const releaseSeconds = Math.min(clamp(options.releaseMs, 10, 900) / 1000, durationSeconds * 0.75);
   const releaseStart = Math.max(
     actualStart + attackSeconds,
     actualStart + durationSeconds - releaseSeconds,
@@ -403,10 +397,7 @@ async function scheduleSampleNote(
 
   source.buffer = buffer;
   source.playbackRate.setValueAtTime(
-    Math.pow(
-      2,
-      (targetMidi - sample.rootMidi + sample.tuneCents / 100) / 12,
-    ),
+    Math.pow(2, (targetMidi - sample.rootMidi + sample.tuneCents / 100) / 12),
     actualStart,
   );
 
@@ -437,9 +428,7 @@ async function scheduleSampleNote(
 
   activeSampleSources.push(source);
   source.onended = () => {
-    activeSampleSources = activeSampleSources.filter(
-      (active) => active !== source,
-    );
+    activeSampleSources = activeSampleSources.filter((active) => active !== source);
   };
 }
 
@@ -488,7 +477,12 @@ export type NoteTiming = { at?: number; durationMs?: number };
  * (Settings → Sound → Note length in players). The highlight lasts as long. */
 export const DEFAULT_NOTE_ARTICULATION = 0.85;
 
-function playNotes(notes: SoundNote[], options: SoundOptions, delayMs = 0, timing: NoteTiming = {}) {
+function playNotes(
+  notes: SoundNote[],
+  options: SoundOptions,
+  delayMs = 0,
+  timing: NoteTiming = {},
+) {
   if (!options.enabled || notes.length === 0) return;
 
   const context = getAudioContext();
@@ -527,14 +521,23 @@ function stradellaChordIntervals(kind: DiagramButton["kind"]) {
 // they must not dictate theoretical chord-search or structural inversion labels.
 export function notesForButton(
   button: DiagramButton,
-  options?: Pick<SoundOptions, "stradellaBassVoicing" | "source" | "stradellaRegisterModel" | "laMelodiosaFollowStradellaRegisters">,
+  options?: Pick<
+    SoundOptions,
+    | "stradellaBassVoicing"
+    | "source"
+    | "stradellaRegisterModel"
+    | "laMelodiosaFollowStradellaRegisters"
+  >,
 ): SoundNote[] {
   // The configured octave mapping affects *sampled Stradella* notes only.
   // Treble playback, chord identity, search results, and synthesizer voicing
   // remain independent of this optional reproduction mode.
-  const modeled = options?.source === "la-melodiosa" &&
-    options.laMelodiosaFollowStradellaRegisters && options.stradellaRegisterModel
-    ? options.stradellaRegisterModel : null;
+  const modeled =
+    options?.source === "la-melodiosa" &&
+    options.laMelodiosaFollowStradellaRegisters &&
+    options.stradellaRegisterModel
+      ? options.stradellaRegisterModel
+      : null;
   if (button.kind === "treble-note") {
     if (!button.pitchClass) return [];
     return [
@@ -584,9 +587,9 @@ export function notesForButton(
       pitchClass,
       // One nominal pitch per chord tone. The source WAV may itself contain
       // octave-doubled reeds; transposition does not isolate those partials.
-      octave: nominal?.octave ?? (options?.source === "la-melodiosa"
-        ? 3
-        : 3 + octaveShiftForTranspose(root, interval)),
+      octave:
+        nominal?.octave ??
+        (options?.source === "la-melodiosa" ? 3 : 3 + octaveShiftForTranspose(root, interval)),
       side: "bass" as const,
     };
   });
@@ -628,7 +631,9 @@ export function samplesReadyFor(buttons: DiagramButton[], options: SoundOptions)
 /** Loads the samples these buttons need, so a transport can start on time.
  * Failed files are skipped here; playback reports them when it reaches them. */
 export async function prepareSamplesFor(buttons: DiagramButton[], options: SoundOptions) {
-  await Promise.allSettled([...sampleFilesForButtons(buttons, options)].map((file) => loadSample(file)));
+  await Promise.allSettled(
+    [...sampleFilesForButtons(buttons, options)].map((file) => loadSample(file)),
+  );
 }
 
 function soundClockPorts(): AudioClockPorts {
@@ -648,29 +653,31 @@ export function playButtonSequence(
 
   buttons.forEach((button, index) => {
     scheduleAtAudioOffset(ports, origin, index * stepDelayMs, (when) =>
-      playButtonSound(button, options, { at: when }));
+      playButtonSound(button, options, { at: when }),
+    );
   });
   if (onDone) {
     // The sequence ends one step after its last note starts.
-    activeTimeouts.push(window.setTimeout(onDone,
-      msUntilAudioTime(ports, origin + (buttons.length * stepDelayMs) / 1000)));
+    activeTimeouts.push(
+      window.setTimeout(
+        onDone,
+        msUntilAudioTime(ports, origin + (buttons.length * stepDelayMs) / 1000),
+      ),
+    );
   }
 }
 
-export function playButtonCombination(
-  buttons: DiagramButton[],
-  options: SoundOptions,
-) {
+export function playButtonCombination(buttons: DiagramButton[], options: SoundOptions) {
   if (!options.enabled || buttons.length === 0) return;
   stopAllSound();
-  playNotes(buttons.flatMap((button) => notesForButton(button, options)), options);
+  playNotes(
+    buttons.flatMap((button) => notesForButton(button, options)),
+    options,
+  );
 }
 
 /** Plays a sequence of Stradella button combinations as block chords. */
-export function playButtonProgression(
-  combinations: DiagramButton[][],
-  options: SoundOptions,
-) {
+export function playButtonProgression(combinations: DiagramButton[][], options: SoundOptions) {
   if (!options.enabled || combinations.length === 0) return;
   stopAllSound();
   const stepDelayMs = Math.max(240, 60000 / Math.max(20, options.sequenceTempoBpm));
@@ -680,7 +687,13 @@ export function playButtonProgression(
   combinations.forEach((buttons, index) => {
     if (buttons.length === 0) return;
     scheduleAtAudioOffset(ports, origin, index * stepDelayMs, (when) =>
-      playNotes(buttons.flatMap((button) => notesForButton(button, options)), options, 0, { at: when }));
+      playNotes(
+        buttons.flatMap((button) => notesForButton(button, options)),
+        options,
+        0,
+        { at: when },
+      ),
+    );
   });
 }
 
@@ -709,47 +722,64 @@ export function playButtonRhythmProgression(
   stopAllSound();
 
   const beatMs = Math.max(240, 60000 / Math.max(20, options.sequenceTempoBpm));
-  const beatsPerChord = pattern === "march" ? 4 : pattern === "waltz" ? 3 : pattern === "oom-pah" ? 2 : 1;
+  const beatsPerChord =
+    pattern === "march" ? 4 : pattern === "waltz" ? 3 : pattern === "oom-pah" ? 2 : 1;
   const ports = soundClockPorts();
   const origin = audioTimelineOrigin(ports.now);
   // Each pulse lasts one beat; "block" holds the whole chord for its beat.
   const pulseDurationMs = beatMs * options.articulation;
 
   combinations.forEach((buttons, progressionIndex) => {
-    const pulses = pulseOverrides?.[progressionIndex] ?? progressionPulsePlan(
-      buttons, bassOverrides[progressionIndex] ?? [], pattern,
-      (button) => Math.min(...notesForButton(button, options).map((note) =>
-        note.octave * 12 + (PITCH_INDEX[note.pitchClass] ?? 0))),
-    );
+    const pulses =
+      pulseOverrides?.[progressionIndex] ??
+      progressionPulsePlan(buttons, bassOverrides[progressionIndex] ?? [], pattern, (button) =>
+        Math.min(
+          ...notesForButton(button, options).map(
+            (note) => note.octave * 12 + (PITCH_INDEX[note.pitchClass] ?? 0),
+          ),
+        ),
+      );
 
     pulses.forEach((pulse, beatIndex) => {
       const offsetMs = (progressionIndex * beatsPerChord + beatIndex) * beatMs;
-      scheduleAtAudioOffset(ports, origin, offsetMs,
+      scheduleAtAudioOffset(
+        ports,
+        origin,
+        offsetMs,
         (when) => {
           if (pulse.length === 0) return;
-          playNotes(pulse.flatMap((button) => notesForButton(button, options)), options, 0,
-            { at: when, durationMs: pulseDurationMs });
+          playNotes(
+            pulse.flatMap((button) => notesForButton(button, options)),
+            options,
+            0,
+            { at: when, durationMs: pulseDurationMs },
+          );
         },
         () => {
           // A silent pulse (rest) clears the highlight when its beat is reached.
           if (pulse.length === 0) callbacks.onActiveButtons?.([], progressionIndex);
-          else callbacks.onActiveButtons?.(pulse.map((button) => button.id), progressionIndex);
-        });
+          else
+            callbacks.onActiveButtons?.(
+              pulse.map((button) => button.id),
+              progressionIndex,
+            );
+        },
+      );
     });
   });
 
   const totalDuration = combinations.length * beatsPerChord * beatMs;
-  const doneTimeout = window.setTimeout(() => {
-    callbacks.onActiveButtons?.([], Math.max(0, combinations.length - 1));
-    callbacks.onDone?.();
-  }, msUntilAudioTime(ports, origin + totalDuration / 1000));
+  const doneTimeout = window.setTimeout(
+    () => {
+      callbacks.onActiveButtons?.([], Math.max(0, combinations.length - 1));
+      callbacks.onDone?.();
+    },
+    msUntilAudioTime(ports, origin + totalDuration / 1000),
+  );
   activeTimeouts.push(doneTimeout);
 }
 
-export function playButtonArpeggioThenChord(
-  buttons: DiagramButton[],
-  options: SoundOptions,
-) {
+export function playButtonArpeggioThenChord(buttons: DiagramButton[], options: SoundOptions) {
   if (!options.enabled || buttons.length === 0) return;
   stopAllSound();
   const stepDelayMs = 60000 / Math.max(20, options.sequenceTempoBpm);
@@ -758,11 +788,18 @@ export function playButtonArpeggioThenChord(
 
   buttons.forEach((button, index) => {
     scheduleAtAudioOffset(ports, origin, index * stepDelayMs, (when) =>
-      playButtonSound(button, options, { at: when }));
+      playButtonSound(button, options, { at: when }),
+    );
   });
 
   scheduleAtAudioOffset(ports, origin, buttons.length * stepDelayMs, (when) =>
-    playNotes(buttons.flatMap((button) => notesForButton(button, options)), options, 0, { at: when }));
+    playNotes(
+      buttons.flatMap((button) => notesForButton(button, options)),
+      options,
+      0,
+      { at: when },
+    ),
+  );
 }
 
 const stopListeners = new Set<() => void>();
@@ -771,7 +808,9 @@ const stopListeners = new Set<() => void>();
  * playback start makes. Returns a function that removes the listener. */
 export function onStopAllSound(listener: () => void) {
   stopListeners.add(listener);
-  return () => { stopListeners.delete(listener); };
+  return () => {
+    stopListeners.delete(listener);
+  };
 }
 
 /** Stops scheduled playback and any currently ringing synth/sample voices. */
@@ -840,8 +879,14 @@ export function playHarmonyPitchClassChord(
   }
 
   const stepMs = Math.max(90, Math.min(260, 60000 / Math.max(40, options.sequenceTempoBpm) / 2));
-  notes.forEach((note, index) => playNotes([note], options, index * stepMs,
-    timing ? { at: timing.at + (index * stepMs) / 1000 } : {}));
+  notes.forEach((note, index) =>
+    playNotes(
+      [note],
+      options,
+      index * stepMs,
+      timing ? { at: timing.at + (index * stepMs) / 1000 } : {},
+    ),
+  );
 }
 
 /**
@@ -855,7 +900,8 @@ export function playHarmonyRelationship(
   options: SoundOptions,
   style: "block" | "arpeggio" = "block",
 ) {
-  if (!options.enabled || referencePitchClasses.length === 0 || targetPitchClasses.length === 0) return;
+  if (!options.enabled || referencePitchClasses.length === 0 || targetPitchClasses.length === 0)
+    return;
   stopAllSound();
 
   const makeNotes = (pitchClasses: string[]) =>
@@ -877,4 +923,3 @@ export function playHarmonyRelationship(
   playNotes(referenceNotes, options);
   playNotes(targetNotes, options, Math.max(520, Math.round(options.noteDurationMs * 0.78)));
 }
-

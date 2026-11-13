@@ -133,138 +133,39 @@
       "laMelodiosaFollowStradellaRegisters": true
     },
     "expectedCalls": [
-      [
-        "setSide",
-        "stradella"
-      ],
-      [
-        "setNotation",
-        "english"
-      ],
-      [
-        "setAccidental",
-        "natural"
-      ],
-      [
-        "setChordDisplayStyle",
-        "letter"
-      ],
-      [
-        "setChordLabelMode",
-        "chord-name"
-      ],
-      [
-        "setBasses",
-        "96"
-      ],
-      [
-        "setTrebleLayout",
-        "c-system"
-      ],
-      [
-        "setTrebleRows",
-        5
-      ],
-      [
-        "setTrebleSize",
-        "small"
-      ],
-      [
-        "setPianoTrebleRange",
-        "three-octave"
-      ],
-      [
-        "setShowTrebleOctaves",
-        false
-      ],
-      [
-        "setDiagramVerticalSpacing",
-        18
-      ],
-      [
-        "setPianoKeyWidthScale",
-        1
-      ],
-      [
-        "setPianoKeyHeightScale",
-        1
-      ],
-      [
-        "setPianoBlackKeyWidthScale",
-        1
-      ],
-      [
-        "setPianoBlackKeyHeightScale",
-        1
-      ],
-      [
-        "setDiagramScale",
-        100
-      ],
-      [
-        "setInterfaceDensity",
-        "compact"
-      ],
-      [
-        "setShowStatusBar",
-        true
-      ],
-      [
-        "setScaleFinderDisplayMode",
-        "numbers-and-straight-arrows"
-      ],
-      [
-        "setColorTheme",
-        "default"
-      ],
-      [
-        "setTitleMode",
-        "contextual"
-      ],
-      [
-        "setCustomTitle",
-        "My accordion diagram"
-      ],
-      [
-        "setShowButtonLabels",
-        true
-      ],
-      [
-        "setShowBellowsGuide",
-        true
-      ],
-      [
-        "setShowStradellaRowLabels",
-        true
-      ],
-      [
-        "setDownloadFormat",
-        "svg"
-      ],
-      [
-        "setSoundEnabled",
-        true
-      ],
-      [
-        "setSoundSource",
-        "la-melodiosa"
-      ],
-      [
-        "setLaMelodiosaTrebleRegister",
-        "I"
-      ],
-      [
-        "setLaMelodiosaBassRegister",
-        "III"
-      ],
-      [
-        "setLaMelodiosaFollowStradellaRegisters",
-        true
-      ],
-      [
-        "setStradellaBassVoicing",
-        "single-low"
-      ],
+      ["setSide", "stradella"],
+      ["setNotation", "english"],
+      ["setAccidental", "natural"],
+      ["setChordDisplayStyle", "letter"],
+      ["setChordLabelMode", "chord-name"],
+      ["setBasses", "96"],
+      ["setTrebleLayout", "c-system"],
+      ["setTrebleRows", 5],
+      ["setTrebleSize", "small"],
+      ["setPianoTrebleRange", "three-octave"],
+      ["setShowTrebleOctaves", false],
+      ["setDiagramVerticalSpacing", 18],
+      ["setPianoKeyWidthScale", 1],
+      ["setPianoKeyHeightScale", 1],
+      ["setPianoBlackKeyWidthScale", 1],
+      ["setPianoBlackKeyHeightScale", 1],
+      ["setDiagramScale", 100],
+      ["setInterfaceDensity", "compact"],
+      ["setShowStatusBar", true],
+      ["setScaleFinderDisplayMode", "numbers-and-straight-arrows"],
+      ["setColorTheme", "default"],
+      ["setTitleMode", "contextual"],
+      ["setCustomTitle", "My accordion diagram"],
+      ["setShowButtonLabels", true],
+      ["setShowBellowsGuide", true],
+      ["setShowStradellaRowLabels", true],
+      ["setDownloadFormat", "svg"],
+      ["setSoundEnabled", true],
+      ["setSoundSource", "la-melodiosa"],
+      ["setLaMelodiosaTrebleRegister", "I"],
+      ["setLaMelodiosaBassRegister", "III"],
+      ["setLaMelodiosaFollowStradellaRegisters", true],
+      ["setStradellaBassVoicing", "single-low"],
       [
         "setStradellaNoteLevels",
         {
@@ -274,302 +175,80 @@
           "physical": true
         }
       ],
-      [
-        "setStradellaBassRegisterOctave",
-        2
-      ],
-      [
-        "setStradellaBassRegisterGrouping",
-        "C-B"
-      ],
-      [
-        "setStradellaChordRegisterOctave",
-        3
-      ],
-      [
-        "setStradellaChordRegisterGrouping",
-        "C-B"
-      ],
-      [
-        "setStradellaChordFinderMode",
-        "bass-and-chords"
-      ],
-      [
-        "setStradellaChordFinderMarkRootBass",
-        true
-      ],
-      [
-        "setAbcStradellaMode",
-        "bass-notes-and-chord-symbols"
-      ],
-      [
-        "setAbcTrebleChordSymbolsMode",
-        "ignore"
-      ],
-      [
-        "setBassPatternChordVoicing",
-        "simple"
-      ],
-      [
-        "setBassPatternBarsPerChord",
-        2
-      ],
-      [
-        "setBassPatternTempoBpm",
-        80
-      ],
-      [
-        "setBassPatternLoopMode",
-        "fixed"
-      ],
-      [
-        "setBassPatternLoopCount",
-        2
-      ],
-      [
-        "setAbcTempoBpm",
-        80
-      ],
-      [
-        "setSoundSequenceTempoBpm",
-        80
-      ],
-      [
-        "setMusicNotationIncludeTitle",
-        true
-      ],
-      [
-        "setMusicNotationIncludeDescription",
-        false
-      ],
-      [
-        "setMusicNotationIncludeSummary",
-        false
-      ],
-      [
-        "setMusicNotationUseBarsPerLine",
-        true
-      ],
-      [
-        "setMusicNotationBarsPerLine",
-        4
-      ],
-      [
-        "setMusicNotationChordFontSize",
-        11
-      ],
-      [
-        "setMusicNotationScale",
-        54
-      ],
-      [
-        "setMusicNotationStaffWidth",
-        520
-      ],
-      [
-        "setMusicNotationStaffSeparator",
-        14
-      ],
-      [
-        "setShowStradellaVoicingIntervals",
-        true
-      ],
-      [
-        "setStradellaMinimumNominalGap",
-        0
-      ],
-      [
-        "setSpacing",
-        2.3
-      ],
-      [
-        "setTrebleAngle",
-        30
-      ],
-      [
-        "setButtonStrokeWidth",
-        3
-      ],
-      [
-        "setReferenceStrokeWidth",
-        6
-      ],
-      [
-        "setChordFillStrength",
-        100
-      ],
-      [
-        "setAccidentalStyle",
-        "grey"
-      ],
-      [
-        "setLabelFontSize",
-        13
-      ],
-      [
-        "setTitleFont",
-        "system"
-      ],
-      [
-        "setTitleSize",
-        24
-      ],
-      [
-        "setLabelFont",
-        "system"
-      ],
-      [
-        "setSequenceDisplayMode",
-        "numbers-and-curved-arrows"
-      ],
-      [
-        "setSequenceColorPreset",
-        "red"
-      ],
-      [
-        "setSequenceThickness",
-        3.2
-      ],
-      [
-        "setSequenceArrowheadSize",
-        4
-      ],
-      [
-        "setSequenceNumberFontSize",
-        10
-      ],
-      [
-        "setSequenceNumberColorPreset",
-        "red"
-      ],
-      [
-        "setSequenceNumberPosition",
-        "above"
-      ],
-      [
-        "setFingeringPosition",
-        "inside-bottom"
-      ],
-      [
-        "setScaleFinderRoot",
-        "C"
-      ],
-      [
-        "setScaleFinderPattern",
-        "major-scale"
-      ],
-      [
-        "setScaleFinderRowLimit",
-        5
-      ],
-      [
-        "setChordFinderRoot",
-        "C"
-      ],
-      [
-        "setChordFinderPattern",
-        "major-triad"
-      ],
-      [
-        "setChordFinderInversion",
-        "root"
-      ],
-      [
-        "setChordFinderOctave",
-        4
-      ],
-      [
-        "setBassPatternRoot",
-        "C"
-      ],
-      [
-        "setTextNoteFontSize",
-        15
-      ],
-      [
-        "setTextNoteColor",
-        "#172033"
-      ],
-      [
-        "setTextNoteFont",
-        "system"
-      ],
-      [
-        "setAnnotationBold",
-        false
-      ],
-      [
-        "setAnnotationItalic",
-        false
-      ],
-      [
-        "setAnnotationOffsetPercent",
-        50
-      ],
-      [
-        "setAnnotationButtonAnchor",
-        "center"
-      ],
-      [
-        "setSoundVolume",
-        0.2
-      ],
-      [
-        "setSoundSource",
-        "la-melodiosa"
-      ],
-      [
-        "setLaMelodiosaTrebleRegister",
-        "I"
-      ],
-      [
-        "setLaMelodiosaBassRegister",
-        "III"
-      ],
-      [
-        "setLaMelodiosaFollowStradellaRegisters",
-        true
-      ],
-      [
-        "setSoundVoicePreset",
-        "soft-reed"
-      ],
-      [
-        "setSoundWaveform",
-        "triangle"
-      ],
-      [
-        "setSoundMusetteDetuneCents",
-        9
-      ],
-      [
-        "setSoundAttackMs",
-        14
-      ],
-      [
-        "setSoundReleaseMs",
-        120
-      ],
-      [
-        "setSoundNoteDurationMs",
-        420
-      ],
-      [
-        "setHarmonyShowEnharmonics",
-        false
-      ],
-      [
-        "setHarmonyShowSeparators",
-        true
-      ],
-      [
-        "setHarmonyShowLegend",
-        true
-      ],
-      [
-        "setHarmonyShowExplanation",
-        false
-      ],
+      ["setStradellaBassRegisterOctave", 2],
+      ["setStradellaBassRegisterGrouping", "C-B"],
+      ["setStradellaChordRegisterOctave", 3],
+      ["setStradellaChordRegisterGrouping", "C-B"],
+      ["setStradellaChordFinderMode", "bass-and-chords"],
+      ["setStradellaChordFinderMarkRootBass", true],
+      ["setAbcStradellaMode", "bass-notes-and-chord-symbols"],
+      ["setAbcTrebleChordSymbolsMode", "ignore"],
+      ["setBassPatternChordVoicing", "simple"],
+      ["setBassPatternBarsPerChord", 2],
+      ["setBassPatternTempoBpm", 80],
+      ["setBassPatternLoopMode", "fixed"],
+      ["setBassPatternLoopCount", 2],
+      ["setAbcTempoBpm", 80],
+      ["setSoundSequenceTempoBpm", 80],
+      ["setMusicNotationIncludeTitle", true],
+      ["setMusicNotationIncludeDescription", false],
+      ["setMusicNotationIncludeSummary", false],
+      ["setMusicNotationUseBarsPerLine", true],
+      ["setMusicNotationBarsPerLine", 4],
+      ["setMusicNotationChordFontSize", 11],
+      ["setMusicNotationScale", 54],
+      ["setMusicNotationStaffWidth", 520],
+      ["setMusicNotationStaffSeparator", 14],
+      ["setShowStradellaVoicingIntervals", true],
+      ["setStradellaMinimumNominalGap", 0],
+      ["setSpacing", 2.3],
+      ["setTrebleAngle", 30],
+      ["setButtonStrokeWidth", 3],
+      ["setReferenceStrokeWidth", 6],
+      ["setChordFillStrength", 100],
+      ["setAccidentalStyle", "grey"],
+      ["setLabelFontSize", 13],
+      ["setTitleFont", "system"],
+      ["setTitleSize", 24],
+      ["setLabelFont", "system"],
+      ["setSequenceDisplayMode", "numbers-and-curved-arrows"],
+      ["setSequenceColorPreset", "red"],
+      ["setSequenceThickness", 3.2],
+      ["setSequenceArrowheadSize", 4],
+      ["setSequenceNumberFontSize", 10],
+      ["setSequenceNumberColorPreset", "red"],
+      ["setSequenceNumberPosition", "above"],
+      ["setFingeringPosition", "inside-bottom"],
+      ["setScaleFinderRoot", "C"],
+      ["setScaleFinderPattern", "major-scale"],
+      ["setScaleFinderRowLimit", 5],
+      ["setChordFinderRoot", "C"],
+      ["setChordFinderPattern", "major-triad"],
+      ["setChordFinderInversion", "root"],
+      ["setChordFinderOctave", 4],
+      ["setBassPatternRoot", "C"],
+      ["setTextNoteFontSize", 15],
+      ["setTextNoteColor", "#172033"],
+      ["setTextNoteFont", "system"],
+      ["setAnnotationBold", false],
+      ["setAnnotationItalic", false],
+      ["setAnnotationOffsetPercent", 50],
+      ["setAnnotationButtonAnchor", "center"],
+      ["setSoundVolume", 0.2],
+      ["setSoundSource", "la-melodiosa"],
+      ["setLaMelodiosaTrebleRegister", "I"],
+      ["setLaMelodiosaBassRegister", "III"],
+      ["setLaMelodiosaFollowStradellaRegisters", true],
+      ["setSoundVoicePreset", "soft-reed"],
+      ["setSoundWaveform", "triangle"],
+      ["setSoundMusetteDetuneCents", 9],
+      ["setSoundAttackMs", 14],
+      ["setSoundReleaseMs", 120],
+      ["setSoundNoteDurationMs", 420],
+      ["setHarmonyShowEnharmonics", false],
+      ["setHarmonyShowSeparators", true],
+      ["setHarmonyShowLegend", true],
+      ["setHarmonyShowExplanation", false],
       [
         "setHarmonyRingVisibility",
         {
@@ -580,42 +259,15 @@
           "4": true
         }
       ],
-      [
-        "setHarmonyShowToneTooltips",
-        true
-      ],
-      [
-        "setHarmonyShowNoteRing",
-        true
-      ],
-      [
-        "setHarmonyColorByFamily",
-        false
-      ],
-      [
-        "setHarmonyDiameter",
-        900
-      ],
-      [
-        "setHarmonyFontSize",
-        18
-      ],
-      [
-        "setHarmonyPlaybackStyle",
-        "block"
-      ],
-      [
-        "setHarmonyVoicingStyle",
-        "root"
-      ],
-      [
-        "setHarmonyProgressionHandMovementWeight",
-        0.65
-      ],
-      [
-        "setHarmonyProgressionRhythmPattern",
-        "block"
-      ]
+      ["setHarmonyShowToneTooltips", true],
+      ["setHarmonyShowNoteRing", true],
+      ["setHarmonyColorByFamily", false],
+      ["setHarmonyDiameter", 900],
+      ["setHarmonyFontSize", 18],
+      ["setHarmonyPlaybackStyle", "block"],
+      ["setHarmonyVoicingStyle", "root"],
+      ["setHarmonyProgressionHandMovementWeight", 0.65],
+      ["setHarmonyProgressionRhythmPattern", "block"]
     ]
   },
   {
@@ -631,26 +283,11 @@
       "bassPatternBarsPerChord": 3
     },
     "expectedCalls": [
-      [
-        "setSide",
-        "treble"
-      ],
-      [
-        "setChordLabelMode",
-        "functional-reference"
-      ],
-      [
-        "setBasses",
-        "72"
-      ],
-      [
-        "setBassPatternBarsPerChord",
-        3
-      ],
-      [
-        "setButtonSize",
-        44
-      ]
+      ["setSide", "treble"],
+      ["setChordLabelMode", "functional-reference"],
+      ["setBasses", "72"],
+      ["setBassPatternBarsPerChord", 3],
+      ["setButtonSize", 44]
     ]
   },
   {
@@ -666,26 +303,11 @@
       "bassPatternRepeatsPerChord": 2
     },
     "expectedCalls": [
-      [
-        "setLanguagePreference",
-        "es"
-      ],
-      [
-        "setSide",
-        "treble"
-      ],
-      [
-        "setChordLabelMode",
-        "functional-reference"
-      ],
-      [
-        "setBasses",
-        "40"
-      ],
-      [
-        "setBassPatternBarsPerChord",
-        2
-      ]
+      ["setLanguagePreference", "es"],
+      ["setSide", "treble"],
+      ["setChordLabelMode", "functional-reference"],
+      ["setBasses", "40"],
+      ["setBassPatternBarsPerChord", 2]
     ]
   },
   {
@@ -701,30 +323,12 @@
       "stradellaChordRegisterGrouping": "F-E"
     },
     "expectedCalls": [
-      [
-        "changeLanguage",
-        "it"
-      ],
-      [
-        "setSide",
-        "treble"
-      ],
-      [
-        "setChordLabelMode",
-        "functional-reference"
-      ],
-      [
-        "setStradellaBassRegisterOctave",
-        2
-      ],
-      [
-        "setStradellaChordRegisterGrouping",
-        "F-E"
-      ],
-      [
-        "setBassPatternBarsPerChord",
-        3
-      ]
+      ["changeLanguage", "it"],
+      ["setSide", "treble"],
+      ["setChordLabelMode", "functional-reference"],
+      ["setStradellaBassRegisterOctave", 2],
+      ["setStradellaChordRegisterGrouping", "F-E"],
+      ["setBassPatternBarsPerChord", 3]
     ]
   },
   {
@@ -751,30 +355,12 @@
       }
     },
     "expectedCalls": [
-      [
-        "setPianoKeyWidthScale",
-        1.45
-      ],
-      [
-        "setDiagramScale",
-        70
-      ],
-      [
-        "setButtonSize",
-        44
-      ],
-      [
-        "setSpacing",
-        1.4
-      ],
-      [
-        "setSoundVolume",
-        1
-      ],
-      [
-        "setSoundAttackMs",
-        0
-      ],
+      ["setPianoKeyWidthScale", 1.45],
+      ["setDiagramScale", 70],
+      ["setButtonSize", 44],
+      ["setSpacing", 1.4],
+      ["setSoundVolume", 1],
+      ["setSoundAttackMs", 0],
       [
         "setHarmonyRingVisibility",
         {
@@ -814,26 +400,11 @@
           "physical": false
         }
       ],
-      [
-        "setStradellaBassRegisterGrouping",
-        "C-B"
-      ],
-      [
-        "setStradellaChordRegisterOctave",
-        5
-      ],
-      [
-        "setBassPatternBarsPerChord",
-        2
-      ],
-      [
-        "setSoundSource",
-        "la-melodiosa"
-      ],
-      [
-        "setLaMelodiosaFollowStradellaRegisters",
-        true
-      ]
+      ["setStradellaBassRegisterGrouping", "C-B"],
+      ["setStradellaChordRegisterOctave", 5],
+      ["setBassPatternBarsPerChord", 2],
+      ["setSoundSource", "la-melodiosa"],
+      ["setLaMelodiosaFollowStradellaRegisters", true]
     ]
   },
   {

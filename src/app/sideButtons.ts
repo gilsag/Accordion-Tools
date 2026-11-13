@@ -1,4 +1,10 @@
-import type { BassCount, DiagramButton, PianoTrebleRange, TrebleLayout, TrebleSizePreset } from "../types";
+import type {
+  BassCount,
+  DiagramButton,
+  PianoTrebleRange,
+  TrebleLayout,
+  TrebleSizePreset,
+} from "../types";
 import { generateStradella } from "../stradella";
 import { generateTreble } from "../treble";
 import { generatePianoTreble } from "../pianoTreble";
@@ -23,12 +29,21 @@ export type SideButtonSettings = {
 };
 
 export function stradellaButtonsFor(settings: SideButtonSettings): DiagramButton[] {
-  return generateStradella(settings.basses, settings.buttonSize, settings.spacing,
-    settings.stradellaAccidental, settings.diagramVerticalSpacing);
+  return generateStradella(
+    settings.basses,
+    settings.buttonSize,
+    settings.spacing,
+    settings.stradellaAccidental,
+    settings.diagramVerticalSpacing,
+  );
 }
 
 const PRESET_WIDTHS: Array<[TrebleSizePreset, number]> = [
-  ["one-octave", 5], ["two-octave", 9], ["small", 14], ["full", 18], ["large", 24],
+  ["one-octave", 5],
+  ["two-octave", 9],
+  ["small", 14],
+  ["full", 18],
+  ["large", 24],
 ];
 
 /**
@@ -41,8 +56,16 @@ export function trebleButtonsFor(
   settings: SideButtonSettings,
   wantedButtons: (reference: DiagramButton[]) => DiagramButton[] = () => [],
 ): DiagramButton[] {
-  const { trebleLayout, trebleRows, trebleSize, buttonSize, spacing, trebleAngle,
-    showTrebleOctaves, diagramVerticalSpacing } = settings;
+  const {
+    trebleLayout,
+    trebleRows,
+    trebleSize,
+    buttonSize,
+    spacing,
+    trebleAngle,
+    showTrebleOctaves,
+    diagramVerticalSpacing,
+  } = settings;
   if (trebleLayout === "piano") {
     return generatePianoTreble(settings.pianoTrebleRange, buttonSize, spacing, showTrebleOctaves, {
       keyWidthScale: settings.pianoKeyWidthScale,
@@ -55,23 +78,49 @@ export function trebleButtonsFor(
   const system = trebleLayout;
   const compact = trebleSize === "one-octave" || trebleSize === "two-octave";
   if (!compact) {
-    return generateTreble(system, trebleRows, trebleSize, buttonSize,
-      spacing, trebleAngle, showTrebleOctaves, diagramVerticalSpacing);
+    return generateTreble(
+      system,
+      trebleRows,
+      trebleSize,
+      buttonSize,
+      spacing,
+      trebleAngle,
+      showTrebleOctaves,
+      diagramVerticalSpacing,
+    );
   }
   // Use full geometry to locate the complete selection. Then choose the
   // smallest available preset containing all selected buttons.
-  const reference = generateTreble(system, trebleRows, "large", buttonSize,
-    spacing, trebleAngle, showTrebleOctaves, diagramVerticalSpacing);
+  const reference = generateTreble(
+    system,
+    trebleRows,
+    "large",
+    buttonSize,
+    spacing,
+    trebleAngle,
+    showTrebleOctaves,
+    diagramVerticalSpacing,
+  );
   const wanted = wantedButtons(reference).map((button) => button.column);
   const low = Math.min(...wanted);
   const high = Math.max(...wanted);
   const minimum = trebleSize === "one-octave" ? 0 : 1;
-  const selected = PRESET_WIDTHS.slice(minimum).find(([, width]) => !wanted.length || high - low < width)
-    ?? PRESET_WIDTHS[PRESET_WIDTHS.length - 1];
+  const selected =
+    PRESET_WIDTHS.slice(minimum).find(([, width]) => !wanted.length || high - low < width) ??
+    PRESET_WIDTHS[PRESET_WIDTHS.length - 1];
   const [effectivePreset, width] = selected;
   const start = wanted.length
     ? Math.max(0, Math.min(24 - width, Math.round((low + high - width + 1) / 2)))
     : 0;
-  return generateTreble(system, trebleRows, effectivePreset, buttonSize,
-    spacing, trebleAngle, showTrebleOctaves, diagramVerticalSpacing, start);
+  return generateTreble(
+    system,
+    trebleRows,
+    effectivePreset,
+    buttonSize,
+    spacing,
+    trebleAngle,
+    showTrebleOctaves,
+    diagramVerticalSpacing,
+    start,
+  );
 }

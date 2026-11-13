@@ -11,8 +11,7 @@ export const ANNOTATE_MODES: readonly AnnotateMode[] = ["select", "finger", "seq
  * original physical DiagramButton IDs, not pitches or sounded voices. */
 export function useDiagramOverlays() {
   const [overlays, setOverlays] = useState<Record<string, Overlay>>({});
-  const [fingeringPosition, setFingeringPosition] =
-    useState<NumberPosition>("inside-bottom");
+  const [fingeringPosition, setFingeringPosition] = useState<NumberPosition>("inside-bottom");
   const [fingeringDraft, setFingeringDraft] = useState("1");
   const [annotateMode, setAnnotateMode] = useState<AnnotateMode>("notes");
   const selectedButtonIds = Object.entries(overlays)
@@ -44,7 +43,9 @@ export function useDiagramOverlays() {
     if (!trimmedFinger || selectedButtonIds.length === 0) return;
     setOverlays((current) => {
       const next = { ...current };
-      selectedButtonIds.forEach((id) => { next[id] = { ...next[id], finger: trimmedFinger }; });
+      selectedButtonIds.forEach((id) => {
+        next[id] = { ...next[id], finger: trimmedFinger };
+      });
       return next;
     });
   }
@@ -53,7 +54,9 @@ export function useDiagramOverlays() {
     if (selectedButtonIds.length === 0) return;
     setOverlays((current) => {
       const next = { ...current };
-      selectedButtonIds.forEach((id) => { next[id] = { ...next[id], finger: "" }; });
+      selectedButtonIds.forEach((id) => {
+        next[id] = { ...next[id], finger: "" };
+      });
       return next;
     });
   }
@@ -61,7 +64,9 @@ export function useDiagramOverlays() {
   function clearAllFingerings() {
     setOverlays((current) => {
       const next = { ...current };
-      Object.keys(next).forEach((id) => { next[id] = { ...next[id], finger: "" }; });
+      Object.keys(next).forEach((id) => {
+        next[id] = { ...next[id], finger: "" };
+      });
       return next;
     });
   }
@@ -69,7 +74,9 @@ export function useDiagramOverlays() {
   function clearSelection() {
     setOverlays((current) => {
       const next = { ...current };
-      Object.keys(next).forEach((id) => { next[id] = { ...next[id], selected: false }; });
+      Object.keys(next).forEach((id) => {
+        next[id] = { ...next[id], selected: false };
+      });
       return next;
     });
   }
@@ -82,9 +89,21 @@ export function useDiagramOverlays() {
   }
 
   return {
-    overlays, setOverlays, fingeringPosition, setFingeringPosition,
-    fingeringDraft, setFingeringDraft, annotateMode, setAnnotateMode,
-    selectedButtonIds, toggleButtonSelected, toggleButtonFinger, applyFingerToSelected,
-    clearFingerForSelected, clearAllFingerings, clearSelection, deselectButton,
+    overlays,
+    setOverlays,
+    fingeringPosition,
+    setFingeringPosition,
+    fingeringDraft,
+    setFingeringDraft,
+    annotateMode,
+    setAnnotateMode,
+    selectedButtonIds,
+    toggleButtonSelected,
+    toggleButtonFinger,
+    applyFingerToSelected,
+    clearFingerForSelected,
+    clearAllFingerings,
+    clearSelection,
+    deselectButton,
   };
 }

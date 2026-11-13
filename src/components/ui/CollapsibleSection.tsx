@@ -37,7 +37,10 @@ export function CollapsibleSection({
       {!isOpen && summary && <p className="section-summary">{summary}</p>}
 
       {mounted && (
-        <div className={contentClassName ? `section-content ${contentClassName}` : "section-content"} hidden={!isOpen}>
+        <div
+          className={contentClassName ? `section-content ${contentClassName}` : "section-content"}
+          hidden={!isOpen}
+        >
           {children}
         </div>
       )}

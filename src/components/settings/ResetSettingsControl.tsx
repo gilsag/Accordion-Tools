@@ -22,7 +22,12 @@ export function ResetSettingsControl({ onReset }: { onReset: () => void }) {
         <button type="button" className="small-button danger-button" onClick={onReset}>
           {t("settings.resetConfirmYes")}
         </button>
-        <button type="button" className="small-button" autoFocus onClick={() => setConfirming(false)}>
+        <button
+          type="button"
+          className="small-button"
+          autoFocus
+          onClick={() => setConfirming(false)}
+        >
           {t("ui.cancel")}
         </button>
       </div>

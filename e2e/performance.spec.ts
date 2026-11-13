@@ -11,7 +11,8 @@ test("loading a preset keeps the page responsive", async ({ page }) => {
   await page.evaluate(() => {
     (window as unknown as { longTasks: number[] }).longTasks = [];
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) (window as unknown as { longTasks: number[] }).longTasks.push(entry.duration);
+      for (const entry of list.getEntries())
+        (window as unknown as { longTasks: number[] }).longTasks.push(entry.duration);
     }).observe({ type: "longtask" });
   });
   await openTool(page, "Progression Assistant");
@@ -19,7 +20,9 @@ test("loading a preset keeps the page responsive", async ({ page }) => {
   await page.getByRole("button", { name: /Load preset/i }).click();
   await expect(rows(page).first()).toBeVisible();
   await page.waitForTimeout(300);
-  const longest = await page.evaluate(() => Math.max(0, ...(window as unknown as { longTasks: number[] }).longTasks));
+  const longest = await page.evaluate(() =>
+    Math.max(0, ...(window as unknown as { longTasks: number[] }).longTasks),
+  );
   test.info().annotations.push({ type: "longest task", description: `${Math.round(longest)} ms` });
   expect(longest, "longest main-thread task while optimizing (ms)").toBeLessThan(400);
 });

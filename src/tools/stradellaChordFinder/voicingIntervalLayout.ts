@@ -6,7 +6,7 @@ export const VOICING_INTERVAL_SEMITONE_PIXELS = 23;
 export const VOICING_INTERVAL_SIDE_PADDING = 49;
 
 export function voicingIntervalMetrics(fontSize: number, laneCount = 1) {
-  const noteFontSize = Math.max(14, Math.min(20, Math.round(fontSize * 0.60)));
+  const noteFontSize = Math.max(14, Math.min(20, Math.round(fontSize * 0.6)));
   const distanceFontSize = Math.max(12, Math.min(16, Math.round(fontSize * 0.48)));
   const circleRadius = Math.max(6, Math.min(7, Math.round(fontSize * 0.19)));
   const laneStep = noteFontSize + 6;
@@ -20,8 +20,18 @@ export function voicingIntervalMetrics(fontSize: number, laneCount = 1) {
   // every label lane. Labels remain horizontally centered on the actual pitch.
   const leaderTopY = trackY - circleRadius - 13;
   const leaderBottomY = trackY - circleRadius - 3;
-  return { noteFontSize, distanceFontSize, circleRadius, topLabelY, trackY,
-    distanceY, laneStep, height, leaderTopY, leaderBottomY };
+  return {
+    noteFontSize,
+    distanceFontSize,
+    circleRadius,
+    topLabelY,
+    trackY,
+    distanceY,
+    laneStep,
+    height,
+    leaderTopY,
+    leaderBottomY,
+  };
 }
 
 type IntervalLayoutOptions = {
@@ -44,15 +54,23 @@ export function voicingIntervalLayout(
   notes: readonly ModeledStradellaNote[],
   options: IntervalLayoutOptions = {},
 ) {
-  const unique = [...new Map(notes.map((note) => [note.midi, note])).values()]
-    .sort((a, b) => a.midi - b.midi);
+  const unique = [...new Map(notes.map((note) => [note.midi, note])).values()].sort(
+    (a, b) => a.midi - b.midi,
+  );
   const start = unique[0]?.midi ?? 0;
   const baseMetrics = voicingIntervalMetrics(options.fontSize ?? 18);
   const labeled = unique.map((note, index) => {
     const count = notes.filter((other) => other.midi === note.midi).length;
-    const label = options.displayLabel?.(note, count) ??
+    const label =
+      options.displayLabel?.(note, count) ??
       `${note.pitchClass}${note.octave}${count > 1 ? ` ×${count}` : ""}`;
-    return { ...note, count, label, labelWidth: labelWidth(label, baseMetrics.noteFontSize), index };
+    return {
+      ...note,
+      count,
+      label,
+      labelWidth: labelWidth(label, baseMetrics.noteFontSize),
+      index,
+    };
   });
   const largestHalfLabel = labeled.reduce((max, n) => Math.max(max, n.labelWidth / 2), 0);
   const leftPad = Math.max(VOICING_INTERVAL_SIDE_PADDING, largestHalfLabel + 12);
@@ -60,7 +78,10 @@ export function voicingIntervalLayout(
   const positions = labeled.map((note) => {
     const x = leftPad + (note.midi - start) * VOICING_INTERVAL_SEMITONE_PIXELS;
     let lane = rightEdges.findIndex((right) => x - note.labelWidth / 2 >= right + 12);
-    if (lane < 0) { lane = rightEdges.length; rightEdges.push(-Infinity); }
+    if (lane < 0) {
+      lane = rightEdges.length;
+      rightEdges.push(-Infinity);
+    }
     rightEdges[lane] = x + note.labelWidth / 2;
     return { ...note, x, lane };
   });
@@ -71,7 +92,12 @@ export function voicingIntervalLayout(
     semitones: note.midi - positions[i].midi,
   }));
   const last = positions.at(-1);
-  const width = Math.ceil(Math.max(300, (last?.x ?? leftPad) +
-    Math.max(VOICING_INTERVAL_SIDE_PADDING, (last?.labelWidth ?? 0) / 2 + 12)));
+  const width = Math.ceil(
+    Math.max(
+      300,
+      (last?.x ?? leftPad) +
+        Math.max(VOICING_INTERVAL_SIDE_PADDING, (last?.labelWidth ?? 0) / 2 + 12),
+    ),
+  );
   return { positions, distances, width, metrics };
 }

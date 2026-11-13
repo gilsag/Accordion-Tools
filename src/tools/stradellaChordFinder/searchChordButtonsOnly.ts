@@ -2,7 +2,12 @@
 
 import type { DiagramButton, FinderChordPattern } from "../../types";
 import { fixedStradellaRecipe } from "./recipes";
-import { notPlayableResult, resultFromButtons, summarizeResult, type StradellaChordFinderResult } from "./results";
+import {
+  notPlayableResult,
+  resultFromButtons,
+  summarizeResult,
+  type StradellaChordFinderResult,
+} from "./results";
 import { chordKindLabel } from "./voicings";
 import { recipeButtons, rootBassCandidates } from "./utils";
 
@@ -29,7 +34,11 @@ export function chordButtonRecipeResult(
   const rootBassButton = markRootBass ? rootBassCandidates(buttons, root)[0] : undefined;
 
   if (missingSteps.length > 0) {
-    return notPlayableResult(targetPitches, recipe.shortDescription, `${recipe.explanation} Missing visible button(s): ${missingSteps.join(", ")}.`);
+    return notPlayableResult(
+      targetPitches,
+      recipe.shortDescription,
+      `${recipe.explanation} Missing visible button(s): ${missingSteps.join(", ")}.`,
+    );
   }
 
   const summary = summarizeResult(selectedButtons, targetPitches);
@@ -43,7 +52,9 @@ export function chordButtonRecipeResult(
     );
   }
 
-  const selectedNames = selectedButtons.map((button) => `${button.chordRoot ?? "?"} ${chordKindLabel(button.kind)}`.trim()).join(" + ");
+  const selectedNames = selectedButtons
+    .map((button) => `${button.chordRoot ?? "?"} ${chordKindLabel(button.kind)}`.trim())
+    .join(" + ");
   const visualButtons = rootBassButton ? [rootBassButton, ...selectedButtons] : selectedButtons;
   const rootBassButtonIds = rootBassButton ? [rootBassButton.id] : [];
 

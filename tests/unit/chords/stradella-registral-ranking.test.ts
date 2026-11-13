@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
 import { generateStradella } from "../../../src/stradella.ts";
 import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
-import { ROOT_BASS_SUPPORT_BONUS, registralPreferenceAdjustment } from
-  "../../../src/tools/stradellaChordFinder/registralPreference.ts";
+import {
+  ROOT_BASS_SUPPORT_BONUS,
+  registralPreferenceAdjustment,
+} from "../../../src/tools/stradellaChordFinder/registralPreference.ts";
 import { isBassButton } from "../../../src/tools/stradellaChordFinder/voicings.ts";
 import type { DiagramButton, FinderChordPattern } from "../../../src/types.ts";
 import { test } from "vitest";
@@ -10,8 +12,12 @@ import { test } from "vitest";
 const buttons = generateStradella("96", 38, 1.18, "natural");
 const find = (root: string, pattern: FinderChordPattern, maxButtons = 4) =>
   getStradellaChordFinderResults(buttons, root, pattern, "bass-and-chords", true, maxButtons, 5.5);
-const recipe = (played: DiagramButton[]) => played.map((button) =>
-  isBassButton(button) ? `bass:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`).join("|");
+const recipe = (played: DiagramButton[]) =>
+  played
+    .map((button) =>
+      isBassButton(button) ? `bass:${button.pitchClass}` : `${button.kind}:${button.chordRoot}`,
+    )
+    .join("|");
 
 test("Simple-chord ranking preserved and extended candidates remain selectable", () => {
   // A small, explicit preference is added ONLY for one played root bass and
@@ -29,10 +35,16 @@ test("Simple-chord ranking preserved and extended candidates remain selectable",
   }
   {
     const cmaj7 = find("C", "major7", 3);
-    assert.equal(recipe(cmaj7[0].playbackButtons), "bass:B|chord-major:C",
-      "The ergonomic Cmaj7/B alternative must remain first");
-    assert.equal(registralPreferenceAdjustment(cmaj7[0].registral), 0,
-      "A non-root bass is legitimate, not intrinsically penalized");
+    assert.equal(
+      recipe(cmaj7[0].playbackButtons),
+      "bass:B|chord-major:C",
+      "The ergonomic Cmaj7/B alternative must remain first",
+    );
+    assert.equal(
+      registralPreferenceAdjustment(cmaj7[0].registral),
+      0,
+      "A non-root bass is legitimate, not intrinsically penalized",
+    );
     const rootSupported = cmaj7.find((r) => r.registral.inversionCharacter === "root-supported");
     assert.ok(rootSupported);
     assert.equal(registralPreferenceAdjustment(rootSupported.registral), -ROOT_BASS_SUPPORT_BONUS);
@@ -45,30 +57,40 @@ test("Simple-chord ranking preserved and extended candidates remain selectable",
   }
   {
     const c9 = find("C", "dominant9");
-    assert.ok(c9.some((r) => r.exact), "Keep complete dominant ninth recipes selectable");
-    assert.ok(c9.some((r) => r.registral.bassRole === "non-root"),
-      "Keep legitimate non-root bass alternatives");
-    assert.ok(c9.some((r) => r.registral.rootBassSupported),
-      "Keep root reinforcement as an option rather than demanding its recommendation");
+    assert.ok(
+      c9.some((r) => r.exact),
+      "Keep complete dominant ninth recipes selectable",
+    );
+    assert.ok(
+      c9.some((r) => r.registral.bassRole === "non-root"),
+      "Keep legitimate non-root bass alternatives",
+    );
+    assert.ok(
+      c9.some((r) => r.registral.rootBassSupported),
+      "Keep root reinforcement as an option rather than demanding its recommendation",
+    );
     assert.ok(c9.filter((r) => r.recommended).length <= 3);
   }
   {
     const cmaj13 = find("C", "major13");
     const recommended = cmaj13.filter((r) => r.recommended);
     assert.ok(recommended.length > 0 && recommended.length <= 3);
-    assert.ok(cmaj13.some((r) => recipe(r.playbackButtons) ===
-      "chord-minor:A|chord-diminished7:D"),
-      "The historically preferred complete/dense physical choice remains available");
+    assert.ok(
+      cmaj13.some((r) => recipe(r.playbackButtons) === "chord-minor:A|chord-diminished7:D"),
+      "The historically preferred complete/dense physical choice remains available",
+    );
     const slashShell = cmaj13.find((r) => recipe(r.playbackButtons) === "chord-minor:A|bass:B");
     assert.ok(slashShell, "The 1–3–7–13 shell remains available");
-    assert.equal(slashShell.registral.potentialSlashBass,"B");
+    assert.equal(slashShell.registral.potentialSlashBass, "B");
     assert.ok(cmaj13.some((r) => r.registral.rootBassSupported));
   }
   {
     const c11 = find("C", "dominant11");
     assert.ok(c11.some((r) => r.registral.rootBassSupported));
     assert.ok(c11.some((r) => r.registral.bassRole === "none"));
-    for (const item of c11.filter((r) => r.recommended && registralPreferenceAdjustment(r.registral) < 0)) {
+    for (const item of c11.filter(
+      (r) => r.recommended && registralPreferenceAdjustment(r.registral) < 0,
+    )) {
       assert.match(item.recommendationReason ?? "", /bass\/counterbass button also reinforces C/);
     }
   }

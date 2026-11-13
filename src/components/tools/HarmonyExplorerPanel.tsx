@@ -95,9 +95,7 @@ export function HarmonyExplorerPanel({
 
   return (
     <>
-      <p className="hint">
-        {t("tools.harmonyIntro")}
-      </p>
+      <p className="hint">{t("tools.harmonyIntro")}</p>
 
       <fieldset className="tool-fieldset">
         <legend>{t("ui.harmony")}</legend>
@@ -106,9 +104,14 @@ export function HarmonyExplorerPanel({
             {t("tools.referenceFamily")}
             <HelpTip text={t("tools.referenceFamilyHelp")} />
           </span>
-          <select value={referenceFamilyId} onChange={(event) => onReferenceFamilyChange(event.target.value as ChordFamilyId)}>
+          <select
+            value={referenceFamilyId}
+            onChange={(event) => onReferenceFamilyChange(event.target.value as ChordFamilyId)}
+          >
             {CHORD_FAMILIES.map((family) => (
-              <option key={family.id} value={family.id}>{familyName(family.id, family.name, language)}</option>
+              <option key={family.id} value={family.id}>
+                {familyName(family.id, family.name, language)}
+              </option>
             ))}
           </select>
         </label>
@@ -118,28 +121,64 @@ export function HarmonyExplorerPanel({
             {t("tools.relatedFamily")}
             <HelpTip text={t("tools.relatedFamilyHelp")} />
           </span>
-          <select value={relatedFamilyId} onChange={(event) => onRelatedFamilyChange(event.target.value as RelatedFamilyId)}>
+          <select
+            value={relatedFamilyId}
+            onChange={(event) => onRelatedFamilyChange(event.target.value as RelatedFamilyId)}
+          >
             <option value="all">{t("tools.allFamilies")}</option>
             {CHORD_FAMILIES.map((family) => (
-              <option key={family.id} value={family.id}>{familyName(family.id, family.name, language)}</option>
+              <option key={family.id} value={family.id}>
+                {familyName(family.id, family.name, language)}
+              </option>
             ))}
           </select>
         </label>
 
         <label>
-          <span className="label-line">{t("tools.parentScale")} <HelpTip text={t("ui.parentScaleHelp")} /></span>
-          <select value={scaleId} onChange={(event) => onScaleChange(event.target.value as ScaleId)}>
+          <span className="label-line">
+            {t("tools.parentScale")} <HelpTip text={t("ui.parentScaleHelp")} />
+          </span>
+          <select
+            value={scaleId}
+            onChange={(event) => onScaleChange(event.target.value as ScaleId)}
+          >
             {SCALES.map((scale) => (
-              <option key={scale.id} value={scale.id}>{scaleName(scale.id, scale.name, language)}</option>
+              <option key={scale.id} value={scale.id}>
+                {scaleName(scale.id, scale.name, language)}
+              </option>
             ))}
           </select>
         </label>
 
         <div className="button-row harmony-preset-row">
-          <button className="small-button" type="button" onClick={() => chooseSeventhPreset("minor7")}>m7</button>
-          <button className="small-button" type="button" onClick={() => chooseSeventhPreset("major7")}>maj7</button>
-          <button className="small-button" type="button" onClick={() => chooseSeventhPreset("dominant7")}>7</button>
-          <button className="small-button" type="button" onClick={() => chooseSeventhPreset("diminished7")}>°7</button>
+          <button
+            className="small-button"
+            type="button"
+            onClick={() => chooseSeventhPreset("minor7")}
+          >
+            m7
+          </button>
+          <button
+            className="small-button"
+            type="button"
+            onClick={() => chooseSeventhPreset("major7")}
+          >
+            maj7
+          </button>
+          <button
+            className="small-button"
+            type="button"
+            onClick={() => chooseSeventhPreset("dominant7")}
+          >
+            7
+          </button>
+          <button
+            className="small-button"
+            type="button"
+            onClick={() => chooseSeventhPreset("diminished7")}
+          >
+            °7
+          </button>
         </div>
         <label className="check-row">
           <input
@@ -147,16 +186,22 @@ export function HarmonyExplorerPanel({
             checked={showNoteRing}
             onChange={(event) => onShowNoteRingChange(event.target.checked)}
           />
-          <span className="label-line">{t("settings.noteRing")}
+          <span className="label-line">
+            {t("settings.noteRing")}
             <HelpTip text={t("tools.noteRingHelp")} />
           </span>
         </label>
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend><span className="label-line">{t("tools.diatonicRelationships")}
-          <HelpTip text={allFamiliesMode ? t("ui.allFamiliesDiatonicHint") : t("ui.diatonicContext")} />
-        </span></legend>
+        <legend>
+          <span className="label-line">
+            {t("tools.diatonicRelationships")}
+            <HelpTip
+              text={allFamiliesMode ? t("ui.allFamiliesDiatonicHint") : t("ui.diatonicContext")}
+            />
+          </span>
+        </legend>
         <label className={`check-row${allFamiliesMode ? " disabled-row" : ""}`}>
           <input
             type="checkbox"
@@ -164,7 +209,8 @@ export function HarmonyExplorerPanel({
             disabled={allFamiliesMode}
             onChange={(event) => onDiatonicOnlyChange(event.target.checked)}
           />
-          <span className="label-line">{t("tools.diatonicOnly")}
+          <span className="label-line">
+            {t("tools.diatonicOnly")}
             <HelpTip text={t("ui.diatonicOnlyHelp")} />
           </span>
         </label>
@@ -180,9 +226,16 @@ export function HarmonyExplorerPanel({
       </fieldset>
 
       <fieldset className="tool-fieldset">
-        <legend><span className="label-line">{t("tools.progressionRecording")}
-          <HelpTip text={t("ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents")} />
-        </span></legend>
+        <legend>
+          <span className="label-line">
+            {t("tools.progressionRecording")}
+            <HelpTip
+              text={t(
+                "ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents",
+              )}
+            />
+          </span>
+        </legend>
         <div className="button-row">
           <button
             type="button"
@@ -214,7 +267,10 @@ export function HarmonyExplorerPanel({
           </p>
         )}
         {recordedProgression.length > 0 ? (
-          <div className="harmony-recorded-progression" aria-label={t("ui.recordedHarmonySequence")}>
+          <div
+            className="harmony-recorded-progression"
+            aria-label={t("ui.recordedHarmonySequence")}
+          >
             {recordedProgression.map((event, index) => (
               <span className="harmony-recorded-chord" key={event.id}>
                 {event.kind === "note"
@@ -228,7 +284,9 @@ export function HarmonyExplorerPanel({
         )}
         {recordedProgression.some((event) => event.kind === "note") && (
           <p className="hint">
-            {t("ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly")}
+            {t(
+              "ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly",
+            )}
           </p>
         )}
       </fieldset>
@@ -238,7 +296,12 @@ export function HarmonyExplorerPanel({
         {selected ? (
           <>
             <p className="hint">
-              {t("tools.selected")}: <strong>{selectedLabel}</strong> · {familyName(selected.candidate.familyId, chordFamily(selected.candidate.familyId).name, language)}
+              {t("tools.selected")}: <strong>{selectedLabel}</strong> ·{" "}
+              {familyName(
+                selected.candidate.familyId,
+                chordFamily(selected.candidate.familyId).name,
+                language,
+              )}
             </p>
             <div className="button-row">
               <button
@@ -259,10 +322,14 @@ export function HarmonyExplorerPanel({
               </button>
             </div>
             {!selectedFinderPattern && (
-              <p className="hint">{t("ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder")}</p>
+              <p className="hint">
+                {t("ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder")}
+              </p>
             )}
             {selectedFinderPattern && !selectedReferenceFinderPattern && (
-              <p className="hint">{t("ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant")}</p>
+              <p className="hint">
+                {t("ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant")}
+              </p>
             )}
           </>
         ) : (

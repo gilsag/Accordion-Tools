@@ -4,12 +4,18 @@ import { loadIsolated } from "../../support/isolatedModule.js";
 import { test } from "vitest";
 
 const serializeModes = [];
-const captureModule = { exports: loadIsolated("src/diagram/stradellaBatchCapture.ts", { imports: {
-  "../download": { serializeSvg: (_svg, pngSafe) => {
-    serializeModes.push(pngSafe);
-    return "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
-  } },
-} }) };
+const captureModule = {
+  exports: loadIsolated("src/diagram/stradellaBatchCapture.ts", {
+    imports: {
+      "../download": {
+        serializeSvg: (_svg, pngSafe) => {
+          serializeModes.push(pngSafe);
+          return '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+        },
+      },
+    },
+  }),
+};
 
 test("PNG export source integration regression", () => {
   for (const format of ["png", "svg"]) {

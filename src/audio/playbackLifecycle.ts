@@ -45,7 +45,11 @@ export interface AbcPausePorts {
  * been released when Pause was pressed.
  */
 export function lastPlayedAbcButtonIds(
-  events: ReadonlyArray<{ startBeat: number; voiceId?: string; buttons: ReadonlyArray<{ id: string }> }>,
+  events: ReadonlyArray<{
+    startBeat: number;
+    voiceId?: string;
+    buttons: ReadonlyArray<{ id: string }>;
+  }>,
   beat: number,
 ): string[] {
   const latest = new Map<string, number>();
@@ -64,9 +68,10 @@ export function lastPlayedAbcButtonIds(
 
 export function pauseAbcTransport(ports: AbcPausePorts) {
   if (ports.playbackState !== "playing") return;
-  const elapsedBeats = ports.startedAt === null
-    ? 0
-    : ((ports.nowMs() - ports.startedAt) / 1000) * (ports.tempoBpm / 60);
+  const elapsedBeats =
+    ports.startedAt === null
+      ? 0
+      : ((ports.nowMs() - ports.startedAt) / 1000) * (ports.tempoBpm / 60);
   const position = Math.min(ports.totalBeats, ports.startingBeat + elapsedBeats);
   ports.setPosition(position);
   ports.setState("paused");

@@ -7,12 +7,24 @@ import { test } from "vitest";
 const source = (path) => readFileSync(path, "utf8");
 const load = (path, imports) => loadIsolated(path, { imports });
 const registry = load("src/app/toolRegistry.ts", {});
-const ids = ["scaleFinder", "chordFinder", "bassPatternPlayer", "rhythmTrainer", "abcPlayer",
-  "stradellaChordFinder", "harmonyExplorer", "progressionAssistant",
-  "annotateDiagram"];
+const ids = [
+  "scaleFinder",
+  "chordFinder",
+  "bassPatternPlayer",
+  "rhythmTrainer",
+  "abcPlayer",
+  "stradellaChordFinder",
+  "harmonyExplorer",
+  "progressionAssistant",
+  "annotateDiagram",
+];
 
 test("The registry lists nine tools with their workspace and default side", () => {
-  assert.deepEqual(Object.keys(registry.TOOL_REGISTRY), ids, "All nine tool sections registered (Selection, Fingering and Sequence are Annotate Diagram modes)");
+  assert.deepEqual(
+    Object.keys(registry.TOOL_REGISTRY),
+    ids,
+    "All nine tool sections registered (Selection, Fingering and Sequence are Annotate Diagram modes)",
+  );
   for (const id of ids) {
     const destination = registry.toolDestination(id);
     assert.equal(destination.workspace, id === "harmonyExplorer" ? "harmony" : "accordion");
@@ -30,14 +42,20 @@ test("Simulated React hook dispatcher retains setter semantics between renders",
     useState(initial) {
       const index = cursor++;
       if (!(index in slots)) slots[index] = initial;
-      return [slots[index], value => {
-        slots[index] = typeof value === "function" ? value(slots[index]) : value;
-      }];
+      return [
+        slots[index],
+        (value) => {
+          slots[index] = typeof value === "function" ? value(slots[index]) : value;
+        },
+      ];
     },
-    useEffect(effect) { pendingEffects.push(effect); },
+    useEffect(effect) {
+      pendingEffects.push(effect);
+    },
   };
   const { useWorkspaceNavigation } = load("src/app/useWorkspaceNavigation.ts", {
-    react, "./toolRegistry": registry,
+    react,
+    "./toolRegistry": registry,
   });
   let instrumentSide = "treble";
   const sideSetCalls = [];

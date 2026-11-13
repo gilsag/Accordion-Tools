@@ -1,56 +1,107 @@
 import { useEffect, useState } from "react";
 import type { useWorkspaceNavigation } from "../app/useWorkspaceNavigation";
 import type { useInstrumentState } from "../instrument/useInstrumentState";
-import type { useBassPatternState, useBassPatternResults } from "../features/bassPatternPlayer/useBassPatternPlayer";
+import type {
+  useBassPatternState,
+  useBassPatternResults,
+} from "../features/bassPatternPlayer/useBassPatternPlayer";
 import type { useAbcPlayerState, useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
 import type { useHarmonyProgressionState } from "../features/progressionAssistant/useProgressionAssistant";
-import type { useStradellaChordFinderState, useStradellaChordFinderResults } from "../features/stradellaChordFinder/useStradellaChordFinder";
-import type { useScaleFinderState, useScaleFinderResults } from "../features/scaleFinder/useScaleFinder";
+import type {
+  useStradellaChordFinderState,
+  useStradellaChordFinderResults,
+} from "../features/stradellaChordFinder/useStradellaChordFinder";
+import type {
+  useScaleFinderState,
+  useScaleFinderResults,
+} from "../features/scaleFinder/useScaleFinder";
 import type { useTrebleChordFinderState } from "../features/trebleChordFinder/useTrebleChordFinder";
 import type { useSoundSettings } from "../audio/useSoundSettings";
 import { playbackClockMs, clearPlaybackTimers } from "../audio/playbackTransport";
-import { stopAbcTransport, pauseAbcTransport, stopBassPatternTransport, lastPlayedAbcButtonIds } from "../audio/playbackLifecycle";
+import {
+  stopAbcTransport,
+  pauseAbcTransport,
+  stopBassPatternTransport,
+  lastPlayedAbcButtonIds,
+} from "../audio/playbackLifecycle";
 import { startAbcTransport, startBassPatternTransport } from "../audio/playbackStart";
 import { scheduleAbcMappedPlayback, scheduleBassPatternEvents } from "../audio/playbackScheduling";
 import type { DiagramButton } from "../types";
-import { bassPatternBeat, bassPatternEventsToMidiBytes, bassPatternEventsToLilyPond } from "../tools/bassPatternPlayerTools";
-import { playButtonArpeggioThenChord, playButtonCombination, playButtonSequence, stopAllSound, preloadLaMelodiosa, unlockAudio, samplesReadyFor, prepareSamplesFor, currentPlaybackGeneration, onStopAllSound } from "../sound";
+import {
+  bassPatternBeat,
+  bassPatternEventsToMidiBytes,
+  bassPatternEventsToLilyPond,
+} from "../tools/bassPatternPlayerTools";
+import {
+  playButtonArpeggioThenChord,
+  playButtonCombination,
+  playButtonSequence,
+  stopAllSound,
+  preloadLaMelodiosa,
+  unlockAudio,
+  samplesReadyFor,
+  prepareSamplesFor,
+  currentPlaybackGeneration,
+  onStopAllSound,
+} from "../sound";
 import type { RefObject } from "react";
 import type { SequenceStepWithButton } from "../tools/sequenceTools";
 
-export type UseAccordionPlaybackDeps = Pick<ReturnType<typeof useAbcPlayerResults>,
-    "abcMappedEvents" | "abcTotalBeats"> &
-  Pick<ReturnType<typeof useAbcPlayerState>,
-    "abcPlaybackState" | "abcPositionBeat" | "abcTempoBpm" | "setAbcActiveButtonIds" |
-    "setAbcPlaybackState" | "setAbcPositionBeat"> &
-  Pick<ReturnType<typeof useBassPatternState>,
-    "bassPatternBarsPerChord" | "bassPatternExportFormat" | "bassPatternLoopCount" |
-    "bassPatternLoopMode" | "bassPatternPlaybackRunRef" | "bassPatternRoot" |
-    "bassPatternTempoBpm" | "bassPatternTimeoutsRef" | "setBassPatternActiveButtonIds" |
-    "setBassPatternPlaybackState"> &
-  Pick<ReturnType<typeof useBassPatternResults>,
-    "bassPatternEvents" | "bassPatternTotalBeats" | "selectedBassPattern" |
-    "selectedChordProgression"> &
-  Pick<ReturnType<typeof useSoundSettings>,
-    "laMelodiosaBassRegister" | "laMelodiosaTrebleRegister" | "soundEnabled" | "soundOptions" |
-    "soundSource"> &
-  Pick<ReturnType<typeof useScaleFinderResults>,
-    "scaleFinderButtons"> &
-  Pick<ReturnType<typeof useTrebleChordFinderState>,
-    "setChordFinderActive"> &
-  Pick<ReturnType<typeof useHarmonyProgressionState>,
-    "setHarmonyProgressionActiveButtonIds" | "setHarmonyProgressionPulseSilent"> &
-  Pick<ReturnType<typeof useScaleFinderState>,
-    "setScaleFinderActive"> &
-  Pick<ReturnType<typeof useStradellaChordFinderState>,
-    "setStradellaChordFinderActive" | "stradellaChordFinderMode"> &
-  Pick<ReturnType<typeof useInstrumentState>,
-    "side"> &
-  Pick<ReturnType<typeof useStradellaChordFinderResults>,
-    "stradellaChordFinderPlaybackButtons"> &
-  Pick<ReturnType<typeof useWorkspaceNavigation>,
-    "workspaceMode"> &
-  {
+export type UseAccordionPlaybackDeps = Pick<
+  ReturnType<typeof useAbcPlayerResults>,
+  "abcMappedEvents" | "abcTotalBeats"
+> &
+  Pick<
+    ReturnType<typeof useAbcPlayerState>,
+    | "abcPlaybackState"
+    | "abcPositionBeat"
+    | "abcTempoBpm"
+    | "setAbcActiveButtonIds"
+    | "setAbcPlaybackState"
+    | "setAbcPositionBeat"
+  > &
+  Pick<
+    ReturnType<typeof useBassPatternState>,
+    | "bassPatternBarsPerChord"
+    | "bassPatternExportFormat"
+    | "bassPatternLoopCount"
+    | "bassPatternLoopMode"
+    | "bassPatternPlaybackRunRef"
+    | "bassPatternRoot"
+    | "bassPatternTempoBpm"
+    | "bassPatternTimeoutsRef"
+    | "setBassPatternActiveButtonIds"
+    | "setBassPatternPlaybackState"
+  > &
+  Pick<
+    ReturnType<typeof useBassPatternResults>,
+    | "bassPatternEvents"
+    | "bassPatternTotalBeats"
+    | "selectedBassPattern"
+    | "selectedChordProgression"
+  > &
+  Pick<
+    ReturnType<typeof useSoundSettings>,
+    | "laMelodiosaBassRegister"
+    | "laMelodiosaTrebleRegister"
+    | "soundEnabled"
+    | "soundOptions"
+    | "soundSource"
+  > &
+  Pick<ReturnType<typeof useScaleFinderResults>, "scaleFinderButtons"> &
+  Pick<ReturnType<typeof useTrebleChordFinderState>, "setChordFinderActive"> &
+  Pick<
+    ReturnType<typeof useHarmonyProgressionState>,
+    "setHarmonyProgressionActiveButtonIds" | "setHarmonyProgressionPulseSilent"
+  > &
+  Pick<ReturnType<typeof useScaleFinderState>, "setScaleFinderActive"> &
+  Pick<
+    ReturnType<typeof useStradellaChordFinderState>,
+    "setStradellaChordFinderActive" | "stradellaChordFinderMode"
+  > &
+  Pick<ReturnType<typeof useInstrumentState>, "side"> &
+  Pick<ReturnType<typeof useStradellaChordFinderResults>, "stradellaChordFinderPlaybackButtons"> &
+  Pick<ReturnType<typeof useWorkspaceNavigation>, "workspaceMode"> & {
     abcPlaybackStartBeatRef: RefObject<number>;
     abcPlaybackStartedAtRef: RefObject<number | null>;
     abcPlaybackTimeoutsRef: RefObject<number[]>;
@@ -63,17 +114,50 @@ export type UseAccordionPlaybackDeps = Pick<ReturnType<typeof useAbcPlayerResult
 /** Sound and transports for the accordion workspace: sample preloading after the first gesture, the Finder, Selection and Sequence players, the ABC and Bass Pattern transports with their exports, and Stop. */
 export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
   const {
-    abcMappedEvents, abcPlaybackStartBeatRef, abcPlaybackStartedAtRef, abcPlaybackState,
-    abcPlaybackTimeoutsRef, abcPositionBeat, abcTempoBpm, abcTotalBeats, bassPatternBarsPerChord,
-    bassPatternEvents, bassPatternExportFormat, bassPatternLoopCount, bassPatternLoopMode,
-    bassPatternPlaybackRunRef, bassPatternRoot, bassPatternTempoBpm, bassPatternTimeoutsRef,
-    bassPatternTotalBeats, bassPatternRenderedNotationAbc, chordFinderButtons, laMelodiosaBassRegister, laMelodiosaTrebleRegister,
-    scaleFinderButtons, selectedBassPattern, selectedButtons, selectedChordProgression,
-    sequenceStepsWithButtons, setAbcActiveButtonIds, setAbcPlaybackState, setAbcPositionBeat,
-    setBassPatternActiveButtonIds, setBassPatternPlaybackState, setChordFinderActive,
-    setHarmonyProgressionActiveButtonIds, setHarmonyProgressionPulseSilent, setScaleFinderActive,
-    setStradellaChordFinderActive, side, soundEnabled, soundOptions, soundSource,
-    stradellaChordFinderMode, stradellaChordFinderPlaybackButtons, workspaceMode,
+    abcMappedEvents,
+    abcPlaybackStartBeatRef,
+    abcPlaybackStartedAtRef,
+    abcPlaybackState,
+    abcPlaybackTimeoutsRef,
+    abcPositionBeat,
+    abcTempoBpm,
+    abcTotalBeats,
+    bassPatternBarsPerChord,
+    bassPatternEvents,
+    bassPatternExportFormat,
+    bassPatternLoopCount,
+    bassPatternLoopMode,
+    bassPatternPlaybackRunRef,
+    bassPatternRoot,
+    bassPatternTempoBpm,
+    bassPatternTimeoutsRef,
+    bassPatternTotalBeats,
+    bassPatternRenderedNotationAbc,
+    chordFinderButtons,
+    laMelodiosaBassRegister,
+    laMelodiosaTrebleRegister,
+    scaleFinderButtons,
+    selectedBassPattern,
+    selectedButtons,
+    selectedChordProgression,
+    sequenceStepsWithButtons,
+    setAbcActiveButtonIds,
+    setAbcPlaybackState,
+    setAbcPositionBeat,
+    setBassPatternActiveButtonIds,
+    setBassPatternPlaybackState,
+    setChordFinderActive,
+    setHarmonyProgressionActiveButtonIds,
+    setHarmonyProgressionPulseSilent,
+    setScaleFinderActive,
+    setStradellaChordFinderActive,
+    side,
+    soundEnabled,
+    soundOptions,
+    soundSource,
+    stradellaChordFinderMode,
+    stradellaChordFinderPlaybackButtons,
+    workspaceMode,
   } = deps;
 
   // Sample preloading waits for the first user gesture, so a visit that never
@@ -86,7 +170,9 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
   // The Progression Assistant and Sequence players run entirely inside the
   // sound engine, so their playing state ends when they finish or when any
   // stopAllSound() runs (Stop, Reset, or another player starting).
-  const [soundEnginePlayer, setSoundEnginePlayer] = useState<"progression" | "sequence" | null>(null);
+  const [soundEnginePlayer, setSoundEnginePlayer] = useState<"progression" | "sequence" | null>(
+    null,
+  );
   useEffect(() => onStopAllSound(() => setSoundEnginePlayer(null)), []);
   useEffect(() => {
     if (audioGestureSeen) return;
@@ -109,15 +195,19 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
       sampleSide === "treble" ? laMelodiosaTrebleRegister : null,
       sampleSide === "bass" ? laMelodiosaBassRegister : null,
     );
-  }, [audioGestureSeen, sampleSide, soundEnabled, soundSource, laMelodiosaTrebleRegister, laMelodiosaBassRegister]);
+  }, [
+    audioGestureSeen,
+    sampleSide,
+    soundEnabled,
+    soundSource,
+    laMelodiosaTrebleRegister,
+    laMelodiosaBassRegister,
+  ]);
 
   /** Plays the currently highlighted Stradella Chord Finder result. */
   function playStradellaChordFinder() {
     if (stradellaChordFinderMode === "bass-only") {
-      playButtonArpeggioThenChord(
-        stradellaChordFinderPlaybackButtons,
-        soundOptions,
-      );
+      playButtonArpeggioThenChord(stradellaChordFinderPlaybackButtons, soundOptions);
       return;
     }
 
@@ -161,9 +251,12 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
 
   function stopAbcPlayback() {
     stopAbcTransport({
-      clearTimers: clearAbcTimers, setState: setAbcPlaybackState,
-      setPosition: setAbcPositionBeat, setActiveButtons: setAbcActiveButtonIds,
-      startedAtRef: abcPlaybackStartedAtRef, stopSound: stopAllSound,
+      clearTimers: clearAbcTimers,
+      setState: setAbcPlaybackState,
+      setPosition: setAbcPositionBeat,
+      setActiveButtons: setAbcActiveButtonIds,
+      startedAtRef: abcPlaybackStartedAtRef,
+      stopSound: stopAllSound,
     });
   }
 
@@ -172,10 +265,14 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
       playbackState: abcPlaybackState,
       startedAt: abcPlaybackStartedAtRef.current,
       startingBeat: abcPlaybackStartBeatRef.current,
-      tempoBpm: abcTempoBpm, totalBeats: abcTotalBeats,
-      nowMs: playbackClockMs, setPosition: setAbcPositionBeat,
-      setState: setAbcPlaybackState, setActiveButtons: setAbcActiveButtonIds,
-      clearTimers: clearAbcTimers, stopBassPattern: stopBassPatternPlayback,
+      tempoBpm: abcTempoBpm,
+      totalBeats: abcTotalBeats,
+      nowMs: playbackClockMs,
+      setPosition: setAbcPositionBeat,
+      setState: setAbcPlaybackState,
+      setActiveButtons: setAbcActiveButtonIds,
+      clearTimers: clearAbcTimers,
+      stopBassPattern: stopBassPatternPlayback,
       stopSound: stopAllSound,
       clearProgressionButtons: () => setHarmonyProgressionActiveButtonIds([]),
       buttonsAtPosition: (beat) => lastPlayedAbcButtonIds(abcMappedEvents, beat),
@@ -201,20 +298,40 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
   }
 
   function scheduleAbcPlayback(startBeat = abcPositionBeat) {
-    startWhenSamplesReady(abcMappedEvents.flatMap((event) => event.buttons), () => startAbcTransport({
-      eventCount: abcMappedEvents.length, startBeat,
-      clearTimers: clearAbcTimers, clearActiveButtons: () => setAbcActiveButtonIds([]),
-      stopBassPattern: stopBassPatternPlayback,
-      stopSound: stopAllSound,
-      clearProgressionButtons: () => setHarmonyProgressionActiveButtonIds([]),
-      setScaleFinderActive, setChordFinderActive, setStradellaFinderActive: setStradellaChordFinderActive,
-      setPlaybackState: setAbcPlaybackState, setPosition: setAbcPositionBeat,
-      startedAtRef: abcPlaybackStartedAtRef, startBeatRef: abcPlaybackStartBeatRef,
-      nowMs: playbackClockMs,
-      schedule: () => scheduleAbcMappedPlayback({abcMappedEvents, startBeat, abcTempoBpm,
-        abcTotalBeats, abcPlaybackTimeoutsRef, abcPlaybackStartedAtRef,
-        soundOptions, setAbcPositionBeat, setAbcActiveButtonIds, setAbcPlaybackState}),
-    }));
+    startWhenSamplesReady(
+      abcMappedEvents.flatMap((event) => event.buttons),
+      () =>
+        startAbcTransport({
+          eventCount: abcMappedEvents.length,
+          startBeat,
+          clearTimers: clearAbcTimers,
+          clearActiveButtons: () => setAbcActiveButtonIds([]),
+          stopBassPattern: stopBassPatternPlayback,
+          stopSound: stopAllSound,
+          clearProgressionButtons: () => setHarmonyProgressionActiveButtonIds([]),
+          setScaleFinderActive,
+          setChordFinderActive,
+          setStradellaFinderActive: setStradellaChordFinderActive,
+          setPlaybackState: setAbcPlaybackState,
+          setPosition: setAbcPositionBeat,
+          startedAtRef: abcPlaybackStartedAtRef,
+          startBeatRef: abcPlaybackStartBeatRef,
+          nowMs: playbackClockMs,
+          schedule: () =>
+            scheduleAbcMappedPlayback({
+              abcMappedEvents,
+              startBeat,
+              abcTempoBpm,
+              abcTotalBeats,
+              abcPlaybackTimeoutsRef,
+              abcPlaybackStartedAtRef,
+              soundOptions,
+              setAbcPositionBeat,
+              setAbcActiveButtonIds,
+              setAbcPlaybackState,
+            }),
+        }),
+    );
   }
 
   function clearBassPatternTimers() {
@@ -223,17 +340,15 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
 
   function stopBassPatternPlayback() {
     stopBassPatternTransport({
-      runRef: bassPatternPlaybackRunRef, clearTimers: clearBassPatternTimers,
+      runRef: bassPatternPlaybackRunRef,
+      clearTimers: clearBassPatternTimers,
       setState: setBassPatternPlaybackState,
-      setActiveButtons: setBassPatternActiveButtonIds, stopSound: stopAllSound,
+      setActiveButtons: setBassPatternActiveButtonIds,
+      stopSound: stopAllSound,
     });
   }
 
-  function downloadTextFile(
-    filename: string,
-    text: string,
-    mimeType = "text/plain",
-  ) {
+  function downloadTextFile(filename: string, text: string, mimeType = "text/plain") {
     const blob = new Blob([text], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -299,19 +414,38 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
   }
 
   function scheduleBassPatternPlayback() {
-    startWhenSamplesReady(bassPatternEvents.flatMap((event) => event.buttons), () => startBassPatternTransport({
-      eventCount: bassPatternEvents.length, runRef: bassPatternPlaybackRunRef,
-      clearTimers: clearBassPatternTimers, stopAbc: stopAbcPlayback,
-      clearActiveButtons: () => setBassPatternActiveButtonIds([]),
-      stopSound: stopAllSound,
-      setScaleFinderActive, setChordFinderActive, setStradellaFinderActive: setStradellaChordFinderActive,
-      setPlaybackState: setBassPatternPlaybackState,
-      schedule: (runId) => scheduleBassPatternEvents({bassPatternEvents, bassPatternTempoBpm,
-        bassPatternUnitsPerBeat: bassPatternBeat(selectedBassPattern?.meter ?? "4/4").unitsPerBeat,
-        bassPatternTotalBeats, bassPatternLoopMode, bassPatternLoopCount,
-        bassPatternTimeoutsRef, bassPatternPlaybackRunRef, runId, soundOptions,
-        setBassPatternActiveButtonIds, setBassPatternPlaybackState}),
-    }));
+    startWhenSamplesReady(
+      bassPatternEvents.flatMap((event) => event.buttons),
+      () =>
+        startBassPatternTransport({
+          eventCount: bassPatternEvents.length,
+          runRef: bassPatternPlaybackRunRef,
+          clearTimers: clearBassPatternTimers,
+          stopAbc: stopAbcPlayback,
+          clearActiveButtons: () => setBassPatternActiveButtonIds([]),
+          stopSound: stopAllSound,
+          setScaleFinderActive,
+          setChordFinderActive,
+          setStradellaFinderActive: setStradellaChordFinderActive,
+          setPlaybackState: setBassPatternPlaybackState,
+          schedule: (runId) =>
+            scheduleBassPatternEvents({
+              bassPatternEvents,
+              bassPatternTempoBpm,
+              bassPatternUnitsPerBeat: bassPatternBeat(selectedBassPattern?.meter ?? "4/4")
+                .unitsPerBeat,
+              bassPatternTotalBeats,
+              bassPatternLoopMode,
+              bassPatternLoopCount,
+              bassPatternTimeoutsRef,
+              bassPatternPlaybackRunRef,
+              runId,
+              soundOptions,
+              setBassPatternActiveButtonIds,
+              setBassPatternPlaybackState,
+            }),
+        }),
+    );
   }
 
   /** Stops currently playing notes and any scheduled sequence playback. */
@@ -324,10 +458,21 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
   }
 
   return {
-    samplesLoading, soundEnginePlayer, setSoundEnginePlayer, playStradellaChordFinder,
-    playScaleFinder, playChordFinder, playSelectedButtons, playRecordedSequence,
-    stopAbcPlayback, pauseAbcPlayback, startWhenSamplesReady, scheduleAbcPlayback,
-    stopBassPatternPlayback, exportSelectedBassPattern, scheduleBassPatternPlayback,
+    samplesLoading,
+    soundEnginePlayer,
+    setSoundEnginePlayer,
+    playStradellaChordFinder,
+    playScaleFinder,
+    playChordFinder,
+    playSelectedButtons,
+    playRecordedSequence,
+    stopAbcPlayback,
+    pauseAbcPlayback,
+    startWhenSamplesReady,
+    scheduleAbcPlayback,
+    stopBassPatternPlayback,
+    exportSelectedBassPattern,
+    scheduleBassPatternPlayback,
     stopSoundPlayback,
   };
 }

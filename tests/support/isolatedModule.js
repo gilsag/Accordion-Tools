@@ -29,7 +29,10 @@ import ts from "typescript";
  *   also hides the test's globals from the module.
  * @returns {Record<string, any>} The module's exports.
  */
-export function loadIsolated(path, { imports = {}, globals = {}, transformSource, jsx = false, sameRealm = false } = {}) {
+export function loadIsolated(
+  path,
+  { imports = {}, globals = {}, transformSource, jsx = false, sameRealm = false } = {},
+) {
   const original = readFileSync(path, "utf8");
   const source = transformSource ? transformSource(original) : original;
   const compiled = ts.transpileModule(source, {
@@ -44,14 +47,24 @@ export function loadIsolated(path, { imports = {}, globals = {}, transformSource
   const require = (specifier) => {
     if (typeof imports === "function") return imports(specifier);
     if (Object.hasOwn(imports, specifier)) return imports[specifier];
-    throw new Error(`${path}: unexpected import "${specifier}". List it in imports with a test double.`);
+    throw new Error(
+      `${path}: unexpected import "${specifier}". List it in imports with a test double.`,
+    );
   };
   if (sameRealm) {
     const names = Object.keys(globals);
     new Function("require", "module", "exports", ...names, compiled)(
-      require, module, module.exports, ...names.map((name) => globals[name]));
+      require,
+      module,
+      module.exports,
+      ...names.map((name) => globals[name]),
+    );
   } else {
-    runInNewContext(compiled, { ...globals, module, exports: module.exports, require }, { filename: path });
+    runInNewContext(
+      compiled,
+      { ...globals, module, exports: module.exports, require },
+      { filename: path },
+    );
   }
   return module.exports;
 }

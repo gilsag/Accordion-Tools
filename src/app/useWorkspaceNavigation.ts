@@ -2,8 +2,16 @@ import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type { LeftPanelMode, Side } from "../types";
 import { toolDestination, type ToolId, type ToolSection, type WorkspaceMode } from "./toolRegistry";
 
-export type SettingsSection = "instrument" | "title" | "appearance" | "notation" |
-  "musicNotation" | "sound" | "harmony" | "about" | null;
+export type SettingsSection =
+  | "instrument"
+  | "title"
+  | "appearance"
+  | "notation"
+  | "musicNotation"
+  | "sound"
+  | "harmony"
+  | "about"
+  | null;
 
 /** Workspace/UI navigation; instrument layout stays with the instrument hook.
  * Musical tool state, playback cancellation and selection transfer remain owned
@@ -21,14 +29,14 @@ export function useWorkspaceNavigation(side: Side, setSide: Dispatch<SetStateAct
   }, [workspaceMode, side]);
 
   function toggleSettingsSection(section: Exclude<SettingsSection, null>) {
-    setActiveSettingsSection(current => current === section ? null : section);
+    setActiveSettingsSection((current) => (current === section ? null : section));
   }
 
   function toggleToolSection(tool: ToolId) {
     setWorkspaceMode(toolDestination(tool).workspace);
     // Historical accordion behavior: only Progression Assistant forces Stradella.
     if (tool === "progressionAssistant") setSide("stradella");
-    setActiveToolSection(current => current === tool ? null : tool);
+    setActiveToolSection((current) => (current === tool ? null : tool));
   }
 
   /** Command navigation, unlike accordion toggling, always exposes its target.
@@ -49,18 +57,29 @@ export function useWorkspaceNavigation(side: Side, setSide: Dispatch<SetStateAct
   }
 
   function setPanel(mode: Exclude<LeftPanelMode, "hidden">) {
-    setLeftPanelMode(current => current === mode ? "hidden" : mode);
+    setLeftPanelMode((current) => (current === mode ? "hidden" : mode));
   }
 
   function toggleFocusPanel() {
-    setLeftPanelMode(current => current === "hidden"
-      ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden");
+    setLeftPanelMode((current) =>
+      current === "hidden" ? (workspaceMode === "harmony" ? "tools" : "settings") : "hidden",
+    );
   }
 
   return {
-    leftPanelMode, setLeftPanelMode, workspaceMode, setWorkspaceMode,
-    activeSettingsSection, setActiveSettingsSection, activeToolSection, setActiveToolSection,
-    toggleSettingsSection, toggleToolSection, navigateToTool,
-    selectAccordionSide, setPanel, toggleFocusPanel,
+    leftPanelMode,
+    setLeftPanelMode,
+    workspaceMode,
+    setWorkspaceMode,
+    activeSettingsSection,
+    setActiveSettingsSection,
+    activeToolSection,
+    setActiveToolSection,
+    toggleSettingsSection,
+    toggleToolSection,
+    navigateToTool,
+    selectAccordionSide,
+    setPanel,
+    toggleFocusPanel,
   };
 }

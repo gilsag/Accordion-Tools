@@ -8,16 +8,23 @@ let rendererPromise: Promise<typeof import("abcjs")> | undefined;
 const renderGeneration = new WeakMap<HTMLDivElement, number>();
 
 function loadNotationRenderer() {
-  return rendererPromise ??= import("abcjs").catch(error => {
+  return (rendererPromise ??= import("abcjs").catch((error) => {
     rendererPromise = undefined; // A failed chunk download can be retried.
     throw error;
-  });
+  }));
 }
 
 /** Keep original abcjs options and error text, and discard stale requests if
  * the ABC source or notation dimensions change before the chunk arrives. */
-export async function renderNotationInto(target: HTMLDivElement | null, abcSource: string, musicNotationScale: number, musicNotationStaffWidth: number, showNoteNames = false,
-  options: { staffSeparator?: number; barsPerLine?: number; chordFontSize?: number } = {}, imported = false): Promise<void> {
+export async function renderNotationInto(
+  target: HTMLDivElement | null,
+  abcSource: string,
+  musicNotationScale: number,
+  musicNotationStaffWidth: number,
+  showNoteNames = false,
+  options: { staffSeparator?: number; barsPerLine?: number; chordFontSize?: number } = {},
+  imported = false,
+): Promise<void> {
   if (!target) return;
   const generation = (renderGeneration.get(target) ?? 0) + 1;
   renderGeneration.set(target, generation);
@@ -29,8 +36,10 @@ export async function renderNotationInto(target: HTMLDivElement | null, abcSourc
     if (renderGeneration.get(target) !== generation || target.isConnected === false) return;
     // Keep a single title in the shared score header. T: remains in original ABC
     // input, but need not be engraved again inside the score.
-    const score = (showNoteNames ? addNativeNoteNames(abcSource, imported) : abcSource)
-      .replace(/^T:[^\r\n]*(?:\r?\n)?/gm, "");
+    const score = (showNoteNames ? addNativeNoteNames(abcSource, imported) : abcSource).replace(
+      /^T:[^\r\n]*(?:\r?\n)?/gm,
+      "",
+    );
     // Keep the requested measure grouping at every inspector width. Give ABC.js
     // enough engraving space for a compact four-bar system, then fit the
     // resulting responsive SVG to the panel (never scroll horizontally).
@@ -60,9 +69,10 @@ export async function renderNotationInto(target: HTMLDivElement | null, abcSourc
   } catch (error) {
     if (renderGeneration.get(target) !== generation) return;
     target.classList.add("rendered-abc-error");
-    target.textContent = error instanceof Error
-      ? `Could not render notation: ${error.message}`
-      : "Could not render notation.";
+    target.textContent =
+      error instanceof Error
+        ? `Could not render notation: ${error.message}`
+        : "Could not render notation.";
   }
 }
 
@@ -70,7 +80,11 @@ export async function renderNotationInto(target: HTMLDivElement | null, abcSourc
 export function downloadRenderedNotationSvg(target: HTMLDivElement | null, filenameBase: string) {
   const svg = target?.querySelector("svg");
   if (!(svg instanceof SVGSVGElement)) return;
-  const safeName = filenameBase.trim().toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "notation";
+  const safeName =
+    filenameBase
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "notation";
   downloadSvg(svg, `${safeName}.svg`);
 }

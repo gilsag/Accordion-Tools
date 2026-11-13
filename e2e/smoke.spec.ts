@@ -1,4 +1,14 @@
-import { test, expect, openApp, openTool, closeToolsSheet, workspace, openToolsSheet, sectionTitles, openSettings } from "./fixtures";
+import {
+  test,
+  expect,
+  openApp,
+  openTool,
+  closeToolsSheet,
+  workspace,
+  openToolsSheet,
+  sectionTitles,
+  openSettings,
+} from "./fixtures";
 
 // Opens every tool of every workspace and every settings section. The fixture
 // fails the test on any console error or uncaught exception.
@@ -23,7 +33,9 @@ test("every settings section opens without errors", async ({ page }) => {
 
 test("the page does not scroll sideways", async ({ page }) => {
   await openApp(page);
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - window.innerWidth,
+  );
   expect(overflow).toBeLessThanOrEqual(1);
 });
 
@@ -33,7 +45,9 @@ test("the guides open in the documentation viewer", async ({ page }) => {
   await openTool(page, "About");
   await page.getByRole("button", { name: "Open documentation" }).click();
   const dialog = page.locator(".documentation-dialog");
-  await expect(dialog.locator(".documentation-article h1, .documentation-article h2").first()).toBeVisible();
+  await expect(
+    dialog.locator(".documentation-article h1, .documentation-article h2").first(),
+  ).toBeVisible();
   await dialog.locator(".documentation-header button").click();
   await expect(dialog).toBeHidden();
 });

@@ -14,7 +14,10 @@ async function showResults(page: Page) {
   await closeToolsSheet(page);
   if (isPhone(page) && !(await page.locator(".workspace-inspector").isVisible())) {
     await page.locator(".phone-overflow-toggle").click();
-    await page.locator(".phone-overflow-menu").getByRole("button", { name: /results/i }).click();
+    await page
+      .locator(".phone-overflow-menu")
+      .getByRole("button", { name: /results/i })
+      .click();
   }
 }
 
@@ -38,7 +41,9 @@ test("choosing any bass widens the results", async ({ page }) => {
 
 test("a chord with no root-position fingering falls back to any bass", async ({ page }) => {
   await findChord(page, "C", "major6add9");
-  await expect(page.getByRole("status").filter({ hasText: "Root position isn't available" })).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "Root position isn't available" }),
+  ).toBeVisible();
   await showResults(page);
   // The Results panel loads on demand: wait for its first row, don't sample.
   await expect(realizations(page).first()).toBeVisible();
@@ -52,11 +57,15 @@ test("Cmaj7 is shown on the diagram as C bass + E minor", async ({ page }) => {
   await expect(highlighted).toHaveCount(2);
 });
 
-test("opening another tool hides the Chord Finder result; reopening restores it", async ({ page }) => {
+test("opening another tool hides the Chord Finder result; reopening restores it", async ({
+  page,
+}) => {
   await findChord(page, "E", "minor7");
   await page.getByLabel("Requested bass / inversion").selectOption("");
   await showResults(page);
-  const selectedRow = page.locator(".workspace-inspector tbody tr").filter({ has: page.locator('[aria-pressed="true"]') });
+  const selectedRow = page
+    .locator(".workspace-inspector tbody tr")
+    .filter({ has: page.locator('[aria-pressed="true"]') });
   await page.locator(".workspace-inspector tbody tr").nth(2).click();
   const chosen = await selectedRow.locator("td:nth-child(2)").innerText();
   const lit = page.locator('svg [data-button-id][data-focus="active"]');
@@ -73,7 +82,9 @@ test("opening another tool hides the Chord Finder result; reopening restores it"
   await expect(lit).toHaveCount(litCount);
 });
 
-test("root position plays the root on a bass button, with the usual C7 fingering first", async ({ page }) => {
+test("root position plays the root on a bass button, with the usual C7 fingering first", async ({
+  page,
+}) => {
   await findChord(page, "C", "dominant7");
   const bassOption = page.getByLabel("Play lowest note on bass button");
   await expect(bassOption).toBeChecked();
@@ -83,8 +94,9 @@ test("root position plays the root on a bass button, with the usual C7 fingering
   // next hand span is used, and the panel says so.
   await openTool(page, "Chord Finder");
   await page.getByLabel("Chord type").selectOption("major6");
-  await expect(page.getByRole("status").filter({ hasText: "use the next hand span: Extended" })).toBeVisible();
+  await expect(
+    page.getByRole("status").filter({ hasText: "use the next hand span: Extended" }),
+  ).toBeVisible();
   await showResults(page);
   await expect(realizations(page).first()).toHaveText(/C (counter)?bass \+ A minor/);
 });
-

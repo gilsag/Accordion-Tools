@@ -2,15 +2,18 @@ import { test as base, expect, type Page } from "@playwright/test";
 
 /** Every test fails if the page logs an error or throws. */
 export const test = base.extend<{ errors: string[] }>({
-  errors: [async ({ page }, use) => {
-    const errors: string[] = [];
-    page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
-    page.on("console", (message) => {
-      if (message.type() === "error") errors.push(`console: ${message.text()}`);
-    });
-    await use(errors);
-    expect(errors, "no console errors or uncaught exceptions").toEqual([]);
-  }, { auto: true }],
+  errors: [
+    async ({ page }, use) => {
+      const errors: string[] = [];
+      page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
+      page.on("console", (message) => {
+        if (message.type() === "error") errors.push(`console: ${message.text()}`);
+      });
+      await use(errors);
+      expect(errors, "no console errors or uncaught exceptions").toEqual([]);
+    },
+    { auto: true },
+  ],
 });
 export { expect };
 export type { Page };
@@ -30,7 +33,7 @@ export async function openToolsSheet(page: Page) {
 }
 
 export async function closeToolsSheet(page: Page) {
-  if (isPhone(page) && await page.locator(".left-panel.phone-sheet-open").count()) {
+  if (isPhone(page) && (await page.locator(".left-panel.phone-sheet-open").count())) {
     await page.keyboard.press("Escape");
     await expect(page.locator(".left-panel.phone-sheet-open")).toHaveCount(0);
   }
@@ -38,7 +41,10 @@ export async function closeToolsSheet(page: Page) {
 
 /** A collapsible tool or settings section header, by its visible title. */
 export const sectionToggle = (page: Page, name: string) =>
-  page.locator("button.section-title").filter({ hasText: new RegExp(`^\\s*${name}\\s*[+−]?\\s*$`) }).first();
+  page
+    .locator("button.section-title")
+    .filter({ hasText: new RegExp(`^\\s*${name}\\s*[+−]?\\s*$`) })
+    .first();
 
 /** Expand a tool or settings section (no-op if it is already open). */
 export async function openTool(page: Page, name: string) {
@@ -50,17 +56,29 @@ export async function openTool(page: Page, name: string) {
 }
 
 /** Visible section titles in the open panel. */
-export const sectionTitles = (page: Page) => page.locator("button.section-title").evaluateAll((buttons) =>
-  buttons.filter((b) => (b as HTMLElement).offsetParent).map((b) => b.textContent!.replace(/[+−]\s*$/, "").trim()));
+export const sectionTitles = (page: Page) =>
+  page
+    .locator("button.section-title")
+    .evaluateAll((buttons) =>
+      buttons
+        .filter((b) => (b as HTMLElement).offsetParent)
+        .map((b) => b.textContent!.replace(/[+−]\s*$/, "").trim()),
+    );
 
 /** Opens the Settings panel; pass the translated label when not in English. */
 export async function openSettings(page: Page, label = "Settings") {
   if (isPhone(page)) {
     await closeToolsSheet(page);
     await page.locator(".phone-overflow-toggle").click();
-    await page.locator(".phone-overflow-menu").getByRole("button", { name: label, exact: true }).click();
+    await page
+      .locator(".phone-overflow-menu")
+      .getByRole("button", { name: label, exact: true })
+      .click();
   } else {
-    await page.locator(".topbar-secondary").getByRole("button", { name: label, exact: true }).click();
+    await page
+      .locator(".topbar-secondary")
+      .getByRole("button", { name: label, exact: true })
+      .click();
   }
   // The Settings view is fetched on first use; wait until its sections exist.
   await expect(page.locator(".left-panel button.section-title").first()).toBeVisible();
@@ -90,5 +108,8 @@ export async function recordAudioStarts(page: Page) {
       };
     }
   });
-  return () => page.evaluate(() => (window as unknown as { audioStarts: { starts: number } }).audioStarts.starts);
+  return () =>
+    page.evaluate(
+      () => (window as unknown as { audioStarts: { starts: number } }).audioStarts.starts,
+    );
 }

@@ -1,6 +1,15 @@
 import { ROOT_POSITION_BASS } from "../tools/stradellaChordFinder/harmonicIdentity";
-import { DEFAULT_STRADELLA_NOTE_LEVELS, type StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
-import type { FinderChordPattern, StradellaChordFinderMode, Overlay, SequenceStep, TextNote } from "../types";
+import {
+  DEFAULT_STRADELLA_NOTE_LEVELS,
+  type StradellaNoteLevels,
+} from "../tools/stradellaChordFinder/diagramAnnotations";
+import type {
+  FinderChordPattern,
+  StradellaChordFinderMode,
+  Overlay,
+  SequenceStep,
+  TextNote,
+} from "../types";
 import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
 
 /** Narrow reset ports: all affected state remains owned by its feature.

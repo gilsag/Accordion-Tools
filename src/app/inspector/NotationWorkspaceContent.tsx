@@ -7,15 +7,24 @@ import { bassPatternName, progressionName } from "../../i18n/optionLabels";
 
 /** The only tool-to-score routing point. Views decide placement, not rendering;
  * features decide notes, not headers, export actions or panel structure. */
-export function NotationWorkspaceContent({ kind, tools }: {
+export function NotationWorkspaceContent({
+  kind,
+  tools,
+}: {
   kind: NotationKind;
   tools: AppControllerModel["tools"];
 }) {
   const { t, language } = useI18n();
   const render = tools.renderNotationInto;
   const showTitle = tools.musicNotationIncludeTitle;
-  if (kind === "rhythm") return <RhythmNotationPanel trainer={tools.rhythmTrainer}
-    renderNotationInto={render} showTitle={showTitle} />;
+  if (kind === "rhythm")
+    return (
+      <RhythmNotationPanel
+        trainer={tools.rhythmTrainer}
+        renderNotationInto={render}
+        showTitle={showTitle}
+      />
+    );
 
   let title = "";
   let abc = "";
@@ -50,6 +59,14 @@ export function NotationWorkspaceContent({ kind, tools }: {
       break;
   }
   if (!abc.trim()) return null;
-  return <NotationScore title={title} abc={abc} filename={filename} render={render}
-    showTitle={showTitle} imported={imported}/>;
+  return (
+    <NotationScore
+      title={title}
+      abc={abc}
+      filename={filename}
+      render={render}
+      showTitle={showTitle}
+      imported={imported}
+    />
+  );
 }

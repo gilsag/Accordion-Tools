@@ -1,39 +1,50 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BassPatternChordVoicing, DiagramButton, Side } from "../../types";
-import { bassPatternMissingItems, makeBassPatternEvents, totalBassPatternBeats,
-  validateBassPatternLibrary, type BassPatternDefinition,
-  type BassPatternLibrary, type BassPatternPlaybackEvent,
-  type ChordProgressionDefinition } from "../../tools/bassPatternPlayerTools";
+import {
+  bassPatternMissingItems,
+  makeBassPatternEvents,
+  totalBassPatternBeats,
+  validateBassPatternLibrary,
+  type BassPatternDefinition,
+  type BassPatternLibrary,
+  type BassPatternPlaybackEvent,
+  type ChordProgressionDefinition,
+} from "../../tools/bassPatternPlayerTools";
 import type { translate } from "../../i18n/catalog";
 
-type Translator = (key: Parameters<typeof translate>[1], params?: Record<string, string | number>) => string;
+type Translator = (
+  key: Parameters<typeof translate>[1],
+  params?: Record<string, string | number>,
+) => string;
 
 /** Owns user-editable and bundled pattern libraries, including the historical
  * localStorage key. Shared audio scheduling, download/notation rendering and
  * exclusive tool activation remain application-level responsibilities.
  */
 export function useBassPatternState(t: Translator) {
-
-  const [builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions] =
-    useState<BassPatternDefinition[]>([]);
-  const [customBassPatternDefinitions, setCustomBassPatternDefinitions] =
-    useState<BassPatternDefinition[]>(() => {
-      try {
-        const stored = window.localStorage.getItem("accordionTools.customBassPatterns.v2");
-        if (!stored) return [];
-        const parsed: unknown = JSON.parse(stored);
-        return Array.isArray(parsed) ? parsed as BassPatternDefinition[] : [];
-      } catch {
-        // Ignore malformed local custom pattern data.
-        return [];
-      }
-    });
+  const [builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions] = useState<
+    BassPatternDefinition[]
+  >([]);
+  const [customBassPatternDefinitions, setCustomBassPatternDefinitions] = useState<
+    BassPatternDefinition[]
+  >(() => {
+    try {
+      const stored = window.localStorage.getItem("accordionTools.customBassPatterns.v2");
+      if (!stored) return [];
+      const parsed: unknown = JSON.parse(stored);
+      return Array.isArray(parsed) ? (parsed as BassPatternDefinition[]) : [];
+    } catch {
+      // Ignore malformed local custom pattern data.
+      return [];
+    }
+  });
   const bassPatternDefinitions = useMemo(
     () => [...builtInBassPatternDefinitions, ...customBassPatternDefinitions],
     [builtInBassPatternDefinitions, customBassPatternDefinitions],
   );
-  const [chordProgressionDefinitions, setChordProgressionDefinitions] =
-    useState<ChordProgressionDefinition[]>([]);
+  const [chordProgressionDefinitions, setChordProgressionDefinitions] = useState<
+    ChordProgressionDefinition[]
+  >([]);
   const [bassPatternId, setBassPatternId] = useState("polka");
   const [chordProgressionId, setChordProgressionId] = useState("i-iv-v-i");
   const [bassPatternRoot, setBassPatternRoot] = useState("C");
@@ -41,21 +52,17 @@ export function useBassPatternState(t: Translator) {
   const [bassPatternChordVoicing, setBassPatternChordVoicing] =
     useState<BassPatternChordVoicing>("simple");
   const [bassPatternBarsPerChord, setBassPatternBarsPerChord] = useState(2);
-  const [bassPatternLoopMode, setBassPatternLoopMode] = useState<
-    "once" | "fixed" | "infinite"
-  >("fixed");
+  const [bassPatternLoopMode, setBassPatternLoopMode] = useState<"once" | "fixed" | "infinite">(
+    "fixed",
+  );
   const [bassPatternLoopCount, setBassPatternLoopCount] = useState(2);
   const [bassPatternExportFormat, setBassPatternExportFormat] = useState<
     "abc" | "midi" | "lilypond"
   >("abc");
-  const [bassPatternEditorExpanded, setBassPatternEditorExpanded] =
+  const [bassPatternEditorExpanded, setBassPatternEditorExpanded] = useState(false);
+  const [bassPatternRenderedNotationVisible, setBassPatternRenderedNotationVisible] =
     useState(false);
-  const [
-    bassPatternRenderedNotationVisible,
-    setBassPatternRenderedNotationVisible,
-  ] = useState(false);
-  const [bassPatternValidationErrors, setBassPatternValidationErrors] =
-    useState<string[]>([]);
+  const [bassPatternValidationErrors, setBassPatternValidationErrors] = useState<string[]>([]);
   const [bassPatternEditorText, setBassPatternEditorText] = useState(() =>
     JSON.stringify(
       {
@@ -70,12 +77,10 @@ export function useBassPatternState(t: Translator) {
     ),
   );
   const [bassPatternEditorMessage, setBassPatternEditorMessage] = useState("");
-  const [bassPatternPlaybackState, setBassPatternPlaybackState] = useState<
-    "stopped" | "playing"
-  >("stopped");
-  const [bassPatternActiveButtonIds, setBassPatternActiveButtonIds] = useState<
-    string[]
-  >([]);
+  const [bassPatternPlaybackState, setBassPatternPlaybackState] = useState<"stopped" | "playing">(
+    "stopped",
+  );
+  const [bassPatternActiveButtonIds, setBassPatternActiveButtonIds] = useState<string[]>([]);
   const bassPatternTimeoutsRef = useRef<number[]>([]);
   const bassPatternPlaybackRunRef = useRef(0);
   const bassPatternNotationRef = useRef<HTMLDivElement | null>(null);
@@ -86,17 +91,13 @@ export function useBassPatternState(t: Translator) {
       try {
         const [patternsResponse, progressionsResponse] = await Promise.all([
           fetch(`${import.meta.env.BASE_URL}bass-patterns/bass-patterns.json`),
-          fetch(
-            `${import.meta.env.BASE_URL}chord-progressions/chord-progressions.json`,
-          ),
+          fetch(`${import.meta.env.BASE_URL}chord-progressions/chord-progressions.json`),
         ]);
 
         if (!patternsResponse.ok || !progressionsResponse.ok) return;
 
-        const patternLibrary =
-          (await patternsResponse.json()) as BassPatternLibrary;
-        const progressions =
-          (await progressionsResponse.json()) as ChordProgressionDefinition[];
+        const patternLibrary = (await patternsResponse.json()) as BassPatternLibrary;
+        const progressions = (await progressionsResponse.json()) as ChordProgressionDefinition[];
         if (cancelled) return;
 
         const validationErrors = validateBassPatternLibrary(patternLibrary);
@@ -130,9 +131,7 @@ export function useBassPatternState(t: Translator) {
         }
       } catch (error) {
         setBassPatternValidationErrors([
-          error instanceof Error
-            ? error.message
-            : "Could not load bass pattern files.",
+          error instanceof Error ? error.message : "Could not load bass pattern files.",
         ]);
         /* Bass pattern files are optional; the rest of the app still works without them. */
       }
@@ -144,14 +143,14 @@ export function useBassPatternState(t: Translator) {
     };
   }, []);
   const selectedBassPattern = useMemo(
-    () => bassPatternDefinitions.find((pattern) => pattern.id === bassPatternId) ?? bassPatternDefinitions[0],
+    () =>
+      bassPatternDefinitions.find((pattern) => pattern.id === bassPatternId) ??
+      bassPatternDefinitions[0],
     [bassPatternDefinitions, bassPatternId],
   );
   const bassPatternEditorErrors = useMemo(() => {
     try {
-      const candidate = JSON.parse(
-        bassPatternEditorText,
-      ) as BassPatternDefinition;
+      const candidate = JSON.parse(bassPatternEditorText) as BassPatternDefinition;
       return validateBassPatternLibrary({ version: 2, patterns: [candidate] });
     } catch (error) {
       return [error instanceof Error ? error.message : t("ui.invalidJSON")];
@@ -160,9 +159,7 @@ export function useBassPatternState(t: Translator) {
 
   function saveCustomBassPattern() {
     try {
-      const candidate = JSON.parse(
-        bassPatternEditorText,
-      ) as BassPatternDefinition;
+      const candidate = JSON.parse(bassPatternEditorText) as BassPatternDefinition;
       const errors = validateBassPatternLibrary({
         version: 2,
         patterns: [candidate],
@@ -173,9 +170,7 @@ export function useBassPatternState(t: Translator) {
       }
       const nextPatterns = [
         candidate,
-        ...customBassPatternDefinitions.filter(
-          (pattern) => pattern.id !== candidate.id,
-        ),
+        ...customBassPatternDefinitions.filter((pattern) => pattern.id !== candidate.id),
       ];
       setCustomBassPatternDefinitions(nextPatterns);
       window.localStorage.setItem(
@@ -185,19 +180,12 @@ export function useBassPatternState(t: Translator) {
       setBassPatternId(candidate.id);
       setBassPatternEditorMessage(t("ui.savedCustomPattern", { name: candidate.name }));
     } catch (error) {
-      setBassPatternEditorMessage(
-        error instanceof Error ? error.message : t("ui.invalidJSON"),
-      );
+      setBassPatternEditorMessage(error instanceof Error ? error.message : t("ui.invalidJSON"));
     }
   }
 
   function removeSelectedCustomBassPattern() {
-    if (
-      !customBassPatternDefinitions.some(
-        (pattern) => pattern.id === bassPatternId,
-      )
-    )
-      return;
+    if (!customBassPatternDefinitions.some((pattern) => pattern.id === bassPatternId)) return;
     const nextPatterns = customBassPatternDefinitions.filter(
       (pattern) => pattern.id !== bassPatternId,
     );
@@ -206,9 +194,7 @@ export function useBassPatternState(t: Translator) {
       "accordionTools.customBassPatterns.v2",
       JSON.stringify(nextPatterns),
     );
-    setBassPatternId(
-      (builtInBassPatternDefinitions[0] ?? nextPatterns[0])?.id ?? "",
-    );
+    setBassPatternId((builtInBassPatternDefinitions[0] ?? nextPatterns[0])?.id ?? "");
     setBassPatternEditorMessage(t("ui.removedCustomPattern"));
   }
 
@@ -218,28 +204,51 @@ export function useBassPatternState(t: Translator) {
     setBassPatternEditorMessage(t("ui.loadedPatternIntoEditor"));
   }
   return {
-    builtInBassPatternDefinitions, setBuiltInBassPatternDefinitions,
-    customBassPatternDefinitions, setCustomBassPatternDefinitions,
+    builtInBassPatternDefinitions,
+    setBuiltInBassPatternDefinitions,
+    customBassPatternDefinitions,
+    setCustomBassPatternDefinitions,
     bassPatternDefinitions,
-    chordProgressionDefinitions, setChordProgressionDefinitions,
-    bassPatternId, setBassPatternId,
-    chordProgressionId, setChordProgressionId,
-    bassPatternRoot, setBassPatternRoot,
-    bassPatternTempoBpm, setBassPatternTempoBpm,
-    bassPatternChordVoicing, setBassPatternChordVoicing,
-    bassPatternBarsPerChord, setBassPatternBarsPerChord,
-    bassPatternLoopMode, setBassPatternLoopMode,
-    bassPatternLoopCount, setBassPatternLoopCount,
-    bassPatternExportFormat, setBassPatternExportFormat,
-    bassPatternEditorExpanded, setBassPatternEditorExpanded,
-    bassPatternRenderedNotationVisible, setBassPatternRenderedNotationVisible,
-    bassPatternValidationErrors, setBassPatternValidationErrors,
-    bassPatternEditorText, setBassPatternEditorText,
-    bassPatternEditorMessage, setBassPatternEditorMessage,
-    bassPatternPlaybackState, setBassPatternPlaybackState,
-    bassPatternActiveButtonIds, setBassPatternActiveButtonIds,
-    bassPatternTimeoutsRef, bassPatternPlaybackRunRef, bassPatternNotationRef,
-    bassPatternEditorErrors, saveCustomBassPattern, removeSelectedCustomBassPattern,
+    chordProgressionDefinitions,
+    setChordProgressionDefinitions,
+    bassPatternId,
+    setBassPatternId,
+    chordProgressionId,
+    setChordProgressionId,
+    bassPatternRoot,
+    setBassPatternRoot,
+    bassPatternTempoBpm,
+    setBassPatternTempoBpm,
+    bassPatternChordVoicing,
+    setBassPatternChordVoicing,
+    bassPatternBarsPerChord,
+    setBassPatternBarsPerChord,
+    bassPatternLoopMode,
+    setBassPatternLoopMode,
+    bassPatternLoopCount,
+    setBassPatternLoopCount,
+    bassPatternExportFormat,
+    setBassPatternExportFormat,
+    bassPatternEditorExpanded,
+    setBassPatternEditorExpanded,
+    bassPatternRenderedNotationVisible,
+    setBassPatternRenderedNotationVisible,
+    bassPatternValidationErrors,
+    setBassPatternValidationErrors,
+    bassPatternEditorText,
+    setBassPatternEditorText,
+    bassPatternEditorMessage,
+    setBassPatternEditorMessage,
+    bassPatternPlaybackState,
+    setBassPatternPlaybackState,
+    bassPatternActiveButtonIds,
+    setBassPatternActiveButtonIds,
+    bassPatternTimeoutsRef,
+    bassPatternPlaybackRunRef,
+    bassPatternNotationRef,
+    bassPatternEditorErrors,
+    saveCustomBassPattern,
+    removeSelectedCustomBassPattern,
     loadSelectedPatternIntoEditor,
   };
 }
@@ -249,8 +258,15 @@ export function useBassPatternState(t: Translator) {
  * are generated only for the physical Stradella manual.
  */
 export function useBassPatternResults({
-  bassPatternDefinitions, bassPatternId, chordProgressionDefinitions, chordProgressionId,
-  buttons, side, bassPatternRoot, bassPatternChordVoicing, bassPatternBarsPerChord,
+  bassPatternDefinitions,
+  bassPatternId,
+  chordProgressionDefinitions,
+  chordProgressionId,
+  buttons,
+  side,
+  bassPatternRoot,
+  bassPatternChordVoicing,
+  bassPatternBarsPerChord,
   bassPatternActiveButtonIds,
 }: {
   bassPatternDefinitions: BassPatternDefinition[];
@@ -272,18 +288,12 @@ export function useBassPatternResults({
   );
   const selectedChordProgression = useMemo(
     () =>
-      chordProgressionDefinitions.find(
-        (progression) => progression.id === chordProgressionId,
-      ) ?? chordProgressionDefinitions[0],
+      chordProgressionDefinitions.find((progression) => progression.id === chordProgressionId) ??
+      chordProgressionDefinitions[0],
     [chordProgressionDefinitions, chordProgressionId],
   );
   const bassPatternEvents = useMemo<BassPatternPlaybackEvent[]>(() => {
-    if (
-      side !== "stradella" ||
-      !selectedBassPattern ||
-      !selectedChordProgression
-    )
-      return [];
+    if (side !== "stradella" || !selectedBassPattern || !selectedChordProgression) return [];
     return makeBassPatternEvents(
       buttons,
       selectedBassPattern,
@@ -310,8 +320,15 @@ export function useBassPatternResults({
     [bassPatternEvents],
   );
   const bassPatternActiveButtonIdSet = useMemo(
-    () => new Set(bassPatternActiveButtonIds), [bassPatternActiveButtonIds],
+    () => new Set(bassPatternActiveButtonIds),
+    [bassPatternActiveButtonIds],
   );
-  return { selectedBassPattern, selectedChordProgression, bassPatternEvents,
-    bassPatternTotalBeats, bassPatternMissingText, bassPatternActiveButtonIdSet };
+  return {
+    selectedBassPattern,
+    selectedChordProgression,
+    bassPatternEvents,
+    bassPatternTotalBeats,
+    bassPatternMissingText,
+    bassPatternActiveButtonIdSet,
+  };
 }

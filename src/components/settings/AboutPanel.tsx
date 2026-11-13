@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 
 // The viewer bundles every user guide as raw Markdown (about 200 KB), so it is
 // loaded only when someone opens the documentation.
-const DocumentationViewer = lazy(() => import("./DocumentationViewer").then((module) => ({ default: module.DocumentationViewer })));
+const DocumentationViewer = lazy(() =>
+  import("./DocumentationViewer").then((module) => ({ default: module.DocumentationViewer })),
+);
 import { APP_INFO } from "../../config/appInfo";
 import { useI18n } from "../../i18n/useI18n";
 
@@ -27,7 +29,9 @@ export function AboutPanel({ children }: AboutPanelProps) {
           {t("ui.contactSource")}
         </a>
       </p>
-      <p className="hint">{t("about.version")}: {APP_INFO.version}</p>
+      <p className="hint">
+        {t("about.version")}: {APP_INFO.version}
+      </p>
       <p className="hint">
         {t("about.samples")}: <strong>La Melodiosa</strong> {t("ui.attribution")}{" "}
         {t("ui.sampleCreditLicense")}
@@ -39,7 +43,10 @@ export function AboutPanel({ children }: AboutPanelProps) {
         </a>
       </p>
       <p className="hint">
-        <button type="button" className="small-button" onClick={() => setDocsOpen(true)}> {t("about.openDocs")}</button>
+        <button type="button" className="small-button" onClick={() => setDocsOpen(true)}>
+          {" "}
+          {t("about.openDocs")}
+        </button>
       </p>
       <p className="hint">
         <a href={APP_INFO.readmeUrl} target="_blank" rel="noreferrer">

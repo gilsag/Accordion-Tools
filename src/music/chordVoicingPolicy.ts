@@ -10,15 +10,25 @@ export function isExtendedChord(pattern: FinderChordPattern) {
 
 /** Only non-defining tones may be omitted; altered and added tones are protected. */
 export function permittedOmissionIntervals(pattern: FinderChordPattern): number[] {
-  return chordToneFunctions(pattern).filter((tone) => !tone.defining).map((tone) => tone.interval);
+  return chordToneFunctions(pattern)
+    .filter((tone) => !tone.defining)
+    .map((tone) => tone.interval);
 }
 
-export function permittedMissingTones(root: string, pattern: FinderChordPattern, missing: string[]) {
+export function permittedMissingTones(
+  root: string,
+  pattern: FinderChordPattern,
+  missing: string[],
+) {
   const allowed = permittedOmissionIntervals(pattern).map((i) => transpose(root, i));
   return missing.every((pitch) => allowed.includes(pitch));
 }
 
-export function suspendedStyleOmission(root: string, pattern: FinderChordPattern, missing: string[]) {
+export function suspendedStyleOmission(
+  root: string,
+  pattern: FinderChordPattern,
+  missing: string[],
+) {
   return ["dominant11", "major11"].includes(pattern) && missing.includes(transpose(root, 4));
 }
 

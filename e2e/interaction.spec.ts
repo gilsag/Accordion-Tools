@@ -1,14 +1,29 @@
-import { test, expect, openApp, openTool, closeToolsSheet, sectionToggle, openToolsSheet, isPhone, recordAudioStarts, type Page } from "./fixtures";
+import {
+  test,
+  expect,
+  openApp,
+  openTool,
+  closeToolsSheet,
+  sectionToggle,
+  openToolsSheet,
+  isPhone,
+  recordAudioStarts,
+  type Page,
+} from "./fixtures";
 
 async function chooseAnnotateMode(page: Page, mode: "Select" | "Finger" | "Sequence" | "Notes") {
   await openTool(page, "Annotate Diagram");
-  const choice = page.getByRole("group", { name: "Click mode" }).getByRole("button", { name: mode });
+  const choice = page
+    .getByRole("group", { name: "Click mode" })
+    .getByRole("button", { name: mode });
   await choice.click();
   await expect(choice).toHaveAttribute("aria-pressed", "true");
   await closeToolsSheet(page);
 }
 
-test("Annotate Diagram clicks do only the chosen mode and every mark stays visible", async ({ page }) => {
+test("Annotate Diagram clicks do only the chosen mode and every mark stays visible", async ({
+  page,
+}) => {
   const audioStarts = await recordAudioStarts(page);
   await openApp(page);
   const button = (index: number) => page.locator("svg [data-button-id]").nth(index);
@@ -32,15 +47,19 @@ test("Annotate Diagram clicks do only the chosen mode and every mark stays visib
 
   await chooseAnnotateMode(page, "Finger");
   await openTool(page, "Annotate Diagram");
-  await expect(page.getByRole("group", { name: "Fingering value" }).getByRole("button", { name: "1" }),
-    "finger 1 is chosen by default").toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("group", { name: "Fingering value" }).getByRole("button", { name: "1" }),
+    "finger 1 is chosen by default",
+  ).toHaveAttribute("aria-pressed", "true");
   await closeToolsSheet(page);
   await button(21).click();
   await button(22).click();
   await expect(button(21).locator(".finger-label")).toHaveText("1");
   await expect(button(22).locator(".finger-label"), "the finger value is kept").toHaveText("1");
   await button(22).click();
-  await expect(button(22).locator(".finger-label"), "the same finger again removes it").toHaveCount(0);
+  await expect(button(22).locator(".finger-label"), "the same finger again removes it").toHaveCount(
+    0,
+  );
   await expect(selected).toHaveCount(1);
   await expect(steps).toHaveCount(0);
 
@@ -120,19 +139,23 @@ test("the toolbar stays on one row at 1280 px with the Results panel open", asyn
   test.skip(isPhone(page), "desktop toolbar only");
   await page.setViewportSize({ width: 1280, height: 800 });
   await openApp(page);
-  const height = () => page.locator(".topbar").evaluate((bar) => bar.getBoundingClientRect().height);
+  const height = () =>
+    page.locator(".topbar").evaluate((bar) => bar.getBoundingClientRect().height);
   const oneRow = await height();
   await openTool(page, "Chord Finder");
   await expect(page.locator(".workspace-inspector")).toBeVisible();
   expect(await height()).toBeLessThanOrEqual(oneRow);
   await openTool(page, "ABC Player");
   await page.getByLabel("Example tune").selectOption("bella-ciao");
-  await expect(page.locator(".topbar").getByRole("button", { name: "Show notation" })).toBeVisible();
+  await expect(
+    page.locator(".topbar").getByRole("button", { name: "Show notation" }),
+  ).toBeVisible();
   expect(await height()).toBeLessThanOrEqual(oneRow);
   // Labels hidden in compact mode stay available to screen readers.
-  await expect(page.locator(".topbar").getByRole("button", { name: "Settings", exact: true })).toBeVisible();
+  await expect(
+    page.locator(".topbar").getByRole("button", { name: "Settings", exact: true }),
+  ).toBeVisible();
 });
-
 
 test("the tools and results panels can be resized and reset", async ({ page }) => {
   test.skip(isPhone(page), "Phones use the Tools sheet instead of side panels");
@@ -145,19 +168,27 @@ test("the tools and results panels can be resized and reset", async ({ page }) =
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2 + 120, box.y + 200, { steps: 6 });
   await page.mouse.up();
-  await expect.poll(async () => Math.round((await panel.boundingBox())!.width)).toBeGreaterThan(before + 100);
+  await expect
+    .poll(async () => Math.round((await panel.boundingBox())!.width))
+    .toBeGreaterThan(before + 100);
   const widened = (await panel.boundingBox())!.width;
 
   // Remembered in this browser.
   await page.reload();
-  await expect.poll(async () => Math.round((await page.locator(".left-panel").boundingBox())!.width)).toBe(Math.round(widened));
+  await expect
+    .poll(async () => Math.round((await page.locator(".left-panel").boundingBox())!.width))
+    .toBe(Math.round(widened));
 
   // Arrow keys move the edge; a double-click restores the default.
   await handle.focus();
   await page.keyboard.press("ArrowLeft");
-  await expect.poll(async () => Math.round((await panel.boundingBox())!.width)).toBe(Math.round(widened) - 16);
+  await expect
+    .poll(async () => Math.round((await panel.boundingBox())!.width))
+    .toBe(Math.round(widened) - 16);
   await handle.dblclick();
-  await expect.poll(async () => Math.round((await panel.boundingBox())!.width)).toBe(Math.round(before));
+  await expect
+    .poll(async () => Math.round((await panel.boundingBox())!.width))
+    .toBe(Math.round(before));
 
   // The results panel's edge grows it towards the diagram.
   await openTool(page, "Chord Finder");
@@ -167,7 +198,11 @@ test("the tools and results panels can be resized and reset", async ({ page }) =
   const resultsBefore = (await inspector.boundingBox())!.width;
   await resultsHandle.focus();
   for (let step = 0; step < 4; step += 1) await page.keyboard.press("ArrowLeft");
-  await expect.poll(async () => Math.round((await inspector.boundingBox())!.width)).toBe(Math.round(resultsBefore) + 64);
+  await expect
+    .poll(async () => Math.round((await inspector.boundingBox())!.width))
+    .toBe(Math.round(resultsBefore) + 64);
   await page.keyboard.press("Enter");
-  await expect.poll(async () => Math.round((await inspector.boundingBox())!.width)).toBe(Math.round(resultsBefore));
+  await expect
+    .poll(async () => Math.round((await inspector.boundingBox())!.width))
+    .toBe(Math.round(resultsBefore));
 });

@@ -23,15 +23,72 @@ type ToolDefinition = {
 };
 
 export const TOOL_REGISTRY = {
-  scaleFinder: { workspace: "accordion", category: "finder", titleKey: "ui.scaleFinder", summaryKey: "tools.summary.scaleFinder", sides: "both" },
-  chordFinder: { workspace: "accordion", category: "finder", titleKey: "tools.chordFinder", summaryKey: "tools.summary.trebleChordFinder", sides: "treble" },
-  bassPatternPlayer: { workspace: "accordion", category: "player", titleKey: "ui.bassPatternPlayer", summaryKey: "tools.summary.bassPatternPlayer", sides: "stradella" },
-  rhythmTrainer: { workspace: "accordion", category: "player", titleKey: "rhythm.title", summaryKey: "rhythm.summary", sides: "both" },
-  abcPlayer: { workspace: "accordion", category: "player", titleKey: "ui.abcDefault", summaryKey: "tools.summary.abcPlayer", sides: "both" },
-  stradellaChordFinder: { workspace: "accordion", category: "finder", titleKey: "tools.chordFinder", summaryKey: "tools.summary.stradellaChordFinder", sides: "stradella", defaultSide: "stradella" },
-  harmonyExplorer: { workspace: "harmony", category: "harmony", titleKey: "tools.harmonyExplorer", summaryKey: "tools.summary.harmonyExplorer", sides: "both" },
-  progressionAssistant: { workspace: "accordion", category: "harmony", titleKey: "ui.progressionAssistant", summaryKey: "tools.summary.progressionAssistant", sides: "stradella", defaultSide: "stradella", keepMounted: true },
-  annotateDiagram: { workspace: "accordion", category: "diagram", titleKey: "ui.annotateDiagram", summaryKey: "tools.summary.annotateDiagram", sides: "both" },
+  scaleFinder: {
+    workspace: "accordion",
+    category: "finder",
+    titleKey: "ui.scaleFinder",
+    summaryKey: "tools.summary.scaleFinder",
+    sides: "both",
+  },
+  chordFinder: {
+    workspace: "accordion",
+    category: "finder",
+    titleKey: "tools.chordFinder",
+    summaryKey: "tools.summary.trebleChordFinder",
+    sides: "treble",
+  },
+  bassPatternPlayer: {
+    workspace: "accordion",
+    category: "player",
+    titleKey: "ui.bassPatternPlayer",
+    summaryKey: "tools.summary.bassPatternPlayer",
+    sides: "stradella",
+  },
+  rhythmTrainer: {
+    workspace: "accordion",
+    category: "player",
+    titleKey: "rhythm.title",
+    summaryKey: "rhythm.summary",
+    sides: "both",
+  },
+  abcPlayer: {
+    workspace: "accordion",
+    category: "player",
+    titleKey: "ui.abcDefault",
+    summaryKey: "tools.summary.abcPlayer",
+    sides: "both",
+  },
+  stradellaChordFinder: {
+    workspace: "accordion",
+    category: "finder",
+    titleKey: "tools.chordFinder",
+    summaryKey: "tools.summary.stradellaChordFinder",
+    sides: "stradella",
+    defaultSide: "stradella",
+  },
+  harmonyExplorer: {
+    workspace: "harmony",
+    category: "harmony",
+    titleKey: "tools.harmonyExplorer",
+    summaryKey: "tools.summary.harmonyExplorer",
+    sides: "both",
+  },
+  progressionAssistant: {
+    workspace: "accordion",
+    category: "harmony",
+    titleKey: "ui.progressionAssistant",
+    summaryKey: "tools.summary.progressionAssistant",
+    sides: "stradella",
+    defaultSide: "stradella",
+    keepMounted: true,
+  },
+  annotateDiagram: {
+    workspace: "accordion",
+    category: "diagram",
+    titleKey: "ui.annotateDiagram",
+    summaryKey: "tools.summary.annotateDiagram",
+    sides: "both",
+  },
 } as const satisfies Record<string, ToolDefinition>;
 
 export type ToolId = keyof typeof TOOL_REGISTRY;
@@ -39,7 +96,10 @@ export type ToolSection = ToolId | null;
 export type WorkspaceMode = "accordion" | "harmony";
 
 /** A missing default side means the tool leaves the current instrument side unchanged. */
-export function toolDestination(tool: ToolId): { workspace: WorkspaceMode; defaultSide?: "stradella" } {
+export function toolDestination(tool: ToolId): {
+  workspace: WorkspaceMode;
+  defaultSide?: "stradella";
+} {
   const definition = TOOL_REGISTRY[tool];
   return {
     workspace: definition.workspace,
@@ -56,12 +116,24 @@ export function toolOfferedOn(tool: ToolId, side: "treble" | "stradella"): boole
 /** Top-to-bottom order of the sections in the Tools panel. */
 export const TOOLS_PANEL_ORDER: readonly ToolId[] = [
   "harmonyExplorer",
-  "scaleFinder", "chordFinder", "stradellaChordFinder", "progressionAssistant",
-  "annotateDiagram", "bassPatternPlayer", "rhythmTrainer", "abcPlayer",
+  "scaleFinder",
+  "chordFinder",
+  "stradellaChordFinder",
+  "progressionAssistant",
+  "annotateDiagram",
+  "bassPatternPlayer",
+  "rhythmTrainer",
+  "abcPlayer",
 ];
 
 /** The tools listed in the Tools panel for a workspace and instrument side. */
-export function toolsListedFor(workspace: "accordion" | "harmony", side: "treble" | "stradella"): ToolId[] {
-  return TOOLS_PANEL_ORDER.filter((tool) =>
-    TOOL_REGISTRY[tool].workspace === workspace && (workspace === "harmony" || toolOfferedOn(tool, side)));
+export function toolsListedFor(
+  workspace: "accordion" | "harmony",
+  side: "treble" | "stradella",
+): ToolId[] {
+  return TOOLS_PANEL_ORDER.filter(
+    (tool) =>
+      TOOL_REGISTRY[tool].workspace === workspace &&
+      (workspace === "harmony" || toolOfferedOn(tool, side)),
+  );
 }

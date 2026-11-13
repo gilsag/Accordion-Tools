@@ -22,7 +22,8 @@ export function createZip(entries: readonly ZipEntry[]): Blob {
     const name = encoder.encode(entry.name);
     if (name.length > 65535) throw new Error("Diagram filename is too long.");
     const size = entry.data.length;
-    if (size > 0xffffffff || offset > 0xffffffff) throw new Error("Diagram archive exceeds ZIP limits.");
+    if (size > 0xffffffff || offset > 0xffffffff)
+      throw new Error("Diagram archive exceeds ZIP limits.");
     const crc = crc32(entry.data);
     const local = new Uint8Array(30 + name.length);
     const lv = new DataView(local.buffer);

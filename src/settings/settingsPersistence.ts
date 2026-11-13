@@ -4,7 +4,9 @@ import { migrateSettingsDocument } from "./settingsMigrations";
 /** Fetch editable defaults on each load, keeping the previous no-store policy.
  * A missing/unavailable file is allowed: App retains its built-in defaults.
  */
-export async function fetchDefaultSettingsDocument(url: string): Promise<DefaultSettingsFile | null> {
+export async function fetchDefaultSettingsDocument(
+  url: string,
+): Promise<DefaultSettingsFile | null> {
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) return null;
   const value: unknown = await response.json();

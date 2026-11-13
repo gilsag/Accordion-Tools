@@ -6,89 +6,156 @@ import type { AbcStradellaMode } from "../../types";
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type AbcPlayerSectionModel = Pick<AppControllerModel["tools"],
-  "abcBothHands" | "abcEditorExpanded" | "abcExampleOptions" | "abcExampleValue" |
-  "abcFileName" | "abcHands" | "abcMappedEvents" | "abcMissingPitchText" | "abcParseResult" |
-  "abcPositionBeat" | "abcStradellaMode" | "abcTempoBpm" | "abcText" | "abcTotalBeats" |
-  "abcTrebleChordSymbolsMode" | "abcVoiceCount" | "chooseAbcHands" | "isTrebleLikeSide" |
-  "language" | "loadAbcExample" | "pauseAbcPlayback" | "setAbcActiveButtonIds" |
-  "setAbcEditorExpanded" | "setAbcExampleValue" | "setAbcFileName" | "setAbcPlaybackState" |
-  "setAbcPositionBeat" | "setAbcStradellaMode" | "setAbcTempoBpm" | "setAbcText" |
-  "setAbcTrebleChordSymbolsMode" | "side" | "stopAbcPlayback" | "t">;
+type AbcPlayerSectionModel = Pick<
+  AppControllerModel["tools"],
+  | "abcBothHands"
+  | "abcEditorExpanded"
+  | "abcExampleOptions"
+  | "abcExampleValue"
+  | "abcFileName"
+  | "abcHands"
+  | "abcMappedEvents"
+  | "abcMissingPitchText"
+  | "abcParseResult"
+  | "abcPositionBeat"
+  | "abcStradellaMode"
+  | "abcTempoBpm"
+  | "abcText"
+  | "abcTotalBeats"
+  | "abcTrebleChordSymbolsMode"
+  | "abcVoiceCount"
+  | "chooseAbcHands"
+  | "isTrebleLikeSide"
+  | "language"
+  | "loadAbcExample"
+  | "pauseAbcPlayback"
+  | "setAbcActiveButtonIds"
+  | "setAbcEditorExpanded"
+  | "setAbcExampleValue"
+  | "setAbcFileName"
+  | "setAbcPlaybackState"
+  | "setAbcPositionBeat"
+  | "setAbcStradellaMode"
+  | "setAbcTempoBpm"
+  | "setAbcText"
+  | "setAbcTrebleChordSymbolsMode"
+  | "side"
+  | "stopAbcPlayback"
+  | "t"
+>;
 
 /** ABC Player: tune source, hands, tempo and mapping options. */
 export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionModel }) {
   const {
-    abcBothHands, abcEditorExpanded, abcExampleOptions, abcExampleValue, abcFileName, abcHands,
-    abcMappedEvents, abcMissingPitchText, abcParseResult, abcPositionBeat, abcStradellaMode,
-    abcTempoBpm, abcText, abcTotalBeats, abcTrebleChordSymbolsMode, abcVoiceCount, chooseAbcHands,
-    isTrebleLikeSide, language, loadAbcExample, pauseAbcPlayback, setAbcActiveButtonIds,
-    setAbcEditorExpanded, setAbcExampleValue, setAbcFileName, setAbcPlaybackState,
-    setAbcPositionBeat, setAbcStradellaMode, setAbcTempoBpm, setAbcText,
-    setAbcTrebleChordSymbolsMode, side, stopAbcPlayback, t,
+    abcBothHands,
+    abcEditorExpanded,
+    abcExampleOptions,
+    abcExampleValue,
+    abcFileName,
+    abcHands,
+    abcMappedEvents,
+    abcMissingPitchText,
+    abcParseResult,
+    abcPositionBeat,
+    abcStradellaMode,
+    abcTempoBpm,
+    abcText,
+    abcTotalBeats,
+    abcTrebleChordSymbolsMode,
+    abcVoiceCount,
+    chooseAbcHands,
+    isTrebleLikeSide,
+    language,
+    loadAbcExample,
+    pauseAbcPlayback,
+    setAbcActiveButtonIds,
+    setAbcEditorExpanded,
+    setAbcExampleValue,
+    setAbcFileName,
+    setAbcPlaybackState,
+    setAbcPositionBeat,
+    setAbcStradellaMode,
+    setAbcTempoBpm,
+    setAbcText,
+    setAbcTrebleChordSymbolsMode,
+    side,
+    stopAbcPlayback,
+    t,
   } = model;
   return (
     <>
       <p className="hint">
-        {side === "stradella"
-          ? t("ui.abcIntroStradella")
-          : t("ui.abcIntroTreble")}
+        {side === "stradella" ? t("ui.abcIntroStradella") : t("ui.abcIntroTreble")}
       </p>
 
-      <SegmentedChoice label={t("ui.abcHands")} value={abcHands} onChange={chooseAbcHands} groupClassName="whole-words"
-        options={[{ value: "stradella", label: t("nav.stradella") }, { value: "treble", label: t("nav.treble") },
-          { value: "both", label: t("ui.abcHandsBoth") }]} />
+      <SegmentedChoice
+        label={t("ui.abcHands")}
+        value={abcHands}
+        onChange={chooseAbcHands}
+        groupClassName="whole-words"
+        options={[
+          { value: "stradella", label: t("nav.stradella") },
+          { value: "treble", label: t("nav.treble") },
+          { value: "both", label: t("ui.abcHandsBoth") },
+        ]}
+      />
       {abcHands === "both" && abcText.trim() && (
-        <p className="hint">{abcVoiceCount >= 2 ? t("ui.abcHandsHint") : t("ui.abcHandsOneVoice")}</p>
+        <p className="hint">
+          {abcVoiceCount >= 2 ? t("ui.abcHandsHint") : t("ui.abcHandsOneVoice")}
+        </p>
       )}
 
       {(side === "stradella" || abcBothHands) && (
         <label>
           <span className="label-line">
-            {t("ui.abcStradellaMapping")}{" "}
-            <HelpTip text={t("ui.abcStradellaMappingHelp")} />
+            {t("ui.abcStradellaMapping")} <HelpTip text={t("ui.abcStradellaMappingHelp")} />
           </span>
           <select
             value={abcStradellaMode}
             onChange={(event) => {
               pauseAbcPlayback();
               setAbcActiveButtonIds([]);
-              setAbcStradellaMode(
-                event.target.value as AbcStradellaMode,
-              );
+              setAbcStradellaMode(event.target.value as AbcStradellaMode);
             }}
           >
-            <option value="bass-notes-only">
-              {t("ui.bassNotesOnly")}
-            </option>
-            <option value="chord-symbols-only">
-              {t("ui.chordSymbolsOnly")}
-            </option>
-            <option value="bass-notes-and-chord-symbols">
-              {t("ui.bassNotesChordSymbols")}
-            </option>
+            <option value="bass-notes-only">{t("ui.bassNotesOnly")}</option>
+            <option value="chord-symbols-only">{t("ui.chordSymbolsOnly")}</option>
+            <option value="bass-notes-and-chord-symbols">{t("ui.bassNotesChordSymbols")}</option>
           </select>
         </label>
       )}
 
       {(isTrebleLikeSide || abcBothHands) && (
-        <SegmentedChoice label={<>{t("ui.chordSymbols")} <HelpTip text={t("ui.abcTrebleSymbolsHelp")} /></>} value={abcTrebleChordSymbolsMode} onChange={(next) => { pauseAbcPlayback(); setAbcActiveButtonIds([]); setAbcTrebleChordSymbolsMode(next); }} options={[{ value: "ignore", label: t("ui.ignore") }, { value: "play", label: t("tools.play") }]} />
+        <SegmentedChoice
+          label={
+            <>
+              {t("ui.chordSymbols")} <HelpTip text={t("ui.abcTrebleSymbolsHelp")} />
+            </>
+          }
+          value={abcTrebleChordSymbolsMode}
+          onChange={(next) => {
+            pauseAbcPlayback();
+            setAbcActiveButtonIds([]);
+            setAbcTrebleChordSymbolsMode(next);
+          }}
+          options={[
+            { value: "ignore", label: t("ui.ignore") },
+            { value: "play", label: t("tools.play") },
+          ]}
+        />
       )}
 
       <label>
         {t("ui.exampleTune")}
         <select
           value={abcExampleValue}
-          onChange={(event) =>
-            void loadAbcExample(event.target.value)
-          }
+          onChange={(event) => void loadAbcExample(event.target.value)}
         >
           {abcExampleOptions.map((option) => (
-            <option
-              key={option.value || "empty"}
-              value={option.value}
-            >
-              {option.value === "" ? t("ui.chooseExample") : abcExampleName(option.value, option.label, language)}
+            <option key={option.value || "empty"} value={option.value}>
+              {option.value === ""
+                ? t("ui.chooseExample")
+                : abcExampleName(option.value, option.label, language)}
             </option>
           ))}
         </select>
@@ -130,7 +197,9 @@ export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionMod
       </div>
 
       {abcFileName && (
-        <p className="hint">{t("ui.file")} {abcFileName}</p>
+        <p className="hint">
+          {t("ui.file")} {abcFileName}
+        </p>
       )}
 
       <label>
@@ -141,9 +210,7 @@ export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionMod
           max={220}
           step={1}
           value={abcTempoBpm}
-          onChange={(event) =>
-            setAbcTempoBpm(Number(event.target.value))
-          }
+          onChange={(event) => setAbcTempoBpm(Number(event.target.value))}
         />
       </label>
 
@@ -166,22 +233,21 @@ export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionMod
 
       <div className="result-card">
         <div className="result-card-title">
-          {abcText.trim()
-            ? abcParseResult.title
-            : t("ui.noAbcLoaded")}
+          {abcText.trim() ? abcParseResult.title : t("ui.noAbcLoaded")}
         </div>
         {abcParseResult.errors.length > 0 ? (
-          <p>{abcParseResult.errors.map((error) => translateKnownLabel(language, error)).join(" ")}</p>
+          <p>
+            {abcParseResult.errors.map((error) => translateKnownLabel(language, error)).join(" ")}
+          </p>
         ) : (
           <p>
-            {t("ui.events")} {abcMappedEvents.length} · {t("ui.key")}: {" "}
-            {abcParseResult.key}
+            {t("ui.events")} {abcMappedEvents.length} · {t("ui.key")}: {abcParseResult.key}
             {abcBothHands
               ? ` · ${t("ui.abcVoicesBoth")}`
               : abcParseResult.voiceIds.length > 1
                 ? ` · ${t("ui.voice")}: ${side === "stradella" ? "2" : "1"}`
-                : ""} · {t("ui.length")}: {" "}
-            {abcTotalBeats.toFixed(1)} {t("ui.beats")}
+                : ""}{" "}
+            · {t("ui.length")}: {abcTotalBeats.toFixed(1)} {t("ui.beats")}
             {abcMissingPitchText
               ? ` · ${side === "stradella" && !abcBothHands ? t("ui.unavailableNotes") : t("ui.missingShort")}: ${abcMissingPitchText}`
               : ""}
@@ -193,20 +259,14 @@ export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionMod
 
       <details className="compact-help-details">
         <summary>{t("ui.notationHelp")}</summary>
-        <p>
-          {t("ui.abcNotationInstructions")}
-        </p>
+        <p>{t("ui.abcNotationInstructions")}</p>
       </details>
 
-      <div
-        className={`result-card abc-editor ${abcEditorExpanded ? "expanded" : "collapsed"}`}
-      >
+      <div className={`result-card abc-editor ${abcEditorExpanded ? "expanded" : "collapsed"}`}>
         <button
           type="button"
           className="inline-section-toggle"
-          onClick={() =>
-            setAbcEditorExpanded((current) => !current)
-          }
+          onClick={() => setAbcEditorExpanded((current) => !current)}
         >
           <span>{t("ui.abcEditor")}</span>
           <span>{abcEditorExpanded ? "−" : "+"}</span>
@@ -224,9 +284,7 @@ export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionMod
                 setAbcActiveButtonIds([]);
                 setAbcPlaybackState("stopped");
               }}
-              placeholder={
-                "X:1\nT:Simple tune\nM:4/4\nL:1/4\nQ:120\nK:C\nC D E F | G A B c |"
-              }
+              placeholder={"X:1\nT:Simple tune\nM:4/4\nL:1/4\nQ:120\nK:C\nC D E F | G A B c |"}
             />
           </label>
         )}

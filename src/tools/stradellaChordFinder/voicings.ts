@@ -66,7 +66,10 @@ export function combinationTones(buttons: DiagramButton[]) {
 const toneBits = new Map<string, number>();
 function toneBit(tone: string) {
   let bit = toneBits.get(tone);
-  if (bit === undefined) { bit = 2 ** toneBits.size; toneBits.set(tone, bit); }
+  if (bit === undefined) {
+    bit = 2 ** toneBits.size;
+    toneBits.set(tone, bit);
+  }
   return bit;
 }
 const buttonMaskCache = new WeakMap<DiagramButton, number>();

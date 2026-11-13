@@ -38,10 +38,12 @@ const MIGRATIONS: Record<number, (document: SettingsDocument) => SettingsDocumen
  * still validate and unknown ones are ignored.
  */
 export function migrateSettingsDocument(input: unknown): DefaultSettingsFile {
-  if (!input || typeof input !== "object" || Array.isArray(input)) return { settingsVersion: SETTINGS_VERSION };
+  if (!input || typeof input !== "object" || Array.isArray(input))
+    return { settingsVersion: SETTINGS_VERSION };
   let document: SettingsDocument = { ...(input as SettingsDocument) };
   const declared = document.settingsVersion;
-  let version = typeof declared === "number" && Number.isInteger(declared) && declared >= 1 ? declared : 1;
+  let version =
+    typeof declared === "number" && Number.isInteger(declared) && declared >= 1 ? declared : 1;
   while (version < SETTINGS_VERSION) {
     document = MIGRATIONS[version](document);
     version += 1;

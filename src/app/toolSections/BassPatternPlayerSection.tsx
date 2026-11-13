@@ -2,52 +2,117 @@ import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { translateKnownLabel, type TranslationKey } from "../../i18n/catalog";
 import { bassPatternName, progressionName } from "../../i18n/optionLabels";
-import { bassPatternBeat, patternBarCount, type BassPatternBeatName } from "../../tools/bassPatternPlayerTools";
+import {
+  bassPatternBeat,
+  patternBarCount,
+  type BassPatternBeatName,
+} from "../../tools/bassPatternPlayerTools";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 import type { AppControllerModel } from "../useAppController";
 
 const BEAT_LABEL_KEYS: Record<BassPatternBeatName, TranslationKey> = {
-  "half": "ui.beatHalf", "quarter": "ui.beatQuarter", "dotted-quarter": "ui.beatDottedQuarter",
-  "eighth": "ui.beatEighth", "dotted-eighth": "ui.beatDottedEighth", "sixteenth": "ui.beatSixteenth",
+  half: "ui.beatHalf",
+  quarter: "ui.beatQuarter",
+  "dotted-quarter": "ui.beatDottedQuarter",
+  eighth: "ui.beatEighth",
+  "dotted-eighth": "ui.beatDottedEighth",
+  sixteenth: "ui.beatSixteenth",
 };
 
 /** The slice of the controller model this section reads. */
-type BassPatternPlayerSectionModel = Pick<AppControllerModel["tools"],
-  "bassPatternBarsPerChord" | "bassPatternChordVoicing" | "bassPatternDefinitions" |
-  "bassPatternEditorErrors" | "bassPatternEditorExpanded" | "bassPatternEditorMessage" |
-  "bassPatternEditorText" | "bassPatternEvents" | "bassPatternExportFormat" | "bassPatternId" |
-  "bassPatternMissingText" | "bassPatternRepeatSelection" | "bassPatternRoot" |
-  "bassPatternTempoBpm" | "bassPatternTotalBeats" | "bassPatternValidationErrors" |
-  "chordProgressionDefinitions" | "chordProgressionId" | "customBassPatternDefinitions" |
-  "exportSelectedBassPattern" | "formatProgressionOptionLabel" | "language" |
-  "loadSelectedPatternIntoEditor" | "removeSelectedCustomBassPattern" |
-  "saveCustomBassPattern" | "selectedBassPattern" | "selectedChordProgression" |
-  "setBassPatternBarsPerChord" | "setBassPatternChordVoicing" | "setBassPatternEditorExpanded" |
-  "setBassPatternEditorText" | "setBassPatternExportFormat" | "setBassPatternId" |
-  "setBassPatternRepeatSelection" | "setBassPatternRoot" | "setBassPatternTempoBpm" |
-  "setChordProgressionId" | "stopBassPatternPlayback" | "t">;
+type BassPatternPlayerSectionModel = Pick<
+  AppControllerModel["tools"],
+  | "bassPatternBarsPerChord"
+  | "bassPatternChordVoicing"
+  | "bassPatternDefinitions"
+  | "bassPatternEditorErrors"
+  | "bassPatternEditorExpanded"
+  | "bassPatternEditorMessage"
+  | "bassPatternEditorText"
+  | "bassPatternEvents"
+  | "bassPatternExportFormat"
+  | "bassPatternId"
+  | "bassPatternMissingText"
+  | "bassPatternRepeatSelection"
+  | "bassPatternRoot"
+  | "bassPatternTempoBpm"
+  | "bassPatternTotalBeats"
+  | "bassPatternValidationErrors"
+  | "chordProgressionDefinitions"
+  | "chordProgressionId"
+  | "customBassPatternDefinitions"
+  | "exportSelectedBassPattern"
+  | "formatProgressionOptionLabel"
+  | "language"
+  | "loadSelectedPatternIntoEditor"
+  | "removeSelectedCustomBassPattern"
+  | "saveCustomBassPattern"
+  | "selectedBassPattern"
+  | "selectedChordProgression"
+  | "setBassPatternBarsPerChord"
+  | "setBassPatternChordVoicing"
+  | "setBassPatternEditorExpanded"
+  | "setBassPatternEditorText"
+  | "setBassPatternExportFormat"
+  | "setBassPatternId"
+  | "setBassPatternRepeatSelection"
+  | "setBassPatternRoot"
+  | "setBassPatternTempoBpm"
+  | "setChordProgressionId"
+  | "stopBassPatternPlayback"
+  | "t"
+>;
 
 /** Bass Pattern Player: pattern, progression, tempo, editor and export. */
-export default function BassPatternPlayerSection({ model }: { model: BassPatternPlayerSectionModel }) {
+export default function BassPatternPlayerSection({
+  model,
+}: {
+  model: BassPatternPlayerSectionModel;
+}) {
   const {
-    bassPatternBarsPerChord, bassPatternChordVoicing, bassPatternDefinitions,
-    bassPatternEditorErrors, bassPatternEditorExpanded, bassPatternEditorMessage,
-    bassPatternEditorText, bassPatternEvents, bassPatternExportFormat, bassPatternId,
-    bassPatternMissingText, bassPatternRepeatSelection, bassPatternRoot, bassPatternTempoBpm,
-    bassPatternTotalBeats, bassPatternValidationErrors, chordProgressionDefinitions,
-    chordProgressionId, customBassPatternDefinitions, exportSelectedBassPattern,
-    formatProgressionOptionLabel, language, loadSelectedPatternIntoEditor,
-    removeSelectedCustomBassPattern, saveCustomBassPattern, selectedBassPattern,
-    selectedChordProgression, setBassPatternBarsPerChord, setBassPatternChordVoicing,
-    setBassPatternEditorExpanded, setBassPatternEditorText, setBassPatternExportFormat,
-    setBassPatternId, setBassPatternRepeatSelection, setBassPatternRoot, setBassPatternTempoBpm,
-    setChordProgressionId, stopBassPatternPlayback, t,
+    bassPatternBarsPerChord,
+    bassPatternChordVoicing,
+    bassPatternDefinitions,
+    bassPatternEditorErrors,
+    bassPatternEditorExpanded,
+    bassPatternEditorMessage,
+    bassPatternEditorText,
+    bassPatternEvents,
+    bassPatternExportFormat,
+    bassPatternId,
+    bassPatternMissingText,
+    bassPatternRepeatSelection,
+    bassPatternRoot,
+    bassPatternTempoBpm,
+    bassPatternTotalBeats,
+    bassPatternValidationErrors,
+    chordProgressionDefinitions,
+    chordProgressionId,
+    customBassPatternDefinitions,
+    exportSelectedBassPattern,
+    formatProgressionOptionLabel,
+    language,
+    loadSelectedPatternIntoEditor,
+    removeSelectedCustomBassPattern,
+    saveCustomBassPattern,
+    selectedBassPattern,
+    selectedChordProgression,
+    setBassPatternBarsPerChord,
+    setBassPatternChordVoicing,
+    setBassPatternEditorExpanded,
+    setBassPatternEditorText,
+    setBassPatternExportFormat,
+    setBassPatternId,
+    setBassPatternRepeatSelection,
+    setBassPatternRoot,
+    setBassPatternTempoBpm,
+    setChordProgressionId,
+    stopBassPatternPlayback,
+    t,
   } = model;
   return (
     <>
-      <p className="hint">
-        {t("ui.playsStradellaBassPatternsOverAChordProgression")}
-      </p>
+      <p className="hint">{t("ui.playsStradellaBassPatternsOverAChordProgression")}</p>
 
       <label>
         {t("ui.progression")}
@@ -100,7 +165,22 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
         </select>
       </label>
 
-      <SegmentedChoice label={<>{t("ui.chordVoicing")} <HelpTip text={t("ui.simpleFullVoicingHelp")} /></>} value={bassPatternChordVoicing} onChange={(next) => { stopBassPatternPlayback(); setBassPatternChordVoicing(next); }} options={[{ value: "simple", label: t("ui.simple") }, { value: "full", label: t("ui.full") }]} />
+      <SegmentedChoice
+        label={
+          <>
+            {t("ui.chordVoicing")} <HelpTip text={t("ui.simpleFullVoicingHelp")} />
+          </>
+        }
+        value={bassPatternChordVoicing}
+        onChange={(next) => {
+          stopBassPatternPlayback();
+          setBassPatternChordVoicing(next);
+        }}
+        options={[
+          { value: "simple", label: t("ui.simple") },
+          { value: "full", label: t("ui.full") },
+        ]}
+      />
 
       <div className="compact-control-grid">
         <label>
@@ -113,15 +193,14 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
             value={bassPatternBarsPerChord}
             onChange={(event) => {
               stopBassPatternPlayback();
-              setBassPatternBarsPerChord(
-                Number(event.target.value),
-              );
+              setBassPatternBarsPerChord(Number(event.target.value));
             }}
           />
         </label>
 
         <label>
-          {t("ui.tempo")}: {t("ui.tempoBeats", {
+          {t("ui.tempo")}:{" "}
+          {t("ui.tempoBeats", {
             tempo: bassPatternTempoBpm,
             beat: t(BEAT_LABEL_KEYS[bassPatternBeat(selectedBassPattern?.meter ?? "4/4").beat]),
           })}
@@ -131,9 +210,7 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
             max={220}
             step={1}
             value={bassPatternTempoBpm}
-            onChange={(event) =>
-              setBassPatternTempoBpm(Number(event.target.value))
-            }
+            onChange={(event) => setBassPatternTempoBpm(Number(event.target.value))}
           />
         </label>
       </div>
@@ -143,9 +220,7 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
           {t("ui.playbackRepeat")}
           <select
             value={bassPatternRepeatSelection}
-            onChange={(event) =>
-              setBassPatternRepeatSelection(event.target.value)
-            }
+            onChange={(event) => setBassPatternRepeatSelection(event.target.value)}
           >
             <option value="1">{t("ui.firstTime")}</option>
             <option value="2">{t("ui.twoTimes")}</option>
@@ -157,51 +232,42 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
 
       <div className="result-card">
         <div className="result-card-title">
-          {selectedBassPattern ? bassPatternName(selectedBassPattern.id, selectedBassPattern.name, language) : t("ui.noPattern")}
+          {selectedBassPattern
+            ? bassPatternName(selectedBassPattern.id, selectedBassPattern.name, language)
+            : t("ui.noPattern")}
         </div>
         <p>
-          {selectedChordProgression ? progressionName(selectedChordProgression.id, selectedChordProgression.name, language) :
-            t("ui.noProgression")}{" "}
-          · {t("ui.patternBars")}:{" "}
-          {selectedBassPattern
-            ? patternBarCount(selectedBassPattern)
-            : 1}{" "}
-          · {bassPatternBarsPerChord} {t("ui.repeatPerChord")} ·
-          {t("ui.length")}: {bassPatternTotalBeats.toFixed(1)} {t("ui.meterUnits")}
-          {bassPatternMissingText
-            ? ` · ${t("ui.missingShort")}: ${bassPatternMissingText}`
-            : ""}
+          {selectedChordProgression
+            ? progressionName(selectedChordProgression.id, selectedChordProgression.name, language)
+            : t("ui.noProgression")}{" "}
+          · {t("ui.patternBars")}: {selectedBassPattern ? patternBarCount(selectedBassPattern) : 1}{" "}
+          · {bassPatternBarsPerChord} {t("ui.repeatPerChord")} ·{t("ui.length")}:{" "}
+          {bassPatternTotalBeats.toFixed(1)} {t("ui.meterUnits")}
+          {bassPatternMissingText ? ` · ${t("ui.missingShort")}: ${bassPatternMissingText}` : ""}
         </p>
         {bassPatternValidationErrors.length > 0 && (
           <div className="bass-pattern-errors" role="alert">
             <strong>{t("ui.patternErrors")}</strong>
             <ul>
-              {bassPatternValidationErrors
-                .slice(0, 6)
-                .map((message) => (
-                  <li key={message}>{message}</li>
-                ))}
+              {bassPatternValidationErrors.slice(0, 6).map((message) => (
+                <li key={message}>{message}</li>
+              ))}
             </ul>
             {bassPatternValidationErrors.length > 6 && (
-              <p>
-                {t("ui.andMore", { count: bassPatternValidationErrors.length - 6 })}
-              </p>
+              <p>{t("ui.andMore", { count: bassPatternValidationErrors.length - 6 })}</p>
             )}
           </div>
         )}
-        {selectedBassPattern?.tags &&
-          selectedBassPattern.tags.length > 0 && (
-            <p className="hint">
-              {t("ui.tags")}: {selectedBassPattern.tags.join(", ")}
-            </p>
-          )}
+        {selectedBassPattern?.tags && selectedBassPattern.tags.length > 0 && (
+          <p className="hint">
+            {t("ui.tags")}: {selectedBassPattern.tags.join(", ")}
+          </p>
+        )}
       </div>
 
       <details className="compact-help-details">
         <summary>{t("ui.notationHelp")}</summary>
-        <p>
-          {t("ui.bassPatternNotationHelp")}
-        </p>
+        <p>{t("ui.bassPatternNotationHelp")}</p>
       </details>
 
       <p className="hint playback-bar-hint">{t("ui.playbackBarHint")}</p>
@@ -211,12 +277,7 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
           <select
             value={bassPatternExportFormat}
             onChange={(event) =>
-              setBassPatternExportFormat(
-                event.target.value as
-                  | "abc"
-                  | "midi"
-                  | "lilypond",
-              )
+              setBassPatternExportFormat(event.target.value as "abc" | "midi" | "lilypond")
             }
             aria-label={t("ui.stradellaExportFormat")}
           >
@@ -241,23 +302,17 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
         <button
           type="button"
           className="inline-section-toggle"
-          onClick={() =>
-            setBassPatternEditorExpanded((current) => !current)
-          }
+          onClick={() => setBassPatternEditorExpanded((current) => !current)}
         >
           <span>{t("ui.customPatternEditor")}</span>
           <span>{bassPatternEditorExpanded ? "−" : "+"}</span>
         </button>
         {bassPatternEditorExpanded && (
           <>
-            <p className="hint">
-              {t("ui.patternEditorIntro")}
-            </p>
+            <p className="hint">{t("ui.patternEditorIntro")}</p>
             <textarea
               value={bassPatternEditorText}
-              onChange={(event) =>
-                setBassPatternEditorText(event.target.value)
-              }
+              onChange={(event) => setBassPatternEditorText(event.target.value)}
               rows={12}
               spellCheck={false}
             />
@@ -265,19 +320,15 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
               <div className="bass-pattern-errors" role="alert">
                 <strong>{t("ui.editorValidation")}</strong>
                 <ul>
-                  {bassPatternEditorErrors
-                    .slice(0, 4)
-                    .map((message) => (
-                      <li key={message}>{message}</li>
-                    ))}
+                  {bassPatternEditorErrors.slice(0, 4).map((message) => (
+                    <li key={message}>{message}</li>
+                  ))}
                 </ul>
               </div>
             ) : (
               <p className="hint">{t("ui.editorValidationOK")}</p>
             )}
-            {bassPatternEditorMessage && (
-              <p className="hint">{bassPatternEditorMessage}</p>
-            )}
+            {bassPatternEditorMessage && <p className="hint">{bassPatternEditorMessage}</p>}
             <div className="button-row">
               <button
                 type="button"
@@ -299,9 +350,7 @@ export default function BassPatternPlayerSection({ model }: { model: BassPattern
                 className="small-button"
                 onClick={removeSelectedCustomBassPattern}
                 disabled={
-                  !customBassPatternDefinitions.some(
-                    (pattern) => pattern.id === bassPatternId,
-                  )
+                  !customBassPatternDefinitions.some((pattern) => pattern.id === bassPatternId)
                 }
               >
                 {t("ui.removeCustom")}

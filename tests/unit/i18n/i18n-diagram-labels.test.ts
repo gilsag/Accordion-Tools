@@ -2,8 +2,14 @@ import assert from "node:assert/strict";
 import { CHORD_FAMILIES, SCALES } from "../../../src/tools/harmonyExplorer/music";
 import { translate } from "../../../src/i18n/allCatalogs";
 import {
-  accordionStatusText, diagramAutoTitle, harmonyLegendFamilyText, harmonyRelatedDisplayName,
-  harmonyStatusText, notationStatusLabel, pianoRangeStatusLabel, trebleLayoutStatusLabel,
+  accordionStatusText,
+  diagramAutoTitle,
+  harmonyLegendFamilyText,
+  harmonyRelatedDisplayName,
+  harmonyStatusText,
+  notationStatusLabel,
+  pianoRangeStatusLabel,
+  trebleLayoutStatusLabel,
 } from "../../../src/i18n/diagramLabels";
 import { familyName, scaleName } from "../../../src/i18n/musicTerms";
 import { test } from "vitest";
@@ -17,33 +23,106 @@ test("The examples reported in the UI, tested as actual formatted output in both
   assert.equal(diagramAutoTitle("treble", 96, "b-system", "en"), "B-system / Bayan Treble");
   assert.equal(diagramAutoTitle("treble", 96, "b-system", "es"), "Agudos · Sistema B / bayán");
   assert.equal(diagramAutoTitle("treble", 96, "piano", "es"), "Agudos de piano");
-  const common = { basses: 96, trebleLayout: "c-system" as const, pianoRange: "three-octave" as const,
-    trebleRows: 5, notation: "english" as const, soundEnabled: true };
-  assert.equal(accordionStatusText({ ...common, side: "stradella", activeTool: "No active tool", language: "en" }),
-    "Stradella · 96 bass · English notation · Sound on · No active tool");
-  assert.equal(accordionStatusText({ ...common, side: "stradella", activeTool: "Ninguna herramienta activa", language: "es" }),
-    "Stradella · 96 bajos · notación inglesa · Sonido activado · Ninguna herramienta activa");
-  assert.equal(accordionStatusText({ ...common, side: "treble", activeTool: "Ninguna herramienta activa", language: "es" }),
-    "Agudos · Sistema C · 5 filas · notación inglesa · Sonido activado · Ninguna herramienta activa");
-  assert.equal(accordionStatusText({ ...common, side: "treble", trebleLayout: "piano", activeTool: "Ninguna herramienta activa", language: "es" }),
-    "Agudos · Piano · tres octavas, C3–C6 · notación inglesa · Sonido activado · Ninguna herramienta activa");
-  assert.equal(harmonyStatusText({ referenceFamilyId: "major", referenceFamilyEnglishName: "Major triad",
-    relatedFamilyId: "minor7", relatedFamilyEnglishName: "Minor seventh", scaleId: "ionian", scaleEnglishName: "Ionian (Major)",
-    soundEnabled: true, language: "es" }),
-    "Armonía · tríada mayor → séptima menor · jónico (mayor) · Sonido activado");
-  assert.equal(harmonyStatusText({ referenceFamilyId: "major", referenceFamilyEnglishName: "Major triad",
-    relatedFamilyId: "minor7", relatedFamilyEnglishName: "Minor seventh", scaleId: "ionian", scaleEnglishName: "Ionian (Major)",
-    soundEnabled: true, language: "en" }),
-    "Harmony · Major triad → Minor seventh · Ionian (Major) · Sound on");
+  const common = {
+    basses: 96,
+    trebleLayout: "c-system" as const,
+    pianoRange: "three-octave" as const,
+    trebleRows: 5,
+    notation: "english" as const,
+    soundEnabled: true,
+  };
+  assert.equal(
+    accordionStatusText({
+      ...common,
+      side: "stradella",
+      activeTool: "No active tool",
+      language: "en",
+    }),
+    "Stradella · 96 bass · English notation · Sound on · No active tool",
+  );
+  assert.equal(
+    accordionStatusText({
+      ...common,
+      side: "stradella",
+      activeTool: "Ninguna herramienta activa",
+      language: "es",
+    }),
+    "Stradella · 96 bajos · notación inglesa · Sonido activado · Ninguna herramienta activa",
+  );
+  assert.equal(
+    accordionStatusText({
+      ...common,
+      side: "treble",
+      activeTool: "Ninguna herramienta activa",
+      language: "es",
+    }),
+    "Agudos · Sistema C · 5 filas · notación inglesa · Sonido activado · Ninguna herramienta activa",
+  );
+  assert.equal(
+    accordionStatusText({
+      ...common,
+      side: "treble",
+      trebleLayout: "piano",
+      activeTool: "Ninguna herramienta activa",
+      language: "es",
+    }),
+    "Agudos · Piano · tres octavas, C3–C6 · notación inglesa · Sonido activado · Ninguna herramienta activa",
+  );
+  assert.equal(
+    harmonyStatusText({
+      referenceFamilyId: "major",
+      referenceFamilyEnglishName: "Major triad",
+      relatedFamilyId: "minor7",
+      relatedFamilyEnglishName: "Minor seventh",
+      scaleId: "ionian",
+      scaleEnglishName: "Ionian (Major)",
+      soundEnabled: true,
+      language: "es",
+    }),
+    "Armonía · tríada mayor → séptima menor · jónico (mayor) · Sonido activado",
+  );
+  assert.equal(
+    harmonyStatusText({
+      referenceFamilyId: "major",
+      referenceFamilyEnglishName: "Major triad",
+      relatedFamilyId: "minor7",
+      relatedFamilyEnglishName: "Minor seventh",
+      scaleId: "ionian",
+      scaleEnglishName: "Ionian (Major)",
+      soundEnabled: true,
+      language: "en",
+    }),
+    "Harmony · Major triad → Minor seventh · Ionian (Major) · Sound on",
+  );
   assert.equal(harmonyRelatedDisplayName("minor7", "Minor seventh", "es"), "séptima menor");
-  assert.equal(harmonyLegendFamilyText(harmonyRelatedDisplayName("minor7", "Minor seventh", "es"), "es", false, false), "séptima menor");
-  assert.equal(harmonyLegendFamilyText("séptima menor", "es", true, false), "Acordes diatónicos: séptima menor");
-  assert.equal(harmonyLegendFamilyText("Minor seventh", "en", true, false), "Diatonic minor seventh");
-  assert.equal(harmonyLegendFamilyText("ignored", "es", true, true), "Acordes diatónicos (todas las familias)");
+  assert.equal(
+    harmonyLegendFamilyText(
+      harmonyRelatedDisplayName("minor7", "Minor seventh", "es"),
+      "es",
+      false,
+      false,
+    ),
+    "séptima menor",
+  );
+  assert.equal(
+    harmonyLegendFamilyText("séptima menor", "es", true, false),
+    "Acordes diatónicos: séptima menor",
+  );
+  assert.equal(
+    harmonyLegendFamilyText("Minor seventh", "en", true, false),
+    "Diatonic minor seventh",
+  );
+  assert.equal(
+    harmonyLegendFamilyText("ignored", "es", true, true),
+    "Acordes diatónicos (todas las familias)",
+  );
   for (const language of ["en", "es", "fr", "pt", "it", "de"] as const) {
     for (const notation of ["english", "german", "solfege", "intervals", "blank"] as const) {
       const name = notationStatusLabel(notation, language);
-      assert.ok(name && !name.startsWith("status."), `${language}/${notation}: untranslated notation`);
+      assert.ok(
+        name && !name.startsWith("status."),
+        `${language}/${notation}: untranslated notation`,
+      );
     }
     for (const layout of ["c-system", "b-system", "piano"] as const) {
       assert.ok(trebleLayoutStatusLabel(layout, language));
@@ -64,5 +143,8 @@ test("The examples reported in the UI, tested as actual formatted output in both
 });
 
 test("Source bindings", () => {
-  assert.equal(translate("es", "ui.diatonicFamily", { family: "séptima menor" }), "Acordes diatónicos: séptima menor");
+  assert.equal(
+    translate("es", "ui.diatonicFamily", { family: "séptima menor" }),
+    "Acordes diatónicos: séptima menor",
+  );
 });

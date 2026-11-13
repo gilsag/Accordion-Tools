@@ -52,9 +52,7 @@ export type MappedAbcEvent = AbcEvent & {
 };
 
 export type AbcStradellaMappingMode =
-  | "bass-notes-only"
-  | "chord-symbols-only"
-  | "bass-notes-and-chord-symbols";
+  "bass-notes-only" | "chord-symbols-only" | "bass-notes-and-chord-symbols";
 
 const PITCHES = INDEX_TO_PITCH;
 const LETTER_TO_INDEX: Record<string, number> = {
@@ -119,7 +117,7 @@ function normalizeKeyName(rawKey: string) {
 function keySignatureAccidentals(rawKey: string) {
   const normalized = normalizeKeyName(rawKey);
   const majorKey = normalized.endsWith("m")
-    ? MINOR_TO_RELATIVE_MAJOR[normalized] ?? "C"
+    ? (MINOR_TO_RELATIVE_MAJOR[normalized] ?? "C")
     : normalized;
   return MAJOR_KEY_ACCIDENTALS[majorKey] ?? {};
 }
@@ -173,7 +171,8 @@ function durationMultiplier(source: string, index: number) {
   if (simpleSlash) return { multiplier: Number(simpleSlash[1]) / 2, nextIndex: currentIndex };
 
   const denominatorOnly = token.match(/^\/(\d+)$/);
-  if (denominatorOnly) return { multiplier: 1 / Number(denominatorOnly[1]), nextIndex: currentIndex };
+  if (denominatorOnly)
+    return { multiplier: 1 / Number(denominatorOnly[1]), nextIndex: currentIndex };
 
   const fraction = token.match(/^(\d+)\/(\d+)$/);
   if (fraction) {
@@ -184,7 +183,8 @@ function durationMultiplier(source: string, index: number) {
   }
 
   const repeatedSlashes = token.match(/^(\/+)$/);
-  if (repeatedSlashes) return { multiplier: 1 / Math.pow(2, token.length), nextIndex: currentIndex };
+  if (repeatedSlashes)
+    return { multiplier: 1 / Math.pow(2, token.length), nextIndex: currentIndex };
 
   return { multiplier: 1, nextIndex: currentIndex };
 }
@@ -249,7 +249,8 @@ function parseOneNote(
 
   const upperLetter = letter.toUpperCase();
   const baseOctave = letter === upperLetter ? 4 : 5;
-  const accidental = explicitAccidental ?? measureAccidentals[upperLetter] ?? keyAccidentals[upperLetter] ?? 0;
+  const accidental =
+    explicitAccidental ?? measureAccidentals[upperLetter] ?? keyAccidentals[upperLetter] ?? 0;
 
   if (explicitAccidental !== null) {
     measureAccidentals[upperLetter] = explicitAccidental;
@@ -273,7 +274,6 @@ function parseOneNote(
 }
 
 function chordPatternFromSuffix(rawSuffix: string): FinderChordPattern | null {
-
   const raw = rawSuffix.trim();
   if (!raw || raw === "M" || /^maj(or)?$/i.test(raw)) return "major-triad";
   if (/^(m|min|minor|-)$/.test(raw)) return "minor-triad";
@@ -456,8 +456,11 @@ function parseMusicLine(
 
         const durationAfterChord = durationMultiplier(source, closeIndex + 1);
         const tieToNext = source[durationAfterChord.nextIndex] === "-";
-        const nextIndex = tieToNext ? durationAfterChord.nextIndex + 1 : durationAfterChord.nextIndex;
-        const duration = state.baseDurationBeats * durationAfterChord.multiplier * longestMultiplier;
+        const nextIndex = tieToNext
+          ? durationAfterChord.nextIndex + 1
+          : durationAfterChord.nextIndex;
+        const duration =
+          state.baseDurationBeats * durationAfterChord.multiplier * longestMultiplier;
         pushAbcEvent(
           state,
           duration,
@@ -665,7 +668,8 @@ function abcjsPitchToNote(
 ): AbcNote {
   const letter = letterForAbcjsPitch(pitch.pitch);
   const explicitAccidental = accidentalValueFromAbcjs(pitch.accidental);
-  const accidental = explicitAccidental ?? measureAccidentals[letter] ?? keyAccidentals[letter] ?? 0;
+  const accidental =
+    explicitAccidental ?? measureAccidentals[letter] ?? keyAccidentals[letter] ?? 0;
 
   if (explicitAccidental !== null) {
     measureAccidentals[letter] = explicitAccidental;
@@ -708,7 +712,9 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
   const title = tune.metaText?.title ?? "Untitled ABC tune";
   const tempoBpm = tune.metaText?.tempo?.bpm ?? tune.getBpm?.(tune.metaText?.tempo) ?? 120;
   const keySignature = tune.getKeySignature?.();
-  const key = normalizeKeyName(`${keySignature?.root ?? "C"}${keySignature?.acc ?? ""}${keySignature?.mode ? ` ${keySignature.mode}` : ""}`);
+  const key = normalizeKeyName(
+    `${keySignature?.root ?? "C"}${keySignature?.acc ?? ""}${keySignature?.mode ? ` ${keySignature.mode}` : ""}`,
+  );
   const keyTonic = keyTonicPitchClass(key);
   const sequencedVoices = abcjs.synth.sequence(tune, {}) as unknown as AbcJsSequenceElement[][];
   const voiceIds = sequencedVoices.map((_, index) => String(index + 1));
@@ -740,7 +746,9 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
       const durationBeats = element.duration * 4;
       const startBeat = hasWrittenRepeats
         ? unfoldedPosition * 4
-        : typeof element.timing === "number" ? element.timing * 4 : 0;
+        : typeof element.timing === "number"
+          ? element.timing * 4
+          : 0;
       unfoldedPosition += element.duration;
       const rawPitches = element.pitches ?? [];
       const notes = rawPitches.map((pitch) =>
@@ -796,9 +804,10 @@ function parseAbcWithAbcjs(abcText: string): AbcParseResult {
     tempoBpm,
     key,
     keyTonicPitchClass: keyTonic,
-    errors: sortedEvents.length === 0
-      ? ["No playable notes or chord symbols were found in this ABC text."]
-      : [],
+    errors:
+      sortedEvents.length === 0
+        ? ["No playable notes or chord symbols were found in this ABC text."]
+        : [],
   };
 }
 
@@ -837,22 +846,23 @@ export function parseAbc(abcText: string): AbcParseResult {
     return interpretAccordionBassStaff(parseAbcWithAbcjs(abcText), abcText);
   } catch (error) {
     const legacy = parseAbcLegacy(abcText);
-    return interpretAccordionBassStaff({
-      ...legacy,
-      errors: [
-        ...legacy.errors,
-        `abcjs parsing failed; used legacy parser fallback. ${error instanceof Error ? error.message : ""}`.trim(),
-      ],
-    }, abcText);
+    return interpretAccordionBassStaff(
+      {
+        ...legacy,
+        errors: [
+          ...legacy.errors,
+          `abcjs parsing failed; used legacy parser fallback. ${error instanceof Error ? error.message : ""}`.trim(),
+        ],
+      },
+      abcText,
+    );
   }
 }
 
 function uniqueEventVoiceIds(events: AbcEvent[]) {
   return [
     ...new Set(
-      events
-        .map((event) => event.voiceId)
-        .filter((voiceId): voiceId is string => Boolean(voiceId)),
+      events.map((event) => event.voiceId).filter((voiceId): voiceId is string => Boolean(voiceId)),
     ),
   ];
 }
@@ -897,10 +907,7 @@ function noteForChordTone(root: string, baseOctave: number, interval: number): A
   };
 }
 
-function chooseTrebleButton(
-  candidates: DiagramButton[],
-  previous: DiagramButton | undefined,
-) {
+function chooseTrebleButton(candidates: DiagramButton[], previous: DiagramButton | undefined) {
   if (candidates.length === 0) return undefined;
   if (!previous) {
     return [...candidates].sort((a, b) => {
@@ -1072,11 +1079,16 @@ function chordButtonForBassStaffMarker(
   buttons: DiagramButton[],
   symbol: AbcChordSymbol,
 ): DiagramButton | undefined {
-  const kind = symbol.pattern === "major-triad" ? "chord-major"
-    : symbol.pattern === "minor-triad" ? "chord-minor"
-    : symbol.pattern === "dominant7" ? "chord-dominant7"
-    : symbol.pattern === "diminished7" ? "chord-diminished7"
-    : null;
+  const kind =
+    symbol.pattern === "major-triad"
+      ? "chord-major"
+      : symbol.pattern === "minor-triad"
+        ? "chord-minor"
+        : symbol.pattern === "dominant7"
+          ? "chord-dominant7"
+          : symbol.pattern === "diminished7"
+            ? "chord-diminished7"
+            : null;
   if (!kind) return undefined;
   return buttons.find((button) => button.kind === kind && button.chordRoot === symbol.root);
 }
@@ -1102,13 +1114,18 @@ export function mapAbcEventsToStradellaButtons(
     return mapAbcEventsToStradellaBassButtons(buttons, events, preferredRootPitchClass);
   }
 
-  const bassMapped = mode === "bass-notes-and-chord-symbols"
-    ? mapAbcEventsToStradellaBassButtons(buttons, events, preferredRootPitchClass)
-    : undefined;
+  const bassMapped =
+    mode === "bass-notes-and-chord-symbols"
+      ? mapAbcEventsToStradellaBassButtons(buttons, events, preferredRootPitchClass)
+      : undefined;
 
   return events.map((event, eventIndex) => {
-    const eventButtons: DiagramButton[] = bassMapped?.[eventIndex]?.buttons ? [...bassMapped[eventIndex].buttons] : [];
-    const missingNotes: string[] = bassMapped?.[eventIndex]?.missingNotes ? [...bassMapped[eventIndex].missingNotes] : [];
+    const eventButtons: DiagramButton[] = bassMapped?.[eventIndex]?.buttons
+      ? [...bassMapped[eventIndex].buttons]
+      : [];
+    const missingNotes: string[] = bassMapped?.[eventIndex]?.missingNotes
+      ? [...bassMapped[eventIndex].missingNotes]
+      : [];
     const finderMode = chordFinderModeForAbc(mode);
     if (event.stradellaChordMarker && event.chordSymbols.length === 0) {
       missingNotes.push(`chord button for ${event.notes[0]?.label ?? "unlabeled note"}`);
@@ -1161,7 +1178,12 @@ export function mapAbcEventsToBothHands(
   const stradellaEvents = abcEventsForStradellaSide(events);
   const mapped = [
     ...mapAbcEventsToTrebleButtons(trebleButtons, trebleEvents, playTrebleChordSymbols),
-    ...mapAbcEventsToStradellaButtons(stradellaButtons, stradellaEvents, keyTonicPitchClass, stradellaMode),
+    ...mapAbcEventsToStradellaButtons(
+      stradellaButtons,
+      stradellaEvents,
+      keyTonicPitchClass,
+      stradellaMode,
+    ),
   ].sort((a, b) => a.startBeat - b.startBeat);
   return { playable: [...trebleEvents, ...stradellaEvents], mapped };
 }

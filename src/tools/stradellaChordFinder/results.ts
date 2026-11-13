@@ -2,7 +2,10 @@
 
 import type { DiagramButton } from "../../types";
 import { combinationTones } from "./voicings";
-import { analyzeStradellaRegistralVoicing, type StradellaRegistralAnalysis } from "./registralAnalysis";
+import {
+  analyzeStradellaRegistralVoicing,
+  type StradellaRegistralAnalysis,
+} from "./registralAnalysis";
 
 /** Shared candidate contract. `buttons` may include non-sounding reference
  * markers; `playbackButtons` is authoritative for harmonic completeness,
@@ -27,7 +30,6 @@ export type StradellaChordFinderResult = {
   explanation: string;
 };
 
-
 export function summarizeResult(buttons: DiagramButton[], targetPitches: string[]) {
   const tones = combinationTones(buttons);
   const targetSet = new Set(targetPitches);
@@ -42,7 +44,6 @@ export function summarizeResult(buttons: DiagramButton[], targetPitches: string[
     exact: missingPitches.length === 0 && extraPitches.length === 0,
   };
 }
-
 
 export function notPlayableResult(
   targetPitches: string[],
@@ -91,4 +92,3 @@ export function resultFromButtons(
     explanation,
   };
 }
-

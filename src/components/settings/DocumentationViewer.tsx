@@ -29,85 +29,180 @@ const labels: Record<string, string> = {
   "rhythm-trainer.md": "Bass–Treble Rhythm Trainer",
   "settings.md": "Settings",
 };
-const preferredOrder = ["README.md", "chord-finder.md", "scale-finder.md", "harmony-explorer.md", "progression-assistant.md", "bass-pattern-player.md", "rhythm-trainer.md", "annotate-diagram-tool.md", "abc-player.md", "settings.md", "VERSION_HISTORY.md"];
-const documents = Object.entries({ ...guideFiles, ...rootFiles }).map(([path, content]) => {
-  const filename = path.split("/").pop() ?? path;
-  return { filename, title: labels[filename] ?? filename.replace(/\.md$/, "").replace(/-/g, " "), content };
-}).filter(({ filename }) => !["text-notes-tool.md", "developer-guide.md"].includes(filename)).sort((a, b) => {
-  const ai = preferredOrder.indexOf(a.filename);
-  const bi = preferredOrder.indexOf(b.filename);
-  return (ai < 0 ? 100 : ai) - (bi < 0 ? 100 : bi);
-});
+const preferredOrder = [
+  "README.md",
+  "chord-finder.md",
+  "scale-finder.md",
+  "harmony-explorer.md",
+  "progression-assistant.md",
+  "bass-pattern-player.md",
+  "rhythm-trainer.md",
+  "annotate-diagram-tool.md",
+  "abc-player.md",
+  "settings.md",
+  "VERSION_HISTORY.md",
+];
+const documents = Object.entries({ ...guideFiles, ...rootFiles })
+  .map(([path, content]) => {
+    const filename = path.split("/").pop() ?? path;
+    return {
+      filename,
+      title: labels[filename] ?? filename.replace(/\.md$/, "").replace(/-/g, " "),
+      content,
+    };
+  })
+  .filter(({ filename }) => !["text-notes-tool.md", "developer-guide.md"].includes(filename))
+  .sort((a, b) => {
+    const ai = preferredOrder.indexOf(a.filename);
+    const bi = preferredOrder.indexOf(b.filename);
+    return (ai < 0 ? 100 : ai) - (bi < 0 ? 100 : bi);
+  });
 
 function inlineMarkdown(text: string, navigate: (filename: string) => void): ReactNode[] {
   const tokenRe = /(`[^`]+`|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g;
-  return text.split(tokenRe).filter(Boolean).map((token, i) => {
-    if (token.startsWith("`")) return <code key={i}>{token.slice(1, -1)}</code>;
-    if (token.startsWith("**")) return <strong key={i}>{token.slice(2, -2)}</strong>;
-    const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
-    if (link) {
-      const href = link[2];
-      const page = href.split(/[?#]/)[0].split("/").pop() ?? "";
-      if (page.endsWith(".md") && documents.some((doc) => doc.filename === page)) {
-        return <button key={i} type="button" className="documentation-inline-link" onClick={() => navigate(page)}>{link[1]}</button>;
+  return text
+    .split(tokenRe)
+    .filter(Boolean)
+    .map((token, i) => {
+      if (token.startsWith("`")) return <code key={i}>{token.slice(1, -1)}</code>;
+      if (token.startsWith("**")) return <strong key={i}>{token.slice(2, -2)}</strong>;
+      const link = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(token);
+      if (link) {
+        const href = link[2];
+        const page = href.split(/[?#]/)[0].split("/").pop() ?? "";
+        if (page.endsWith(".md") && documents.some((doc) => doc.filename === page)) {
+          return (
+            <button
+              key={i}
+              type="button"
+              className="documentation-inline-link"
+              onClick={() => navigate(page)}
+            >
+              {link[1]}
+            </button>
+          );
+        }
+        if (/^https?:\/\//.test(href))
+          return (
+            <a key={i} href={href} target="_blank" rel="noreferrer">
+              {link[1]}
+            </a>
+          );
+        // Don't create broken or unsafe links to build-time assets.
+        return <span key={i}>{link[1]}</span>;
       }
-      if (/^https?:\/\//.test(href)) return <a key={i} href={href} target="_blank" rel="noreferrer">{link[1]}</a>;
-      // Don't create broken or unsafe links to build-time assets.
-      return <span key={i}>{link[1]}</span>;
-    }
-    return <span key={i}>{token}</span>;
-  });
+      return <span key={i}>{token}</span>;
+    });
 }
 
-function MarkdownArticle({ source, navigate }: { source: string; navigate: (filename: string) => void }) {
+function MarkdownArticle({
+  source,
+  navigate,
+}: {
+  source: string;
+  navigate: (filename: string) => void;
+}) {
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
   const blocks: ReactNode[] = [];
   let i = 0;
   while (i < lines.length) {
     const line = lines[i].trim();
-    if (!line) { i++; continue; }
+    if (!line) {
+      i++;
+      continue;
+    }
     if (/^```/.test(line)) {
       const language = line.slice(3).trim();
       const code: string[] = [];
       i++;
       while (i < lines.length && !/^```/.test(lines[i].trim())) code.push(lines[i++]);
       if (i < lines.length) i++;
-      blocks.push(<pre key={blocks.length}><code data-language={language}>{code.join("\n")}</code></pre>);
+      blocks.push(
+        <pre key={blocks.length}>
+          <code data-language={language}>{code.join("\n")}</code>
+        </pre>,
+      );
       continue;
     }
     const heading = /^(#{1,6})\s+(.+)$/.exec(line);
     if (heading) {
       const level = Math.min(heading[1].length, 4);
       const content = inlineMarkdown(heading[2], navigate);
-      const HeadingTag = (`h${level}`) as "h1" | "h2" | "h3" | "h4";
+      const HeadingTag = `h${level}` as "h1" | "h2" | "h3" | "h4";
       blocks.push(<HeadingTag key={blocks.length}>{content}</HeadingTag>);
-      i++; continue;
+      i++;
+      continue;
     }
-    if (/^---+$/.test(line)) { blocks.push(<hr key={blocks.length}/>); i++; continue; }
-    if (line.includes("|") && i + 1 < lines.length && /^\|?[\s|:-]+\|?$/.test(lines[i+1].trim()) && lines[i+1].includes("-")) {
-      const splitCells = (s: string) => s.replace(/^\||\|$/g, "").split("|").map(x => x.trim());
+    if (/^---+$/.test(line)) {
+      blocks.push(<hr key={blocks.length} />);
+      i++;
+      continue;
+    }
+    if (
+      line.includes("|") &&
+      i + 1 < lines.length &&
+      /^\|?[\s|:-]+\|?$/.test(lines[i + 1].trim()) &&
+      lines[i + 1].includes("-")
+    ) {
+      const splitCells = (s: string) =>
+        s
+          .replace(/^\||\|$/g, "")
+          .split("|")
+          .map((x) => x.trim());
       const header = splitCells(line);
       i += 2;
       const rows: string[][] = [];
-      while (i < lines.length && lines[i].trim().includes("|") && lines[i].trim()) rows.push(splitCells(lines[i++]));
-      blocks.push(<div className="documentation-table-scroll" key={blocks.length}><table><thead><tr>{header.map((cell,j) => <th key={j}>{inlineMarkdown(cell,navigate)}</th>)}</tr></thead><tbody>{rows.map((row,j) => <tr key={j}>{row.map((cell,k) => <td key={k}>{inlineMarkdown(cell,navigate)}</td>)}</tr>)}</tbody></table></div>);
+      while (i < lines.length && lines[i].trim().includes("|") && lines[i].trim())
+        rows.push(splitCells(lines[i++]));
+      blocks.push(
+        <div className="documentation-table-scroll" key={blocks.length}>
+          <table>
+            <thead>
+              <tr>
+                {header.map((cell, j) => (
+                  <th key={j}>{inlineMarkdown(cell, navigate)}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, j) => (
+                <tr key={j}>
+                  {row.map((cell, k) => (
+                    <td key={k}>{inlineMarkdown(cell, navigate)}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
       continue;
     }
     if (/^[-*+]\s+|^\d+[.)]\s+/.test(line)) {
       const ordered = /^\d+[.)]\s+/.test(line);
       const items: string[] = [];
-      while (i < lines.length && (ordered ? /^\s*\d+[.)]\s+/.test(lines[i]) : /^\s*[-*+]\s+/.test(lines[i]))) {
+      while (
+        i < lines.length &&
+        (ordered ? /^\s*\d+[.)]\s+/.test(lines[i]) : /^\s*[-*+]\s+/.test(lines[i]))
+      ) {
         items.push(lines[i++].replace(/^\s*(?:[-*+]|\d+[.)])\s+/, ""));
       }
-      const children = items.map((item,j) => <li key={j}>{inlineMarkdown(item,navigate)}</li>);
-      blocks.push(ordered ? <ol key={blocks.length}>{children}</ol> : <ul key={blocks.length}>{children}</ul>);
+      const children = items.map((item, j) => <li key={j}>{inlineMarkdown(item, navigate)}</li>);
+      blocks.push(
+        ordered ? <ol key={blocks.length}>{children}</ol> : <ul key={blocks.length}>{children}</ul>,
+      );
       continue;
     }
-    const paragraph = [line]; i++;
-    while (i < lines.length && lines[i].trim() && !/^(?:#{1,6}\s|```|[-*+]\s|\d+[.)]\s|---+$)/.test(lines[i].trim())) {
+    const paragraph = [line];
+    i++;
+    while (
+      i < lines.length &&
+      lines[i].trim() &&
+      !/^(?:#{1,6}\s|```|[-*+]\s|\d+[.)]\s|---+$)/.test(lines[i].trim())
+    ) {
       paragraph.push(lines[i++].trim());
     }
-    blocks.push(<p key={blocks.length}>{inlineMarkdown(paragraph.join(" "),navigate)}</p>);
+    blocks.push(<p key={blocks.length}>{inlineMarkdown(paragraph.join(" "), navigate)}</p>);
   }
   return <article className="documentation-article">{blocks}</article>;
 }
@@ -116,26 +211,72 @@ export function DocumentationViewer({ onClose }: { onClose: () => void }) {
   const { t } = useI18n();
   const [selected, setSelected] = useState("README.md");
   const [filter, setFilter] = useState("");
-  const selectedDoc = documents.find(doc => doc.filename === selected) ?? documents[0];
-  const shownDocs = useMemo(() => documents.filter(doc => `${doc.title} ${doc.content}`.toLowerCase().includes(filter.toLowerCase())), [filter]);
+  const selectedDoc = documents.find((doc) => doc.filename === selected) ?? documents[0];
+  const shownDocs = useMemo(
+    () =>
+      documents.filter((doc) =>
+        `${doc.title} ${doc.content}`.toLowerCase().includes(filter.toLowerCase()),
+      ),
+    [filter],
+  );
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   return createPortal(
-    <div className="documentation-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="documentation-dialog" role="dialog" aria-modal="true" aria-label={t("ui.docsDialog")}>
-        <header className="documentation-header"><strong>{t("ui.documentation")}</strong><button type="button" onClick={onClose} aria-label={t("ui.closeDocs")}>{t("ui.close")}</button></header>
+    <div
+      className="documentation-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="documentation-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t("ui.docsDialog")}
+      >
+        <header className="documentation-header">
+          <strong>{t("ui.documentation")}</strong>
+          <button type="button" onClick={onClose} aria-label={t("ui.closeDocs")}>
+            {t("ui.close")}
+          </button>
+        </header>
         <div className="documentation-body">
           <nav className="documentation-sidebar" aria-label={t("ui.docsTopics")}>
-            <input type="search" placeholder={t("ui.docsFind")} value={filter} onChange={event => setFilter(event.target.value)} aria-label={t("ui.docsSearch")} />
-            {shownDocs.map(doc => <button type="button" key={doc.filename} className={doc.filename === selected ? "active" : ""} onClick={() => setSelected(doc.filename)}>{doc.title}</button>)}
+            <input
+              type="search"
+              placeholder={t("ui.docsFind")}
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+              aria-label={t("ui.docsSearch")}
+            />
+            {shownDocs.map((doc) => (
+              <button
+                type="button"
+                key={doc.filename}
+                className={doc.filename === selected ? "active" : ""}
+                onClick={() => setSelected(doc.filename)}
+              >
+                {doc.title}
+              </button>
+            ))}
             {shownDocs.length === 0 && <p>{t("ui.noMatchingTopics")}</p>}
           </nav>
-          <main className="documentation-content" key={selectedDoc?.filename}>{selectedDoc ? <MarkdownArticle source={selectedDoc.content} navigate={setSelected}/> : <p>{t("ui.noDocumentationFound")}</p>}</main>
+          <main className="documentation-content" key={selectedDoc?.filename}>
+            {selectedDoc ? (
+              <MarkdownArticle source={selectedDoc.content} navigate={setSelected} />
+            ) : (
+              <p>{t("ui.noDocumentationFound")}</p>
+            )}
+          </main>
         </div>
       </section>
-    </div>, document.body
+    </div>,
+    document.body,
   );
 }

@@ -3,21 +3,18 @@ import { ResetSettingsControl } from "../../components/settings/ResetSettingsCon
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type AboutSectionModel = Pick<AppControllerModel["settings"],
-  "downloadCurrentSettings" | "importSettingsFile" | "resetSettingsToDefaults" | "t">;
+type AboutSectionModel = Pick<
+  AppControllerModel["settings"],
+  "downloadCurrentSettings" | "importSettingsFile" | "resetSettingsToDefaults" | "t"
+>;
 
 /** About: app information, guides, and saving, loading and resetting settings. */
 export default function AboutSection({ model }: { model: AboutSectionModel }) {
-  const {
-    downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults, t,
-  } = model;
+  const { downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults, t } = model;
   return (
     <AboutPanel>
       <div className="button-row">
-        <button
-          className="small-button"
-          onClick={downloadCurrentSettings}
-        >
+        <button className="small-button" onClick={downloadCurrentSettings}>
           {t("settings.saveJson")}
         </button>
         <label className="small-button file-button">

@@ -12,7 +12,9 @@ export function briefRegistralRole(result: StradellaChordFinderResult): string {
   if (!result.playable) return "";
   const { registral } = result;
   if (registral.inversionCharacter === "root-supported") {
-    const rootBass = result.playbackButtons.find((button) => isBassButton(button) && button.pitchClass === registral.rootPitchClass);
+    const rootBass = result.playbackButtons.find(
+      (button) => isBassButton(button) && button.pitchClass === registral.rootPitchClass,
+    );
     return `Root supported by ${registral.rootPitchClass} ${rootBass?.kind === "bass-counterbass" ? "counterbass" : "bass"}`;
   }
   if (registral.potentialSlashBass) return `Non-root bass: ${registral.potentialSlashBass}`;

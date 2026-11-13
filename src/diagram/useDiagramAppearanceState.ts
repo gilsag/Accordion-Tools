@@ -21,8 +21,7 @@ export function useDiagramAppearanceState() {
   const [buttonStrokeWidth, setButtonStrokeWidth] = useState(3);
   const [referenceStrokeWidth, setReferenceStrokeWidth] = useState(6);
   const [chordFillStrength, setChordFillStrength] = useState(100);
-  const [accidentalStyle, setAccidentalStyle] =
-    useState<AccidentalStyle>("grey");
+  const [accidentalStyle, setAccidentalStyle] = useState<AccidentalStyle>("grey");
   const [labelFontSize, setLabelFontSize] = useState(13);
   const [showButtonLabels, setShowButtonLabels] = useState(true);
   const [showBellowsGuide, setShowBellowsGuide] = useState(true);
@@ -37,24 +36,53 @@ export function useDiagramAppearanceState() {
   const [colorTheme, setColorTheme] = useState<ColorTheme>("default");
 
   return {
-    buttonSize, setButtonSize, spacing, setSpacing,
-    diagramVerticalSpacing, setDiagramVerticalSpacing,
-    pianoKeyWidthScale, setPianoKeyWidthScale,
-    pianoKeyHeightScale, setPianoKeyHeightScale,
-    pianoBlackKeyWidthScale, setPianoBlackKeyWidthScale,
-    pianoBlackKeyHeightScale, setPianoBlackKeyHeightScale,
-    diagramScale, setDiagramScale,
-    showStatusBar, setShowStatusBar, trebleAngle, setTrebleAngle,
-    buttonStrokeWidth, setButtonStrokeWidth,
-    referenceStrokeWidth, setReferenceStrokeWidth,
-    chordFillStrength, setChordFillStrength,
-    accidentalStyle, setAccidentalStyle,
-    labelFontSize, setLabelFontSize,
-    showButtonLabels, setShowButtonLabels,
-    showBellowsGuide, setShowBellowsGuide,
-    showStradellaRowLabels, setShowStradellaRowLabels,
-    titleMode, setTitleMode, customTitle, setCustomTitle,
-    titleFont, setTitleFont, titleSize, setTitleSize,
-    labelFont, setLabelFont, colorTheme, setColorTheme,
+    buttonSize,
+    setButtonSize,
+    spacing,
+    setSpacing,
+    diagramVerticalSpacing,
+    setDiagramVerticalSpacing,
+    pianoKeyWidthScale,
+    setPianoKeyWidthScale,
+    pianoKeyHeightScale,
+    setPianoKeyHeightScale,
+    pianoBlackKeyWidthScale,
+    setPianoBlackKeyWidthScale,
+    pianoBlackKeyHeightScale,
+    setPianoBlackKeyHeightScale,
+    diagramScale,
+    setDiagramScale,
+    showStatusBar,
+    setShowStatusBar,
+    trebleAngle,
+    setTrebleAngle,
+    buttonStrokeWidth,
+    setButtonStrokeWidth,
+    referenceStrokeWidth,
+    setReferenceStrokeWidth,
+    chordFillStrength,
+    setChordFillStrength,
+    accidentalStyle,
+    setAccidentalStyle,
+    labelFontSize,
+    setLabelFontSize,
+    showButtonLabels,
+    setShowButtonLabels,
+    showBellowsGuide,
+    setShowBellowsGuide,
+    showStradellaRowLabels,
+    setShowStradellaRowLabels,
+    titleMode,
+    setTitleMode,
+    customTitle,
+    setCustomTitle,
+    titleFont,
+    setTitleFont,
+    titleSize,
+    setTitleSize,
+    labelFont,
+    setLabelFont,
+    colorTheme,
+    setColorTheme,
   };
 }

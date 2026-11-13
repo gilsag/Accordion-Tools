@@ -1,7 +1,8 @@
 import type { DiagramButton } from "../types";
 import type { ProgressionRhythmPattern } from "../sound";
 
-const isBass = (button: DiagramButton) => button.kind === "bass-root" || button.kind === "bass-counterbass";
+const isBass = (button: DiagramButton) =>
+  button.kind === "bass-root" || button.kind === "bass-counterbass";
 
 /** One source of beat-by-beat physical IDs for notation, playback and diagram animation.
  * The first beat sounds the lowest *selected* bass/counterbass. When a recipe
@@ -19,8 +20,9 @@ export function progressionPulsePlan(
   if (rhythm === "block") return [[...realization]];
   const selectedBass = realization.filter(isBass);
   const candidates = selectedBass.length ? selectedBass : fallbackBass.filter(isBass);
-  const lowest = [...candidates].sort((a, b) =>
-    lowestSoundingPitch(a) - lowestSoundingPitch(b) || a.id.localeCompare(b.id))[0];
+  const lowest = [...candidates].sort(
+    (a, b) => lowestSoundingPitch(a) - lowestSoundingPitch(b) || a.id.localeCompare(b.id),
+  )[0];
   const firstBeat = lowest ? [lowest] : [];
   const otherBeats = realization.filter((button) => button.id !== lowest?.id);
   const count = rhythm === "march" ? 4 : rhythm === "waltz" ? 3 : 2;

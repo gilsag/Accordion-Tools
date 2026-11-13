@@ -6,7 +6,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { ProgressionAssistantPanel } from "../../../src/components/tools/ProgressionAssistantPanel";
 import { generateStradella } from "../../../src/stradella";
-import { optimizeStradellaProgression, type HarmonyProgressionChord } from "../../../src/tools/harmonyExplorer/progression";
+import {
+  optimizeStradellaProgression,
+  type HarmonyProgressionChord,
+} from "../../../src/tools/harmonyExplorer/progression";
 
 afterEach(cleanup);
 
@@ -16,24 +19,56 @@ const progression: HarmonyProgressionChord[] = [
   { id: "second-G", rootPc: 7, pattern: "dominant7", sectorIndex: 0 },
 ];
 const plan = optimizeStradellaProgression(buttons, progression, {
-  allowApproximations: true, handMovementWeight: 0, voiceLeadingWeight: 0, maxRealizationsPerChord: 5,
+  allowApproximations: true,
+  handMovementWeight: 0,
+  voiceLeadingWeight: 0,
+  maxRealizationsPerChord: 5,
 });
 
 function renderPanel(overrides: Partial<Parameters<typeof ProgressionAssistantPanel>[0]> = {}) {
   const noop = () => {};
   const onToggleStepNotes = vi.fn();
   const props: Parameters<typeof ProgressionAssistantPanel>[0] = {
-    chordDisplayStyle: "compact", progression, plan,
-    presetDefinitions: [{ id: "i-iv-v-i", name: "I IV V I" }], onUsePreset: noop,
-    realizationOptions: Object.fromEntries(progression.map((chord) =>
-      [chord.id, [{ result: plan.steps.find((step) => step.chord.id === chord.id)!.result, realizationIndex: 0 }]])),
-    realizationKeys: {}, onCycleRealization: noop, manualRoot: "C", onManualRootChange: noop,
-    manualPattern: "major-triad", onManualPatternChange: noop, handMovementWeight: 0.65,
-    rootPosition: true, onRootPositionChange: noop, pathVisible: false, onPathVisibleChange: noop,
-    onHandMovementWeightChange: noop, voiceLeadingWeight: 0.35, onVoiceLeadingWeightChange: noop,
-    rhythmPattern: "waltz", onRhythmPatternChange: noop, tempoBpm: 120, onTempoBpmChange: noop,
-    noteStepId: "first-C", onToggleStepNotes, onAddManualChord: noop,
-    onRemoveChord: noop, onMoveChord: noop, onClear: noop,
+    chordDisplayStyle: "compact",
+    progression,
+    plan,
+    presetDefinitions: [{ id: "i-iv-v-i", name: "I IV V I" }],
+    onUsePreset: noop,
+    realizationOptions: Object.fromEntries(
+      progression.map((chord) => [
+        chord.id,
+        [
+          {
+            result: plan.steps.find((step) => step.chord.id === chord.id)!.result,
+            realizationIndex: 0,
+          },
+        ],
+      ]),
+    ),
+    realizationKeys: {},
+    onCycleRealization: noop,
+    manualRoot: "C",
+    onManualRootChange: noop,
+    manualPattern: "major-triad",
+    onManualPatternChange: noop,
+    handMovementWeight: 0.65,
+    rootPosition: true,
+    onRootPositionChange: noop,
+    pathVisible: false,
+    onPathVisibleChange: noop,
+    onHandMovementWeightChange: noop,
+    voiceLeadingWeight: 0.35,
+    onVoiceLeadingWeightChange: noop,
+    rhythmPattern: "waltz",
+    onRhythmPatternChange: noop,
+    tempoBpm: 120,
+    onTempoBpmChange: noop,
+    noteStepId: "first-C",
+    onToggleStepNotes,
+    onAddManualChord: noop,
+    onRemoveChord: noop,
+    onMoveChord: noop,
+    onClear: noop,
     ...overrides,
   };
   return { ...render(<ProgressionAssistantPanel {...props} />), onToggleStepNotes };

@@ -9,7 +9,13 @@ const KEY_STEP = 16;
  * or Enter restores the default width. `measure` returns the panel's current
  * rendered width, `clamp` applies the panel and window limits.
  */
-export function PanelResizeHandle({ panel, label, measure, clamp, onResize }: {
+export function PanelResizeHandle({
+  panel,
+  label,
+  measure,
+  clamp,
+  onResize,
+}: {
   panel: ResizablePanel;
   label: string;
   measure: () => number;
@@ -36,7 +42,8 @@ export function PanelResizeHandle({ panel, label, measure, clamp, onResize }: {
     if (!drag.current) return;
     drag.current = null;
     document.body.classList.remove("panel-resizing");
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+    if (event.currentTarget.hasPointerCapture(event.pointerId))
+      event.currentTarget.releasePointerCapture(event.pointerId);
   }
   function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     const step = event.key === "ArrowRight" ? KEY_STEP : event.key === "ArrowLeft" ? -KEY_STEP : 0;

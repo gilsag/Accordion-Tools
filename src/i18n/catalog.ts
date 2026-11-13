@@ -82,19 +82,28 @@ export function resolveInterfaceLanguage(
   return preference === "auto" ? detectBrowserLanguage(browserLocales) : preference;
 }
 
-export function isInterfaceLanguagePreference(value: unknown): value is InterfaceLanguagePreference {
+export function isInterfaceLanguagePreference(
+  value: unknown,
+): value is InterfaceLanguagePreference {
   return value === "auto" || isInterfaceLanguage(value);
 }
 
-export function translate(language: InterfaceLanguage, key: TranslationKey, params?: Record<string, string | number>): string {
+export function translate(
+  language: InterfaceLanguage,
+  key: TranslationKey,
+  params?: Record<string, string | number>,
+): string {
   const template = catalogs[language]?.[key] ?? EN[key];
   return template.replace(/\{([a-zA-Z][a-zA-Z0-9]*)\}/g, (original, name: string) =>
-    params && Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : original);
+    params && Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : original,
+  );
 }
 
 /** Display-only translation for enumerated UI labels; unknown names are unchanged. */
 const UI_LABEL_TRANSLATION_KEYS = new Map<string, TranslationKey>(
-  (Object.keys(EN) as TranslationKey[]).filter((key) => key.startsWith("ui.")).map((key): [string, TranslationKey] => [EN[key], key]),
+  (Object.keys(EN) as TranslationKey[])
+    .filter((key) => key.startsWith("ui."))
+    .map((key): [string, TranslationKey] => [EN[key], key]),
 );
 export function translateKnownLabel(language: InterfaceLanguage, label: string): string {
   const key = UI_LABEL_TRANSLATION_KEYS.get(label);

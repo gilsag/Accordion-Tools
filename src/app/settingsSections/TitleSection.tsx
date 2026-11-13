@@ -2,14 +2,30 @@ import type { FontFamily, TitleMode } from "../../types";
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type TitleSectionModel = Pick<AppControllerModel["settings"],
-  "customTitle" | "setCustomTitle" | "setTitleFont" | "setTitleMode" | "setTitleSize" | "t" |
-  "titleFont" | "titleMode" | "titleSize">;
+type TitleSectionModel = Pick<
+  AppControllerModel["settings"],
+  | "customTitle"
+  | "setCustomTitle"
+  | "setTitleFont"
+  | "setTitleMode"
+  | "setTitleSize"
+  | "t"
+  | "titleFont"
+  | "titleMode"
+  | "titleSize"
+>;
 
 /** Diagram title: text, font and size. */
 export default function TitleSection({ model }: { model: TitleSectionModel }) {
   const {
-    customTitle, setCustomTitle, setTitleFont, setTitleMode, setTitleSize, t, titleFont, titleMode,
+    customTitle,
+    setCustomTitle,
+    setTitleFont,
+    setTitleMode,
+    setTitleSize,
+    t,
+    titleFont,
+    titleMode,
     titleSize,
   } = model;
   return (
@@ -18,9 +34,7 @@ export default function TitleSection({ model }: { model: TitleSectionModel }) {
         {t("ui.title")}
         <select
           value={titleMode}
-          onChange={(event) =>
-            setTitleMode(event.target.value as TitleMode)
-          }
+          onChange={(event) => setTitleMode(event.target.value as TitleMode)}
         >
           <option value="auto">{t("ui.autoInstrumentLayout")}</option>
           <option value="contextual">{t("ui.contextualToolAndSelection")}</option>
@@ -32,12 +46,7 @@ export default function TitleSection({ model }: { model: TitleSectionModel }) {
       {titleMode === "custom" && (
         <label>
           {t("ui.customTitle")}
-          <input
-            value={customTitle}
-            onChange={(event) =>
-              setCustomTitle(event.target.value)
-            }
-          />
+          <input value={customTitle} onChange={(event) => setCustomTitle(event.target.value)} />
         </label>
       )}
 
@@ -47,9 +56,7 @@ export default function TitleSection({ model }: { model: TitleSectionModel }) {
             {t("ui.titleFont")}
             <select
               value={titleFont}
-              onChange={(event) =>
-                setTitleFont(event.target.value as FontFamily)
-              }
+              onChange={(event) => setTitleFont(event.target.value as FontFamily)}
             >
               <option value="system">{t("ui.system")}</option>
               <option value="serif">{t("ui.serif")}</option>
@@ -65,9 +72,7 @@ export default function TitleSection({ model }: { model: TitleSectionModel }) {
               min={14}
               max={42}
               value={titleSize}
-              onChange={(event) =>
-                setTitleSize(Number(event.target.value))
-              }
+              onChange={(event) => setTitleSize(Number(event.target.value))}
             />
           </label>
         </>

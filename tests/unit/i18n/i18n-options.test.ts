@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import { abcExampleName, bassPatternName, progressionName } from "../../../src/i18n/optionLabels";
-import { EN, SUPPORTED_LANGUAGES, translate, translateKnownLabel } from "../../../src/i18n/allCatalogs";
+import {
+  EN,
+  SUPPORTED_LANGUAGES,
+  translate,
+  translateKnownLabel,
+} from "../../../src/i18n/allCatalogs";
 import { CHORD_FINDER_OPTIONS } from "../../../src/music/chordDefinitions";
 import { stradellaRowLabel } from "../../../src/stradella";
 import { stradellaDiagramRowLabel } from "../../../src/i18n/musicTerms";
@@ -29,7 +34,14 @@ test("Finder and player option labels are translated", () => {
   assert.equal(abcExampleName("c-major-scale", "C major scale", "es"), "Escala de C mayor");
   assert.equal(abcExampleName("bella-ciao", "Bella Ciao", "es"), "Bella Ciao");
   assert.equal(abcExampleName("c-major-scale", "User example", "es"), "User example");
-  for (const row of ["bass-counterbass", "bass-root", "chord-major", "chord-minor", "chord-dominant7", "chord-diminished7"] as const) {
+  for (const row of [
+    "bass-counterbass",
+    "bass-root",
+    "chord-major",
+    "chord-minor",
+    "chord-dominant7",
+    "chord-diminished7",
+  ] as const) {
     const english = stradellaRowLabel(row);
     const spanish = translateKnownLabel("es", english);
     assert.notEqual(spanish, english, `Missing translation for Stradella row ${row}`);
@@ -48,12 +60,20 @@ test("Search modes are translated through a conditional key selection inside t(.
   // Harmony-family rendering expression from an earlier implementation.
   assert.equal(CHORD_FINDER_OPTIONS.length, 35);
   const englishUiLabels = new Set<string>(
-    Object.entries(EN).filter(([key]) => key.startsWith("ui.")).map(([, value]) => value),
+    Object.entries(EN)
+      .filter(([key]) => key.startsWith("ui."))
+      .map(([, value]) => value),
   );
   for (const { value, label } of CHORD_FINDER_OPTIONS) {
-    assert.ok(englishUiLabels.has(label), `${value}: chord label missing from the English UI catalog`);
+    assert.ok(
+      englishUiLabels.has(label),
+      `${value}: chord label missing from the English UI catalog`,
+    );
     for (const { code } of SUPPORTED_LANGUAGES) {
-      assert.ok(translateKnownLabel(code, label).trim(), `${code}/${value}: empty localized chord type`);
+      assert.ok(
+        translateKnownLabel(code, label).trim(),
+        `${code}/${value}: empty localized chord type`,
+      );
     }
   }
   for (const [pattern, key] of [

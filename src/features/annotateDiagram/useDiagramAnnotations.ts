@@ -36,7 +36,6 @@ export function useDiagramAnnotations(buttonSize: number) {
     }
   }, [inlineAnnotationEditor]);
 
-
   /** Removes all diagram annotations and closes any inline editor. */
   function clearTextNotes() {
     setTextNotes([]);
@@ -91,11 +90,7 @@ export function useDiagramAnnotations(buttonSize: number) {
   }
 
   function beginButtonAnnotation(button: DiagramButton) {
-    const point = annotationPointForButton(
-      button,
-      annotationButtonAnchor,
-      annotationOffsetPercent,
-    );
+    const point = annotationPointForButton(button, annotationButtonAnchor, annotationOffsetPercent);
     setInlineAnnotationEditor({
       ...point,
       text: "",
@@ -154,14 +149,33 @@ export function useDiagramAnnotations(buttonSize: number) {
   }
 
   return {
-    textNotes, setTextNotes, textNoteFontSize, setTextNoteFontSize,
-    textNoteColor, setTextNoteColor, textNoteFont, setTextNoteFont,
-    annotationBold, setAnnotationBold, annotationItalic, setAnnotationItalic,
-    annotationOffsetPercent, setAnnotationOffsetPercent,
-    annotationButtonAnchor, setAnnotationButtonAnchor,
-    annotationEditorRef, inlineAnnotationEditor, setInlineAnnotationEditor,
-    clearTextNotes, deleteTextNote, annotationLocationLabel, annotationPreview,
-    annotationPointForButton, beginButtonAnnotation, beginFreeAnnotation,
-    commitInlineAnnotation, cancelInlineAnnotation,
+    textNotes,
+    setTextNotes,
+    textNoteFontSize,
+    setTextNoteFontSize,
+    textNoteColor,
+    setTextNoteColor,
+    textNoteFont,
+    setTextNoteFont,
+    annotationBold,
+    setAnnotationBold,
+    annotationItalic,
+    setAnnotationItalic,
+    annotationOffsetPercent,
+    setAnnotationOffsetPercent,
+    annotationButtonAnchor,
+    setAnnotationButtonAnchor,
+    annotationEditorRef,
+    inlineAnnotationEditor,
+    setInlineAnnotationEditor,
+    clearTextNotes,
+    deleteTextNote,
+    annotationLocationLabel,
+    annotationPreview,
+    annotationPointForButton,
+    beginButtonAnnotation,
+    beginFreeAnnotation,
+    commitInlineAnnotation,
+    cancelInlineAnnotation,
   };
 }

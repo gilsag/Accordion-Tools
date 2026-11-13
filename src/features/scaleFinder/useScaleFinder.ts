@@ -12,14 +12,20 @@ export function useScaleFinderState() {
   const [scaleFinderRoot, setScaleFinderRoot] = useState("C");
   const [scaleFinderPattern, setScaleFinderPattern] = useState<FinderScalePattern>("major-scale");
   const [scaleFinderRowLimit, setScaleFinderRowLimit] = useState<3 | 4 | 5>(5);
-  const [scaleFinderDisplayMode, setScaleFinderDisplayMode] =
-    useState<SequenceDisplayMode>("numbers-and-straight-arrows");
+  const [scaleFinderDisplayMode, setScaleFinderDisplayMode] = useState<SequenceDisplayMode>(
+    "numbers-and-straight-arrows",
+  );
   return {
-    scaleFinderActive, setScaleFinderActive,
-    scaleFinderRoot, setScaleFinderRoot,
-    scaleFinderPattern, setScaleFinderPattern,
-    scaleFinderRowLimit, setScaleFinderRowLimit,
-    scaleFinderDisplayMode, setScaleFinderDisplayMode,
+    scaleFinderActive,
+    setScaleFinderActive,
+    scaleFinderRoot,
+    setScaleFinderRoot,
+    scaleFinderPattern,
+    setScaleFinderPattern,
+    scaleFinderRowLimit,
+    setScaleFinderRowLimit,
+    scaleFinderDisplayMode,
+    setScaleFinderDisplayMode,
   };
 }
 
@@ -38,14 +44,23 @@ export type ScaleFinderSelection = {
  * before. No button sorting or pitch/identity conversion takes place here.
  */
 export function useScaleFinderResults({
-  buttons, side, isTrebleLikeSide, scaleFinderActive,
-  scaleFinderRoot, scaleFinderPattern, scaleFinderRowLimit,
+  buttons,
+  side,
+  isTrebleLikeSide,
+  scaleFinderActive,
+  scaleFinderRoot,
+  scaleFinderPattern,
+  scaleFinderRowLimit,
 }: ScaleFinderSelection) {
   const stradellaScaleFinderResult = useMemo(() => {
     if (side !== "stradella") {
       return {
-        buttons: [], targetPitches: [], targetNames: [],
-        missingPitches: [], missingNames: [], found: false,
+        buttons: [],
+        targetPitches: [],
+        targetNames: [],
+        missingPitches: [],
+        missingNames: [],
+        found: false,
       };
     }
     return getStradellaScaleFinderResult(buttons, scaleFinderRoot, scaleFinderPattern);
@@ -55,10 +70,21 @@ export function useScaleFinderResults({
     if (!scaleFinderActive) return [];
     if (side === "stradella") return stradellaScaleFinderResult.buttons;
     if (!isTrebleLikeSide) return [];
-    return getScaleFinderTrebleButtons(buttons, scaleFinderRoot, scaleFinderPattern, scaleFinderRowLimit);
+    return getScaleFinderTrebleButtons(
+      buttons,
+      scaleFinderRoot,
+      scaleFinderPattern,
+      scaleFinderRowLimit,
+    );
   }, [
-    buttons, isTrebleLikeSide, scaleFinderActive, scaleFinderRoot,
-    scaleFinderPattern, scaleFinderRowLimit, side, stradellaScaleFinderResult.buttons,
+    buttons,
+    isTrebleLikeSide,
+    scaleFinderActive,
+    scaleFinderRoot,
+    scaleFinderPattern,
+    scaleFinderRowLimit,
+    side,
+    stradellaScaleFinderResult.buttons,
   ]);
 
   return { stradellaScaleFinderResult, scaleFinderButtons };

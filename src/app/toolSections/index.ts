@@ -2,7 +2,9 @@ import { lazy, type ComponentType, type LazyExoticComponent } from "react";
 import type { ToolId } from "../toolRegistry";
 import type { AppControllerModel } from "../useAppController";
 
-type ToolSectionComponent = LazyExoticComponent<ComponentType<{ model: AppControllerModel["tools"] }>>;
+type ToolSectionComponent = LazyExoticComponent<
+  ComponentType<{ model: AppControllerModel["tools"] }>
+>;
 
 /** The controls of each tool, fetched the first time its section is opened.
  *

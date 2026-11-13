@@ -19,7 +19,8 @@ export type PresetConversion = {
  * chord types remain visible as unsupported.
  */
 export function convertProgressionPreset(
-  definition: ChordProgressionDefinition, keyRoot: string,
+  definition: ChordProgressionDefinition,
+  keyRoot: string,
 ): PresetConversion {
   const chords: PresetConversion["chords"] = [];
   const unsupported: string[] = [];
@@ -31,7 +32,11 @@ export function convertProgressionPreset(
     // slash; the target after it must itself be a plain numeral.
     const [chordPart, target, extra] = normalized.split("/");
     const match = chordPart.match(numeral);
-    if (!match || extra !== undefined || (target !== undefined && !/^[b#]?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)$/.test(target))) {
+    if (
+      !match ||
+      extra !== undefined ||
+      (target !== undefined && !/^[b#]?(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)$/.test(target))
+    ) {
       unsupported.push(symbol);
       continue;
     }
@@ -41,12 +46,16 @@ export function convertProgressionPreset(
     if (suffix === "7") pattern = minor ? "minor7" : "dominant7";
     else if (suffix === "maj7" || suffix === "M7") pattern = "major7";
     else if (suffix.startsWith("ø")) pattern = "minor7b5";
-    else if (suffix.startsWith("°") || suffix.startsWith("dim")) pattern = suffix.endsWith("7") ? "diminished7" : "diminished-triad";
+    else if (suffix.startsWith("°") || suffix.startsWith("dim"))
+      pattern = suffix.endsWith("7") ? "diminished7" : "diminished-triad";
     else pattern = minor ? "minor-triad" : "major-triad";
     const resolved = resolveRomanChord(normalized, keyRoot, definition.mode);
     const rootPc = pitchClassNumberFromName(resolved.root);
-    if (rootPc === null) { unsupported.push(symbol); continue; }
-    const sectorIndex = CIRCLE_OF_FIFTHS.indexOf(rootPc as typeof CIRCLE_OF_FIFTHS[number]);
+    if (rootPc === null) {
+      unsupported.push(symbol);
+      continue;
+    }
+    const sectorIndex = CIRCLE_OF_FIFTHS.indexOf(rootPc as (typeof CIRCLE_OF_FIFTHS)[number]);
     chords.push({ rootPc, pattern, sectorIndex: sectorIndex < 0 ? 0 : sectorIndex });
   }
   return { chords: unsupported.length ? [] : chords, unsupported };

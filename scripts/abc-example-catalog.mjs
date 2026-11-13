@@ -12,7 +12,8 @@ export async function discoverAbcExamples(directory) {
     .map((entry) => entry.name)
     // Prefer existing kebab-case filenames if duplicate files have identical content.
     .sort((a, b) => {
-      const preferred = (name) => /^[a-z0-9-]+\.abc$/i.test(name) && name === name.toLowerCase() ? 0 : 1;
+      const preferred = (name) =>
+        /^[a-z0-9-]+\.abc$/i.test(name) && name === name.toLowerCase() ? 0 : 1;
       return preferred(a) - preferred(b) || a.localeCompare(b, "en");
     });
 
@@ -34,8 +35,9 @@ export async function discoverAbcExamples(directory) {
     const label = declaredTitle || stem.replace(/[-_]+/g, " ");
     examples.push({ value: id, label, file: `abc/${encodeURIComponent(name)}` });
   }
-  return examples.sort((a, b) =>
-    a.label.localeCompare(b.label, "en", { numeric: true, sensitivity: "base" }) ||
-    a.value.localeCompare(b.value, "en"),
+  return examples.sort(
+    (a, b) =>
+      a.label.localeCompare(b.label, "en", { numeric: true, sensitivity: "base" }) ||
+      a.value.localeCompare(b.value, "en"),
   );
 }

@@ -42,7 +42,7 @@ export function chordToneSpellings(root: string, pattern: FinderChordPattern): M
   const spelling = new Map<string, string>();
   const rootIndex = PITCH_INDEX[root];
   if (rootIndex === undefined) return spelling;
-  const rootLetter = LETTERS.indexOf(root[0] as typeof LETTERS[number]);
+  const rootLetter = LETTERS.indexOf(root[0] as (typeof LETTERS)[number]);
   if (rootLetter < 0) return spelling;
   for (const interval of intervalsForChordFinder(pattern)) {
     const target = transpose(root, interval);
@@ -56,14 +56,26 @@ export function chordToneSpellings(root: string, pattern: FinderChordPattern): M
 }
 
 /** Chord-contextual note spelling; do not reinterpret the chord's identity. */
-export function chordToneName(root: string, pattern: FinderChordPattern, pitchClass: string): string {
+export function chordToneName(
+  root: string,
+  pattern: FinderChordPattern,
+  pitchClass: string,
+): string {
   return chordToneSpellings(root, pattern).get(pitchClass) ?? displayRoot(pitchClass);
 }
 
 /** Finder labels describe harmony, not a possibly enharmonic physical button name.
  * Other notation modes remain governed by the selected notation preference. */
-export function formatChordFinderTone(root: string, pattern: FinderChordPattern, pitch: string, notation: NotationMode, accidental: AccidentalMode): string {
-  return notation === "english" ? chordToneName(root, pattern, pitch) : formatPitch(pitch, notation, accidental);
+export function formatChordFinderTone(
+  root: string,
+  pattern: FinderChordPattern,
+  pitch: string,
+  notation: NotationMode,
+  accidental: AccidentalMode,
+): string {
+  return notation === "english"
+    ? chordToneName(root, pattern, pitch)
+    : formatPitch(pitch, notation, accidental);
 }
 
 /** The name of a played chord, which may have an inferred inversion. */
@@ -82,34 +94,71 @@ export function realizedChordName(
 /** Numbered inversions are conventional for triads and seventh chords.
  * For six/nine/eleven/thirteen chords, describe the bass role instead.
  */
-export function realizedInversionDescription(root: string, pattern: FinderChordPattern, bass: string | null): string | null {
+export function realizedInversionDescription(
+  root: string,
+  pattern: FinderChordPattern,
+  bass: string | null,
+): string | null {
   if (!bass || bass === root) return null;
   const intervals = intervalsForChordFinder(pattern);
   const bassIndex = intervals.findIndex((i) => transpose(root, i) === bass);
   if (bassIndex < 0) return null;
-  const simpleTriad = ["major-triad", "minor-triad", "diminished-triad", "augmented-triad", "sus2", "sus4"].includes(pattern);
-  const seventhChord = ["dominant7sus4", "dominant7sharp5", "dominant7", "major7", "minor7", "minorMajor7", "diminished7", "minor7b5", "dominant7b5"].includes(pattern);
+  const simpleTriad = [
+    "major-triad",
+    "minor-triad",
+    "diminished-triad",
+    "augmented-triad",
+    "sus2",
+    "sus4",
+  ].includes(pattern);
+  const seventhChord = [
+    "dominant7sus4",
+    "dominant7sharp5",
+    "dominant7",
+    "major7",
+    "minor7",
+    "minorMajor7",
+    "diminished7",
+    "minor7b5",
+    "dominant7b5",
+  ].includes(pattern);
   if ((simpleTriad || seventhChord) && bassIndex >= 1 && bassIndex <= 3) {
     return ["", "First inversion", "Second inversion", "Third inversion"][bassIndex];
   }
   const degree = degreeIndex(intervals[bassIndex], pattern);
-  const roles: Record<number, string> = { 1: "second", 2: "third", 3: "fourth", 4: "fifth", 5: "sixth", 6: "seventh", 8: "ninth", 10: "eleventh", 12: "thirteenth" };
+  const roles: Record<number, string> = {
+    1: "second",
+    2: "third",
+    3: "fourth",
+    4: "fifth",
+    5: "sixth",
+    6: "seventh",
+    8: "ninth",
+    10: "eleventh",
+    12: "thirteenth",
+  };
   return `${roles[degree] ?? "Chord tone"} in bass`;
 }
 
 /** Avoid slashes, accidentals, Unicode, reserved punctuation in exported names. */
 export function safeChordFilenameKey(value: string): string {
   return value
-    .replace(/𝄫/g, "doubleflat").replace(/𝄪/g, "doublesharp")
-    .replace(/♭/g, "flat").replace(/♯/g, "sharp")
-    .replace(/#/g, "sharp").replace(/\//g, "-over-")
-    .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/𝄫/g, "doubleflat")
+    .replace(/𝄪/g, "doublesharp")
+    .replace(/♭/g, "flat")
+    .replace(/♯/g, "sharp")
+    .replace(/#/g, "sharp")
+    .replace(/\//g, "-over-")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^A-Za-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 
 /** Keep density warnings consistent with the chord-tone spelling. */
 export function spellDensityNote(note: string, root: string, pattern: FinderChordPattern): string {
-  return note.replace(/\b([A-G](?:#)?)(\d+)\b/g, (_, pc: string, oct: string) =>
-    `${chordToneName(root, pattern, pc)}${oct}`);
+  return note.replace(
+    /\b([A-G](?:#)?)(\d+)\b/g,
+    (_, pc: string, oct: string) => `${chordToneName(root, pattern, pc)}${oct}`,
+  );
 }

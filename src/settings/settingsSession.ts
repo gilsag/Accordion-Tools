@@ -16,12 +16,16 @@ export const SAVED_SESSION_KEY = "accordionTools.session.v1";
  * own data and panel widths are window layout, so both are kept. */
 const RESET_KEYS = [SAVED_SESSION_KEY, "accordionTools.interfaceLanguage.v1"] as const;
 
-export function readSavedSession(storage: Pick<Storage, "getItem"> | undefined = browserStorage()): DefaultSettingsFile | null {
+export function readSavedSession(
+  storage: Pick<Storage, "getItem"> | undefined = browserStorage(),
+): DefaultSettingsFile | null {
   try {
     const raw = storage?.getItem(SAVED_SESSION_KEY);
     if (!raw) return null;
     const value: unknown = JSON.parse(raw);
-    return value && typeof value === "object" && !Array.isArray(value) ? migrateSettingsDocument(value) : null;
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? migrateSettingsDocument(value)
+      : null;
   } catch {
     return null;
   }
@@ -32,7 +36,10 @@ export function serializeSession(settings: DefaultSettingsFile): string {
   return JSON.stringify(settings);
 }
 
-export function writeSavedSession(serialized: string, storage: Pick<Storage, "setItem"> | undefined = browserStorage()): boolean {
+export function writeSavedSession(
+  serialized: string,
+  storage: Pick<Storage, "setItem"> | undefined = browserStorage(),
+): boolean {
   try {
     if (!storage) return false;
     storage.setItem(SAVED_SESSION_KEY, serialized);
@@ -42,7 +49,9 @@ export function writeSavedSession(serialized: string, storage: Pick<Storage, "se
   }
 }
 
-export function clearSavedSession(storage: Pick<Storage, "removeItem"> | undefined = browserStorage()): void {
+export function clearSavedSession(
+  storage: Pick<Storage, "removeItem"> | undefined = browserStorage(),
+): void {
   try {
     for (const key of RESET_KEYS) storage?.removeItem(key);
   } catch {

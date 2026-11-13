@@ -22,14 +22,28 @@ test("The explanation mentions the note ring only when it is shown, in every lan
     const on = buildDiagramExplanation({ ...inputs, language: code, showNoteRing: true });
     const off = buildDiagramExplanation({ ...inputs, language: code, showNoteRing: false });
     const defaultText = buildDiagramExplanation({ ...inputs, language: code });
-    assert.ok(on.includes(catalogs[code]["analysis.harmonyNoteRing"]), `${code}: missing note-ring explanation`);
-    assert.ok(!off.includes(catalogs[code]["analysis.harmonyNoteRing"]), `${code}: explanation present when hidden`);
+    assert.ok(
+      on.includes(catalogs[code]["analysis.harmonyNoteRing"]),
+      `${code}: missing note-ring explanation`,
+    );
+    assert.ok(
+      !off.includes(catalogs[code]["analysis.harmonyNoteRing"]),
+      `${code}: explanation present when hidden`,
+    );
     assert.equal(defaultText, off, `${code}: legacy API should keep unchanged behavior`);
     assert.ok(catalogs[code]["ui.noteRingLegendTitle"]);
     assert.ok(catalogs[code]["ui.noteRingLegendDetail"]);
     assert.ok(catalogs[code]["ui.referenceChordRing"]);
-    const allFamilies = buildDiagramExplanation({ ...inputs, language: code, allFamiliesMode: true, showNoteRing: true });
-    assert.ok(allFamilies.includes(catalogs[code]["analysis.harmonyNoteRing"]), `${code}: all families`);
+    const allFamilies = buildDiagramExplanation({
+      ...inputs,
+      language: code,
+      allFamiliesMode: true,
+      showNoteRing: true,
+    });
+    assert.ok(
+      allFamilies.includes(catalogs[code]["analysis.harmonyNoteRing"]),
+      `${code}: all families`,
+    );
   }
 });
 

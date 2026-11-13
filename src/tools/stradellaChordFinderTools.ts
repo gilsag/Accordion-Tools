@@ -5,20 +5,26 @@
   musical rules for bass rows, chord buttons, and mixed searches stay separate.
 */
 
-import type {
-  DiagramButton,
-  FinderChordPattern,
-  StradellaChordFinderMode,
-} from "../types";
+import type { DiagramButton, FinderChordPattern, StradellaChordFinderMode } from "../types";
 import { notPlayableResult, type StradellaChordFinderResult } from "./stradellaChordFinder/results";
 export type { StradellaChordFinderResult } from "./stradellaChordFinder/results";
 import { orderedTargetPitches } from "./stradellaChordFinder/utils";
 import { bassOnlyResult } from "./stradellaChordFinder/searchBassRows";
 import { chordButtonRecipeResult } from "./stradellaChordFinder/searchChordButtonsOnly";
-import { bassAndChordResult, bassAndChordResults } from "./stradellaChordFinder/searchBassAndChordButtons";
-import { analyzeConfiguredStradellaVoicing, DEFAULT_STRADELLA_REGISTER_MODEL, type StradellaRegisterModel } from "./stradellaChordFinder/registerModel";
+import {
+  bassAndChordResult,
+  bassAndChordResults,
+} from "./stradellaChordFinder/searchBassAndChordButtons";
+import {
+  analyzeConfiguredStradellaVoicing,
+  DEFAULT_STRADELLA_REGISTER_MODEL,
+  type StradellaRegisterModel,
+} from "./stradellaChordFinder/registerModel";
 import { validRequestedBass } from "./stradellaChordFinder/harmonicIdentity";
-import { passesNominalGapFilter, type MinimumNominalGap } from "./stradellaChordFinder/voicingDensity";
+import {
+  passesNominalGapFilter,
+  type MinimumNominalGap,
+} from "./stradellaChordFinder/voicingDensity";
 
 export const STRADELLA_CHORD_FINDER_MODE_OPTIONS: Array<{
   value: StradellaChordFinderMode;
@@ -45,16 +51,29 @@ export function getStradellaChordFinderResult(
   }
 
   if (!validRequestedBass(root, pattern, requestedBass)) {
-    return notPlayableResult(targetPitches, "Invalid requested bass.", "The requested bass must be a chord tone.");
+    return notPlayableResult(
+      targetPitches,
+      "Invalid requested bass.",
+      "The requested bass must be a chord tone.",
+    );
   }
-  if (mode === "bass-and-chords") return bassAndChordResult(buttons, root, targetPitches, pattern, requestedBass, registerModel);
-  const result = mode === "bass-only"
-    ? bassOnlyResult(buttons, root, targetPitches)
-    : chordButtonRecipeResult(buttons, root, targetPitches, pattern, markRootBass);
-  if (requestedBass && result.playable &&
-      analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel).lowestPitchClass !== requestedBass) {
-    return notPlayableResult(targetPitches, `No ${requestedBass}-bass realization in this mode.`,
-      `This mode cannot put ${requestedBass} lowest under the configured register ranges. Try Bass + chord buttons.`);
+  if (mode === "bass-and-chords")
+    return bassAndChordResult(buttons, root, targetPitches, pattern, requestedBass, registerModel);
+  const result =
+    mode === "bass-only"
+      ? bassOnlyResult(buttons, root, targetPitches)
+      : chordButtonRecipeResult(buttons, root, targetPitches, pattern, markRootBass);
+  if (
+    requestedBass &&
+    result.playable &&
+    analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel)
+      .lowestPitchClass !== requestedBass
+  ) {
+    return notPlayableResult(
+      targetPitches,
+      `No ${requestedBass}-bass realization in this mode.`,
+      `This mode cannot put ${requestedBass} lowest under the configured register ranges. Try Bass + chord buttons.`,
+    );
   }
   return result;
 }
@@ -88,13 +107,49 @@ export function getStradellaChordFinderResults(
     return [notPlayableResult([], "Choose a valid chord.", "Choose a valid root and chord type.")];
   }
   if (!validRequestedBass(root, pattern, requestedBass)) {
-    return [notPlayableResult(targetPitches, "Invalid requested bass.", "The requested bass must be a chord tone.")];
+    return [
+      notPlayableResult(
+        targetPitches,
+        "Invalid requested bass.",
+        "The requested bass must be a chord tone.",
+      ),
+    ];
   }
-  if (mode === "bass-and-chords") return bassAndChordResults(buttons, root, targetPitches, pattern, maxButtons, spanColumns, requestedBass, registerModel, minimumNominalGap, requestedBassOnBassButton);
-  const result = getStradellaChordFinderResult(buttons, root, pattern, mode, markRootBass, requestedBass, registerModel);
-  if (!result.playable || passesNominalGapFilter(
-    analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel).notes, minimumNominalGap,
-  )) return [result];
-  return [notPlayableResult(targetPitches, "No realization matches the nominal spacing filter.",
-    `This realization contains adjacent nominal notes closer than ${minimumNominalGap} semitones.`)];
+  if (mode === "bass-and-chords")
+    return bassAndChordResults(
+      buttons,
+      root,
+      targetPitches,
+      pattern,
+      maxButtons,
+      spanColumns,
+      requestedBass,
+      registerModel,
+      minimumNominalGap,
+      requestedBassOnBassButton,
+    );
+  const result = getStradellaChordFinderResult(
+    buttons,
+    root,
+    pattern,
+    mode,
+    markRootBass,
+    requestedBass,
+    registerModel,
+  );
+  if (
+    !result.playable ||
+    passesNominalGapFilter(
+      analyzeConfiguredStradellaVoicing(result.playbackButtons, root, registerModel).notes,
+      minimumNominalGap,
+    )
+  )
+    return [result];
+  return [
+    notPlayableResult(
+      targetPitches,
+      "No realization matches the nominal spacing filter.",
+      `This realization contains adjacent nominal notes closer than ${minimumNominalGap} semitones.`,
+    ),
+  ];
 }

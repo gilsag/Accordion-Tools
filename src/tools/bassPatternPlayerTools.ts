@@ -4,13 +4,13 @@
   quarter notes; conversion to ABC, LilyPond and MIDI is a later step.
 */
 
-import { stradellaButtonToken, stradellaNoteForButton, DEFAULT_STRADELLA_NOTATION,
-  type StradellaNotationPreferences } from "../notation/stradellaNotation";
-import type {
-  BassPatternChordVoicing,
-  DiagramButton,
-  FinderChordPattern,
-} from "../types";
+import {
+  stradellaButtonToken,
+  stradellaNoteForButton,
+  DEFAULT_STRADELLA_NOTATION,
+  type StradellaNotationPreferences,
+} from "../notation/stradellaNotation";
+import type { BassPatternChordVoicing, DiagramButton, FinderChordPattern } from "../types";
 import { INDEX_TO_PITCH } from "../music";
 import { getStradellaChordFinderResult } from "./stradellaChordFinderTools";
 
@@ -27,14 +27,7 @@ export type BassPatternPlayToken =
   | "rest"
   | string;
 
-export type BassPatternAccent =
-  | ">"
-  | "^"
-  | "."
-  | "strong"
-  | "weak"
-  | "marcato"
-  | "ghost";
+export type BassPatternAccent = ">" | "^" | "." | "strong" | "weak" | "marcato" | "ghost";
 
 export type BassPatternRhythmicValue = number | string;
 
@@ -151,11 +144,7 @@ export function chordProgressionSteps(
 }
 
 function normalizeRomanSymbol(symbol: string) {
-  return symbol
-    .replace(/[♭𝄫]/gu, "b")
-    .replace(/[♯𝄪]/gu, "#")
-    .replace(/–|—/g, "-")
-    .trim();
+  return symbol.replace(/[♭𝄫]/gu, "b").replace(/[♯𝄪]/gu, "#").replace(/–|—/g, "-").trim();
 }
 
 const ROMAN_TO_DEGREE: Record<string, number> = {
@@ -189,20 +178,14 @@ function uniqueButtons(buttons: DiagramButton[]) {
   });
 }
 
-export function chooseBassPatternReferenceButton(
-  buttons: DiagramButton[],
-  rootPitchClass: string,
-) {
+export function chooseBassPatternReferenceButton(buttons: DiagramButton[], rootPitchClass: string) {
   const roots = buttons.filter(
-    (button) =>
-      button.kind === "bass-root" && button.pitchClass === rootPitchClass,
+    (button) => button.kind === "bass-root" && button.pitchClass === rootPitchClass,
   );
-  if (roots.length > 0)
-    return [...roots].sort((a, b) => a.column - b.column || a.row - b.row)[0];
+  if (roots.length > 0) return [...roots].sort((a, b) => a.column - b.column || a.row - b.row)[0];
 
   const bassButtons = buttons.filter(
-    (button) =>
-      button.kind === "bass-root" || button.kind === "bass-counterbass",
+    (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
   );
   return bassButtons[0];
 }
@@ -260,12 +243,9 @@ function chordPatternFromRoman(symbol: string): FinderChordPattern {
   if (/9/.test(compact)) return "dominant9";
   if (/7/.test(compact)) return "dominant7";
   if (/sus4/i.test(compact)) return "sus4";
-  if (/6/.test(compact) && compact[0] === compact[0].toLowerCase())
-    return "minor6";
+  if (/6/.test(compact) && compact[0] === compact[0].toLowerCase()) return "minor6";
   if (/6/.test(compact)) return "major6";
-  return compact[0] === compact[0].toLowerCase()
-    ? "minor-triad"
-    : "major-triad";
+  return compact[0] === compact[0].toLowerCase() ? "minor-triad" : "major-triad";
 }
 
 /**
@@ -275,7 +255,11 @@ function chordPatternFromRoman(symbol: string): FinderChordPattern {
  * on that target, so V7/IV in C is C7. In "minor" mode the numerals count
  * from the natural minor scale.
  */
-export function resolveRomanChord(symbol: string, keyRootPitchClass: string, mode: RomanNumeralMode = "major"): {
+export function resolveRomanChord(
+  symbol: string,
+  keyRootPitchClass: string,
+  mode: RomanNumeralMode = "major",
+): {
   root: string;
   pattern: FinderChordPattern;
   label: string;
@@ -362,9 +346,7 @@ function closestChordButton(
   kind: DiagramButton["kind"],
   reference: DiagramButton | undefined,
 ) {
-  const candidates = buttons.filter(
-    (button) => button.kind === kind && button.pitchClass === root,
-  );
+  const candidates = buttons.filter((button) => button.kind === kind && button.pitchClass === root);
   if (candidates.length === 0) return undefined;
   return [...candidates].sort((a, b) => {
     const scoreA = reference ? distance(a, reference) : 0;
@@ -389,27 +371,12 @@ function chordButtonsForSymbol(
     return simpleButton ? [simpleButton] : [];
   }
 
-  const result = getStradellaChordFinderResult(
-    buttons,
-    root,
-    pattern,
-    "chord-buttons-only",
-    false,
-  );
-  if (result.playable && result.playbackButtons.length > 0)
-    return result.playbackButtons;
+  const result = getStradellaChordFinderResult(buttons, root, pattern, "chord-buttons-only", false);
+  if (result.playable && result.playbackButtons.length > 0) return result.playbackButtons;
 
-  const fallback = getStradellaChordFinderResult(
-    buttons,
-    root,
-    pattern,
-    "bass-and-chords",
-    false,
-  );
+  const fallback = getStradellaChordFinderResult(buttons, root, pattern, "bass-and-chords", false);
   return fallback.playable
-    ? fallback.playbackButtons.filter((button) =>
-        button.kind.startsWith("chord-"),
-      )
+    ? fallback.playbackButtons.filter((button) => button.kind.startsWith("chord-"))
     : [];
 }
 
@@ -434,9 +401,7 @@ function accentGain(accent: BassPatternAccent | undefined) {
 // Use common integer ticks for fractional and dotted durations to prevent
 // floating-point drift at bar boundaries.
 const TICKS_PER_METER_UNIT = 5040;
-const SUPPORTED_RHYTHM_DENOMINATORS = new Set([
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12,
-]);
+const SUPPORTED_RHYTHM_DENOMINATORS = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12]);
 
 type ParsedRhythmicValue = {
   value: number;
@@ -453,11 +418,7 @@ function parseFractionText(text: string): number | undefined {
   if (!match) return undefined;
   const numerator = Number(match[1]);
   const denominator = match[2] ? Number(match[2]) : 1;
-  if (
-    !Number.isInteger(numerator) ||
-    !Number.isInteger(denominator) ||
-    denominator <= 0
-  )
+  if (!Number.isInteger(numerator) || !Number.isInteger(denominator) || denominator <= 0)
     return undefined;
   if (!SUPPORTED_RHYTHM_DENOMINATORS.has(denominator)) return undefined;
   return numerator / denominator;
@@ -490,15 +451,11 @@ export function parseBassPatternRhythmicValue(
 
   if (!Number.isFinite(numericValue)) return undefined;
   const ticks = Math.round(numericValue * TICKS_PER_METER_UNIT);
-  if (Math.abs(ticks / TICKS_PER_METER_UNIT - numericValue) > 0.000001)
-    return undefined;
+  if (Math.abs(ticks / TICKS_PER_METER_UNIT - numericValue) > 0.000001) return undefined;
   return { value: roundRhythm(ticks / TICKS_PER_METER_UNIT), ticks };
 }
 
-function parsePatternDurationSuffix(
-  durationText: string | undefined,
-  dotted: boolean,
-) {
+function parsePatternDurationSuffix(durationText: string | undefined, dotted: boolean) {
   let duration: BassPatternRhythmicValue = 1;
   if (durationText) {
     if (durationText.startsWith("/")) {
@@ -524,10 +481,7 @@ function normalizeLegendValue(
 
 function playTokensForCompactSymbol(
   symbolText: string,
-  legend: Record<
-    string,
-    BassPatternPlayToken[] | string
-  > = DEFAULT_PATTERN_LEGEND,
+  legend: Record<string, BassPatternPlayToken[] | string> = DEFAULT_PATTERN_LEGEND,
 ): BassPatternPlayToken[] {
   if (symbolText.startsWith("[") && symbolText.endsWith("]")) {
     return symbolText
@@ -543,10 +497,7 @@ function playTokensForCompactSymbol(
 
 function parseBassPatternString(
   patternText: string,
-  legend: Record<
-    string,
-    BassPatternPlayToken[] | string
-  > = DEFAULT_PATTERN_LEGEND,
+  legend: Record<string, BassPatternPlayToken[] | string> = DEFAULT_PATTERN_LEGEND,
 ): NormalizedBassPatternStep[] {
   const tokens = patternText
     .replace(/\|/g, " | ")
@@ -574,9 +525,7 @@ function parseBassPatternString(
       token = token.slice(0, -1);
     }
 
-    const match = token.match(
-      /^(\[[^\]]+\]|[A-Za-z])((?:\d+(?:\/\d+)?)|(?:\/\d+))?(\.)?$/,
-    );
+    const match = token.match(/^(\[[^\]]+\]|[A-Za-z])((?:\d+(?:\/\d+)?)|(?:\/\d+))?(\.)?$/);
     if (!match) return;
 
     const symbol = match[1];
@@ -622,10 +571,7 @@ export function normalizedPatternSteps(
     });
   }
   if (pattern.pattern)
-    return parseBassPatternString(
-      pattern.pattern,
-      pattern.legend ?? DEFAULT_PATTERN_LEGEND,
-    );
+    return parseBassPatternString(pattern.pattern, pattern.legend ?? DEFAULT_PATTERN_LEGEND);
   return [];
 }
 
@@ -640,7 +586,8 @@ function isKnownPlayToken(token: BassPatternPlayToken) {
   );
 }
 
-export type BassPatternBeatName = "half" | "quarter" | "dotted-quarter" | "eighth" | "dotted-eighth" | "sixteenth";
+export type BassPatternBeatName =
+  "half" | "quarter" | "dotted-quarter" | "eighth" | "dotted-eighth" | "sixteenth";
 
 /** The note value one tempo beat counts in a meter, and how it relates to the
  * meter's own unit (its denominator). Compound meters (6/8, 9/8, 12/8, and the
@@ -660,11 +607,36 @@ export function bassPatternBeat(meter: string): {
   const quarterNotesPerUnit = 4 / denominator;
   if (compound) {
     return denominator === 8
-      ? { beat: "dotted-quarter", unitsPerBeat: 3, quarterNotesPerUnit, abcLength: "3/8", lilypondDuration: "4." }
-      : { beat: "dotted-eighth", unitsPerBeat: 3, quarterNotesPerUnit, abcLength: "3/16", lilypondDuration: "8." };
+      ? {
+          beat: "dotted-quarter",
+          unitsPerBeat: 3,
+          quarterNotesPerUnit,
+          abcLength: "3/8",
+          lilypondDuration: "4.",
+        }
+      : {
+          beat: "dotted-eighth",
+          unitsPerBeat: 3,
+          quarterNotesPerUnit,
+          abcLength: "3/16",
+          lilypondDuration: "8.",
+        };
   }
-  const beat: BassPatternBeatName = denominator <= 2 ? "half" : denominator === 4 ? "quarter" : denominator === 8 ? "eighth" : "sixteenth";
-  return { beat, unitsPerBeat: 1, quarterNotesPerUnit, abcLength: `1/${denominator}`, lilypondDuration: String(denominator) };
+  const beat: BassPatternBeatName =
+    denominator <= 2
+      ? "half"
+      : denominator === 4
+        ? "quarter"
+        : denominator === 8
+          ? "eighth"
+          : "sixteenth";
+  return {
+    beat,
+    unitsPerBeat: 1,
+    quarterNotesPerUnit,
+    abcLength: `1/${denominator}`,
+    lilypondDuration: String(denominator),
+  };
 }
 
 function isValidMeter(meter: string) {
@@ -672,16 +644,10 @@ function isValidMeter(meter: string) {
   if (!match) return false;
   const numerator = Number(match[1]);
   const denominator = Number(match[2]);
-  return (
-    Number.isInteger(numerator) &&
-    numerator > 0 &&
-    [1, 2, 4, 8, 16].includes(denominator)
-  );
+  return Number.isInteger(numerator) && numerator > 0 && [1, 2, 4, 8, 16].includes(denominator);
 }
 
-export function meterUnitsPerBarForPattern(
-  pattern: Pick<BassPatternDefinition, "meter">,
-) {
+export function meterUnitsPerBarForPattern(pattern: Pick<BassPatternDefinition, "meter">) {
   return Number(pattern.meter.split("/")[0] || 4);
 }
 
@@ -689,21 +655,16 @@ export function patternBarCount(pattern: Pick<BassPatternDefinition, "bars">) {
   return Math.max(1, Math.round(Number(pattern.bars ?? 1)));
 }
 
-export function patternUnitsForPattern(
-  pattern: Pick<BassPatternDefinition, "meter" | "bars">,
-) {
+export function patternUnitsForPattern(pattern: Pick<BassPatternDefinition, "meter" | "bars">) {
   return meterUnitsPerBarForPattern(pattern) * patternBarCount(pattern);
 }
 
 /** Validate token references and total meter/bar timing before playback;
  * no malformed pattern should be interpreted as a complete accompaniment. */
-export function validateBassPatternLibrary(
-  library: BassPatternLibrary,
-): string[] {
+export function validateBassPatternLibrary(library: BassPatternLibrary): string[] {
   const errors: string[] = [];
 
-  if (!library || library.version !== 2)
-    errors.push('Bass pattern library must use "version": 2.');
+  if (!library || library.version !== 2) errors.push('Bass pattern library must use "version": 2.');
   if (!Array.isArray(library?.patterns)) {
     errors.push('Bass pattern library must contain a "patterns" array.');
     return errors;
@@ -741,9 +702,7 @@ export function validateBassPatternLibrary(
         ? Number(pattern.meter.split("/")[0])
         : undefined;
     const totalPatternUnits =
-      unitsPerBar !== undefined
-        ? unitsPerBar * patternBarCount(pattern)
-        : undefined;
+      unitsPerBar !== undefined ? unitsPerBar * patternBarCount(pattern) : undefined;
 
     if (pattern.pattern && pattern.steps && pattern.steps.length > 0) {
       errors.push(`${name}: use either pattern or steps, not both.`);
@@ -753,21 +712,16 @@ export function validateBassPatternLibrary(
       ...pattern,
       legend: pattern.legend ?? library.legend,
     });
-    if (steps.length === 0)
-      errors.push(`${name}: no playable pattern string or steps.`);
+    if (steps.length === 0) errors.push(`${name}: no playable pattern string or steps.`);
 
     steps.forEach((step, stepIndex) => {
       const prefix = `${name}, step ${stepIndex + 1}`;
       const parsedT = parseBassPatternRhythmicValue(step.t);
       const parsedD = parseBassPatternRhythmicValue(step.d);
       if (!parsedT || parsedT.value < 0)
-        errors.push(
-          `${prefix}: t must be a non-negative number or fraction string.`,
-        );
+        errors.push(`${prefix}: t must be a non-negative number or fraction string.`);
       if (!parsedD || parsedD.value <= 0)
-        errors.push(
-          `${prefix}: d must be a positive number or fraction string.`,
-        );
+        errors.push(`${prefix}: d must be a positive number or fraction string.`);
       if (
         parsedT &&
         parsedD &&
@@ -782,9 +736,7 @@ export function validateBassPatternLibrary(
         errors.push(`${prefix}: play must be a non-empty array.`);
       } else {
         if (step.play.includes("rest") && step.play.length > 1)
-          errors.push(
-            `${prefix}: rest cannot be combined with other play tokens.`,
-          );
+          errors.push(`${prefix}: rest cannot be combined with other play tokens.`);
         step.play.forEach((token) => {
           if (typeof token !== "string" || !isKnownPlayToken(token))
             errors.push(`${prefix}: unknown play token "${String(token)}".`);
@@ -792,9 +744,7 @@ export function validateBassPatternLibrary(
       }
       if (
         step.accent &&
-        ![">", "^", ".", "strong", "weak", "marcato", "ghost"].includes(
-          step.accent,
-        )
+        ![">", "^", ".", "strong", "weak", "marcato", "ghost"].includes(step.accent)
       ) {
         errors.push(`${prefix}: invalid accent "${step.accent}".`);
       }
@@ -866,13 +816,7 @@ function selectButtonsForPlayTokens(
     const bassInterval = bassIntervalForToken(token);
     if (bassInterval !== undefined) {
       const pitch = pitchClassAt(pitchIndex(chordRoot) + bassInterval);
-      const bass = closestBassButton(
-        buttons,
-        pitch,
-        reference,
-        nextPreviousBass,
-        "root",
-      );
+      const bass = closestBassButton(buttons, pitch, reference, nextPreviousBass, "root");
       if (bass) {
         selected.push(bass);
         nextPreviousBass = bass;
@@ -885,11 +829,7 @@ function selectButtonsForPlayTokens(
     if (token.startsWith("counter:")) {
       const degree = token.split(":")[1] ?? "3";
       const interval =
-        degree === "1"
-          ? 0
-          : degree === "3"
-            ? 4
-            : (bassIntervalForToken(`bass:${degree}`) ?? 0);
+        degree === "1" ? 0 : degree === "3" ? 4 : (bassIntervalForToken(`bass:${degree}`) ?? 0);
       const pitch = pitchClassAt(pitchIndex(chordRoot) + interval);
       const counterBass = closestBassButton(
         buttons,
@@ -907,17 +847,9 @@ function selectButtonsForPlayTokens(
       return;
     }
 
-    if (
-      token === "chord" ||
-      token === "chord:simple" ||
-      token === "chord:full"
-    ) {
+    if (token === "chord" || token === "chord:simple" || token === "chord:full") {
       const effectiveVoicing =
-        token === "chord:full"
-          ? "full"
-          : token === "chord:simple"
-            ? "simple"
-            : chordVoicing;
+        token === "chord:full" ? "full" : token === "chord:simple" ? "simple" : chordVoicing;
       const chordButtons = chordButtonsForSymbol(
         buttons,
         chordRoot,
@@ -973,10 +905,7 @@ export function makeBassPatternEvents(
   repeatsPerChordOverride?: number,
 ): BassPatternPlaybackEvent[] {
   const events: BassPatternPlaybackEvent[] = [];
-  const reference = chooseBassPatternReferenceButton(
-    buttons,
-    keyRootPitchClass,
-  );
+  const reference = chooseBassPatternReferenceButton(buttons, keyRootPitchClass);
   const patternSteps = normalizedPatternSteps(pattern);
   let currentBeat = 0;
   let previousBass: DiagramButton | undefined = reference;
@@ -994,17 +923,16 @@ export function makeBassPatternEvents(
     for (let repeatIndex = 0; repeatIndex < repeatsPerChord; repeatIndex += 1) {
       const patternStartBeat = currentBeat + repeatIndex * patternUnits;
       patternSteps.forEach((step) => {
-        const { selected, missing, nextPreviousBass } =
-          selectButtonsForPlayTokens(
-            step.play,
-            buttons,
-            chord.root,
-            chord.pattern,
-            progressionStep.symbol,
-            chordVoicing,
-            reference,
-            previousBass,
-          );
+        const { selected, missing, nextPreviousBass } = selectButtonsForPlayTokens(
+          step.play,
+          buttons,
+          chord.root,
+          chord.pattern,
+          progressionStep.symbol,
+          chordVoicing,
+          reference,
+          previousBass,
+        );
         previousBass = nextPreviousBass;
 
         const absoluteStartBeat = patternStartBeat + step.t;
@@ -1079,16 +1007,11 @@ function abcTokenForEvent(event: BassPatternPlaybackEvent) {
     return `z${abcDuration(event.durationBeats)}`;
   }
 
-  const chordLabel = event.buttons.some((button) =>
-    button.kind.startsWith("chord-"),
-  )
+  const chordLabel = event.buttons.some((button) => button.kind.startsWith("chord-"))
     ? `"${escapeAbcText(event.resolvedChordLabel)}"`
     : "";
   const bassNotes = event.buttons
-    .filter(
-      (button) =>
-        button.kind === "bass-root" || button.kind === "bass-counterbass",
-    )
+    .filter((button) => button.kind === "bass-root" || button.kind === "bass-counterbass")
     .map((button) => abcAccidentalNoteName(button.pitchClass ?? "C"));
   const noteBody =
     bassNotes.length === 0
@@ -1124,9 +1047,7 @@ export function bassPatternEventsToAbc(
   [...groupedByBar.entries()]
     .sort((a, b) => a[0] - b[0])
     .forEach(([barNumber, barEvents]) => {
-      const sorted = [...barEvents].sort(
-        (a, b) => a.unitInBar - b.unitInBar || a.index - b.index,
-      );
+      const sorted = [...barEvents].sort((a, b) => a.unitInBar - b.unitInBar || a.index - b.index);
       const tokens: string[] = [];
       let cursor = 0;
       sorted.forEach((event) => {
@@ -1138,8 +1059,7 @@ export function bassPatternEventsToAbc(
       const trailing = meterUnitsPerBar - cursor;
       if (trailing > 0.0001) tokens.push(`z${abcDuration(trailing)}`);
       bodyLines.push(
-        `| ${tokens.join(" ")} ` +
-          (barNumber === Math.max(...groupedByBar.keys()) ? "|" : ""),
+        `| ${tokens.join(" ")} ` + (barNumber === Math.max(...groupedByBar.keys()) ? "|" : ""),
       );
     });
 
@@ -1171,10 +1091,12 @@ function chordButtonAbcAnnotation(button: DiagramButton | undefined) {
   return "";
 }
 
-function abcBassVoiceTokenForEvent(event: BassPatternPlaybackEvent, preferences: StradellaNotationPreferences = DEFAULT_STRADELLA_NOTATION) {
+function abcBassVoiceTokenForEvent(
+  event: BassPatternPlaybackEvent,
+  preferences: StradellaNotationPreferences = DEFAULT_STRADELLA_NOTATION,
+) {
   const bassButtons = event.buttons.filter(
-    (button) =>
-      button.kind === "bass-root" || button.kind === "bass-counterbass",
+    (button) => button.kind === "bass-root" || button.kind === "bass-counterbass",
   );
 
   if (event.play.includes("rest")) {
@@ -1185,30 +1107,25 @@ function abcBassVoiceTokenForEvent(event: BassPatternPlaybackEvent, preferences:
     return `x${abcDuration(event.durationBeats)}`;
   }
 
-  const noteNames = bassButtons.map((button) =>
-    stradellaNoteForButton(button, preferences),
-  );
-  const noteBody =
-    noteNames.length === 1 ? noteNames[0] : `[${noteNames.join("")}]`;
+  const noteNames = bassButtons.map((button) => stradellaNoteForButton(button, preferences));
+  const noteBody = noteNames.length === 1 ? noteNames[0] : `[${noteNames.join("")}]`;
   const accent = abcAccentDecoration(event.accent);
   const tie = event.tie === "start" || event.tie === "continue" ? "-" : "";
   return `${accent}${noteBody}${abcDuration(event.durationBeats)}${tie}`;
 }
 
-function abcChordVoiceTokenForEvent(event: BassPatternPlaybackEvent, preferences: StradellaNotationPreferences = DEFAULT_STRADELLA_NOTATION) {
-  const chordButtons = event.buttons.filter((button) =>
-    button.kind.startsWith("chord-"),
-  );
+function abcChordVoiceTokenForEvent(
+  event: BassPatternPlaybackEvent,
+  preferences: StradellaNotationPreferences = DEFAULT_STRADELLA_NOTATION,
+) {
+  const chordButtons = event.buttons.filter((button) => button.kind.startsWith("chord-"));
 
   if (event.play.includes("rest") || chordButtons.length === 0) {
     return `x${abcDuration(event.durationBeats)}`;
   }
 
-  const noteNames = chordButtons.map((button) =>
-    stradellaNoteForButton(button, preferences),
-  );
-  const noteBody =
-    noteNames.length === 1 ? noteNames[0] : `[${noteNames.join("")}]`;
+  const noteNames = chordButtons.map((button) => stradellaNoteForButton(button, preferences));
+  const noteBody = noteNames.length === 1 ? noteNames[0] : `[${noteNames.join("")}]`;
   const annotation = chordButtonAbcAnnotation(chordButtons[0]);
   const accent = abcAccentDecoration(event.accent);
   const tie = event.tie === "start" || event.tie === "continue" ? "-" : "";
@@ -1271,30 +1188,36 @@ function abcVoiceBarTokens(
  * attacks. Written durations are separated from performance gates; a gap before
  * the next attack is filled by the preceding note unless it is an explicit rest.
  */
-function stradellaSingleVoiceBar(events: BassPatternPlaybackEvent[], units: number,
-  preferences: StradellaNotationPreferences, priorQuality: string | null): {line:string|null;quality:string|null} {
+function stradellaSingleVoiceBar(
+  events: BassPatternPlaybackEvent[],
+  units: number,
+  preferences: StradellaNotationPreferences,
+  priorQuality: string | null,
+): { line: string | null; quality: string | null } {
   const parts: string[] = [];
   let cursor = 0;
   let lastQuality: string | null = priorQuality;
-  const sorted = [...events].sort((a,b)=>a.unitInBar-b.unitInBar || a.index-b.index);
-  for (let i=0; i<sorted.length; i++) {
-    const event=sorted[i];
-    const start=event.unitInBar;
-    if (start < cursor - 0.00001) return {line:null,quality:lastQuality};
-    if (start > cursor+0.00001) parts.push(`z${abcDuration(start-cursor)}`);
-    const next = i+1<sorted.length ? sorted[i+1].unitInBar : units;
-    if (next <= start+0.00001) return {line:null,quality:lastQuality}; // same-onset polyphony: preserve separate voices
-    if (event.durationBeats > next-start+0.125) return {line:null,quality:lastQuality};
-    const isRest=event.play.includes("rest") || !event.buttons.length;
-    const result: {token:string;quality:string|null} = isRest ? {token:"z",quality:lastQuality} : stradellaButtonToken(event.buttons, preferences,lastQuality);
-    lastQuality=result.quality;
-    const accent=abcAccentDecoration(event.accent);
-    const note=`${isRest?"":accent}${result.token}${abcDuration(next-start)}`;
+  const sorted = [...events].sort((a, b) => a.unitInBar - b.unitInBar || a.index - b.index);
+  for (let i = 0; i < sorted.length; i++) {
+    const event = sorted[i];
+    const start = event.unitInBar;
+    if (start < cursor - 0.00001) return { line: null, quality: lastQuality };
+    if (start > cursor + 0.00001) parts.push(`z${abcDuration(start - cursor)}`);
+    const next = i + 1 < sorted.length ? sorted[i + 1].unitInBar : units;
+    if (next <= start + 0.00001) return { line: null, quality: lastQuality }; // same-onset polyphony: preserve separate voices
+    if (event.durationBeats > next - start + 0.125) return { line: null, quality: lastQuality };
+    const isRest = event.play.includes("rest") || !event.buttons.length;
+    const result: { token: string; quality: string | null } = isRest
+      ? { token: "z", quality: lastQuality }
+      : stradellaButtonToken(event.buttons, preferences, lastQuality);
+    lastQuality = result.quality;
+    const accent = abcAccentDecoration(event.accent);
+    const note = `${isRest ? "" : accent}${result.token}${abcDuration(next - start)}`;
     parts.push(note);
-    cursor=next;
+    cursor = next;
   }
-  if (cursor<units-0.00001) parts.push(`z${abcDuration(units-cursor)}`);
-  return {line:parts.join(" ") || `z${units}`,quality:lastQuality};
+  if (cursor < units - 0.00001) parts.push(`z${abcDuration(units - cursor)}`);
+  return { line: parts.join(" ") || `z${units}`, quality: lastQuality };
 }
 
 export type StradellaNotationAbcOptions = {
@@ -1329,22 +1252,10 @@ export function bassPatternEventsToStradellaNotationAbc(
   const includeTitle = options.includeTitle ?? true;
   const includeDescription = options.includeDescription ?? false;
   const includeSummary = options.includeSummary ?? false;
-  const barsPerLine = Math.max(
-    1,
-    Math.min(8, Math.round(options.barsPerLine ?? 4)),
-  );
-  const chordFontSize = Math.max(
-    8,
-    Math.min(24, Math.round(options.chordFontSize ?? 11)),
-  );
-  const titleFontSize = Math.max(
-    10,
-    Math.min(24, Math.round(options.titleFontSize ?? 14)),
-  );
-  const staffSeparator = Math.max(
-    8,
-    Math.min(32, Math.round(options.staffSeparator ?? 14)),
-  );
+  const barsPerLine = Math.max(1, Math.min(8, Math.round(options.barsPerLine ?? 4)));
+  const chordFontSize = Math.max(8, Math.min(24, Math.round(options.chordFontSize ?? 11)));
+  const titleFontSize = Math.max(10, Math.min(24, Math.round(options.titleFontSize ?? 14)));
+  const staffSeparator = Math.max(8, Math.min(32, Math.round(options.staffSeparator ?? 14)));
   const groupedByBar = new Map<number, BassPatternPlaybackEvent[]>();
   events.forEach((event) => {
     const group = groupedByBar.get(event.barNumber) ?? [];
@@ -1355,45 +1266,59 @@ export function bassPatternEventsToStradellaNotationAbc(
   const barNumbers = [...groupedByBar.keys()].sort((a, b) => a - b);
   const preferences = options.stradellaPreferences ?? DEFAULT_STRADELLA_NOTATION;
   let precedingQuality: string | null = null;
-  const singleBars = barNumbers.map(bar => {
-    const result = stradellaSingleVoiceBar(groupedByBar.get(bar) ?? [], meterUnitsPerBar, preferences, precedingQuality);
+  const singleBars = barNumbers.map((bar) => {
+    const result = stradellaSingleVoiceBar(
+      groupedByBar.get(bar) ?? [],
+      meterUnitsPerBar,
+      preferences,
+      precedingQuality,
+    );
     precedingQuality = result.quality;
     return result.line;
   });
-  const needsPolyphony = singleBars.some(bar=>bar===null);
+  const needsPolyphony = singleBars.some((bar) => bar === null);
   const useRepeatSigns = loopMode !== "once";
-  const barPrefix = (index: number) =>
-    useRepeatSigns && index === 0 ? "|:" : "|";
+  const barPrefix = (index: number) => (useRepeatSigns && index === 0 ? "|:" : "|");
   const barSuffix = (index: number) =>
     useRepeatSigns && index === barNumbers.length - 1 ? ":|" : "";
   const lineBreakBeforeBar = (index: number) =>
     index > 0 && index % barsPerLine === 0 ? "\n" : "";
   const bassBars = barNumbers.map(
     (barNumber, index) =>
-      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, event=>abcBassVoiceTokenForEvent(event,preferences))} ${barSuffix(index)}`,
+      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, (event) => abcBassVoiceTokenForEvent(event, preferences))} ${barSuffix(index)}`,
   );
   let priorPolyChordQuality: string | null = null;
   const chordBars = barNumbers.map(
     (barNumber, index) =>
-      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(groupedByBar.get(barNumber) ?? [], meterUnitsPerBar, denominator, event=>{
-        const chord = event.buttons.find(button=>button.kind.startsWith("chord-"));
-        const quality = chord?.kind === "chord-major" ? "M"
-          : chord?.kind === "chord-minor" ? "m"
-          : chord?.kind === "chord-dominant7" ? "7"
-          : chord?.kind === "chord-diminished7" ? "d" : null;
-        const rendered = abcChordVoiceTokenForEvent(event, preferences);
-        const show = preferences.chordQualityLabels === "always" || quality !== priorPolyChordQuality;
-        if (quality) priorPolyChordQuality = quality;
-        return show ? rendered : rendered.replace(/^"\^[Mm7d]"/, "");
-      })} ${barSuffix(index)}`,
+      `${lineBreakBeforeBar(index)}${barPrefix(index)} ${abcVoiceBarTokens(
+        groupedByBar.get(barNumber) ?? [],
+        meterUnitsPerBar,
+        denominator,
+        (event) => {
+          const chord = event.buttons.find((button) => button.kind.startsWith("chord-"));
+          const quality =
+            chord?.kind === "chord-major"
+              ? "M"
+              : chord?.kind === "chord-minor"
+                ? "m"
+                : chord?.kind === "chord-dominant7"
+                  ? "7"
+                  : chord?.kind === "chord-diminished7"
+                    ? "d"
+                    : null;
+          const rendered = abcChordVoiceTokenForEvent(event, preferences);
+          const show =
+            preferences.chordQualityLabels === "always" || quality !== priorPolyChordQuality;
+          if (quality) priorPolyChordQuality = quality;
+          return show ? rendered : rendered.replace(/^"\^[Mm7d]"/, "");
+        },
+      )} ${barSuffix(index)}`,
   );
   const summaryLine = includeSummary
     ? `W: ${progression.name} · ${pattern.name} · ${barNumbers.length} bar${barNumbers.length === 1 ? "" : "s"} · Root ${keyRootPitchClass} · ${repeatsPerChord} repeat${repeatsPerChord === 1 ? "" : "s"} per chord · ${pattern.meter}`
     : "";
   const descriptionLine =
-    includeDescription && pattern.description
-      ? `W: ${pattern.description}`
-      : "";
+    includeDescription && pattern.description ? `W: ${pattern.description}` : "";
   void loopCount;
 
   return [
@@ -1412,7 +1337,7 @@ export function bassPatternEventsToStradellaNotationAbc(
     `K:${keyRootPitchClass} clef=bass`,
     needsPolyphony ? "V:1 clef=bass stem=down" : "V:1 clef=bass",
     ...(needsPolyphony ? ["V:2 clef=bass stem=up"] : []),
-    `[V:1] ${needsPolyphony ? bassBars.join("") : barNumbers.map((_,index)=>`${lineBreakBeforeBar(index)}${barPrefix(index)} ${singleBars[index]} ${barSuffix(index)}`).join("")}`,
+    `[V:1] ${needsPolyphony ? bassBars.join("") : barNumbers.map((_, index) => `${lineBreakBeforeBar(index)}${barPrefix(index)} ${singleBars[index]} ${barSuffix(index)}`).join("")}`,
     ...(needsPolyphony ? [`[V:2] ${chordBars.join("")}`] : []),
     descriptionLine,
     summaryLine,
@@ -1453,16 +1378,11 @@ function fractionFromNumber(value: number, maxDenominator = 5040) {
   };
 }
 
-function lilypondDurationForMeterUnits(
-  units: number,
-  meterDenominator: number,
-) {
+function lilypondDurationForMeterUnits(units: number, meterDenominator: number) {
   const rounded = roundRhythm(units);
   const fraction = fractionFromNumber(rounded);
-  if (fraction.denominator === 1 && fraction.numerator === 1)
-    return String(meterDenominator);
-  if (fraction.denominator === 1)
-    return `${meterDenominator}*${fraction.numerator}`;
+  if (fraction.denominator === 1 && fraction.numerator === 1) return String(meterDenominator);
+  if (fraction.denominator === 1) return `${meterDenominator}*${fraction.numerator}`;
   return `${meterDenominator}*${fraction.numerator}/${fraction.denominator}`;
 }
 
@@ -1529,16 +1449,9 @@ function lilypondEventMarkup(event: BassPatternPlaybackEvent) {
   return lilypondEscapeText(parts.join(" · "));
 }
 
-function lilypondTokenForEvent(
-  event: BassPatternPlaybackEvent,
-  meterDenominator: number,
-) {
-  const duration = lilypondDurationForMeterUnits(
-    event.durationBeats,
-    meterDenominator,
-  );
-  const articulation =
-    event.accent === ">" || event.accent === "strong" ? "->" : "";
+function lilypondTokenForEvent(event: BassPatternPlaybackEvent, meterDenominator: number) {
+  const duration = lilypondDurationForMeterUnits(event.durationBeats, meterDenominator);
+  const articulation = event.accent === ">" || event.accent === "strong" ? "->" : "";
   const tie = event.tie === "start" || event.tie === "continue" ? "~" : "";
   if (event.play.includes("rest") || event.buttons.length === 0) {
     return `r${duration}`;
@@ -1573,24 +1486,19 @@ export function bassPatternEventsToLilyPond(
     let cursor = 0;
     sorted.forEach((event) => {
       const gap = event.unitInBar - cursor;
-      if (gap > 0.0001)
-        tokens.push(`r${lilypondDurationForMeterUnits(gap, meterDenominator)}`);
+      if (gap > 0.0001) tokens.push(`r${lilypondDurationForMeterUnits(gap, meterDenominator)}`);
       tokens.push(lilypondTokenForEvent(event, meterDenominator));
       cursor = Math.max(cursor, event.unitInBar + event.durationBeats);
     });
     const trailing = meterUnitsPerBar - cursor;
     if (trailing > 0.0001)
-      tokens.push(
-        `r${lilypondDurationForMeterUnits(trailing, meterDenominator)}`,
-      );
+      tokens.push(`r${lilypondDurationForMeterUnits(trailing, meterDenominator)}`);
     return `${tokens.join(" ")} |`;
   });
 
   const chordBars = barNumbers.map((barNumber) => {
     const firstEvent = (groupedByBar.get(barNumber) ?? [])[0];
-    const chord = lilypondChordName(
-      firstEvent?.resolvedChordLabel ?? keyRootPitchClass,
-    );
+    const chord = lilypondChordName(firstEvent?.resolvedChordLabel ?? keyRootPitchClass);
     return `${chord}${lilypondDurationForMeterUnits(meterUnitsPerBar, meterDenominator)}`;
   });
 
@@ -1703,11 +1611,7 @@ export function bassPatternEventsToMidiBytes(
   let previousTick = 0;
   noteEvents.forEach((event) => {
     track.push(...writeVarLength(Math.max(0, event.tick - previousTick)));
-    track.push(
-      event.type === "on" ? 0x90 : 0x80,
-      event.pitch & 0x7f,
-      event.velocity & 0x7f,
-    );
+    track.push(event.type === "on" ? 0x90 : 0x80, event.pitch & 0x7f, event.velocity & 0x7f);
     previousTick = event.tick;
   });
   track.push(0x00, 0xff, 0x2f, 0x00);
@@ -1743,9 +1647,7 @@ export function bassPatternEventsToMidiBytes(
 
 export function totalBassPatternBeats(events: BassPatternPlaybackEvent[]) {
   if (events.length === 0) return 0;
-  return Math.max(
-    ...events.map((event) => event.startBeat + event.durationBeats),
-  );
+  return Math.max(...events.map((event) => event.startBeat + event.durationBeats));
 }
 
 export function bassPatternMissingItems(events: BassPatternPlaybackEvent[]) {

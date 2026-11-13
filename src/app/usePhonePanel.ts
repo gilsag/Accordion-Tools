@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 const PHONE_QUERY = "(max-width: 620px)";
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Transient phone-only sheet visibility. Tool, settings and instrument state
  * remain in the existing controller; closing the sheet never resets them. */
@@ -21,10 +22,13 @@ export function usePhonePanel(activeTool: string | null, workspaceMode: string) 
     return () => query.removeEventListener("change", update);
   }, []);
 
-  const close = useCallback(() => { setOpen(false); }, []);
+  const close = useCallback(() => {
+    setOpen(false);
+  }, []);
 
   const show = useCallback(() => {
-    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    openerRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setOpen(true);
   }, []);
 
@@ -56,15 +60,20 @@ export function usePhonePanel(activeTool: string | null, workspaceMode: string) 
     setOpen(false);
   }, [activeTool]);
   // Switching workspace (Stradella, Treble, Harmony) always shows the new diagram.
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Navigation-driven dismissal, not derived application state.
-  useEffect(() => { setOpen(false); }, [workspaceMode]);
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- A desktop sidebar is never a modal sheet.
-  useEffect(() => { if (!isPhone) setOpen(false); }, [isPhone]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Navigation-driven dismissal, not derived application state.
+    setOpen(false);
+  }, [workspaceMode]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- A desktop sidebar is never a modal sheet.
+    if (!isPhone) setOpen(false);
+  }, [isPhone]);
 
   function onPanelKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (!isPhone || !open || event.key !== "Tab") return;
-    const elements = Array.from(panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
-      .filter((element) => element.getClientRects().length > 0);
+    const elements = Array.from(
+      panelRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [],
+    ).filter((element) => element.getClientRects().length > 0);
     if (!elements.length) return;
     const first = elements[0];
     const last = elements[elements.length - 1];

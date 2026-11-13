@@ -2,13 +2,28 @@ import { useEffect, useRef, useCallback, type RefObject } from "react";
 import { downloadRenderedNotationSvg } from "./notationService";
 import { useI18n } from "../i18n/useI18n";
 
-export type NotationRenderer = (host: HTMLDivElement | null, source: string, imported?: boolean) => void | Promise<void>;
+export type NotationRenderer = (
+  host: HTMLDivElement | null,
+  source: string,
+  imported?: boolean,
+) => void | Promise<void>;
 
 /** Shared notation shell for the inspector AND the below-diagram position.
  * All tools use the same header, engraving host, download and help tooltip.
  * The feature supplies ABC and, optionally, a note-highlighting callback. */
-export function NotationScore({ title, abc, filename, render, imported = false,
-  help, showTitle = true, onRendered, onActive, activeKey, hostRef }: {
+export function NotationScore({
+  title,
+  abc,
+  filename,
+  render,
+  imported = false,
+  help,
+  showTitle = true,
+  onRendered,
+  onActive,
+  activeKey,
+  hostRef,
+}: {
   title: string;
   abc: string;
   filename: string;
@@ -32,20 +47,33 @@ export function NotationScore({ title, abc, filename, render, imported = false,
     Promise.resolve(render(element, abc, imported)).then(() => {
       if (alive) afterRender(element);
     });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [ref, abc, imported, render, afterRender]);
   useEffect(() => {
     if (ref.current) onActive?.(ref.current);
   }, [ref, onActive, activeKey]);
-  return <div className="shared-notation-score">
-    <div className="rendered-notation-header">
-      {showTitle && <strong className="rendered-notation-title">{title}</strong>}
-      <div className="notation-header-actions">
-        {help && <button type="button" className="notation-help" title={help} aria-label={help}>i</button>}
-        <button type="button" className="small-button notation-download-button"
-          onClick={() => downloadRenderedNotationSvg(ref.current, filename)}>{t("ui.downloadSVG")}</button>
+  return (
+    <div className="shared-notation-score">
+      <div className="rendered-notation-header">
+        {showTitle && <strong className="rendered-notation-title">{title}</strong>}
+        <div className="notation-header-actions">
+          {help && (
+            <button type="button" className="notation-help" title={help} aria-label={help}>
+              i
+            </button>
+          )}
+          <button
+            type="button"
+            className="small-button notation-download-button"
+            onClick={() => downloadRenderedNotationSvg(ref.current, filename)}
+          >
+            {t("ui.downloadSVG")}
+          </button>
+        </div>
       </div>
+      <div ref={ref} className="rendered-abc abc-notation-inspector" aria-label={title} />
     </div>
-    <div ref={ref} className="rendered-abc abc-notation-inspector" aria-label={title}/>
-  </div>;
+  );
 }

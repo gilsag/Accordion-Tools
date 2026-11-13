@@ -43,8 +43,13 @@ export function scheduleAtAudioOffset(
   onHeard?: () => void,
 ) {
   const when = origin + offsetMs / 1000;
-  ports.push(window.setTimeout(() => {
-    onAudio(when);
-    if (onHeard) ports.push(window.setTimeout(onHeard, msUntilAudioTime(ports, when)));
-  }, msUntilAudioTime(ports, when, AUDIO_LOOKAHEAD_MS)));
+  ports.push(
+    window.setTimeout(
+      () => {
+        onAudio(when);
+        if (onHeard) ports.push(window.setTimeout(onHeard, msUntilAudioTime(ports, when)));
+      },
+      msUntilAudioTime(ports, when, AUDIO_LOOKAHEAD_MS),
+    ),
+  );
 }

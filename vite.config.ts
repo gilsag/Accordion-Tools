@@ -17,14 +17,16 @@ function abcCatalogPlugin(): Plugin {
           next();
           return;
         }
-        void discoverAbcExamples(abcDirectory).then((examples) => {
-          res.setHeader("Content-Type", "application/json; charset=utf-8");
-          res.setHeader("Cache-Control", "no-store");
-          res.end(JSON.stringify(examples));
-        }).catch((error: unknown) => {
-          res.statusCode = 500;
-          res.end(String(error));
-        });
+        void discoverAbcExamples(abcDirectory)
+          .then((examples) => {
+            res.setHeader("Content-Type", "application/json; charset=utf-8");
+            res.setHeader("Cache-Control", "no-store");
+            res.end(JSON.stringify(examples));
+          })
+          .catch((error: unknown) => {
+            res.statusCode = 500;
+            res.end(String(error));
+          });
       });
       server.watcher.add(abcDirectory);
       const refresh = (path: string) => {

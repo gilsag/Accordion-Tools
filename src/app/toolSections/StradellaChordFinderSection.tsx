@@ -4,54 +4,120 @@ import { ROOT_POSITION_BASS } from "../../tools/stradellaChordFinder/harmonicIde
 import type { AppControllerModel } from "../useAppController";
 
 /** The slice of the controller model this section reads. */
-type StradellaChordFinderSectionModel = Pick<AppControllerModel["tools"],
-  "batchExporting" | "downloadAllStradellaRealizations" |
-  "exploreCurrentStradellaChordInHarmony" | "finderExplanationFontSize" | "finderMaxButtons" |
-  "finderSpanColumns" | "playStradellaChordFinder" | "setChordFinderActive" |
-  "setFinderExplanationFontSize" | "setFinderMaxButtons" | "setFinderSpanColumns" |
-  "setScaleFinderActive" | "setShowFinderRealizationNote" | "setShowStradellaVoicingIntervals" |
-  "setStradellaChordFinderActive" | "setStradellaChordFinderMarkRootBass" |
-  "setStradellaChordFinderMode" | "setStradellaChordFinderPattern" |
-  "setStradellaChordFinderRealizationIndex" | "setStradellaChordFinderRequestedBass" |
-  "setStradellaChordFinderRoot" | "setStradellaMinimumNominalGap" | "setStradellaNoteLevels" |
-  "setStradellaRequestedBassOnBassButton" | "showFinderRealizationNote" |
-  "showStradellaVoicingIntervals" | "stradellaChordFinderActive" |
-  "stradellaChordFinderBassButtonFallback" | "stradellaChordFinderMarkRootBass" |
-  "stradellaChordFinderMode" | "stradellaChordFinderPattern" |
-  "stradellaChordFinderPlaybackButtons" | "stradellaChordFinderReachExtendedTo" |
-  "stradellaChordFinderRealizationIndex" | "stradellaChordFinderRealizations" |
-  "stradellaChordFinderRequestedBass" | "stradellaChordFinderResult" |
-  "stradellaChordFinderRoot" | "stradellaChordFinderRootFallback" |
-  "stradellaMinimumNominalGap" | "stradellaNoteLevels" | "stradellaRequestedBassOnBassButton">;
+type StradellaChordFinderSectionModel = Pick<
+  AppControllerModel["tools"],
+  | "batchExporting"
+  | "downloadAllStradellaRealizations"
+  | "exploreCurrentStradellaChordInHarmony"
+  | "finderExplanationFontSize"
+  | "finderMaxButtons"
+  | "finderSpanColumns"
+  | "playStradellaChordFinder"
+  | "setChordFinderActive"
+  | "setFinderExplanationFontSize"
+  | "setFinderMaxButtons"
+  | "setFinderSpanColumns"
+  | "setScaleFinderActive"
+  | "setShowFinderRealizationNote"
+  | "setShowStradellaVoicingIntervals"
+  | "setStradellaChordFinderActive"
+  | "setStradellaChordFinderMarkRootBass"
+  | "setStradellaChordFinderMode"
+  | "setStradellaChordFinderPattern"
+  | "setStradellaChordFinderRealizationIndex"
+  | "setStradellaChordFinderRequestedBass"
+  | "setStradellaChordFinderRoot"
+  | "setStradellaMinimumNominalGap"
+  | "setStradellaNoteLevels"
+  | "setStradellaRequestedBassOnBassButton"
+  | "showFinderRealizationNote"
+  | "showStradellaVoicingIntervals"
+  | "stradellaChordFinderActive"
+  | "stradellaChordFinderBassButtonFallback"
+  | "stradellaChordFinderMarkRootBass"
+  | "stradellaChordFinderMode"
+  | "stradellaChordFinderPattern"
+  | "stradellaChordFinderPlaybackButtons"
+  | "stradellaChordFinderReachExtendedTo"
+  | "stradellaChordFinderRealizationIndex"
+  | "stradellaChordFinderRealizations"
+  | "stradellaChordFinderRequestedBass"
+  | "stradellaChordFinderResult"
+  | "stradellaChordFinderRoot"
+  | "stradellaChordFinderRootFallback"
+  | "stradellaMinimumNominalGap"
+  | "stradellaNoteLevels"
+  | "stradellaRequestedBassOnBassButton"
+>;
 
 /** Stradella Chord Finder: connects the panel to the finder state. */
-export default function StradellaChordFinderSection({ model }: { model: StradellaChordFinderSectionModel }) {
+export default function StradellaChordFinderSection({
+  model,
+}: {
+  model: StradellaChordFinderSectionModel;
+}) {
   const {
-    batchExporting, downloadAllStradellaRealizations, exploreCurrentStradellaChordInHarmony,
-    finderExplanationFontSize, finderMaxButtons, finderSpanColumns, playStradellaChordFinder,
-    setChordFinderActive, setFinderExplanationFontSize, setFinderMaxButtons, setFinderSpanColumns,
-    setScaleFinderActive, setShowFinderRealizationNote, setShowStradellaVoicingIntervals,
-    setStradellaChordFinderActive, setStradellaChordFinderMarkRootBass,
-    setStradellaChordFinderMode, setStradellaChordFinderPattern,
-    setStradellaChordFinderRealizationIndex, setStradellaChordFinderRequestedBass,
-    setStradellaChordFinderRoot, setStradellaMinimumNominalGap, setStradellaNoteLevels,
-    setStradellaRequestedBassOnBassButton, showFinderRealizationNote,
-    showStradellaVoicingIntervals, stradellaChordFinderActive,
-    stradellaChordFinderBassButtonFallback, stradellaChordFinderMarkRootBass,
-    stradellaChordFinderMode, stradellaChordFinderPattern, stradellaChordFinderPlaybackButtons,
-    stradellaChordFinderReachExtendedTo, stradellaChordFinderRealizationIndex,
-    stradellaChordFinderRealizations, stradellaChordFinderRequestedBass,
-    stradellaChordFinderResult, stradellaChordFinderRoot, stradellaChordFinderRootFallback,
-    stradellaMinimumNominalGap, stradellaNoteLevels, stradellaRequestedBassOnBassButton,
+    batchExporting,
+    downloadAllStradellaRealizations,
+    exploreCurrentStradellaChordInHarmony,
+    finderExplanationFontSize,
+    finderMaxButtons,
+    finderSpanColumns,
+    playStradellaChordFinder,
+    setChordFinderActive,
+    setFinderExplanationFontSize,
+    setFinderMaxButtons,
+    setFinderSpanColumns,
+    setScaleFinderActive,
+    setShowFinderRealizationNote,
+    setShowStradellaVoicingIntervals,
+    setStradellaChordFinderActive,
+    setStradellaChordFinderMarkRootBass,
+    setStradellaChordFinderMode,
+    setStradellaChordFinderPattern,
+    setStradellaChordFinderRealizationIndex,
+    setStradellaChordFinderRequestedBass,
+    setStradellaChordFinderRoot,
+    setStradellaMinimumNominalGap,
+    setStradellaNoteLevels,
+    setStradellaRequestedBassOnBassButton,
+    showFinderRealizationNote,
+    showStradellaVoicingIntervals,
+    stradellaChordFinderActive,
+    stradellaChordFinderBassButtonFallback,
+    stradellaChordFinderMarkRootBass,
+    stradellaChordFinderMode,
+    stradellaChordFinderPattern,
+    stradellaChordFinderPlaybackButtons,
+    stradellaChordFinderReachExtendedTo,
+    stradellaChordFinderRealizationIndex,
+    stradellaChordFinderRealizations,
+    stradellaChordFinderRequestedBass,
+    stradellaChordFinderResult,
+    stradellaChordFinderRoot,
+    stradellaChordFinderRootFallback,
+    stradellaMinimumNominalGap,
+    stradellaNoteLevels,
+    stradellaRequestedBassOnBassButton,
   } = model;
   return (
     <StradellaChordFinderPanel
       root={stradellaChordFinderRoot}
       // A specific slash bass belongs to the old chord, so it falls back to
       // root position; "Any" stays "Any".
-      onRootChange={(next) => { setStradellaChordFinderRoot(next); setStradellaChordFinderRequestedBass((choice) => choice === null ? null : ROOT_POSITION_BASS); }}
+      onRootChange={(next) => {
+        setStradellaChordFinderRoot(next);
+        setStradellaChordFinderRequestedBass((choice) =>
+          choice === null ? null : ROOT_POSITION_BASS,
+        );
+      }}
       pattern={stradellaChordFinderPattern}
-      onPatternChange={(next) => { setStradellaChordFinderPattern(next); setStradellaChordFinderRequestedBass((choice) => choice === null ? null : ROOT_POSITION_BASS); }}
+      onPatternChange={(next) => {
+        setStradellaChordFinderPattern(next);
+        setStradellaChordFinderRequestedBass((choice) =>
+          choice === null ? null : ROOT_POSITION_BASS,
+        );
+      }}
       requestedBass={stradellaChordFinderRequestedBass}
       onRequestedBassChange={setStradellaChordFinderRequestedBass}
       rootFallback={stradellaChordFinderRootFallback}
@@ -77,15 +143,18 @@ export default function StradellaChordFinderSection({ model }: { model: Stradell
       noteLevels={stradellaNoteLevels}
       showVoicingIntervals={showStradellaVoicingIntervals}
       onShowVoicingIntervalsChange={setShowStradellaVoicingIntervals}
-      onNoteLevelChange={(level, enabled) => setStradellaNoteLevels((current) => ({ ...current, [level]: enabled }))}
+      onNoteLevelChange={(level, enabled) =>
+        setStradellaNoteLevels((current) => ({ ...current, [level]: enabled }))
+      }
       explanationFontSize={finderExplanationFontSize}
       onExplanationFontSizeChange={setFinderExplanationFontSize}
       realizations={stradellaChordFinderRealizations}
-      realizationIndex={Math.min(stradellaChordFinderRealizationIndex, Math.max(0, stradellaChordFinderRealizations.length - 1))}
+      realizationIndex={Math.min(
+        stradellaChordFinderRealizationIndex,
+        Math.max(0, stradellaChordFinderRealizations.length - 1),
+      )}
       onRealizationChange={setStradellaChordFinderRealizationIndex}
-      playbackButtonCount={
-        stradellaChordFinderPlaybackButtons.length
-      }
+      playbackButtonCount={stradellaChordFinderPlaybackButtons.length}
       isActive={stradellaChordFinderActive}
       onToggleActive={() => {
         setStradellaChordFinderActive((current) => !current);

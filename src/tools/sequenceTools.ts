@@ -5,7 +5,12 @@
   SVG paths for straight, curved, and self-loop arrows.
 */
 
-import type { DiagramButton, SequenceArrowStyle, SequenceDisplayMode, SequenceStep } from "../types";
+import type {
+  DiagramButton,
+  SequenceArrowStyle,
+  SequenceDisplayMode,
+  SequenceStep,
+} from "../types";
 
 /** A recorded sequence step after its button metadata has been found. */
 export type SequenceStepWithButton = SequenceStep & { button: DiagramButton };
@@ -13,7 +18,7 @@ export type SequenceStepWithButton = SequenceStep & { button: DiagramButton };
 /** Attaches current button geometry to every recorded sequence step. */
 export function getSequenceStepsWithButtons(
   steps: SequenceStep[],
-  buttons: DiagramButton[]
+  buttons: DiagramButton[],
 ): SequenceStepWithButton[] {
   return steps
     .map((step) => ({ ...step, button: buttons.find((button) => button.id === step.id) }))
@@ -30,7 +35,11 @@ export function getSequenceLabelsForButton(steps: SequenceStep[], buttonId: stri
 
 /** Returns whether the selected sequence display mode includes step numbers. */
 export function sequenceModeShowsNumbers(mode: SequenceDisplayMode) {
-  return mode === "numbers" || mode === "numbers-and-straight-arrows" || mode === "numbers-and-curved-arrows";
+  return (
+    mode === "numbers" ||
+    mode === "numbers-and-straight-arrows" ||
+    mode === "numbers-and-curved-arrows"
+  );
 }
 
 /** Returns whether the selected sequence display mode includes arrows. */
@@ -154,7 +163,7 @@ export function makeSequenceArrowPath(
   to: DiagramButton,
   index: number,
   buttonSize: number,
-  style: SequenceArrowStyle
+  style: SequenceArrowStyle,
 ) {
   const endpoints = shortenedEndpoints(from, to, buttonSize);
 

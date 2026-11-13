@@ -21,7 +21,8 @@ export const DE: Record<TranslationKey, string> = {
   "settings.layout": "Layout",
   "settings.instrument": "Instrument",
   "ui.presetChordConstruction": "Aufbau der Akkordknöpfe",
-  "ui.presetChordConstructionHelp": "Das Modell verwendet drei Tonklassen je Akkordknopf: Dominantseptakkord = Grundton, große Terz und kleine Septime (1–3–♭7); verminderter Septakkord = Grundton, kleine Terz und verminderte Septime (1–♭3–𝄫7). Die Quinte entfällt. Dies ist eine feste, bei vielen modernen Akkordeons verbreitete Annahme.",
+  "ui.presetChordConstructionHelp":
+    "Das Modell verwendet drei Tonklassen je Akkordknopf: Dominantseptakkord = Grundton, große Terz und kleine Septime (1–3–♭7); verminderter Septakkord = Grundton, kleine Terz und verminderte Septime (1–♭3–𝄫7). Die Quinte entfällt. Dies ist eine feste, bei vielen modernen Akkordeons verbreitete Annahme.",
   "settings.notation": "Notation",
   "settings.musicNotation": "Notenschrift",
   "settings.appearance": "Darstellung",
@@ -39,8 +40,10 @@ export const DE: Record<TranslationKey, string> = {
   "settings.blank": "Ohne Beschriftung",
   "settings.saveJson": "Einstellungen als JSON speichern",
   "settings.loadJson": "JSON-Einstellungen laden",
-  "settings.jsonHint": "Diese Schaltflächen speichern oder laden eine separate Einstellungsdatei. Sie überschreiben nicht",
-  "settings.harmonyIntro": "Die wichtigsten Harmonieoptionen befinden sich unter Werkzeuge. Weitere Diagramm- und Wiedergabeeinstellungen stehen hier.",
+  "settings.jsonHint":
+    "Diese Schaltflächen speichern oder laden eine separate Einstellungsdatei. Sie überschreiben nicht",
+  "settings.harmonyIntro":
+    "Die wichtigsten Harmonieoptionen befinden sich unter Werkzeuge. Weitere Diagramm- und Wiedergabeeinstellungen stehen hier.",
   "settings.diagram": "Diagramm",
   "settings.segmentLines": "Trennlinien der Segmente",
   "settings.showLegend": "Legende anzeigen",
@@ -81,8 +84,10 @@ export const DE: Record<TranslationKey, string> = {
   "tools.reset": "Zurücksetzen",
   "tools.chordRootHelp": "Der Ton, nach dem der Akkord benannt ist.",
   "tools.stradellaRootHelp": "Der Grundton, auf dem der gewünschte Akkord aufgebaut wird.",
-  "tools.chordTypeHelp": "Die Formel des Zielakkords. Manche Formeln sind auf Stradella ohne Basstöne nicht spielbar.",
-  "tools.stradellaIntro": "Stradella-Bassnoten und Akkordknopfkombinationen finden, auch reduzierte Sept- und erweiterte Akkorde.",
+  "tools.chordTypeHelp":
+    "Die Formel des Zielakkords. Manche Formeln sind auf Stradella ohne Basstöne nicht spielbar.",
+  "tools.stradellaIntro":
+    "Stradella-Bassnoten und Akkordknopfkombinationen finden, auch reduzierte Sept- und erweiterte Akkorde.",
   "tools.trebleIntro": "Eine kompakte Diskant-Griffkombination für den gewählten Akkord finden.",
   "tools.harmonyExplorer": "Harmonie-Explorer",
   "tools.harmonyIntro": "Gemeinsame Töne zwischen Akkorden und Tonleitern erkunden.",
@@ -91,13 +96,15 @@ export const DE: Record<TranslationKey, string> = {
   "tools.parentScale": "Bezugstonleiter / Modus",
   "tools.allFamilies": "Alle Familien (nur diatonisch)",
   "tools.referenceFamilyHelp": "Die Akkordfamilie im innersten Ring des Quintenzirkels.",
-  "tools.relatedFamilyHelp": "Eine Akkordfamilie oder alle unterstützten diatonischen Familien wählen.",
+  "tools.relatedFamilyHelp":
+    "Eine Akkordfamilie oder alle unterstützten diatonischen Familien wählen.",
   "tools.noteRingHelp": "Einzelne Tonklassen innerhalb des Referenzakkordrings anzeigen.",
   "tools.diatonicRelationships": "Diatonische Beziehungen",
   "tools.selectedRelationship": "Ausgewählte Beziehung",
   "tools.resetHarmony": "Harmonie-Explorer zurücksetzen",
   "about.title": "Über",
-  "about.description": "ist ein browserbasiertes Werkzeug zur Darstellung und Erforschung von Stradella-Bässen, chromatischem Knopf- und Klavierdiskant sowie harmonischen Beziehungen.",
+  "about.description":
+    "ist ein browserbasiertes Werkzeug zur Darstellung und Erforschung von Stradella-Bässen, chromatischem Knopf- und Klavierdiskant sowie harmonischen Beziehungen.",
   "about.author": "Autor",
   "about.version": "Version",
   "about.samples": "Akkordeon-Samples",
@@ -105,7 +112,8 @@ export const DE: Record<TranslationKey, string> = {
   "about.openDocs": "Dokumentation öffnen",
   "about.openReadme": "README.md öffnen",
   "tools.requestedBass": "Gewünschter Basston / Umkehrung",
-  "tools.requestedBassHelp": "Optional den nominell tiefsten Akkordton wählen. Dies hängt von den eingestellten Registern ab, nicht von den tatsächlichen Stimmzungen.",
+  "tools.requestedBassHelp":
+    "Optional den nominell tiefsten Akkordton wählen. Dies hängt von den eingestellten Registern ab, nicht von den tatsächlichen Stimmzungen.",
   "tools.anyBass": "Beliebig (kein Basston festgelegt)",
   "tools.rootPosition": " (Grundstellung)",
   "tools.searchMode": "Suchmodus",
@@ -140,7 +148,7 @@ export const DE: Record<TranslationKey, string> = {
   "tools.playBassChord": "Basstöne + Akkord abspielen",
   "tools.exploreHarmony": "Harmonie erkunden",
   "tools.showNote": "Realisierungshinweis unter dem Diagramm anzeigen",
-  "tools.showExplanationBelow": 'Diagrammerklärung anzeigen',
+  "tools.showExplanationBelow": "Diagrammerklärung anzeigen",
   "tools.explanationLevels": "Erklärungsebenen",
   "tools.noteLevels": "Ebenen der Kurzerklärung",
   "tools.harmonicIdentity": "Harmonische Identität",
@@ -168,7 +176,8 @@ export const DE: Record<TranslationKey, string> = {
   "tools.selected": "Ausgewählt",
   "tools.showStradella": "Auf Stradella anzeigen",
   "tools.addProgression": "Beziehung zur Akkordfolge hinzufügen",
-  "tools.noSelection": "Auf einen Akkord im äußeren Ring klicken, um ihn auszuwählen, anzuhören und Stradella-Aktionen zu aktivieren.",
+  "tools.noSelection":
+    "Auf einen Akkord im äußeren Ring klicken, um ihn auszuwählen, anzuhören und Stradella-Aktionen zu aktivieren.",
   "common.none": "Keine",
   "common.notFound": "Nicht gefunden",
   "common.exactReady": "Exakt / bereit",
@@ -284,9 +293,11 @@ export const DE: Record<TranslationKey, string> = {
   "ui.textColor": "Textfarbe",
   "ui.font": "Schrift",
   "ui.annotations": "Anmerkungen",
-  "ui.noAnnotationsYetClickTheDiagramToAddOne": "Noch keine Anmerkungen. Klicken Sie ins Diagramm, um eine hinzuzufügen.",
+  "ui.noAnnotationsYetClickTheDiagramToAddOne":
+    "Noch keine Anmerkungen. Klicken Sie ins Diagramm, um eine hinzuzufügen.",
   "ui.clearAnnotations": "Anmerkungen löschen",
-  "ui.playsStradellaBassPatternsOverAChordProgression": "Spielt Stradella-Bassmuster zu einer Akkordfolge.",
+  "ui.playsStradellaBassPatternsOverAChordProgression":
+    "Spielt Stradella-Bassmuster zu einer Akkordfolge.",
   "ui.progression": "Akkordfolge",
   "ui.root": "Grundton",
   "ui.rhythm": "Rhythmus",
@@ -319,31 +330,41 @@ export const DE: Record<TranslationKey, string> = {
   "ui.close": "Schließen ×",
   "ui.noMatchingTopics": "Keine passenden Themen.",
   "ui.noDocumentationFound": "Keine Dokumentation gefunden.",
-  "ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents": "Nehmen Sie eine Folge durch Anklicken von Akkorden oder Noten im Diagramm auf. Wiederholte Klicks werden als eigene Ereignisse gespeichert.",
-  "ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly": "Ereignisse im Notenring bleiben in der Harmonieaufnahme und Notation erhalten. Der Akkordfolgen-Assistent überträgt nur Akkorde.",
-  "ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder": "Die ausgewählte verwandte Akkordfamilie wird von der Stradella-Akkordsuche noch nicht unterstützt.",
-  "ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant": "Die Referenz-Akkordfamilie wird vom Stradella-Akkordfolgen-Assistenten noch nicht unterstützt.",
+  "ui.recordASequenceByClickingChordsOrNotesInTheDiagramRepeatedClicksAreKeptAsRepeatedEvents":
+    "Nehmen Sie eine Folge durch Anklicken von Akkorden oder Noten im Diagramm auf. Wiederholte Klicks werden als eigene Ereignisse gespeichert.",
+  "ui.noteRingEventsAreKeptInTheHarmonyRecordingAndNotationProgressionAssistantTransfersChordEventsOnly":
+    "Ereignisse im Notenring bleiben in der Harmonieaufnahme und Notation erhalten. Der Akkordfolgen-Assistent überträgt nur Akkorde.",
+  "ui.theSelectedRelatedChordFamilyIsNotYetSupportedByTheStradellaChordFinder":
+    "Die ausgewählte verwandte Akkordfamilie wird von der Stradella-Akkordsuche noch nicht unterstützt.",
+  "ui.theReferenceChordFamilyIsNotYetSupportedByTheStradellaProgressionAssistant":
+    "Die Referenz-Akkordfamilie wird vom Stradella-Akkordfolgen-Assistenten noch nicht unterstützt.",
   "ui.progressionAssistant": "Akkordfolgen-Assistent",
   "ui.chordFamily": "Akkordfamilie",
   "ui.addChord": "Akkord hinzufügen",
   "ui.clearProgression": "Akkordfolge löschen",
-  "ui.addChordsHereOrSendASelectedRelationshipFromHarmonyExplorer": "Hier Akkorde hinzufügen oder eine ausgewählte Beziehung aus dem Harmonie-Explorer übernehmen.",
+  "ui.addChordsHereOrSendASelectedRelationshipFromHarmonyExplorer":
+    "Hier Akkorde hinzufügen oder eine ausgewählte Beziehung aus dem Harmonie-Explorer übernehmen.",
   "ui.optimization": "Optimierung",
-  "ui.allowConservativeFifthOmissionApproximations": "Konservative Näherungen durch Weglassen der Quinte zulassen",
+  "ui.allowConservativeFifthOmissionApproximations":
+    "Konservative Näherungen durch Weglassen der Quinte zulassen",
   "ui.rhythmicPattern": "Rhythmusmuster",
   "ui.allButtonsTogether": "Alle Knöpfe gleichzeitig",
   "ui.basicOomPah24": "Einfaches Umtata (2/4)",
   "ui.waltz34": "Walzer (3/4)",
   "ui.march44": "Marsch (4/4)",
-  "ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram": "Während der Wiedergabe werden aktive Stradella-Knöpfe im Diagramm hervorgehoben.",
+  "ui.duringPlaybackTheActiveStradellaButtonsAreHighlightedOnTheDiagram":
+    "Während der Wiedergabe werden aktive Stradella-Knöpfe im Diagramm hervorgehoben.",
   "ui.optimizedStradellaPath": "Optimierter Stradella-Pfad",
   "ui.notAvailableForTheCompleteProgression": "Für die gesamte Akkordfolge nicht verfügbar.",
   "ui.playOptimizedProgression": "Optimierte Akkordfolge abspielen",
   "ui.openPreviewInChordFinder": "Vorschau in der Akkordsuche öffnen",
   "ui.rootBassReference": "Grundbass-Referenz",
-  "ui.turnRecordingOnThenClickButtonsInOrderRepeatedButtonsAreAllowed": "Aufnahme einschalten und Knöpfe der Reihe nach anklicken. Wiederholungen sind erlaubt.",
-  "ui.noChordRelationshipsSatisfyTheCurrentHarmonicFilter": "Keine Akkordbeziehung erfüllt den aktuellen harmonischen Filter.",
-  "ui.allAvailableOuterRingsAreHiddenReEnableAtLeastOneRingInHarmonyExplorer": "Alle verfügbaren äußeren Ringe sind ausgeblendet. Aktivieren Sie mindestens einen Ring im Harmonie-Explorer.",
+  "ui.turnRecordingOnThenClickButtonsInOrderRepeatedButtonsAreAllowed":
+    "Aufnahme einschalten und Knöpfe der Reihe nach anklicken. Wiederholungen sind erlaubt.",
+  "ui.noChordRelationshipsSatisfyTheCurrentHarmonicFilter":
+    "Keine Akkordbeziehung erfüllt den aktuellen harmonischen Filter.",
+  "ui.allAvailableOuterRingsAreHiddenReEnableAtLeastOneRingInHarmonyExplorer":
+    "Alle verfügbaren äußeren Ringe sind ausgeblendet. Aktivieren Sie mindestens einen Ring im Harmonie-Explorer.",
   "ui.bellows": "Balg",
   "ui.recordedHarmonyProgression": "Aufgenommene harmonische Akkordfolge",
   "ui.downloadSVG": "SVG herunterladen",
@@ -377,14 +398,20 @@ export const DE: Record<TranslationKey, string> = {
   "ui.release": "Ausklingzeit:",
   "ui.noteDuration": "Notendauer:",
   "ui.noteArticulation": "Notenlänge in Playern",
-  "ui.noteArticulationHint": "Wie viel jeder notierten Note in den ABC-, Basspattern- und Progressions-Playern klingt. 100 % ist ganz legato.",
-  "ui.abcNoPlayableNotes": "In diesem ABC-Text wurden keine spielbaren Noten oder Akkordsymbole gefunden.",
+  "ui.noteArticulationHint":
+    "Wie viel jeder notierten Note in den ABC-, Basspattern- und Progressions-Playern klingt. 100 % ist ganz legato.",
+  "ui.abcNoPlayableNotes":
+    "In diesem ABC-Text wurden keine spielbaren Noten oder Akkordsymbole gefunden.",
   "tools.bassOnBassButton": "Tiefsten Ton auf einem Bassknopf spielen",
-  "tools.bassOnBassButtonHelp": "An: Der gewünschte tiefste Ton muss auf einem Grund- oder Terzbassknopf gespielt werden. Aus: Er muss nur der tiefste Ton sein, was auch Akkordknöpfe allein ergeben können.",
-  "tools.bassButtonUnavailable": "Keine Kombination innerhalb deiner Knopf- und Reichweitengrenzen spielt den tiefsten Ton auf einem Bassknopf; daher werden Ergebnisse gezeigt, in denen er von Akkordknöpfen kommt.",
-  "tools.reachWidenedForBass": "Um den tiefsten Ton auf einem Bassknopf zu spielen, verwenden diese Ergebnisse die nächste Handspanne: {span}.",
+  "tools.bassOnBassButtonHelp":
+    "An: Der gewünschte tiefste Ton muss auf einem Grund- oder Terzbassknopf gespielt werden. Aus: Er muss nur der tiefste Ton sein, was auch Akkordknöpfe allein ergeben können.",
+  "tools.bassButtonUnavailable":
+    "Keine Kombination innerhalb deiner Knopf- und Reichweitengrenzen spielt den tiefsten Ton auf einem Bassknopf; daher werden Ergebnisse gezeigt, in denen er von Akkordknöpfen kommt.",
+  "tools.reachWidenedForBass":
+    "Um den tiefsten Ton auf einem Bassknopf zu spielen, verwenden diese Ergebnisse die nächste Handspanne: {span}.",
   "ui.progressionBass": "Bass",
-  "ui.progressionBassHelp": "Grundstellung spielt jeden Akkord mit dem Grundton im Bass, nach den Einstellungen der Akkordsuche für Bassknopf und Grenzen; ist das unmöglich, nimmt der Akkord einen beliebigen Bass. Beliebiger Bass erlaubt alle Umkehrungen.",
+  "ui.progressionBassHelp":
+    "Grundstellung spielt jeden Akkord mit dem Grundton im Bass, nach den Einstellungen der Akkordsuche für Bassknopf und Grenzen; ist das unmöglich, nimmt der Akkord einen beliebigen Bass. Beliebiger Bass erlaubt alle Umkehrungen.",
   "ui.progressionRootPosition": "Grundstellung",
   "ui.progressionAnyBass": "Beliebiger Bass",
   "ui.sequenceTempo": "Sequenztempo:",
@@ -405,10 +432,12 @@ export const DE: Record<TranslationKey, string> = {
   "ui.removeChord": "Akkord entfernen",
   "ui.recordedHarmonySequence": "Aufgenommene harmonische Folge",
   "ui.showPianoKeyboard": "Klaviatur anzeigen",
-  "ui.progressionHandHelp": "Höhere Werte verringern Wege zwischen gespielten Tasten aufeinanderfolgender Akkorde. Stehen beide Regler auf 0, gilt die erste zulässige Finder-Realisierung.",
+  "ui.progressionHandHelp":
+    "Höhere Werte verringern Wege zwischen gespielten Tasten aufeinanderfolgender Akkorde. Stehen beide Regler auf 0, gilt die erste zulässige Finder-Realisierung.",
   "ui.progressionPhysicalMovement": "Physische Handbewegung",
   "ui.progressionVoiceLeading": "Harmonische Stimmführung",
-  "ui.progressionVoiceLeadingHelp": "Höhere Werte verringern den Tonklassenabstand zwischen Akkorden. Bei 0 ist der Term aus; reale akustische Stimmführung wird nicht gemessen.",
+  "ui.progressionVoiceLeadingHelp":
+    "Höhere Werte verringern den Tonklassenabstand zwischen Akkorden. Bei 0 ist der Term aus; reale akustische Stimmführung wird nicht gemessen.",
   "ui.progressionPreset": "Vordefinierte Akkordfolge",
   "ui.progressionPresetKey": "Tonart",
   "ui.progressionUsePreset": "Akkordfolge laden",
@@ -418,28 +447,41 @@ export const DE: Record<TranslationKey, string> = {
   "ui.progressionShowNotesFor": "Diagrammhinweise für {chord} anzeigen",
   "ui.progressionHideNotesFor": "Diagrammhinweise für {chord} ausblenden",
   "ui.progressionUnsupportedPreset": "Nicht unterstützte Symbole",
-  "ui.stradellaSearchHelp": "Bassreihen verwenden Einzeltöne; Nur Akkordknöpfe ignoriert Basstöne; Bässe + Akkordknöpfe sucht kompakte Kombinationen.",
-  "ui.rootBassHelp": "Zeigt den Grundbassknopf nur als Positionsreferenz. Er ergänzt oder spielt den Akkord nicht.",
+  "ui.stradellaSearchHelp":
+    "Bassreihen verwenden Einzeltöne; Nur Akkordknöpfe ignoriert Basstöne; Bässe + Akkordknöpfe sucht kompakte Kombinationen.",
+  "ui.rootBassHelp":
+    "Zeigt den Grundbassknopf nur als Positionsreferenz. Er ergänzt oder spielt den Akkord nicht.",
   "ui.hideRootBass": "Grundbass-Referenz ausblenden",
   "ui.showRootBass": "Grundbass-Referenz anzeigen",
-  "ui.realizationHelp": "Zeigt musikalisch unterschiedliche Realisierungen in Rangfolge mit ergonomischen Knopfkombinationen.",
-  "ui.modelPitchesHelp": "Aus den eingestellten Stradella-Registern berechnet, mit einer Nominaltonhöhe pro gespieltetem Ton. Die tatsächlichen Tonhöhen hängen vom Instrument ab.",
-  "ui.diagramNoteHelp": "Steuert nur den kurzen Diagrammhinweis und den SVG/PNG-Export. Weitere Erläuterungen bleiben separat verfügbar.",
-  "ui.fourLevelsHelp": "Wählen Sie die vier kurzen Erläuterungsebenen unter dem Diagramm und in exportierten SVG/PNG-Bildern.",
+  "ui.realizationHelp":
+    "Zeigt musikalisch unterschiedliche Realisierungen in Rangfolge mit ergonomischen Knopfkombinationen.",
+  "ui.modelPitchesHelp":
+    "Aus den eingestellten Stradella-Registern berechnet, mit einer Nominaltonhöhe pro gespieltetem Ton. Die tatsächlichen Tonhöhen hängen vom Instrument ab.",
+  "ui.diagramNoteHelp":
+    "Steuert nur den kurzen Diagrammhinweis und den SVG/PNG-Export. Weitere Erläuterungen bleiben separat verfügbar.",
+  "ui.fourLevelsHelp":
+    "Wählen Sie die vier kurzen Erläuterungsebenen unter dem Diagramm und in exportierten SVG/PNG-Bildern.",
   "ui.trebleRootOctaveHelp": "Oktave zur Platzierung des Akkords im Diskantlayout.",
   "ui.trebleChordTypeHelp": "Akkordformel für die Hervorhebung im Diskant.",
   "ui.trebleInversionHelp": "Ändert, welcher Akkordton im Diskantgriff am tiefsten liegt.",
-  "ui.trebleVoicingHelp": "Automatisch zeigt möglichst exakte Akkorde mit bis zu fünf Knöpfen; Vollständiger Akkord zeigt alle verfügbaren Töne, auch in größeren Griffen.",
-  "ui.interfaceDensityHelp": "Kompakt spart Platz in der Seitenleiste; Bequem bietet den Bedienelementen mehr Raum.",
-  "ui.statusBarHelp": "Zeigt eine einzeilige Zusammenfassung über dem Diagramm. Zum Platzsparen deaktivieren.",
-  "ui.diagramScaleHelp": "Skaliert das sichtbare Diagramm. Werte über 100 % können Bildlaufleisten erzeugen.",
-  "ui.diagramVerticalHelp": "Verändert den vertikalen Abstand zwischen Titel, Balgführung und Knöpfen.",
+  "ui.trebleVoicingHelp":
+    "Automatisch zeigt möglichst exakte Akkorde mit bis zu fünf Knöpfen; Vollständiger Akkord zeigt alle verfügbaren Töne, auch in größeren Griffen.",
+  "ui.interfaceDensityHelp":
+    "Kompakt spart Platz in der Seitenleiste; Bequem bietet den Bedienelementen mehr Raum.",
+  "ui.statusBarHelp":
+    "Zeigt eine einzeilige Zusammenfassung über dem Diagramm. Zum Platzsparen deaktivieren.",
+  "ui.diagramScaleHelp":
+    "Skaliert das sichtbare Diagramm. Werte über 100 % können Bildlaufleisten erzeugen.",
+  "ui.diagramVerticalHelp":
+    "Verändert den vertikalen Abstand zwischen Titel, Balgführung und Knöpfen.",
   "ui.whiteKeyWidthHelp": "Verändert die Breite weißer Klaviertasten.",
   "ui.pianoKeyHeightHelp": "Verändert die Höhe der Klaviertasten.",
   "ui.blackKeyWidthHelp": "Passt die Breite der schwarzen Tasten an.",
   "ui.blackKeyHeightHelp": "Passt an, wie weit schwarze Tasten in die Klaviatur hineinragen.",
-  "ui.scaleDisplayHelp": "Steuert die Markierung des Tonleiterpfads. Zahlen zeigen die Reihenfolge, Pfeile die Bewegung.",
-  "ui.simpleFullVoicingHelp": "Einfach verwendet einen praktischen Stradella-Akkordknopf. Vollständig nutzt, wenn vorhanden, die umfangreichere Akkordsuch-Lösung.",
+  "ui.scaleDisplayHelp":
+    "Steuert die Markierung des Tonleiterpfads. Zahlen zeigen die Reihenfolge, Pfeile die Bewegung.",
+  "ui.simpleFullVoicingHelp":
+    "Einfach verwendet einen praktischen Stradella-Akkordknopf. Vollständig nutzt, wenn vorhanden, die umfangreichere Akkordsuch-Lösung.",
   "ui.stradellaRowLabels": "Stradella-Reihenbeschriftungen",
   "ui.showStradellaRowLabels": "Stradella-Reihenbeschriftungen anzeigen",
   "ui.showOctaveNumbers": "Oktavnummern anzeigen",
@@ -449,7 +491,8 @@ export const DE: Record<TranslationKey, string> = {
   "ui.registerStartingOctave": "Anfangsoktave",
   "ui.registerGrouping": "Gruppierung",
   "ui.registerConfiguredRange": "Konfigurierter Tonumfang",
-  "ui.registerGroupingHelp": "C–B beginnt bei C in der gewählten Oktave. F–E beginnt bei F und endet bei E in der nächsten Oktave. Beide Gruppierungen umfassen zwölf nominelle Tonhöhen.",
+  "ui.registerGroupingHelp":
+    "C–B beginnt bei C in der gewählten Oktave. F–E beginnt bei F und endet bei E in der nächsten Oktave. Beide Gruppierungen umfassen zwölf nominelle Tonhöhen.",
   "ui.bassCounterbassGrouping": "Bass-/Gegenbass-Gruppierung",
   "ui.presetChordGrouping": "Gruppierung vorgegebener Akkorde",
   "ui.soundSource": "Klangquelle",
@@ -491,13 +534,20 @@ export const DE: Record<TranslationKey, string> = {
   "ui.counterbass": "Gegenbass",
   "ui.bass": "Bass",
   "ui.note": "Note",
-  "ui.allFamiliesDiatonicHint": "Die Ansicht aller Familien bleibt zur besseren Lesbarkeit auf diatonische Akkorde beschränkt.",
-  "ui.diatonicContext": "Diatonische Zugehörigkeit bezieht sich in jedem Sektor auf die gewählte Bezugstonleiter bzw. den Modus.",
-  "ui.recordingNoteOnly": "Notenring-Ereignisse bleiben in der Harmonieaufnahme und Notation erhalten. Der Akkordfolgen-Assistent überträgt nur Akkorde.",
-  "ui.harmonyReferenceUnsupported": "Die Referenzfamilie wird vom Stradella-Akkordfolgen-Assistenten noch nicht unterstützt.",
-  "ui.harmonyRelatedUnsupported": "Die verwandte Familie wird von der Stradella-Akkordsuche noch nicht unterstützt.",
-  "ui.recordingHelp": "Nehmen Sie eine Folge durch Anklicken von Akkorden oder Noten im Diagramm auf. Wiederholte Klicks werden als eigene Ereignisse gespeichert.",
-  "ui.noteRingRecorded": "Notenring-Ereignisse bleiben in der Harmonieaufnahme und Notation erhalten. Der Akkordfolgen-Assistent überträgt nur Akkorde.",
+  "ui.allFamiliesDiatonicHint":
+    "Die Ansicht aller Familien bleibt zur besseren Lesbarkeit auf diatonische Akkorde beschränkt.",
+  "ui.diatonicContext":
+    "Diatonische Zugehörigkeit bezieht sich in jedem Sektor auf die gewählte Bezugstonleiter bzw. den Modus.",
+  "ui.recordingNoteOnly":
+    "Notenring-Ereignisse bleiben in der Harmonieaufnahme und Notation erhalten. Der Akkordfolgen-Assistent überträgt nur Akkorde.",
+  "ui.harmonyReferenceUnsupported":
+    "Die Referenzfamilie wird vom Stradella-Akkordfolgen-Assistenten noch nicht unterstützt.",
+  "ui.harmonyRelatedUnsupported":
+    "Die verwandte Familie wird von der Stradella-Akkordsuche noch nicht unterstützt.",
+  "ui.recordingHelp":
+    "Nehmen Sie eine Folge durch Anklicken von Akkorden oder Noten im Diagramm auf. Wiederholte Klicks werden als eigene Ereignisse gespeichert.",
+  "ui.noteRingRecorded":
+    "Notenring-Ereignisse bleiben in der Harmonieaufnahme und Notation erhalten. Der Akkordfolgen-Assistent überträgt nur Akkorde.",
   "ui.approxCount": "{exact} exakt, {approx} angenähert",
   "ui.recFirst": "Empfohlene Realisierungen erscheinen zuerst.",
   "ui.tempoBpm": "Tempo: {tempo} BPM",
@@ -522,53 +572,91 @@ export const DE: Record<TranslationKey, string> = {
   "analysis.approx": "Annäh.",
   "analysis.trebleUnavailable": "Keine passenden Knöpfe",
   "analysis.trebleNoButtons": "Im gewählten Tastaturbereich sind keine Akkordknöpfe verfügbar.",
-  "analysis.trebleNoRoot": "In dieser Grundtonoktave wurden keine Akkordtöne gefunden. Wählen Sie eine andere Oktave oder einen größeren Tastaturumfang.",
+  "analysis.trebleNoRoot":
+    "In dieser Grundtonoktave wurden keine Akkordtöne gefunden. Wählen Sie eine andere Oktave oder einen größeren Tastaturumfang.",
   "analysis.trebleStatus": "{status} ({played}/{total} Töne)",
   "analysis.trebleOmitted": "Ausgelassen: {list}",
   "analysis.trebleAll": "Alle Akkordtöne vorhanden",
   "analysis.trebleHands": "Mehr als fünf Finger erforderlich",
   "analysis.trebleSuspended": "Vorhaltscharakter",
-  "analysis.trebleCompleteTheoretical": "{notes} enthält alle Akkordtöne. Diese vollständige Griffkombination mit {count} Knöpfen ist eine theoretische Darstellung und kein einhändig gleichzeitig spielbarer Griff.",
-  "analysis.trebleComplete": "{notes} enthält alle Akkordtöne. Die ausgewählten Knöpfe bilden einen tonklassenmäßig vollständigen Diskantakkord.",
-  "analysis.trebleReducedUnavailable": "Die ausgewählten Knöpfe erzeugen {notes}. Ausgelassen: {omissions}. Einige gewünschte Töne sind in dieser Grundtonoktave im ausgewählten Tastaturbereich nicht verfügbar.",
-  "analysis.trebleReduced": "Die ausgewählten Knöpfe erzeugen {notes}. Ausgelassen: {omissions}. Dies ist ein reduziertes Voicing. Wählen Sie Vollständiger Akkord, um alle verfügbaren Zielnoten anzuzeigen.",
-  "analysis.trebleSuspendedAppend": "Das Weglassen der großen Terz verleiht dem Voicing Vorhaltscharakter.",
-  "analysis.harmonyInner": "Der innere Akkordring zeigt {reference}-Akkorde. Die äußeren Ringe zeigen {related}-Akkorde; je mehr Tonklassen gemeinsam sind, desto näher liegen sie am Zentrum.",
-  "analysis.harmonyAll": "Der innere Akkordring zeigt {reference}-Akkorde. Die äußeren Ringe kombinieren alle unterstützten Akkordfamilien; mehr gemeinsame Tonklassen liegen näher am Zentrum.",
-  "analysis.harmonyOnlyDiatonic": "Es werden nur zu {scale} diatonische Akkorde berücksichtigt, jeweils zum Grundton des Sektors transponiert.",
-  "analysis.harmonyAllDiatonic": "Zur besseren Lesbarkeit zeigt die Ansicht aller Familien nur zu {scale} diatonische Akkorde, jeweils zum Sektorgrundton transponiert.",
-  "analysis.harmonyNoSupported": "Kein unterstützter diatonischer Akkord erfüllt die aktuellen Kriterien; es sind keine Beziehungsringe verfügbar.",
-  "analysis.harmonyOnlyAvailable": "Nur Anzahlen gemeinsamer Töne, die mindestens ein diatonischer Akkord erreicht, können als Ringe angezeigt werden.",
-  "analysis.harmonyNoDiatonic": "Kein verwandter Akkord erfüllt den diatonischen Filter; keine Beziehungsringe verfügbar.",
-  "analysis.harmonyFilteredOne": "Der Ring für Akkorde mit {count} gemeinsamen {unit} ist nicht verfügbar, da kein diatonischer Akkord diese Überlappung aufweist.",
-  "analysis.harmonyFilteredMany": "Die Ringe für Akkorde mit {counts} gemeinsamen Tönen sind nicht verfügbar, weil kein diatonischer Akkord diese Überschneidungen aufweist.",
-  "analysis.harmonyHighlight": "Alle passenden Akkorde sind verfügbar; blaue Beschriftungen kennzeichnen zur Tonleiter {scale} diatonische Akkorde im jeweiligen Sektor.",
-  "analysis.harmonyWithoutHighlight": "Alle passenden Akkorde sind verfügbar; diatonische Beziehungen werden nicht hervorgehoben.",
-  "analysis.harmonyRingOne": "Der Ring für {count} gemeinsame {unit} ist durch die Anzeigeeinstellungen ausgeblendet.",
-  "analysis.harmonyRingMany": "Die Ringe für {counts} gemeinsame Töne sind in den Anzeigeeinstellungen ausgeblendet.",
+  "analysis.trebleCompleteTheoretical":
+    "{notes} enthält alle Akkordtöne. Diese vollständige Griffkombination mit {count} Knöpfen ist eine theoretische Darstellung und kein einhändig gleichzeitig spielbarer Griff.",
+  "analysis.trebleComplete":
+    "{notes} enthält alle Akkordtöne. Die ausgewählten Knöpfe bilden einen tonklassenmäßig vollständigen Diskantakkord.",
+  "analysis.trebleReducedUnavailable":
+    "Die ausgewählten Knöpfe erzeugen {notes}. Ausgelassen: {omissions}. Einige gewünschte Töne sind in dieser Grundtonoktave im ausgewählten Tastaturbereich nicht verfügbar.",
+  "analysis.trebleReduced":
+    "Die ausgewählten Knöpfe erzeugen {notes}. Ausgelassen: {omissions}. Dies ist ein reduziertes Voicing. Wählen Sie Vollständiger Akkord, um alle verfügbaren Zielnoten anzuzeigen.",
+  "analysis.trebleSuspendedAppend":
+    "Das Weglassen der großen Terz verleiht dem Voicing Vorhaltscharakter.",
+  "analysis.harmonyInner":
+    "Der innere Akkordring zeigt {reference}-Akkorde. Die äußeren Ringe zeigen {related}-Akkorde; je mehr Tonklassen gemeinsam sind, desto näher liegen sie am Zentrum.",
+  "analysis.harmonyAll":
+    "Der innere Akkordring zeigt {reference}-Akkorde. Die äußeren Ringe kombinieren alle unterstützten Akkordfamilien; mehr gemeinsame Tonklassen liegen näher am Zentrum.",
+  "analysis.harmonyOnlyDiatonic":
+    "Es werden nur zu {scale} diatonische Akkorde berücksichtigt, jeweils zum Grundton des Sektors transponiert.",
+  "analysis.harmonyAllDiatonic":
+    "Zur besseren Lesbarkeit zeigt die Ansicht aller Familien nur zu {scale} diatonische Akkorde, jeweils zum Sektorgrundton transponiert.",
+  "analysis.harmonyNoSupported":
+    "Kein unterstützter diatonischer Akkord erfüllt die aktuellen Kriterien; es sind keine Beziehungsringe verfügbar.",
+  "analysis.harmonyOnlyAvailable":
+    "Nur Anzahlen gemeinsamer Töne, die mindestens ein diatonischer Akkord erreicht, können als Ringe angezeigt werden.",
+  "analysis.harmonyNoDiatonic":
+    "Kein verwandter Akkord erfüllt den diatonischen Filter; keine Beziehungsringe verfügbar.",
+  "analysis.harmonyFilteredOne":
+    "Der Ring für Akkorde mit {count} gemeinsamen {unit} ist nicht verfügbar, da kein diatonischer Akkord diese Überlappung aufweist.",
+  "analysis.harmonyFilteredMany":
+    "Die Ringe für Akkorde mit {counts} gemeinsamen Tönen sind nicht verfügbar, weil kein diatonischer Akkord diese Überschneidungen aufweist.",
+  "analysis.harmonyHighlight":
+    "Alle passenden Akkorde sind verfügbar; blaue Beschriftungen kennzeichnen zur Tonleiter {scale} diatonische Akkorde im jeweiligen Sektor.",
+  "analysis.harmonyWithoutHighlight":
+    "Alle passenden Akkorde sind verfügbar; diatonische Beziehungen werden nicht hervorgehoben.",
+  "analysis.harmonyRingOne":
+    "Der Ring für {count} gemeinsame {unit} ist durch die Anzeigeeinstellungen ausgeblendet.",
+  "analysis.harmonyRingMany":
+    "Die Ringe für {counts} gemeinsame Töne sind in den Anzeigeeinstellungen ausgeblendet.",
   "analysis.noteSingular": "Ton",
   "analysis.notePlural": "Töne",
-  "analysis.stradellaFirstExact": "{chord} verwendet {count} {unit}: {buttons}. Zusammen erzeugen sie die Tonklassen {notes}. Exakt bedeutet, dass alle erforderlichen Tonklassen vorhanden sind; daraus folgt nicht, dass Erweiterungen in den theoretisch höheren Oktaven erklingen.",
-  "analysis.stradellaFirstApprox": "{chord} verwendet {count} {unit}: {buttons}. Zusammen ergeben sie die Tonklassen {notes}. Diese Realisierung ist angenähert: Sie lässt {missing} weg, ohne akkordfremde Töne hinzuzufügen.",
-  "analysis.stradellaRequestedBass": "Harmonische Identität: {chord}. Der gewünschte Basston ist {bass} ({role}); der theoretische Grundton bleibt {root}.",
-  "analysis.stradellaModelLowest": "Das konfigurierte Registermodell ordnet {pitch} als tiefsten Ton ein.",
-  "analysis.stradellaModelCaution": "Der tatsächlich tiefste klingende Ton hängt vom Instrument und der Registereinstellung ab.",
-  "analysis.stradellaUnspecifiedBass": "Harmonische Identität: {chord}. Basston und Umkehrung hängen von den konfigurierten Nominalregistern ab; eine andere Interpretation derselben Tonklassen ändert die harmonische Identität nicht.",
+  "analysis.stradellaFirstExact":
+    "{chord} verwendet {count} {unit}: {buttons}. Zusammen erzeugen sie die Tonklassen {notes}. Exakt bedeutet, dass alle erforderlichen Tonklassen vorhanden sind; daraus folgt nicht, dass Erweiterungen in den theoretisch höheren Oktaven erklingen.",
+  "analysis.stradellaFirstApprox":
+    "{chord} verwendet {count} {unit}: {buttons}. Zusammen ergeben sie die Tonklassen {notes}. Diese Realisierung ist angenähert: Sie lässt {missing} weg, ohne akkordfremde Töne hinzuzufügen.",
+  "analysis.stradellaRequestedBass":
+    "Harmonische Identität: {chord}. Der gewünschte Basston ist {bass} ({role}); der theoretische Grundton bleibt {root}.",
+  "analysis.stradellaModelLowest":
+    "Das konfigurierte Registermodell ordnet {pitch} als tiefsten Ton ein.",
+  "analysis.stradellaModelCaution":
+    "Der tatsächlich tiefste klingende Ton hängt vom Instrument und der Registereinstellung ab.",
+  "analysis.stradellaUnspecifiedBass":
+    "Harmonische Identität: {chord}. Basston und Umkehrung hängen von den konfigurierten Nominalregistern ab; eine andere Interpretation derselben Tonklassen ändert die harmonische Identität nicht.",
   "analysis.stradellaRegisterNote": "Nominelle Registeranalyse: {notes}.",
-  "analysis.stradellaDensity": "Voicing-Dichte: {note}. Enge Abstände können besonders in tiefen Registern gespannt oder dicht klingen; dies ist eine Beobachtung nominaler Tonhöhen, keine akustische Messung.",
-  "analysis.stradellaExtended": "Erweiterte Akkordbezeichnungen beschreiben harmonische Funktionen und Tonklassen, nicht die garantierte Lage der None, Undezime oder Tredezime in höheren Oktaven.",
-  "analysis.stradella13": "Die Tredezime hat dieselbe Tonklasse wie die Sexte. Die Septime hilft, einen Tredezimenakkord von einem Akkord mit hinzugefügter Sexte zu unterscheiden.",
-  "analysis.stradella11Clash": "Große Terz und reine Undezime können eine enge Halbtonspannung erzeugen. Ein reduziertes Voicing ohne Undezime kann klarer klingen.",
-  "analysis.stradella13Shell": "Dies ist ein funktionales 1–3–7–13-Grundgerüst; harmonische Identität und Klarheit haben Vorrang vor Tonklassen-Vollständigkeit.",
-  "analysis.stradella11Suspended": "Mit ausgelassener Terz und beibehaltener Undezime erhält die Realisierung Vorhaltscharakter.",
-  "analysis.stradellaAdd9": "Die hinzugefügte None hat dieselbe Tonklasse wie die Sekunde und erfordert keine Septime.",
-  "analysis.stradellaAltered": "Der charakteristische alterierte Ton bleibt in der gewünschten Akkordrealisierung erhalten.",
-  "analysis.stradellaNine": "Die None hat dieselbe Tonklasse wie die Sekunde; bei Stradella ist nicht garantiert, dass sie über dem Grundton erklingt.",
-  "analysis.stradellaDiminished": "Ein üblicher verminderter Stradella-Akkordknopf erzeugt drei Tonklassen; er enthält nicht unbedingt alle vier Töne eines vollständig verminderten Septakkords.",
+  "analysis.stradellaDensity":
+    "Voicing-Dichte: {note}. Enge Abstände können besonders in tiefen Registern gespannt oder dicht klingen; dies ist eine Beobachtung nominaler Tonhöhen, keine akustische Messung.",
+  "analysis.stradellaExtended":
+    "Erweiterte Akkordbezeichnungen beschreiben harmonische Funktionen und Tonklassen, nicht die garantierte Lage der None, Undezime oder Tredezime in höheren Oktaven.",
+  "analysis.stradella13":
+    "Die Tredezime hat dieselbe Tonklasse wie die Sexte. Die Septime hilft, einen Tredezimenakkord von einem Akkord mit hinzugefügter Sexte zu unterscheiden.",
+  "analysis.stradella11Clash":
+    "Große Terz und reine Undezime können eine enge Halbtonspannung erzeugen. Ein reduziertes Voicing ohne Undezime kann klarer klingen.",
+  "analysis.stradella13Shell":
+    "Dies ist ein funktionales 1–3–7–13-Grundgerüst; harmonische Identität und Klarheit haben Vorrang vor Tonklassen-Vollständigkeit.",
+  "analysis.stradella11Suspended":
+    "Mit ausgelassener Terz und beibehaltener Undezime erhält die Realisierung Vorhaltscharakter.",
+  "analysis.stradellaAdd9":
+    "Die hinzugefügte None hat dieselbe Tonklasse wie die Sekunde und erfordert keine Septime.",
+  "analysis.stradellaAltered":
+    "Der charakteristische alterierte Ton bleibt in der gewünschten Akkordrealisierung erhalten.",
+  "analysis.stradellaNine":
+    "Die None hat dieselbe Tonklasse wie die Sekunde; bei Stradella ist nicht garantiert, dass sie über dem Grundton erklingt.",
+  "analysis.stradellaDiminished":
+    "Ein üblicher verminderter Stradella-Akkordknopf erzeugt drei Tonklassen; er enthält nicht unbedingt alle vier Töne eines vollständig verminderten Septakkords.",
   "analysis.stradellaWhy": "Warum empfohlen: {reason}",
-  "analysis.stradellaWhyDefault": "Praktisches Gleichgewicht zwischen harmonischem Inhalt, Knopfzahl und Handbewegung.",
-  "analysis.stradellaAlternative": "Dies ist eine gültige Alternative. Die empfohlenen Beispiele zeigen vollständige, reduzierte und funktionale Varianten; andere Realisierungen können ebenso legitim sein.",
-  "ui.extendedTrebleHint": "Vollständige Undezimen- und Tredezimenakkorde umfassen sechs oder sieben Töne. Praktische Voicings lassen ausgewählte Töne aus, um den Diskantgriff spielbar zu machen.",
+  "analysis.stradellaWhyDefault":
+    "Praktisches Gleichgewicht zwischen harmonischem Inhalt, Knopfzahl und Handbewegung.",
+  "analysis.stradellaAlternative":
+    "Dies ist eine gültige Alternative. Die empfohlenen Beispiele zeigen vollständige, reduzierte und funktionale Varianten; andere Realisierungen können ebenso legitim sein.",
+  "ui.extendedTrebleHint":
+    "Vollständige Undezimen- und Tredezimenakkorde umfassen sechs oder sieben Töne. Praktische Voicings lassen ausgewählte Töne aus, um den Diskantgriff spielbar zu machen.",
   "ui.major": "Dur",
   "ui.minor": "Moll",
   "ui.diminished": "Vermindert",
@@ -627,13 +715,20 @@ export const DE: Record<TranslationKey, string> = {
   "ui.smallCba": "Kleines Knopfakkordeon, ca. 3 Oktaven",
   "ui.fullCba": "Großes Knopfakkordeon, ca. 3¾–4 Oktaven",
   "ui.largeCba": "Sehr großes Knopfakkordeon, ca. 5+ Oktaven",
-  "ui.notesScope": "Diese Einstellungen gelten für angezeigte Notationsfelder. Exportierte ABC-, LilyPond- und MIDI-Dateien behalten ihre formatspezifischen Daten.",
-  "ui.soundSourceHint": "Wählen Sie den integrierten Synthesizer oder die Akkordeon-Samples von La Melodiosa. Mit der oberen Klangschaltfläche aktivieren Sie die Wiedergabe.",
-  "ui.harmonySoundHint": "Die Harmoniedarstellung verwendet die aktuelle Klangquelle und das Stradella-Bassregister aus den Klangeinstellungen.",
-  "ui.fingerHint": "Geben Sie eine Fingersatznummer ein und wenden Sie sie auf ausgewählte Knöpfe an oder aktivieren Sie die Klickbeschriftung.",
-  "ui.annotationHint": "Klicken Sie auf einen Knopf oder eine freie Diagrammstelle und geben Sie eine Anmerkung ein.",
-  "ui.customPatternHint": "Bearbeiten Sie ein Muster, prüfen Sie es unmittelbar und speichern Sie es in der lokalen Musterbibliothek des Browsers.",
-  "ui.progressionIntro": "Erstellen Sie eine Akkordfolge und optimieren Sie die Stradella-Realisierungen über die gesamte Folge. Klicken Sie auf einen optimierten Schritt zur Vorschau.",
+  "ui.notesScope":
+    "Diese Einstellungen gelten für angezeigte Notationsfelder. Exportierte ABC-, LilyPond- und MIDI-Dateien behalten ihre formatspezifischen Daten.",
+  "ui.soundSourceHint":
+    "Wählen Sie den integrierten Synthesizer oder die Akkordeon-Samples von La Melodiosa. Mit der oberen Klangschaltfläche aktivieren Sie die Wiedergabe.",
+  "ui.harmonySoundHint":
+    "Die Harmoniedarstellung verwendet die aktuelle Klangquelle und das Stradella-Bassregister aus den Klangeinstellungen.",
+  "ui.fingerHint":
+    "Geben Sie eine Fingersatznummer ein und wenden Sie sie auf ausgewählte Knöpfe an oder aktivieren Sie die Klickbeschriftung.",
+  "ui.annotationHint":
+    "Klicken Sie auf einen Knopf oder eine freie Diagrammstelle und geben Sie eine Anmerkung ein.",
+  "ui.customPatternHint":
+    "Bearbeiten Sie ein Muster, prüfen Sie es unmittelbar und speichern Sie es in der lokalen Musterbibliothek des Browsers.",
+  "ui.progressionIntro":
+    "Erstellen Sie eine Akkordfolge und optimieren Sie die Stradella-Realisierungen über die gesamte Folge. Klicken Sie auf einen optimierten Schritt zur Vorschau.",
   "ui.harmony": "Harmonie",
   "ui.soundOn": "Klang ein",
   "ui.soundOff": "Klang aus",
@@ -650,7 +745,8 @@ export const DE: Record<TranslationKey, string> = {
   "ui.length": "Länge",
   "ui.meterUnits": "Takteinheiten",
   "ui.andMore": "…und {count} weitere.",
-  "ui.bassPatternHelp": "Bass- und Gegenbasstöne werden an der ersten passenden Position auf oder unter der mittleren Linie des Bassschlüssels notiert.",
+  "ui.bassPatternHelp":
+    "Bass- und Gegenbasstöne werden an der ersten passenden Position auf oder unter der mittleren Linie des Bassschlüssels notiert.",
   "ui.abchelp": "Mit Notation anzeigen wird ABC als Notenschrift dargestellt.",
   "ui.noteRecordingHelp": "Notation anzeigen stellt die aufgenommene Folge unter dem Diagramm dar.",
   "ui.abcDefault": "ABC-Spieler",
@@ -660,8 +756,10 @@ export const DE: Record<TranslationKey, string> = {
   "ui.abcHandsBoth": "Beide",
   "ui.abcShowHand": "Anzeigen",
   "ui.abcHandCaption": "{hand}, Stimme {voice}",
-  "ui.abcHandsHint": "Zweistimmige Stücke spielen Stimme 1 im Diskant und Stimme 2 auf dem Stradella gleichzeitig.",
-  "ui.abcHandsOneVoice": "Dieses Stück hat nur eine Stimme und wird nur auf der aktuellen Seite gespielt.",
+  "ui.abcHandsHint":
+    "Zweistimmige Stücke spielen Stimme 1 im Diskant und Stimme 2 auf dem Stradella gleichzeitig.",
+  "ui.abcHandsOneVoice":
+    "Dieses Stück hat nur eine Stimme und wird nur auf der aktuellen Seite gespielt.",
   "ui.abcVoicesBoth": "Stimmen 1 + 2",
   "ui.bassPatternPlayer": "Bassmuster-Spieler",
   "ui.scaleFinder": "Tonleitersuche",
@@ -672,8 +770,10 @@ export const DE: Record<TranslationKey, string> = {
   "ui.annotateModeFinger": "Finger",
   "ui.annotateModeSequence": "Sequenz",
   "ui.annotateModeNotes": "Notizen",
-  "ui.annotateModeHint": "Klicks im Diagramm tun nur, was der gewählte Modus vorsieht. Alle Markierungen bleiben in jedem Modus sichtbar.",
-  "ui.selectionIntro": "Knöpfe anklicken, um sie aus- oder abzuwählen. Jeder Klick spielt den Knopf auch ab.",
+  "ui.annotateModeHint":
+    "Klicks im Diagramm tun nur, was der gewählte Modus vorsieht. Alle Markierungen bleiben in jedem Modus sichtbar.",
+  "ui.selectionIntro":
+    "Knöpfe anklicken, um sie aus- oder abzuwählen. Jeder Klick spielt den Knopf auch ab.",
   "ui.selection": "Auswahl",
   "ui.noActiveTool": "Kein Werkzeug aktiv",
   "ui.allDiatonicFamilies": "Alle diatonischen Familien",
@@ -696,17 +796,25 @@ export const DE: Record<TranslationKey, string> = {
   "ui.tags": "Tags",
   "ui.repeatsPerChord": "Wiederholungen pro Akkord",
   "ui.tempo": "Tempo",
-  "ui.stradellaRegisterIntro": "Konfigurieren Sie die Nominaloktaven für Bass/Gegenbass und Akkordknöpfe getrennt. Dies bestimmt die geordneten Töne und gewünschten Umkehrungen der Akkordsuche; auch La Melodiosa kann diesen Einstellungen folgen.",
-  "ui.melodiosaOriginal": "Die Wiedergabe verwendet die ursprüngliche Zuordnung C2–B2 für Bässe und C3–B3 für Akkorde, unabhängig von den Stradella-Registereinstellungen.",
+  "ui.stradellaRegisterIntro":
+    "Konfigurieren Sie die Nominaloktaven für Bass/Gegenbass und Akkordknöpfe getrennt. Dies bestimmt die geordneten Töne und gewünschten Umkehrungen der Akkordsuche; auch La Melodiosa kann diesen Einstellungen folgen.",
+  "ui.melodiosaOriginal":
+    "Die Wiedergabe verwendet die ursprüngliche Zuordnung C2–B2 für Bässe und C3–B3 für Akkorde, unabhängig von den Stradella-Registereinstellungen.",
   "ui.melodiosaConfiguredShort": "Folgt den konfigurierten Bass- und Akkordbereichen.",
   "ui.melodiosaOriginalShort": "Verwendet die ursprüngliche Sample-Zuordnung.",
-  "ui.melodiosaConfigured": "Die Wiedergabe folgt den eingestellten Bass- und Akkordbereichen unter Stradella-Register. Töne außerhalb des Samplebereichs nutzen transponierte La-Melodiosa-Samples; kein Synthesizer-Ersatz.",
-  "ui.melodiosaCredit": "La Melodiosa wurde von Petri Pohjanmies (2026) gesampelt und programmiert; Nutzung unter CC-BY.",
-  "ui.sequenceNotationHint": "Notation anzeigen stellt die aufgenommene Folge unter dem Diagramm dar. Im Stradella-Modus gelten für Bass- und Akkordknöpfe dieselben Notensystemregeln wie im Bassmuster-Spieler.",
-  "ui.annotateHintDetailed": "Klicken Sie auf einen Knopf oder eine freie Stelle und geben Sie die Anmerkung direkt ein. Enter speichert, Umschalt+Enter fügt eine neue Zeile hinzu, Esc bricht ab.",
-  "ui.bassPatternNotationHelp": "Bass- und Gegenbasstöne stehen an der ersten passenden Position auf oder unter der mittleren D-Linie des Bassschlüssels. Akkordknöpfe verwenden die erste passende Position darüber; M, m, 7 oder d kennzeichnen den Akkordtyp.",
+  "ui.melodiosaConfigured":
+    "Die Wiedergabe folgt den eingestellten Bass- und Akkordbereichen unter Stradella-Register. Töne außerhalb des Samplebereichs nutzen transponierte La-Melodiosa-Samples; kein Synthesizer-Ersatz.",
+  "ui.melodiosaCredit":
+    "La Melodiosa wurde von Petri Pohjanmies (2026) gesampelt und programmiert; Nutzung unter CC-BY.",
+  "ui.sequenceNotationHint":
+    "Notation anzeigen stellt die aufgenommene Folge unter dem Diagramm dar. Im Stradella-Modus gelten für Bass- und Akkordknöpfe dieselben Notensystemregeln wie im Bassmuster-Spieler.",
+  "ui.annotateHintDetailed":
+    "Klicken Sie auf einen Knopf oder eine freie Stelle und geben Sie die Anmerkung direkt ein. Enter speichert, Umschalt+Enter fügt eine neue Zeile hinzu, Esc bricht ab.",
+  "ui.bassPatternNotationHelp":
+    "Bass- und Gegenbasstöne stehen an der ersten passenden Position auf oder unter der mittleren D-Linie des Bassschlüssels. Akkordknöpfe verwenden die erste passende Position darüber; M, m, 7 oder d kennzeichnen den Akkordtyp.",
   "ui.abcNotationHelp": "Mit Notation anzeigen wird ABC als Notenschrift dargestellt.",
-  "ui.jsonSaveInfo": "Diese Schaltflächen speichern oder laden eine separate Einstellungsdatei. Sie überschreiben nicht",
+  "ui.jsonSaveInfo":
+    "Diese Schaltflächen speichern oder laden eine separate Einstellungsdatei. Sie überschreiben nicht",
   "ui.patternErrors": "Musterformatfehler:",
   "ui.editorValidation": "Editorprüfung:",
   "ui.firstInversion": "Erste Umkehrung",
@@ -719,8 +827,10 @@ export const DE: Record<TranslationKey, string> = {
   "ui.attribution": "von Petri Pohjanmies",
   "ui.whySpanish": "Empfohlen",
   "ui.compact": "Kompakt",
-  "ui.scaleIntroBass": "Verwendet nur einzelne Bass- und Gegenbassknöpfe und bevorzugt Knöpfe nahe dem Grundton.",
-  "ui.scaleIntroTreble": "Findet einen Tonleiterpfad über eine Oktave. Beim Knopfakkordeon kann der Pfad auf die ersten 3, 4 oder 5 Reihen begrenzt werden.",
+  "ui.scaleIntroBass":
+    "Verwendet nur einzelne Bass- und Gegenbassknöpfe und bevorzugt Knöpfe nahe dem Grundton.",
+  "ui.scaleIntroTreble":
+    "Findet einen Tonleiterpfad über eine Oktave. Beim Knopfakkordeon kann der Pfad auf die ersten 3, 4 oder 5 Reihen begrenzt werden.",
   "ui.scaleButtons": "Tonleiterknöpfe: {count}",
   "ui.targetNotes": "Zieltöne",
   "ui.hideScale": "Tonleiter ausblenden",
@@ -729,26 +839,34 @@ export const DE: Record<TranslationKey, string> = {
   "ui.buttonGeneric": "Knopf",
   "ui.columnShort": "Sp.",
   "ui.rowShort": "Reihe",
-  "ui.fingeringIntro": "Fingersatznummer wählen und Knöpfe anklicken, um sie zu beschriften. Ein Klick auf einen Knopf, der diese Nummer schon zeigt, entfernt sie. Jeder Klick spielt den Knopf auch ab.",
+  "ui.fingeringIntro":
+    "Fingersatznummer wählen und Knöpfe anklicken, um sie zu beschriften. Ein Klick auf einen Knopf, der diese Nummer schon zeigt, entfernt sie. Jeder Klick spielt den Knopf auch ab.",
   "ui.sequence": "Sequenz",
-  "ui.sequenceIntro": "Knöpfe der Reihe nach anklicken, um Schritte hinzuzufügen. Wiederholungen sind erlaubt. Jeder Klick spielt den Knopf auch ab.",
+  "ui.sequenceIntro":
+    "Knöpfe der Reihe nach anklicken, um Schritte hinzuzufügen. Wiederholungen sind erlaubt. Jeder Klick spielt den Knopf auch ab.",
   "ui.annotateTextSize": "Textgröße",
   "ui.bold": "Fett",
   "ui.italic": "Kursiv",
   "ui.deleteAnnotation": "Anmerkung {count} löschen",
   "ui.deleteAnnotationTooltip": "Anmerkung löschen",
-  "ui.patternEditorIntro": "Bearbeiten Sie ein Muster, prüfen Sie es unmittelbar und speichern Sie es in der lokalen benutzerdefinierten Musterbibliothek.",
-  "ui.abcIntroStradella": "Lädt eine einfache ABC-Melodie. Basstöne, zitierte ABC-Akkordsymbole oder beide werden hervorgehoben. In eckigen Klammern notierte Akkorde können gleichzeitig erklingen.",
-  "ui.abcIntroTreble": "Lädt eine einfache einstimmige ABC-Melodie und hebt während der Wiedergabe passende Diskanttöne hervor. Eingeklammerte Zweiklänge/Akkorde können gleichzeitig erklingen.",
+  "ui.patternEditorIntro":
+    "Bearbeiten Sie ein Muster, prüfen Sie es unmittelbar und speichern Sie es in der lokalen benutzerdefinierten Musterbibliothek.",
+  "ui.abcIntroStradella":
+    "Lädt eine einfache ABC-Melodie. Basstöne, zitierte ABC-Akkordsymbole oder beide werden hervorgehoben. In eckigen Klammern notierte Akkorde können gleichzeitig erklingen.",
+  "ui.abcIntroTreble":
+    "Lädt eine einfache einstimmige ABC-Melodie und hebt während der Wiedergabe passende Diskanttöne hervor. Eingeklammerte Zweiklänge/Akkorde können gleichzeitig erklingen.",
   "ui.abcStradellaMapping": "Stradella-Zuordnung",
-  "ui.abcStradellaMappingHelp": "Basstöne verwenden die notierten ABC-Tonhöhen. Akkordsymbole verwenden in Anführungszeichen stehende ABC-Harmonieangaben wie \"C\", \"G7\" oder \"Am\".",
-  "ui.abcTrebleSymbolsHelp": "Zitierte ABC-Akkordsymbole wie \"C\" oder \"G7\" können ignoriert oder als Diskant-Blockakkorde gespielt werden.",
+  "ui.abcStradellaMappingHelp":
+    'Basstöne verwenden die notierten ABC-Tonhöhen. Akkordsymbole verwenden in Anführungszeichen stehende ABC-Harmonieangaben wie "C", "G7" oder "Am".',
+  "ui.abcTrebleSymbolsHelp":
+    'Zitierte ABC-Akkordsymbole wie "C" oder "G7" können ignoriert oder als Diskant-Blockakkorde gespielt werden.',
   "ui.ignore": "Ignorieren",
   "ui.key": "Tonart",
   "ui.beats": "Schläge",
   "ui.noAbcLoaded": "Kein ABC geladen",
   "ui.continue": "Weiter",
-  "ui.abcNotationInstructions": "Mit Notation anzeigen wird ABC unter dem Diagramm als Notenschrift dargestellt. Ungültiger ABC-Text wird im Notationsfeld gemeldet, ohne die Oberfläche zu unterbrechen.",
+  "ui.abcNotationInstructions":
+    "Mit Notation anzeigen wird ABC unter dem Diagramm als Notenschrift dargestellt. Ungültiger ABC-Text wird im Notationsfeld gemeldet, ohne die Oberfläche zu unterbrechen.",
   "ui.unavailableNotes": "Nicht verfügbare Töne",
   "ui.missingShort": "Fehlend",
   "ui.scaleTypeDisplay": "Anzeige",
@@ -762,15 +880,18 @@ export const DE: Record<TranslationKey, string> = {
   "ui.maxFontSize": "Maximale Schriftgröße",
   "ui.showButtonLabels": "Knopfbeschriftungen anzeigen",
   "ui.showBellowsGuide": "Balgführung anzeigen",
-  "ui.soundBassVoicingHelp": "Gilt nur für einzelne Stradella-Bassknöpfe. Echte Akkordeons und Register haben unterschiedliche Bassklänge; daher ist die Einstellung wählbar.",
+  "ui.soundBassVoicingHelp":
+    "Gilt nur für einzelne Stradella-Bassknöpfe. Echte Akkordeons und Register haben unterschiedliche Bassklänge; daher ist die Einstellung wählbar.",
   "ui.ringShared": "Ring für {count} gemeinsame Töne anzeigen",
-  "ui.trebleMoreHelp": "Die Diskant-Akkordsuche wählt nahe Knöpfe bzw. Tasten in der gewählten Grundtonoktave und Umkehrung. Automatisch zeigt alle Akkordtöne, wenn ein vollständiger Griff mit höchstens fünf Knöpfen möglich ist. Bei größeren Akkorden verwendet Praktisch ein reduziertes Voicing; Vollständiger Akkord zeigt alle verfügbaren Töne, auch sechs oder sieben, die nicht gleichzeitig mit fünf Fingern spielbar sind.",
+  "ui.trebleMoreHelp":
+    "Die Diskant-Akkordsuche wählt nahe Knöpfe bzw. Tasten in der gewählten Grundtonoktave und Umkehrung. Automatisch zeigt alle Akkordtöne, wenn ein vollständiger Griff mit höchstens fünf Knöpfen möglich ist. Bei größeren Akkorden verwendet Praktisch ein reduziertes Voicing; Vollständiger Akkord zeigt alle verfügbaren Töne, auch sechs oder sieben, die nicht gleichzeitig mit fünf Fingern spielbar sind.",
   "ui.handMovementEmphasis": "Gewichtung der Handbewegung",
   "ui.harmonicCircleAria": "Kreis harmonischer Beziehungen",
   "ui.noteRingLegendTitle": "Notenring",
   "ui.noteRingLegendDetail": "12 Tonklassen · klicken, um einen Einzelton zu spielen",
   "ui.referenceChordRing": "Akkordring",
-  "analysis.harmonyNoteRing": "Der innere Notenring zeigt die zwölf Tonklassen. Die Auswahl spielt den einzelnen Ton, keinen Akkord.",
+  "analysis.harmonyNoteRing":
+    "Der innere Notenring zeigt die zwölf Tonklassen. Die Auswahl spielt den einzelnen Ton, keinen Akkord.",
   "ui.innerRing": "Innerer Ring",
   "ui.ringOrdinal": "Ring {count}",
   "ui.diatonicAll": "Diatonische Akkorde (alle Familien)",
@@ -781,7 +902,8 @@ export const DE: Record<TranslationKey, string> = {
   "ui.manyNotes": "Töne",
   "ui.parentScaleContext": "Bezugstonleiter/Modus: {scale} (relativ zum Grundton jedes Sektors).",
   "ui.diatonicBoldLegend": "Fette/unterstrichene Beschriftungen sind diatonisch.",
-  "ui.diatonicBlueLegend": "Blaue Beschriftungen sind zur gewählten Bezugstonleiter bzw. zum Modus diatonisch.",
+  "ui.diatonicBlueLegend":
+    "Blaue Beschriftungen sind zur gewählten Bezugstonleiter bzw. zum Modus diatonisch.",
   "ui.familyColorsLegend": "Farben kennzeichnen Akkordfamilien; Hinweise nennen ihre Namen.",
   "ui.explanationHeading": "Erklärung",
   "ui.tonesTooltip": "Töne",
@@ -797,8 +919,10 @@ export const DE: Record<TranslationKey, string> = {
   "ui.semitoneMotion": "Bewegung um {count} {unit}",
   "ui.oneSemitone": "Halbton",
   "ui.manySemitones": "Halbtöne",
-  "ui.invalidSettingsFile": "Diese Einstellungsdatei konnte nicht gelesen werden. Bitte wählen Sie eine gültige Accordion-Tools-JSON-Einstellungsdatei.",
-  "ui.onlyChordsTransferred": "Einzeltöne können nicht an den Akkordfolgen-Assistenten übertragen werden. Nur Akkorde werden übertragen.",
+  "ui.invalidSettingsFile":
+    "Diese Einstellungsdatei konnte nicht gelesen werden. Bitte wählen Sie eine gültige Accordion-Tools-JSON-Einstellungsdatei.",
+  "ui.onlyChordsTransferred":
+    "Einzeltöne können nicht an den Akkordfolgen-Assistenten übertragen werden. Nur Akkorde werden übertragen.",
   "ui.cannotSave": "Speichern nicht möglich: {reason}",
   "ui.savedCustomPattern": "Benutzerdefiniertes Muster „{name}“ gespeichert.",
   "ui.invalidJSON": "Ungültiges JSON.",
@@ -813,32 +937,43 @@ export const DE: Record<TranslationKey, string> = {
   "ui.rowDominantSeventh": "Dominantseptakkord",
   "ui.rowDiminishedSeventh": "Verminderter Septakkord",
   "ui.showVoicingIntervals": "Abstände der Nominaltöne anzeigen",
-  "ui.voicingIntervalsHelp": "Zeigt Halbtonabstände benachbarter unterschiedlicher Nominaltöne neben der Registerlage und in Diagrammexporten. Die horizontalen Tonpositionen sind proportional zu den Halbtonabständen; die Beschriftungen stehen in getrennten Zeilen. Grundlage sind konfigurierte Stradella-Register, keine gemessenen Tonfrequenzen.",
+  "ui.voicingIntervalsHelp":
+    "Zeigt Halbtonabstände benachbarter unterschiedlicher Nominaltöne neben der Registerlage und in Diagrammexporten. Die horizontalen Tonpositionen sind proportional zu den Halbtonabständen; die Beschriftungen stehen in getrennten Zeilen. Grundlage sind konfigurierte Stradella-Register, keine gemessenen Tonfrequenzen.",
   "ui.voicingIntervalsTitle": "Nominale Akkordtonabstände",
-  "ui.voicingIntervalsCaption": "Zahlen zeigen Halbtöne zwischen benachbarten Nominaltönen · konfigurierte Register, kein gemessenes Audio",
-  "ui.maxButtonsHelp": "Begrenzt die Anzahl gleichzeitig ausgewählter Stradella-Knöpfe in den Kandidatenkombinationen.",
-  "ui.maxSpanHelp": "Begrenzt die räumliche Ausdehnung der ausgewählten Knöpfe im Stradella-Layout.",
-  "ui.parentScaleHelp": "Wählt die Tonleiter bzw. den Modus zur Bestimmung und Hervorhebung diatonischer Akkordbeziehungen.",
-  "ui.diatonicOnlyHelp": "Beschränkt die Beziehungsringe auf Akkorde der gewählten Tonleiter bzw. des Modus.",
-  "ui.progressionApproxHelp": "Erlaubt konservative Reduktionen, wenn ein vollständiger Akkord mit den verfügbaren Stradella-Knöpfen nicht spielbar ist. Die Akkordfolge behält die charakteristischen Akkordtöne bei.",
-  'ui.nominalGapFilter': 'Mindestabstand nominaler Töne',
-  'ui.nominalGapFilterHelp': 'Filtert Realisierungen nach Abständen zwischen benachbarten, unterschiedlichen nominalen Tönen der eingestellten Register. Alle Abstände zulassen, Halbtonabstände oder Ein- und Zweihalbtonabstände ausschließen. Unisono-Dopplungen zählen nicht.',
-  'ui.nominalGapAllowAll': 'Alle Abstände erlauben',
-  'ui.nominalGapNoSemitone': 'Halbtonabstände ausschließen',
-  'ui.nominalGapNoWholeTone': 'Abstände von 1–2 Halbtönen ausschließen',
-  'ui.downloadAllRealizations': 'Alle Diagramme herunterladen (ZIP)',
-  'ui.batchExportWorking': 'ZIP wird erstellt…',
-  'ui.clearCurrentWork': 'Aktuelle Arbeit löschen',
-  'ui.restoreToolDefaults': 'Werkzeugstandards wiederherstellen',
-  'ui.resetScope': 'Aktuelle Auswahl löschen oder die Einstellungen dieses Werkzeugs wiederherstellen. Globale Einstellungen bleiben erhalten.',
+  "ui.voicingIntervalsCaption":
+    "Zahlen zeigen Halbtöne zwischen benachbarten Nominaltönen · konfigurierte Register, kein gemessenes Audio",
+  "ui.maxButtonsHelp":
+    "Begrenzt die Anzahl gleichzeitig ausgewählter Stradella-Knöpfe in den Kandidatenkombinationen.",
+  "ui.maxSpanHelp":
+    "Begrenzt die räumliche Ausdehnung der ausgewählten Knöpfe im Stradella-Layout.",
+  "ui.parentScaleHelp":
+    "Wählt die Tonleiter bzw. den Modus zur Bestimmung und Hervorhebung diatonischer Akkordbeziehungen.",
+  "ui.diatonicOnlyHelp":
+    "Beschränkt die Beziehungsringe auf Akkorde der gewählten Tonleiter bzw. des Modus.",
+  "ui.progressionApproxHelp":
+    "Erlaubt konservative Reduktionen, wenn ein vollständiger Akkord mit den verfügbaren Stradella-Knöpfen nicht spielbar ist. Die Akkordfolge behält die charakteristischen Akkordtöne bei.",
+  "ui.nominalGapFilter": "Mindestabstand nominaler Töne",
+  "ui.nominalGapFilterHelp":
+    "Filtert Realisierungen nach Abständen zwischen benachbarten, unterschiedlichen nominalen Tönen der eingestellten Register. Alle Abstände zulassen, Halbtonabstände oder Ein- und Zweihalbtonabstände ausschließen. Unisono-Dopplungen zählen nicht.",
+  "ui.nominalGapAllowAll": "Alle Abstände erlauben",
+  "ui.nominalGapNoSemitone": "Halbtonabstände ausschließen",
+  "ui.nominalGapNoWholeTone": "Abstände von 1–2 Halbtönen ausschließen",
+  "ui.downloadAllRealizations": "Alle Diagramme herunterladen (ZIP)",
+  "ui.batchExportWorking": "ZIP wird erstellt…",
+  "ui.clearCurrentWork": "Aktuelle Arbeit löschen",
+  "ui.restoreToolDefaults": "Werkzeugstandards wiederherstellen",
+  "ui.resetScope":
+    "Aktuelle Auswahl löschen oder die Einstellungen dieses Werkzeugs wiederherstellen. Globale Einstellungen bleiben erhalten.",
   "inspector.title": "Realisierungen",
   "inspector.filters": "Filter",
   "inspector.rootInBass": "Grundton im Bass",
   "inspector.exactOnly": "Nur exakte",
   "inspector.atMostTwo": "≤ 2 Knöpfe",
   "inspector.showing": "{visible} von {total} Realisierungen",
-  "inspector.bassHelp": "Enthält einen gespielten Bass- oder Terzbassknopf auf dem Grundton, eventuell mit weiteren Basstönen; keine Aussage über den tiefsten akustischen Ton.",
-  "inspector.hiddenSelection": "Die gewählte Realisierung wird durch die Filter ausgeblendet; das Diagramm bleibt unverändert.",
+  "inspector.bassHelp":
+    "Enthält einen gespielten Bass- oder Terzbassknopf auf dem Grundton, eventuell mit weiteren Basstönen; keine Aussage über den tiefsten akustischen Ton.",
+  "inspector.hiddenSelection":
+    "Die gewählte Realisierung wird durch die Filter ausgeblendet; das Diagramm bleibt unverändert.",
   "inspector.tableLabel": "Vergleich der Realisierungen",
   "inspector.rank": "Originalrang",
   "inspector.played": "Gespielte Knöpfe",
@@ -857,7 +992,8 @@ export const DE: Record<TranslationKey, string> = {
   "ui.progressionPreviousRealization": "Vorherige Realisierung",
   "ui.progressionNextRealization": "Nächste Realisierung",
   "ui.progressionRealizationFor": "Realisierung für {chord}",
-  "ui.progressionChoiceHint": "Mit ← / → die Realisierungen durchsuchen. Auto optimiert die gesamte Folge; ein Rang fixiert den Akkord auf die ursprüngliche Finder-Realisierung.",
+  "ui.progressionChoiceHint":
+    "Mit ← / → die Realisierungen durchsuchen. Auto optimiert die gesamte Folge; ein Rang fixiert den Akkord auf die ursprüngliche Finder-Realisierung.",
   "ui.progressionStradellaPath": "Stradella-Akkordfolge",
   "ui.progressionPlay": "Akkordfolge abspielen",
   "ui.hideResults": "Ergebnisse ausblenden",
@@ -866,93 +1002,106 @@ export const DE: Record<TranslationKey, string> = {
   "tools.summary.scaleFinder": "Zeigt die Töne einer Tonleiter im Diagramm.",
   "tools.summary.stradellaChordFinder": "Findet Bass- und Akkordknöpfe für jeden Akkord.",
   "tools.summary.trebleChordFinder": "Findet einen Griff der rechten Hand für jeden Akkord.",
-  "tools.summary.progressionAssistant": "Plant eine Akkordfolge mit ruhigen Hand- und Stimmbewegungen.",
-  "tools.summary.bassPatternPlayer": "Spielt Bassmuster (Polka, Walzer und mehr) über eine Akkordfolge.",
+  "tools.summary.progressionAssistant":
+    "Plant eine Akkordfolge mit ruhigen Hand- und Stimmbewegungen.",
+  "tools.summary.bassPatternPlayer":
+    "Spielt Bassmuster (Polka, Walzer und mehr) über eine Akkordfolge.",
   "tools.summary.abcPlayer": "Spielt ABC-Melodien Ton für Ton im Diagramm.",
-  "tools.summary.annotateDiagram": "Wählt Knöpfe aus, fügt Fingersätze hinzu, nimmt Sequenzen auf und schreibt Notizen.",
-  "tools.summary.harmonyExplorer": "Zeigt, wie Akkorde und Tonleitern auf dem Harmoniekreis zusammenhängen.",
+  "tools.summary.annotateDiagram":
+    "Wählt Knöpfe aus, fügt Fingersätze hinzu, nimmt Sequenzen auf und schreibt Notizen.",
+  "tools.summary.harmonyExplorer":
+    "Zeigt, wie Akkorde und Tonleitern auf dem Harmoniekreis zusammenhängen.",
   "ui.progressionShowPath": "Weg im Diagramm anzeigen",
   "ui.loadingSounds": "Klänge werden geladen…",
   "ui.playbackBarHint": "Abspielen, Pause und Stopp über die Leiste unter dem Diagramm.",
-  "tools.rootPositionUnavailable": "Die Grundstellung ist für diesen Akkord mit den aktuellen Knopf- und Reichweitengrenzen nicht möglich; es werden Ergebnisse mit anderen Bässen gezeigt.",
+  "tools.rootPositionUnavailable":
+    "Die Grundstellung ist für diesen Akkord mit den aktuellen Knopf- und Reichweitengrenzen nicht möglich; es werden Ergebnisse mit anderen Bässen gezeigt.",
 
-  "rhythm.title": 'Bass–Diskant-Rhythmustrainer',
-  "rhythm.intro": 'Koordiniere beide Hände und wähle die Diskantnoten zu jedem Akkord.',
-  "rhythm.needsMultipleAttacks": 'Wähle einen Diskantrhythmus mit mehreren Anschlägen, um das Arpeggio zu hören.',
-  "rhythm.trebleNotes": 'Diskantnoten',
-  "rhythm.notes.root": 'Grundton wiederholen',
-  "rhythm.notes.rootFifth": 'Grundton–Quinte',
-  "rhythm.notes.rootThird": 'Grundton–Terz',
-  "rhythm.notes.triadUp": 'Dreiklang aufwärts',
-  "rhythm.notes.triadDown": 'Dreiklang abwärts',
-  "rhythm.notes.triadWave": 'Dreiklang auf–ab',
-  "rhythm.notes.brokenChord": 'Gebrochener Akkord (Grundton–Quinte–Terz–Quinte)',
-  "rhythm.notes.upperNeighbor": 'Oberer Nachbarton',
-  "rhythm.notes.rootOctave": 'Grundton–Oktave',
-  "rhythm.notes.rootSeventh": 'Grundton–Septime (oder Oktave)',
-  "rhythm.notes.guideTones": 'Leittöne (Terz–Septime)',
-  "rhythm.notes.seventhUp": 'Septakkord-Arpeggio aufwärts',
-  "rhythm.notes.seventhDown": 'Septakkord-Arpeggio abwärts',
-  "rhythm.notes.seventhWave": 'Septakkord-Arpeggio auf und ab',
-  "rhythm.notes.seventhOstinato": 'Septakkord-Ostinato (Grundton–Quinte–Septime–Quinte)',
-  "rhythm.pitchSource": 'Diskant nach Akkord',
-  "rhythm.durationUnits": 'Zähleinheiten',
-  "rhythm.meter": 'Taktart',
-  "rhythm.bass": 'Bassbegleitung',
-  "rhythm.treble": 'Diskantrhythmus',
-  "rhythm.key": 'Grundton',
-  "rhythm.notationTitle": 'Bass–Diskant-Noten',
-  "rhythm.notationHelp": 'Die Notation zeigt Diskantnoten sowie Stradella-Bass- und Akkordknöpfe symbolisch; die Akkorde zeigen nicht alle tatsächlich klingenden Zungen.',
-  "rhythm.harmony": 'Akkordfolge',
-  "rhythm.oneChord": 'Ein Akkord',
-  "rhythm.repeats": 'Wiederholungen',
-  "rhythm.rootRule": 'Das Diskantnoten-Muster beginnt bei jedem Akkord neu und berücksichtigt Grundton und Akkordtyp.',
-  "rhythm.progression": 'Grundtöne',
-  "rhythm.timeline": 'Rhythmus-Zeitleiste',
-  "rhythm.rootRuleShort": 'Diskant auf dem Grundton',
-  "rhythm.bar": 'Takt',
-  "rhythm.left": 'Links',
-  "rhythm.right": 'Rechts',
-  "rhythm.legend": '● = Anschlag; Segmentlänge und Zahl zeigen die Dauer in Zähleinheiten.',
-  "rhythm.summary": 'Entdecken Sie koordinierte Rhythmen beider Hände.',
-  "rhythm.cueca": 'Cueca (ABC-Bassnoten)',
-  "rhythm.template.sustain2": 'Gehaltener Ton (2)',
-  "rhythm.template.sustain4": 'Gehaltener Ton (4)',
-  "rhythm.template.fourEighths": 'Vier Achtelnoten',
-  "rhythm.template.threePlusOneEighths": '3+1 Achtelnoten',
-  "rhythm.template.onePlusThreeEighths": '1+3 Achtelnoten',
-  "rhythm.template.sustain3": 'Gehaltener Ton (3)',
-  "rhythm.template.twoAgainstThree": '2 gegen 3',
-  "rhythm.template.sixEighths": 'Sechs Achtelnoten',
-  "rhythm.template.eightEighths": 'Acht Achtelnoten',
-  "rhythm.template.offbeats": 'Achtel auf den Offbeats',
-  "rhythm.template.sustain6": 'Gehaltener Ton (6)',
-  "rhythm.template.compound": 'Eine Note pro Schlag (3+3)',
-  "rhythm.template.hemiola": 'Hemiole 2+2+2',
-  "rhythm.template.cuecaEcho": 'Cueca-Bass-Echo',
-  "rhythm.template.dottedEighths": 'Vier punktierte Achtelnoten',
+  "rhythm.title": "Bass–Diskant-Rhythmustrainer",
+  "rhythm.intro": "Koordiniere beide Hände und wähle die Diskantnoten zu jedem Akkord.",
+  "rhythm.needsMultipleAttacks":
+    "Wähle einen Diskantrhythmus mit mehreren Anschlägen, um das Arpeggio zu hören.",
+  "rhythm.trebleNotes": "Diskantnoten",
+  "rhythm.notes.root": "Grundton wiederholen",
+  "rhythm.notes.rootFifth": "Grundton–Quinte",
+  "rhythm.notes.rootThird": "Grundton–Terz",
+  "rhythm.notes.triadUp": "Dreiklang aufwärts",
+  "rhythm.notes.triadDown": "Dreiklang abwärts",
+  "rhythm.notes.triadWave": "Dreiklang auf–ab",
+  "rhythm.notes.brokenChord": "Gebrochener Akkord (Grundton–Quinte–Terz–Quinte)",
+  "rhythm.notes.upperNeighbor": "Oberer Nachbarton",
+  "rhythm.notes.rootOctave": "Grundton–Oktave",
+  "rhythm.notes.rootSeventh": "Grundton–Septime (oder Oktave)",
+  "rhythm.notes.guideTones": "Leittöne (Terz–Septime)",
+  "rhythm.notes.seventhUp": "Septakkord-Arpeggio aufwärts",
+  "rhythm.notes.seventhDown": "Septakkord-Arpeggio abwärts",
+  "rhythm.notes.seventhWave": "Septakkord-Arpeggio auf und ab",
+  "rhythm.notes.seventhOstinato": "Septakkord-Ostinato (Grundton–Quinte–Septime–Quinte)",
+  "rhythm.pitchSource": "Diskant nach Akkord",
+  "rhythm.durationUnits": "Zähleinheiten",
+  "rhythm.meter": "Taktart",
+  "rhythm.bass": "Bassbegleitung",
+  "rhythm.treble": "Diskantrhythmus",
+  "rhythm.key": "Grundton",
+  "rhythm.notationTitle": "Bass–Diskant-Noten",
+  "rhythm.notationHelp":
+    "Die Notation zeigt Diskantnoten sowie Stradella-Bass- und Akkordknöpfe symbolisch; die Akkorde zeigen nicht alle tatsächlich klingenden Zungen.",
+  "rhythm.harmony": "Akkordfolge",
+  "rhythm.oneChord": "Ein Akkord",
+  "rhythm.repeats": "Wiederholungen",
+  "rhythm.rootRule":
+    "Das Diskantnoten-Muster beginnt bei jedem Akkord neu und berücksichtigt Grundton und Akkordtyp.",
+  "rhythm.progression": "Grundtöne",
+  "rhythm.timeline": "Rhythmus-Zeitleiste",
+  "rhythm.rootRuleShort": "Diskant auf dem Grundton",
+  "rhythm.bar": "Takt",
+  "rhythm.left": "Links",
+  "rhythm.right": "Rechts",
+  "rhythm.legend": "● = Anschlag; Segmentlänge und Zahl zeigen die Dauer in Zähleinheiten.",
+  "rhythm.summary": "Entdecken Sie koordinierte Rhythmen beider Hände.",
+  "rhythm.cueca": "Cueca (ABC-Bassnoten)",
+  "rhythm.template.sustain2": "Gehaltener Ton (2)",
+  "rhythm.template.sustain4": "Gehaltener Ton (4)",
+  "rhythm.template.fourEighths": "Vier Achtelnoten",
+  "rhythm.template.threePlusOneEighths": "3+1 Achtelnoten",
+  "rhythm.template.onePlusThreeEighths": "1+3 Achtelnoten",
+  "rhythm.template.sustain3": "Gehaltener Ton (3)",
+  "rhythm.template.twoAgainstThree": "2 gegen 3",
+  "rhythm.template.sixEighths": "Sechs Achtelnoten",
+  "rhythm.template.eightEighths": "Acht Achtelnoten",
+  "rhythm.template.offbeats": "Achtel auf den Offbeats",
+  "rhythm.template.sustain6": "Gehaltener Ton (6)",
+  "rhythm.template.compound": "Eine Note pro Schlag (3+3)",
+  "rhythm.template.hemiola": "Hemiole 2+2+2",
+  "rhythm.template.cuecaEcho": "Cueca-Bass-Echo",
+  "rhythm.template.dottedEighths": "Vier punktierte Achtelnoten",
 
-  "ui.stradellaNotationMode": 'Notation der linken Hand',
-  "ui.stradellaNotationSymbolic": 'Standard-Stradella',
-  "ui.stradellaNotationSounding": 'Erweiterte Voicings (falls verfügbar)',
-  "ui.stradellaNotationModeHelp": 'Erweiterte Voicings sind im Progressionsassistenten verfügbar. Importierte ABC-Partituren bleiben unverändert.',
-  "ui.stradellaChordLabels": 'Akkordqualitätssymbole',
-  "ui.stradellaChordLabelsAlways": 'Bei jedem Akkord anzeigen',
-  "ui.stradellaChordLabelsChanges": 'Nur bei Qualitätswechsel anzeigen',
-  "ui.stradellaCounterbassDash": 'Gegenbassnoten mit Strich markieren',
+  "ui.stradellaNotationMode": "Notation der linken Hand",
+  "ui.stradellaNotationSymbolic": "Standard-Stradella",
+  "ui.stradellaNotationSounding": "Erweiterte Voicings (falls verfügbar)",
+  "ui.stradellaNotationModeHelp":
+    "Erweiterte Voicings sind im Progressionsassistenten verfügbar. Importierte ABC-Partituren bleiben unverändert.",
+  "ui.stradellaChordLabels": "Akkordqualitätssymbole",
+  "ui.stradellaChordLabelsAlways": "Bei jedem Akkord anzeigen",
+  "ui.stradellaChordLabelsChanges": "Nur bei Qualitätswechsel anzeigen",
+  "ui.stradellaCounterbassDash": "Gegenbassnoten mit Strich markieren",
   "ui.musicNotationPlacement": "Position der Notation",
   "ui.musicNotationRight": "Rechtes Bedienfeld",
   "ui.musicNotationBelow": "Unter dem Diagramm",
   "ui.musicNotationNoteNamesInNoteheads": "Notennamen unter Noten anzeigen",
-  "ui.musicNotationNoteNamesInNoteheadsHelp": "Verwendet native Beschriftungen, ohne Notenköpfe zu verändern.",
-  "ui.stradellaOctaveHelp": 'Die Notenschrift ist unabhängig von Audioregistern.',
+  "ui.musicNotationNoteNamesInNoteheadsHelp":
+    "Verwendet native Beschriftungen, ohne Notenköpfe zu verändern.",
+  "ui.stradellaOctaveHelp": "Die Notenschrift ist unabhängig von Audioregistern.",
   "ui.cancel": "Abbrechen",
-  "settings.autoSaveHint": "Die Einstellungen werden automatisch in diesem Browser gespeichert und beim nächsten Besuch wiederhergestellt.",
+  "settings.autoSaveHint":
+    "Die Einstellungen werden automatisch in diesem Browser gespeichert und beim nächsten Besuch wiederhergestellt.",
   "settings.resetDefaults": "Auf Standardwerte zurücksetzen",
-  "settings.resetConfirm": "Alle Einstellungen auf die Standardwerte zurücksetzen? Die Seite wird neu geladen. Eigene Bassmuster bleiben erhalten.",
+  "settings.resetConfirm":
+    "Alle Einstellungen auf die Standardwerte zurücksetzen? Die Seite wird neu geladen. Eigene Bassmuster bleiben erhalten.",
   "settings.resetConfirmYes": "Zurücksetzen",
   "error.title": "Etwas ist schiefgelaufen",
-  "error.body": "Accordion Tools wurde wegen eines unerwarteten Fehlers angehalten. Neuladen hilft meistens. Tritt der Fehler erneut auf, setzen Sie die gespeicherten Einstellungen zurück.",
+  "error.body":
+    "Accordion Tools wurde wegen eines unerwarteten Fehlers angehalten. Neuladen hilft meistens. Tritt der Fehler erneut auf, setzen Sie die gespeicherten Einstellungen zurück.",
   "error.reload": "Neu laden",
   "error.resetAndReload": "Einstellungen zurücksetzen und neu laden",
   "error.details": "Technische Details",

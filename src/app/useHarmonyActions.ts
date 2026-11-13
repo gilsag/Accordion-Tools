@@ -3,30 +3,52 @@ import type { useHarmonyExplorerState } from "../features/harmonyExplorer/useHar
 import type { useHarmonyProgressionState } from "../features/progressionAssistant/useProgressionAssistant";
 import type { useSoundSettings } from "../audio/useSoundSettings";
 import { clearPlaybackTimers } from "../audio/playbackTransport";
-import { stopAllSound, audioClockNow, playHarmonyPitchClassChord, playHarmonyRelationship } from "../sound";
+import {
+  stopAllSound,
+  audioClockNow,
+  playHarmonyPitchClassChord,
+  playHarmonyRelationship,
+} from "../sound";
 import type { ChordFamilyId } from "../tools/harmonyExplorer/music";
-import { CIRCLE_OF_FIFTHS, pitchClassesForChord as harmonyPitchClassesForChord } from "../tools/harmonyExplorer/music";
+import {
+  CIRCLE_OF_FIFTHS,
+  pitchClassesForChord as harmonyPitchClassesForChord,
+} from "../tools/harmonyExplorer/music";
 import type { HarmonyPlaybackStyle } from "../tools/harmonyExplorer/types";
 import type { HarmonyRecordedChord } from "../tools/harmonyExplorer/progression";
 import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
 
-export type UseHarmonyActionsDeps = Pick<ReturnType<typeof useHarmonyExplorerState>,
-    "harmonyPlaybackStyle"> &
-  Pick<ReturnType<typeof useHarmonyProgressionState>,
-    "harmonyProgressionIdRef" | "harmonyProgressionRecording" |
-    "harmonyRecordedPlaybackTimeoutsRef" | "harmonyRecordedProgression" |
-    "setHarmonyProgressionRecording" | "setHarmonyRecordedNotationVisible" |
-    "setHarmonyRecordedProgression" | "setHarmonyRecordedProgressionPlaying"> &
-  Pick<ReturnType<typeof useSoundSettings>,
-    "soundOptions" | "soundSequenceTempoBpm">;
+export type UseHarmonyActionsDeps = Pick<
+  ReturnType<typeof useHarmonyExplorerState>,
+  "harmonyPlaybackStyle"
+> &
+  Pick<
+    ReturnType<typeof useHarmonyProgressionState>,
+    | "harmonyProgressionIdRef"
+    | "harmonyProgressionRecording"
+    | "harmonyRecordedPlaybackTimeoutsRef"
+    | "harmonyRecordedProgression"
+    | "setHarmonyProgressionRecording"
+    | "setHarmonyRecordedNotationVisible"
+    | "setHarmonyRecordedProgression"
+    | "setHarmonyRecordedProgressionPlaying"
+  > &
+  Pick<ReturnType<typeof useSoundSettings>, "soundOptions" | "soundSequenceTempoBpm">;
 
 /** Harmony Explorer chord playback and the Harmony recording: record, play on the audio clock, stop and clear. */
 export function useHarmonyActions(deps: UseHarmonyActionsDeps) {
   const {
-    harmonyPlaybackStyle, harmonyProgressionIdRef, harmonyProgressionRecording,
-    harmonyRecordedPlaybackTimeoutsRef, harmonyRecordedProgression, setHarmonyProgressionRecording,
-    setHarmonyRecordedNotationVisible, setHarmonyRecordedProgression,
-    setHarmonyRecordedProgressionPlaying, soundOptions, soundSequenceTempoBpm,
+    harmonyPlaybackStyle,
+    harmonyProgressionIdRef,
+    harmonyProgressionRecording,
+    harmonyRecordedPlaybackTimeoutsRef,
+    harmonyRecordedProgression,
+    setHarmonyProgressionRecording,
+    setHarmonyRecordedNotationVisible,
+    setHarmonyRecordedProgression,
+    setHarmonyRecordedProgressionPlaying,
+    soundOptions,
+    soundSequenceTempoBpm,
   } = deps;
 
   function harmonyPitchNames(rootPc: number, familyId: ChordFamilyId) {
@@ -80,7 +102,11 @@ export function useHarmonyActions(deps: UseHarmonyActionsDeps) {
     ]);
   }
 
-  function handleHarmonyChordActivated(rootPc: number, familyId: ChordFamilyId, sectorIndex: number) {
+  function handleHarmonyChordActivated(
+    rootPc: number,
+    familyId: ChordFamilyId,
+    sectorIndex: number,
+  ) {
     if (!harmonyProgressionRecording) return;
     setHarmonyRecordedProgression((current) => [
       ...current,
@@ -104,7 +130,10 @@ export function useHarmonyActions(deps: UseHarmonyActionsDeps) {
     setHarmonyRecordedProgressionPlaying(true);
     const beatMs = 60000 / Math.max(40, soundSequenceTempoBpm);
     // One recorded event per beat, placed on the audio clock like the other players.
-    const ports = { now: audioClockNow, push: (id: number) => harmonyRecordedPlaybackTimeoutsRef.current.push(id) };
+    const ports = {
+      now: audioClockNow,
+      push: (id: number) => harmonyRecordedPlaybackTimeoutsRef.current.push(id),
+    };
     const origin = audioTimelineOrigin(ports.now);
     const durationMs = beatMs * soundOptions.articulation;
 
@@ -130,7 +159,10 @@ export function useHarmonyActions(deps: UseHarmonyActionsDeps) {
 
     const stopTimeout = window.setTimeout(
       () => stopHarmonyRecordedProgressionPlayback(),
-      msUntilAudioTime(ports, origin + (harmonyRecordedProgression.length * beatMs + Math.min(600, beatMs)) / 1000),
+      msUntilAudioTime(
+        ports,
+        origin + (harmonyRecordedProgression.length * beatMs + Math.min(600, beatMs)) / 1000,
+      ),
     );
     harmonyRecordedPlaybackTimeoutsRef.current.push(stopTimeout);
   }
@@ -142,9 +174,15 @@ export function useHarmonyActions(deps: UseHarmonyActionsDeps) {
   }
 
   return {
-    playHarmonyChord, playHarmonyChordRelationship, harmonyProgressionSectorIndex,
-    makeHarmonyProgressionChord, playHarmonyNote, handleHarmonyChordActivated,
-    toggleHarmonyProgressionRecording, stopHarmonyRecordedProgressionPlayback,
-    playHarmonyRecordedProgression, clearHarmonyRecordedProgression,
+    playHarmonyChord,
+    playHarmonyChordRelationship,
+    harmonyProgressionSectorIndex,
+    makeHarmonyProgressionChord,
+    playHarmonyNote,
+    handleHarmonyChordActivated,
+    toggleHarmonyProgressionRecording,
+    stopHarmonyRecordedProgressionPlayback,
+    playHarmonyRecordedProgression,
+    clearHarmonyRecordedProgression,
   };
 }

@@ -15,7 +15,8 @@ export type NotationMode = "english" | "german" | "solfege" | "intervals" | "bla
 export type AccidentalMode = "natural" | "flats" | "sharps" | "enharmonic";
 
 /** Controls how Stradella chord buttons are labeled. */
-export type ChordLabelMode = "none" | "chord-name" | "root-only" | "chord-tones" | "row-function" | "functional-reference";
+export type ChordLabelMode =
+  "none" | "chord-name" | "root-only" | "chord-tones" | "row-function" | "functional-reference";
 
 /** Controls whether the diagram title is automatic, custom, or hidden. */
 export type TitleMode = "auto" | "contextual" | "custom" | "none";
@@ -91,7 +92,6 @@ export type NumberPosition = "none" | "above" | "inside-top" | "inside-bottom";
 
 /** Named colors for sequence arrows and sequence numbers. */
 export type SequenceColorPreset = "red" | "blue" | "black" | "grey" | "theme";
-
 
 /** Deprecated shared Finder target identifier, retained for compatibility. */
 export type FinderTarget = "treble" | "stradella";
@@ -171,7 +171,8 @@ export type AbcTrebleChordSymbolsMode = "ignore" | "play";
 export type AbcHands = "stradella" | "treble" | "both";
 
 /** ABC Player mapping strategy for the Stradella side. */
-export type AbcStradellaMode = "bass-notes-only" | "chord-symbols-only" | "bass-notes-and-chord-symbols";
+export type AbcStradellaMode =
+  "bass-notes-only" | "chord-symbols-only" | "bass-notes-and-chord-symbols";
 
 /** Bass Pattern Player chord voicing behavior. */
 export type BassPatternChordVoicing = "simple" | "full";
@@ -195,12 +196,7 @@ export type SoundWaveform = "sine" | "triangle" | "sawtooth" | "square";
 
 /** Higher-level synthesized reed/organ voices built from one or more oscillators. */
 export type SoundVoicePreset =
-  | "single"
-  | "soft-reed"
-  | "bright-reed"
-  | "musette"
-  | "organ"
-  | "bass-reed";
+  "single" | "soft-reed" | "bright-reed" | "musette" | "organ" | "bass-reed";
 
 /** Functional type of each generated diagram button. */
 export type ButtonKind =
