@@ -1,6 +1,6 @@
 # Plan: splitting `useAppController`
 
-Status: agreed; steps 1 (characterization tests) and 2 (platform providers) done. Written for the roadmap item that asks for a plan before any code.
+Status: agreed; steps 1 (characterization tests), 2 (platform providers) and 3 (settings registry) done. Written for the roadmap item that asks for a plan before any code.
 
 Decisions taken: tools own their state through providers listed in the tool registry; files in `src/app/` stay under 500 formatted lines; Harmony Explorer owns the recorded progression and the Progression Assistant the optimized plan. When the work is finished, move this file to the [archive](archive/README.md) and update the ownership table in the [developer guide](developer-guide.md).
 
@@ -46,7 +46,7 @@ Three layers, from the bottom up.
 
 **Coordinator.** A thin provider above the tools that holds the handle registry and the rules that span tools: exclusivity, reset scopes, layout changes, stop-all and the transfer sequences in `crossToolCommands.ts`. It holds no musical state.
 
-Provider order is fixed: Language, Settings registry, Instrument, Appearance, Sound, Notation settings, Navigation, Buttons, Playback, Coordinator, then the tools in registry order. React runs child effects before parent effects, so by the time the Settings registry's startup effect runs, every tool has registered its settings slice (question 4 depends on this).
+Provider order is fixed: Settings registry, Language, Instrument, Appearance, Sound, Notation settings, Navigation, Buttons, Playback, Coordinator, then the tools in registry order. Owners register their settings in layout effects, which all run before any passive effect, and the registry's startup effect, being outermost, runs last; so every owner is registered when startup runs (question 4 depends on this).
 
 Why contexts and not one smaller composition hook: a hook that calls each tool's hook would still have to be edited for every new tool, and the roadmap's "done" condition is that adding a tool does not touch the controller. Calling hooks in a loop over the registry would satisfy that, but the React hooks lint rule rejects it and it would hide the call order. Nested providers keep the order explicit and lintable. The flat model already re-renders every view on every change, so contexts do not make rendering worse; splitting them can only make it better.
 
@@ -145,7 +145,7 @@ Each step leaves `verify:release` and `test:e2e` green, is one or a few commits,
 
 1. Characterization tests (above). Done.
 2. Platform providers. The controller reads them instead of calling the hooks. No visible change. Done: `src/app/platform/` holds language, instrument, appearance with spelling (`useMusicSpelling`, formerly four `useState` calls in the controller), sound, notation settings and navigation. Still in the controller until the diagram model (step 8): `buttons`, `interfaceDensity`, `downloadFormat` and `mobileDiagramView`.
-3. Settings registry and slices. `useSettingsTransfer` shrinks to the registry.
+3. Settings registry and slices. `useSettingsTransfer` shrinks to the registry. Done. As built: one ownership table, `SETTINGS_OWNERS`, maps every exported key to an owner, and setters are found by name (`setX` for `x`, plus `changeLanguage`), so an owner registers with a single call, `useOwnedSettings(owner, hookResult)`. The registry is the outermost platform provider rather than sitting below Language, because the language preference is itself a setting. Tool owners still register from the controller and will register from their own providers in step 5. `useSettingsTransfer` went from 957 lines to 41 and the controller from 2,707 to 2,484.
 4. Coordinator and handles for exclusivity, layout change, reset scopes and stop-all, with the controller still owning the tools.
 5. Move the tools into providers, simplest first: Rhythm Trainer, Scale Finder, Treble Chord Finder, Annotate Diagram, Bass Pattern Player, ABC Player, Stradella Chord Finder, Harmony Explorer, Progression Assistant. Each move deletes that tool's fields from the `tools` model, and its section reads the tool's context. Feature hooks move as they are; folder consolidation is item 3.
 6. Playback provider and `PlayerAdapter`; `useAccordionPlayback` disappears.

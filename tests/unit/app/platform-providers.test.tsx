@@ -9,9 +9,14 @@ import {
   usePlatformNavigation,
   usePlatformSound,
 } from "../../../src/app/platform/platformContexts";
-import { resetBrowserState } from "../../support/appHarness";
+import { resetBrowserState, serveBundledFiles } from "../../support/appHarness";
 
-beforeEach(resetBrowserState);
+beforeEach(() => {
+  resetBrowserState();
+  // Only the platform is rendered here, without the tools that own the rest
+  // of the settings, so the settings startup is held back.
+  serveBundledFiles().hold("default-settings.json");
+});
 afterEach(cleanup);
 
 test("reading shared state outside the providers names the missing provider", () => {

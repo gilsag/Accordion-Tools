@@ -53,3 +53,9 @@ test("a change is stored after a short quiet period", async () => {
   await app.run((model) => model.settings.setBasses("120"));
   await expect.poll(() => savedSession().basses, { timeout: 2000 }).toBe("120");
 });
+
+test("without default-settings.json the built-in defaults start the session", async () => {
+  serveBundledFiles().fail("default-settings.json");
+  const app = await renderApp();
+  expect(savedSession().basses).toBe(app.model.settings.basses);
+});

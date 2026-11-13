@@ -11,6 +11,8 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, vi } from "vitest";
 import { useAppController, type AppControllerModel } from "../../src/app/useAppController";
 import { PlatformProviders } from "../../src/app/platform/PlatformProviders";
+import { usePlatformSettings } from "../../src/app/platform/platformContexts";
+import type { SettingsRegistry } from "../../src/settings/settingsRegistry";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
 
 const PUBLIC_DIR = resolve(import.meta.dirname, "../../public");
@@ -23,6 +25,8 @@ export interface HeldRequest {
 export interface FetchControl {
   /** Holds back every request whose path ends with `suffix` until released. */
   hold(suffix: string): HeldRequest;
+  /** Answers every request whose path ends with `suffix` with 404. */
+  fail(suffix: string): void;
   /** Paths requested so far, without the base URL. */
   requested: string[];
 }
@@ -32,12 +36,15 @@ export function serveBundledFiles(): FetchControl {
   const base = import.meta.env.BASE_URL;
   const held: { suffix: string; gate: Promise<void> }[] = [];
   const requested: string[] = [];
+  const failing: string[] = [];
   vi.stubGlobal("fetch", async (input: RequestInfo | URL) => {
     const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
     const path = url.startsWith(base) ? url.slice(base.length) : url.replace(/^\//, "");
     requested.push(path);
     const gate = held.find((entry) => path.endsWith(entry.suffix))?.gate;
     if (gate) await gate;
+    if (failing.some((suffix) => path.endsWith(suffix)))
+      return new Response("Not found", { status: 404 });
     try {
       const body = readFileSync(resolve(PUBLIC_DIR, path), "utf8");
       return new Response(body, { status: 200 });
@@ -47,6 +54,9 @@ export function serveBundledFiles(): FetchControl {
   });
   return {
     requested,
+    fail(suffix) {
+      failing.push(suffix);
+    },
     hold(suffix) {
       let release = () => {};
       const gate = new Promise<void>((resolveGate) => (release = resolveGate));
@@ -66,6 +76,8 @@ export async function waitForStartup() {
 export interface RenderedApp {
   /** The current model; read it again after every command. */
   readonly model: AppControllerModel;
+  /** The settings registry, as the Settings panel's file commands use it. */
+  readonly settings: SettingsRegistry;
   /** Runs commands and lets React apply the resulting state and effects. */
   run(commands: (model: AppControllerModel) => void): Promise<void>;
 }
@@ -78,14 +90,20 @@ export interface RenderAppOptions {
 /** Renders the composition. Sound is switched off after startup, because
  * jsdom has no Web Audio; playback order is covered by the audio tests. */
 export async function renderApp(options: RenderAppOptions = {}): Promise<RenderedApp> {
-  const { result } = renderHook(() => useAppController(), { wrapper: PlatformProviders });
+  const { result } = renderHook(
+    () => ({ model: useAppController(), settings: usePlatformSettings() }),
+    { wrapper: PlatformProviders },
+  );
   const app: RenderedApp = {
     get model() {
-      return result.current;
+      return result.current.model;
+    },
+    get settings() {
+      return result.current.settings;
     },
     async run(commands) {
       await act(async () => {
-        commands(result.current);
+        commands(result.current.model);
       });
     },
   };

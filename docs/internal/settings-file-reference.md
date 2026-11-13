@@ -21,7 +21,7 @@ Every exported file starts with `settingsVersion` (currently `3`). Files without
 | 1 → 2 | Drops `progressionAllowApproximations` (retired from the interface). `soundArticulation` is new; files without it keep the default `0.85`. |
 | 2 → 3 | Drops `selectionOnClick`: Selection is now a mode of Annotate Diagram, where clicks in Select mode always toggle the selection. |
 
-To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that turns a version N document into version N + 1, update `collectCurrentSettings()` and `tests/fixtures/settings-export-keys.json`, and add a case to `tests/unit/modules/settings-migrations.test.ts`. Files from newer builds pass through unchanged: known keys still validate and unknown ones are ignored.
+To change the format: bump `SETTINGS_VERSION`, add a step to `MIGRATIONS` that turns a version N document into version N + 1, update `collectCurrentSettings()` and `tests/fixtures/settings-export-keys.json`, give any new key an owner in `SETTINGS_OWNERS` (`src/settings/settingsOwners.ts`), and add a case to `tests/unit/modules/settings-migrations.test.ts`. Files from newer builds pass through unchanged: known keys still validate and unknown ones are ignored.
 
 ## Keys by area
 

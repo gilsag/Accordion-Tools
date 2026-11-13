@@ -1,5 +1,5 @@
 /** Shared state that many tools read and that is not any one tool's: the
- * interface language, the instrument, the diagram's appearance and spelling,
+ * settings registry, the interface language, the instrument, the diagram's appearance and spelling,
  * sound and notation preferences, and navigation. Each part is owned by its
  * existing hook; `PlatformProviders` calls the hooks once and these contexts
  * hand the results to whoever reads them. See
@@ -12,6 +12,7 @@ import type { useMusicSpelling } from "../../diagram/useMusicSpelling";
 import type { useSoundSettings } from "../../audio/useSoundSettings";
 import type { useNotationSettings } from "../../notation/useNotationSettings";
 import type { useWorkspaceNavigation } from "../useWorkspaceNavigation";
+import type { SettingsRegistry } from "../../settings/settingsRegistry";
 
 export type PlatformLanguage = ReturnType<typeof useLanguageSettings>;
 export type PlatformInstrument = ReturnType<typeof useInstrumentState>;
@@ -21,6 +22,7 @@ export type PlatformSound = ReturnType<typeof useSoundSettings>;
 export type PlatformNotation = ReturnType<typeof useNotationSettings>;
 export type PlatformNavigation = ReturnType<typeof useWorkspaceNavigation>;
 
+export const PlatformSettingsContext = createContext<SettingsRegistry | null>(null);
 export const PlatformLanguageContext = createContext<PlatformLanguage | null>(null);
 export const PlatformInstrumentContext = createContext<PlatformInstrument | null>(null);
 export const PlatformAppearanceContext = createContext<PlatformAppearance | null>(null);
@@ -35,6 +37,10 @@ function usePlatformContext<T>(context: Context<T | null>, name: string): T {
   return value;
 }
 
+/** The settings registry: owners register their settings with it, and
+ * settings files, imports and the saved session read through it. */
+export const usePlatformSettings = () =>
+  usePlatformContext(PlatformSettingsContext, "usePlatformSettings");
 /** Interface language preference, the language in use and `t()`. */
 export const usePlatformLanguage = () =>
   usePlatformContext(PlatformLanguageContext, "usePlatformLanguage");
