@@ -13,6 +13,7 @@ The rules to follow when changing the code: who owns what, which contracts other
   - [`adding-interface-languages.md`](adding-interface-languages.md);
   - [`testing.md`](testing.md): how the tests are organized and the rules for writing them;
   - [`instrument-profiles-design.md`](instrument-profiles-design.md): a design proposal that is not implemented;
+  - [`controller-split-plan.md`](controller-split-plan.md): the plan for moving state ownership out of `useAppController` (roadmap item 2), not started;
   - [`archive/`](archive/README.md): records of finished work (validation worksheets, the modularization roadmap, the localization plan, the bass-pattern audit). Nothing there is kept up to date.
 - `docs/releases/` holds the notes written for individual releases; `VERSION_HISTORY.md` at the root is the complete history.
 
