@@ -12,6 +12,7 @@
     "build:analyze": "tsc -b && vite build --manifest && node scripts/audit-production-bundle.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:app": "vitest run tests/unit/app",
     "test:coverage": "vitest run --coverage",
     "test:chords": "vitest run tests/unit/chords",
     "test:harmony": "vitest run tests/unit/harmony",

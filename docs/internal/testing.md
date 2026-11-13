@@ -24,9 +24,12 @@
 | `display/` | Chord symbols, voicing chart layout, row label fitting, PNG export conversion |
 | `i18n/` | Six catalogs, language detection, translated options, explanations and diagram labels |
 | `modules/` | Settings I/O, migrations, import traces and the saved session; feature hooks; cross-tool command order; audio scheduling and export services; inspector rows; progression selection and rhythms |
+| `app/` | The whole state composition rendered in jsdom: what opening a tool does to the others, one visible score, what clears the diagram and what each Reset scope resets, the commands between tools, startup order and when the session is saved |
 | `release/` | Version files agree with each other, with `VERSION_HISTORY.md` and with the newest git tag; documentation links resolve; bundle-audit logic |
 
 `tests/fixtures/` holds the frozen reference data and `tests/support/` the shared helpers. `scripts/` now contains only build tooling.
+
+The `app/` tests reach the application only through `renderApp()` in `tests/support/appHarness.ts`, which serves the files in `public/` to `fetch`, waits for startup and switches sound off. They describe behaviour the player relies on, not the code that produces it, so they must pass unchanged while [`useAppController` is split](controller-split-plan.md); only the harness follows the code.
 
 ### Three kinds of unit test
 

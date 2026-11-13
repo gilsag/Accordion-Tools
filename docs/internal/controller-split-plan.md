@@ -1,6 +1,8 @@
 # Plan: splitting `useAppController`
 
-Status: proposal, not started. Written for roadmap item 2, which asks for a plan before any code. When the work is finished, move this file to the [archive](archive/README.md) and update the ownership table in the [developer guide](developer-guide.md).
+Status: agreed; step 1 (characterization tests) done. Written for the roadmap item that asks for a plan before any code.
+
+Decisions taken: tools own their state through providers listed in the tool registry; files in `src/app/` stay under 500 formatted lines; Harmony Explorer owns the recorded progression and the Progression Assistant the optimized plan. When the work is finished, move this file to the [archive](archive/README.md) and update the ownership table in the [developer guide](developer-guide.md).
 
 ## Where things stand
 
@@ -132,7 +134,7 @@ This removes the 300-name `deps` object from `useSettingsTransfer` and the dupli
 
 Done together with the hook-test rewrite, as the roadmap asks.
 
-- Before moving anything, write characterization tests with Testing Library's `renderHook` against today's controller for the behaviours that move: Finder exclusivity on opening tools, one visible score, layout change clearing marks, the three reset scopes, the default ABC tune loading once, and the session written only after startup. They must pass before and after each step.
+- Before moving anything, characterization tests are written against today's controller for the behaviours that move. They are in `tests/unit/app/` and use `renderApp()` from `tests/support/appHarness.ts`: Finder exclusivity on opening tools, one visible score, layout change clearing marks, the work and tool Reset scopes (the third scope reloads the page and stays with the browser tests), the default ABC tune loading once, the transfers between tools, and startup order with the session written only after startup. Each was checked by breaking the rule in the code and seeing the test fail. They must pass unchanged after every step; only the harness changes when the controller goes away.
 - Each tool provider gets a `renderHook` test with a wrapper of platform providers. These replace the isolated-module hook tests that use hand-made React doubles: `abc-feature-module`, `controller-lifecycle`, `finder-feature-modules`, `pattern-sequence-feature-modules`, `diagram-annotation-modules`, `harmony-progression-feature-modules`, `stradella-finder-module` and `app-navigation-modules`. Isolated-module tests that check call order without React (`render-audio-services`, `playback-start-geometry`, `png-export-regression`) stay.
 - `settings-controller-compatibility.test.js`, `crossToolCommands` tests and the e2e suite do not change. They are the proof that nothing visible moved.
 - `performance.spec.ts` and the Chord Finder search budget guard against context re-render costs.
@@ -141,7 +143,7 @@ Done together with the hook-test rewrite, as the roadmap asks.
 
 Each step leaves `verify:release` and `test:e2e` green, is one or a few commits, and can ship on its own.
 
-1. Characterization tests (above).
+1. Characterization tests (above). Done.
 2. Platform providers. The controller reads them instead of calling the hooks. No visible change.
 3. Settings registry and slices. `useSettingsTransfer` shrinks to the registry.
 4. Coordinator and handles for exclusivity, layout change, reset scopes and stop-all, with the controller still owning the tools.
@@ -157,8 +159,8 @@ Each step leaves `verify:release` and `test:e2e` green, is one or a few commits,
 - `stradellaBatchCapture` relies on `flushSync` re-rendering the diagram with each realization; this must still work when the selection lives in a context.
 - The Stradella engine, register model, Finder ranking and diagram geometry are not touched.
 
-## Decisions needed before starting
+## Decisions
 
-1. **Contexts and providers** as described, or a smaller step that keeps one composition hook calling per-tool hooks. The second is less work but does not meet "add a tool without editing the controller".
-2. **Line limit.** The roadmap's "no file in `src/app/` exceeds roughly 400 lines" was written before the Prettier pass, which made dense files about 1.5 to 2.2 times longer. Already before it, `WorkspaceView.tsx` (548), `useSettingsTransfer.ts` (554) and `AnnotateDiagramSection.tsx` (431) were over 400. Proposal: 500 formatted lines, enforced with ESLint's `max-lines` on `src/app/**` once step 9 is done. Today four files are over that: the controller (2,706), `useSettingsTransfer.ts` (957), `WorkspaceView.tsx` (897) and `WorkspaceToolbar.tsx` (628). The plan removes the first three; the toolbar needs its Reset and Download menus moved into their own components, which is a small separate step.
-3. **Where the recorded progression lives.** Proposal above: Harmony Explorer owns the recording, the Progression Assistant owns the optimized plan.
+1. **Contexts and providers**, as described. A smaller step that keeps one composition hook calling per-tool hooks was rejected because it does not meet "add a tool without editing the controller".
+2. **Line limit: 500 formatted lines** in `src/app/`, enforced with ESLint's `max-lines` once step 9 is done. The roadmap's "roughly 400 lines" was written before the Prettier pass, which made dense files about 1.5 to 2.2 times longer; even before it, `WorkspaceView.tsx` (548), `useSettingsTransfer.ts` (554) and `AnnotateDiagramSection.tsx` (431) were over 400. Today four files exceed 500: the controller (2,706), `useSettingsTransfer.ts` (957), `WorkspaceView.tsx` (897) and `WorkspaceToolbar.tsx` (628). The plan removes the first three; the toolbar needs its Reset and Download menus moved into their own components, which is a small separate step.
+3. **The recorded progression belongs to Harmony Explorer**, which records it on the circle; the optimized plan belongs to the Progression Assistant.
