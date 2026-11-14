@@ -1,5 +1,5 @@
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import type { ScoreEntry } from "../../app/notation/scoreEntries";
+import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
@@ -25,7 +25,7 @@ export function AnnotateDiagramOutputProvider({ children }: { children: ReactNod
   const { soundOptions } = usePlatformSound();
   const { setSoundEnginePlayer, startWhenSamplesReady } = usePlatformPlayback();
   const { stradellaPreferences } = useScoreRendering();
-  const { overlays, sequence } = useAnnotateDiagram();
+  const { overlays, sequence, toggleSequenceNotation } = useAnnotateDiagram();
   const { selectedButtonIds } = overlays;
   const selectedButtons = useMemo(
     () =>
@@ -71,6 +71,13 @@ export function AnnotateDiagramOutputProvider({ children }: { children: ReactNod
         }
       : null;
   // The sequence's score belongs to Sequence mode.
+  const scoreToggle: ScoreToggle | null =
+    overlays.annotateMode === "sequence" && sequenceStepsWithButtons.length > 0
+      ? {
+          visible: sequence.sequenceRenderedNotationVisible,
+          toggle: toggleSequenceNotation,
+        }
+      : null;
   const scoreEntry: ScoreEntry | null =
     overlays.annotateMode === "sequence" &&
     sequence.sequenceRenderedNotationVisible &&
@@ -84,7 +91,7 @@ export function AnnotateDiagramOutputProvider({ children }: { children: ReactNod
   return (
     <AnnotateDiagramOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="annotateDiagram" transport={playbackEntry}>
-        <ScoreEntryProvider tool="annotateDiagram" score={scoreEntry}>
+        <ScoreEntryProvider tool="annotateDiagram" score={scoreEntry} toggle={scoreToggle}>
           {children}
         </ScoreEntryProvider>
       </PlaybackTransportEntry>

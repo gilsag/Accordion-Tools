@@ -8,17 +8,31 @@ import type { ToolId } from "../toolRegistry";
 export type ScoreEntry =
   { title: string; abc: string; filename: string; imported?: boolean } | { panel: ReactNode };
 
-/** Each tool's score entry, keyed by tool; null while its score is hidden,
- * empty, or not offered on this side. */
-export type ScoreEntries = Partial<Record<ToolId, ScoreEntry | null>>;
+/** The toolbar's Show/Hide notation button for a tool's score. */
+export type ScoreToggle = { visible: boolean; toggle(): void };
+
+/** Each tool's score, null while it is hidden, empty, or not offered on this
+ * side; and its toggle, null while there is nothing it could show. */
+export type ScoreEntries = Partial<
+  Record<ToolId, { score: ScoreEntry | null; toggle: ScoreToggle | null }>
+>;
 export const ScoreEntriesContext = createContext<ScoreEntries>({});
+
+function useActiveEntry() {
+  const entries = useContext(ScoreEntriesContext);
+  const { workspaceMode, activeToolSection } = usePlatformNavigation();
+  if (workspaceMode === "harmony") return entries.harmonyExplorer;
+  return activeToolSection ? entries[activeToolSection] : undefined;
+}
 
 /** The score of what the workspace shows: the Harmony recording's in the
  * Harmony workspace, otherwise the open tool's. At most one is shown, which
  * the tools' score toggles already guarantee (`score.hides`). */
 export function useActiveScore(): ScoreEntry | null {
-  const scores = useContext(ScoreEntriesContext);
-  const { workspaceMode, activeToolSection } = usePlatformNavigation();
-  if (workspaceMode === "harmony") return scores.harmonyExplorer ?? null;
-  return activeToolSection ? (scores[activeToolSection] ?? null) : null;
+  return useActiveEntry()?.score ?? null;
+}
+
+/** The toolbar's notation button, for the same tool as `useActiveScore()`. */
+export function useActiveScoreToggle(): ScoreToggle | null {
+  return useActiveEntry()?.toggle ?? null;
 }

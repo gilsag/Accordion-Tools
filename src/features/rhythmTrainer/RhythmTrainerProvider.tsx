@@ -1,7 +1,7 @@
 import { RhythmNotationPanel } from "../../app/inspector/RhythmNotationInspector";
 import { useScoreRendering } from "../../app/platform/useScoreRendering";
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import type { ScoreEntry } from "../../app/notation/scoreEntries";
+import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import type { ReactNode } from "react";
@@ -54,6 +54,13 @@ export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
     onStop: value.stop,
   };
   // The Rhythm Trainer's score is a panel of its own (two hands, cursor).
+  const scoreToggle: ScoreToggle | null =
+    value.exercise.barCount > 0
+      ? {
+          visible: value.notationVisible,
+          toggle: () => value.setNotationVisible(!value.notationVisible),
+        }
+      : null;
   const scoreEntry: ScoreEntry | null =
     value.notationVisible && value.exercise.barCount > 0
       ? {
@@ -69,7 +76,7 @@ export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
   return (
     <RhythmTrainerContext.Provider value={value}>
       <PlaybackTransportEntry tool="rhythmTrainer" transport={playbackEntry}>
-        <ScoreEntryProvider tool="rhythmTrainer" score={scoreEntry}>
+        <ScoreEntryProvider tool="rhythmTrainer" score={scoreEntry} toggle={scoreToggle}>
           {children}
         </ScoreEntryProvider>
       </PlaybackTransportEntry>

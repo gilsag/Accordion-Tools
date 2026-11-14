@@ -1,6 +1,6 @@
 import { bassPatternName, progressionName } from "../../i18n/optionLabels";
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import type { ScoreEntry } from "../../app/notation/scoreEntries";
+import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage } from "../../app/platform/platformContexts";
@@ -73,6 +73,13 @@ export function BassPatternPlayerOutputProvider({ children }: { children: ReactN
       : null;
   const { language } = usePlatformLanguage();
   // The pattern has no events off the Stradella side, so the score needs no side check.
+  const scoreToggle: ScoreToggle | null =
+    results.bassPatternEvents.length > 0
+      ? {
+          visible: state.bassPatternRenderedNotationVisible,
+          toggle: state.toggleBassPatternNotation,
+        }
+      : null;
   const scoreEntry: ScoreEntry | null =
     state.bassPatternRenderedNotationVisible && results.bassPatternEvents.length > 0
       ? {
@@ -84,7 +91,7 @@ export function BassPatternPlayerOutputProvider({ children }: { children: ReactN
   return (
     <BassPatternPlayerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="bassPatternPlayer" transport={playbackEntry}>
-        <ScoreEntryProvider tool="bassPatternPlayer" score={scoreEntry}>
+        <ScoreEntryProvider tool="bassPatternPlayer" score={scoreEntry} toggle={scoreToggle}>
           {children}
         </ScoreEntryProvider>
       </PlaybackTransportEntry>

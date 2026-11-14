@@ -1,5 +1,5 @@
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import type { ScoreEntry } from "../../app/notation/scoreEntries";
+import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage } from "../../app/platform/platformContexts";
@@ -54,6 +54,9 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
   };
   // The tune's own score, rendered from the editor's text.
   const abcScoreTitle = results.abcParseResult.title || "ABC notation";
+  const scoreToggle: ScoreToggle | null = state.abcText.trim()
+    ? { visible: state.abcRenderedNotationVisible, toggle: state.toggleAbcNotation }
+    : null;
   const scoreEntry: ScoreEntry | null =
     state.abcRenderedNotationVisible && state.abcText.trim()
       ? {
@@ -66,7 +69,7 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
   return (
     <AbcPlayerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="abcPlayer" transport={playbackEntry}>
-        <ScoreEntryProvider tool="abcPlayer" score={scoreEntry}>
+        <ScoreEntryProvider tool="abcPlayer" score={scoreEntry} toggle={scoreToggle}>
           {children}
         </ScoreEntryProvider>
       </PlaybackTransportEntry>

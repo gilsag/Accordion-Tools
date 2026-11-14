@@ -17,7 +17,12 @@ import {
   useActivePlaybackTransport,
   type PlaybackTransport,
 } from "../../src/app/playback/playbackTransports";
-import { useActiveScore, type ScoreEntry } from "../../src/app/notation/scoreEntries";
+import {
+  useActiveScore,
+  useActiveScoreToggle,
+  type ScoreEntry,
+  type ScoreToggle,
+} from "../../src/app/notation/scoreEntries";
 import { useActiveResults } from "../../src/app/inspector/resultsEntries";
 import type { ReactNode } from "react";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
@@ -89,6 +94,8 @@ export interface RenderedApp {
   readonly playbackBar: PlaybackTransport | null;
   /** The score the workspace shows, or null. */
   readonly score: ScoreEntry | null;
+  /** The toolbar's Show/Hide notation button, or null when it is not shown. */
+  readonly scoreToggle: ScoreToggle | null;
   /** The results panel a tool offers beside the diagram, or null. */
   readonly results: ReactNode | null;
   /** Runs commands and lets React apply the resulting state and effects. */
@@ -109,6 +116,7 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
       settings: usePlatformSettings(),
       playbackBar: useActivePlaybackTransport(),
       score: useActiveScore(),
+      scoreToggle: useActiveScoreToggle(),
       results: useActiveResults(),
     }),
     { wrapper: AppProviders },
@@ -125,6 +133,9 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
     },
     get score() {
       return result.current.score;
+    },
+    get scoreToggle() {
+      return result.current.scoreToggle;
     },
     get results() {
       return result.current.results;

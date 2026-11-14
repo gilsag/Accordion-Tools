@@ -1,5 +1,5 @@
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import type { ScoreEntry } from "../../app/notation/scoreEntries";
+import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { useMemo, type ReactNode } from "react";
@@ -39,6 +39,13 @@ export function HarmonyExplorerOutputProvider({ children }: { children: ReactNod
           onStop: actions.stopHarmonyRecordedProgressionPlayback,
         }
       : null;
+  const scoreToggle: ScoreToggle | null =
+    harmonyRecordedProgression.length > 0
+      ? {
+          visible: state.harmonyRecordedNotationVisible,
+          toggle: state.toggleHarmonyRecordedNotation,
+        }
+      : null;
   const scoreEntry: ScoreEntry | null =
     state.harmonyRecordedNotationVisible && harmonyRecordedProgression.length > 0
       ? {
@@ -50,7 +57,7 @@ export function HarmonyExplorerOutputProvider({ children }: { children: ReactNod
   return (
     <HarmonyExplorerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="harmonyExplorer" transport={playbackEntry}>
-        <ScoreEntryProvider tool="harmonyExplorer" score={scoreEntry}>
+        <ScoreEntryProvider tool="harmonyExplorer" score={scoreEntry} toggle={scoreToggle}>
           {children}
         </ScoreEntryProvider>
       </PlaybackTransportEntry>

@@ -75,3 +75,29 @@ test("the Harmony workspace shows the recording's score, not the open tool's", a
   await app.run((model) => model.workspace.toggleHarmonyRecordedNotation());
   expect(titleOf(app.score)).toBe("Recorded Harmony progression");
 });
+
+test("the toolbar's notation button appears once the open tool has something to show", async () => {
+  const app = await renderApp();
+  await app.run((model) => model.tools.toggleToolSection("annotateDiagram"));
+  await app.run((model) => model.tools.setAnnotateMode("sequence"));
+  expect(app.scoreToggle).toBeNull();
+  await app.run((model) => model.workspace.toggleButton(model.workspace.buttons[0]));
+  expect(app.scoreToggle).toMatchObject({ visible: false });
+  await app.run(() => app.scoreToggle?.toggle());
+  expect(app.scoreToggle).toMatchObject({ visible: true });
+  expect(titleOf(app.score)).toBe("Sequence notation");
+  // Notes mode has no score, so no button.
+  await app.run((model) => model.tools.setAnnotateMode("notes"));
+  expect(app.scoreToggle).toBeNull();
+});
+
+test("the Harmony workspace's button is the recording's, whatever tool is open", async () => {
+  const app = await renderApp();
+  await app.run((model) => model.tools.toggleToolSection("rhythmTrainer"));
+  expect(app.scoreToggle).not.toBeNull();
+  await app.run((model) => model.workspace.navigateToTool("harmonyExplorer"));
+  expect(app.scoreToggle).toBeNull();
+  await app.run((model) => model.tools.toggleHarmonyProgressionRecording());
+  await app.run((model) => model.workspace.handleHarmonyChordActivated(0, "major", 0));
+  expect(app.scoreToggle).toMatchObject({ visible: false });
+});

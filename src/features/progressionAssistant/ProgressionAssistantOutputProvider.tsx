@@ -1,5 +1,5 @@
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import type { ScoreEntry } from "../../app/notation/scoreEntries";
+import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
@@ -176,6 +176,13 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
           onStop: stopAllPlayback,
         }
       : null;
+  const scoreToggle: ScoreToggle | null =
+    side === "stradella" && harmonyProgressionPlan.playable
+      ? {
+          visible: state.harmonyProgressionNotationVisible,
+          toggle: state.toggleHarmonyProgressionNotation,
+        }
+      : null;
   const scoreEntry: ScoreEntry | null =
     side === "stradella" &&
     state.harmonyProgressionNotationVisible &&
@@ -199,7 +206,7 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
   return (
     <ProgressionAssistantOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="progressionAssistant" transport={playbackEntry}>
-        <ScoreEntryProvider tool="progressionAssistant" score={scoreEntry}>
+        <ScoreEntryProvider tool="progressionAssistant" score={scoreEntry} toggle={scoreToggle}>
           <ResultsEntryProvider tool="progressionAssistant" panel={resultsPanel}>
             {children}
           </ResultsEntryProvider>

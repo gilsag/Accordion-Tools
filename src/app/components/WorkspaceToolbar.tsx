@@ -1,4 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
+import { useActiveScoreToggle } from "../notation/scoreEntries";
+import { NotationIcon, PaneIcon, SettingsIcon, SpeakerIcon, ToolsIcon } from "./toolbarIcons";
+import { DownloadMenu, ResetMenu } from "./ToolbarMenus";
+import { DOWNLOAD_FORMATS, useDismissibleMenu } from "./toolbarMenuSupport";
 import type { Side, LeftPanelMode, DownloadFormat } from "../../types";
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 import type { ToolSection, WorkspaceMode } from "../toolRegistry";
@@ -10,8 +14,6 @@ export type WorkspaceToolbarProps = {
   side: Side;
   leftPanelMode: LeftPanelMode;
   activeToolSection: ToolSection;
-  /** Annotate Diagram is open in Sequence mode. */
-  sequenceModeActive: boolean;
   inspectorAvailable?: boolean;
   inspectorVisible?: boolean;
   onToggleInspector?: () => void;
@@ -21,24 +23,6 @@ export type WorkspaceToolbarProps = {
   onShowSettings: () => void;
   onShowTools: () => void;
   onToggleFocus: () => void;
-  bassPatternEvents: readonly unknown[];
-  bassPatternRenderedNotationVisible: boolean;
-  onToggleBassPatternNotation: () => void;
-  harmonyRecordedProgression: readonly unknown[];
-  harmonyRecordedNotationVisible: boolean;
-  onToggleHarmonyRecordedNotation: () => void;
-  harmonyProgressionPlayable: boolean;
-  harmonyProgressionNotationVisible: boolean;
-  onToggleHarmonyProgressionNotation: () => void;
-  abcText: string;
-  abcRenderedNotationVisible: boolean;
-  onToggleAbcNotation: () => void;
-  rhythmNotationVisible: boolean;
-  rhythmNotationAvailable: boolean;
-  onToggleRhythmNotation: () => void;
-  sequenceStepsWithButtons: readonly unknown[];
-  sequenceRenderedNotationVisible: boolean;
-  onToggleSequenceNotation: () => void;
   soundEnabled: boolean;
   onToggleSound: () => void;
   onClearWork: () => void;
@@ -49,182 +33,12 @@ export type WorkspaceToolbarProps = {
   onDownloadDiagram: (format: DownloadFormat) => void;
 };
 
-const DOWNLOAD_FORMATS: readonly DownloadFormat[] = ["svg", "png"];
-
 /** A window with its left (controls) or right (results) pane filled. */
-function PaneIcon({ side, open }: { side: "left" | "right"; open: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="3" y="4.5" width="18" height="15" rx="2.5" />
-      <path d={side === "left" ? "M9 4.5v15" : "M15 4.5v15"} />
-      {open && (
-        <rect
-          x={side === "left" ? 4 : 15}
-          y="5.5"
-          width="5"
-          height="13"
-          fill="currentColor"
-          stroke="none"
-        />
-      )}
-    </svg>
-  );
-}
-
-function SpeakerIcon({ on }: { on: boolean }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" />
-      {on ? (
-        <>
-          <path d="M16.5 8.5a5 5 0 0 1 0 7" />
-          <path d="M19 6a8.5 8.5 0 0 1 0 12" />
-        </>
-      ) : (
-        <>
-          <path d="M17 9l5 6" />
-          <path d="M22 9l-5 6" />
-        </>
-      )}
-    </svg>
-  );
-}
-
 /** Switches the toolbar to compact mode when its full form does not fit on one row. */
 function fitToolbar(bar: HTMLElement | null) {
   if (!bar) return;
   bar.classList.remove("topbar-compact");
   bar.classList.toggle("topbar-compact", bar.scrollWidth > bar.clientWidth + 1);
-}
-
-/* Settings, Tools and Reset show their icons only when the toolbar is narrow
-   and their labels are hidden (see .topbar-compact-icon in App.css). */
-function SettingsIcon() {
-  return (
-    <svg
-      className="topbar-compact-icon"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1" />
-    </svg>
-  );
-}
-
-function ToolsIcon() {
-  return (
-    <svg
-      className="topbar-compact-icon"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0" />
-      <circle cx="16" cy="6" r="2" />
-      <circle cx="10" cy="12" r="2" />
-      <circle cx="18" cy="18" r="2" />
-    </svg>
-  );
-}
-
-function ResetIcon() {
-  return (
-    <svg
-      className="topbar-compact-icon"
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M4 12a8 8 0 1 0 2.4-5.7" />
-      <path d="M4 4v4.5h4.5" />
-    </svg>
-  );
-}
-
-/** A short staff with a note: shows or hides staff notation. */
-function NotationIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      aria-hidden="true"
-    >
-      <path d="M2 7h20M2 11h20M2 15h20M2 19h20" opacity="0.55" />
-      <ellipse
-        cx="9"
-        cy="17"
-        rx="3"
-        ry="2.2"
-        fill="currentColor"
-        stroke="none"
-        transform="rotate(-20 9 17)"
-      />
-      <path d="M11.6 16.4V4.5l5 2" strokeWidth="2" />
-    </svg>
-  );
-}
-
-/** An arrow into a tray: download. */
-function DownloadIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19h14" />
-    </svg>
-  );
 }
 
 export function WorkspaceToolbar({
@@ -233,7 +47,6 @@ export function WorkspaceToolbar({
   side,
   leftPanelMode,
   activeToolSection,
-  sequenceModeActive,
   inspectorAvailable,
   inspectorVisible,
   onToggleInspector,
@@ -243,24 +56,6 @@ export function WorkspaceToolbar({
   onShowSettings,
   onShowTools,
   onToggleFocus,
-  bassPatternEvents,
-  bassPatternRenderedNotationVisible,
-  onToggleBassPatternNotation,
-  harmonyRecordedProgression,
-  harmonyRecordedNotationVisible,
-  onToggleHarmonyRecordedNotation,
-  harmonyProgressionPlayable,
-  harmonyProgressionNotationVisible,
-  onToggleHarmonyProgressionNotation,
-  abcText,
-  abcRenderedNotationVisible,
-  onToggleAbcNotation,
-  rhythmNotationVisible,
-  rhythmNotationAvailable,
-  onToggleRhythmNotation,
-  sequenceStepsWithButtons,
-  sequenceRenderedNotationVisible,
-  onToggleSequenceNotation,
   soundEnabled,
   onToggleSound,
   onClearWork,
@@ -269,9 +64,7 @@ export function WorkspaceToolbar({
   setDownloadFormat,
   onDownloadDiagram,
 }: WorkspaceToolbarProps) {
-  const resetMenuRef = useRef<HTMLDetailsElement | null>(null);
   const overflowRef = useRef<HTMLDetailsElement | null>(null);
-  const exportMenuRef = useRef<HTMLDetailsElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
   // Compact mode hides the Settings, Tools, notation, Reset and Download
   // labels behind icons. It is chosen by measuring: the full toolbar is laid
@@ -302,64 +95,19 @@ export function WorkspaceToolbar({
       cancelAnimationFrame(frame);
     };
   }, []);
-  useEffect(() => {
-    const menus = [resetMenuRef, overflowRef, exportMenuRef];
-    function closeOnOutside(event: PointerEvent) {
-      for (const menu of menus) {
-        if (menu.current?.open && !menu.current.contains(event.target as Node))
-          menu.current.open = false;
-      }
-    }
-    function closeOnEscape(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
-      for (const menu of menus) {
-        if (!menu.current?.open) continue;
-        menu.current.open = false;
-        menu.current.querySelector("summary")?.focus();
-      }
-    }
-    document.addEventListener("pointerdown", closeOnOutside);
-    document.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.removeEventListener("pointerdown", closeOnOutside);
-      document.removeEventListener("keydown", closeOnEscape);
-    };
-  }, []);
+  useDismissibleMenu(overflowRef);
   function closeOverflow() {
     if (overflowRef.current) overflowRef.current.open = false;
   }
   function download(format: DownloadFormat) {
-    if (exportMenuRef.current) exportMenuRef.current.open = false;
     setDownloadFormat(format);
     onDownloadDiagram(format);
   }
-  const notationAction =
-    workspaceMode === "accordion" &&
-    activeToolSection === "rhythmTrainer" &&
-    rhythmNotationAvailable
-      ? { visible: rhythmNotationVisible, toggle: onToggleRhythmNotation }
-      : workspaceMode === "accordion" &&
-          side === "stradella" &&
-          activeToolSection === "bassPatternPlayer" &&
-          bassPatternEvents.length
-        ? { visible: bassPatternRenderedNotationVisible, toggle: onToggleBassPatternNotation }
-        : workspaceMode === "harmony" && harmonyRecordedProgression.length
-          ? { visible: harmonyRecordedNotationVisible, toggle: onToggleHarmonyRecordedNotation }
-          : workspaceMode === "accordion" &&
-              side === "stradella" &&
-              activeToolSection === "progressionAssistant" &&
-              harmonyProgressionPlayable
-            ? {
-                visible: harmonyProgressionNotationVisible,
-                toggle: onToggleHarmonyProgressionNotation,
-              }
-            : workspaceMode === "accordion" && activeToolSection === "abcPlayer" && abcText.trim()
-              ? { visible: abcRenderedNotationVisible, toggle: onToggleAbcNotation }
-              : workspaceMode === "accordion" &&
-                  sequenceModeActive &&
-                  sequenceStepsWithButtons.length
-                ? { visible: sequenceRenderedNotationVisible, toggle: onToggleSequenceNotation }
-                : null;
+  // Only the Harmony workspace and the Stradella Chord Finder have tool defaults.
+  const canRestoreToolDefaults =
+    workspaceMode === "harmony" ||
+    (side === "stradella" && activeToolSection === "stradellaChordFinder");
+  const notationAction = useActiveScoreToggle();
   return (
     <div className="topbar" ref={barRef}>
       {/* One-of-three view switch; styled as a segmented control so it
@@ -463,8 +211,7 @@ export function WorkspaceToolbar({
             >
               {t("ui.clearCurrentWork")}
             </button>
-            {(workspaceMode === "harmony" ||
-              (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
+            {canRestoreToolDefaults && (
               <button
                 type="button"
                 onClick={() => {
@@ -565,63 +312,16 @@ export function WorkspaceToolbar({
           <SpeakerIcon on={soundEnabled} />
         </button>
 
-        <details ref={resetMenuRef} className="reset-menu">
-          <summary
-            className="topbar-button reset-button topbar-labelled-icon-button"
-            title={t("ui.resetScope")}
-          >
-            <ResetIcon />
-            <span className="topbar-label">{t("ui.reset")}</span> <span aria-hidden="true">▾</span>
-          </summary>
-          <div className="reset-menu-options">
-            <button
-              type="button"
-              onClick={(event) => {
-                onClearWork();
-                event.currentTarget.closest("details")?.removeAttribute("open");
-              }}
-            >
-              {t("ui.clearCurrentWork")}
-            </button>
-            {(workspaceMode === "harmony" ||
-              (side === "stradella" && activeToolSection === "stradellaChordFinder")) && (
-              <button
-                type="button"
-                onClick={(event) => {
-                  onRestoreToolDefaults();
-                  event.currentTarget.closest("details")?.removeAttribute("open");
-                }}
-              >
-                {t("ui.restoreToolDefaults")}
-              </button>
-            )}
-          </div>
-        </details>
+        <ResetMenu
+          t={t}
+          canRestoreToolDefaults={canRestoreToolDefaults}
+          onClearWork={onClearWork}
+          onRestoreToolDefaults={onRestoreToolDefaults}
+        />
 
         <span className="topbar-after-reset-space" aria-hidden="true" />
 
-        {/* One menu for both formats; the last one used is remembered (it is
-              also the format of "Download all diagrams (ZIP)") and listed first. */}
-        <details ref={exportMenuRef} className="reset-menu export-menu">
-          <summary
-            className="topbar-button download-button topbar-labelled-icon-button"
-            title={t("ui.download")}
-          >
-            <DownloadIcon />
-            <span className="topbar-label">{t("ui.download")}</span>{" "}
-            <span aria-hidden="true">▾</span>
-          </summary>
-          <div className="reset-menu-options">
-            {[
-              downloadFormat,
-              ...DOWNLOAD_FORMATS.filter((format) => format !== downloadFormat),
-            ].map((format) => (
-              <button key={format} type="button" onClick={() => download(format)}>
-                {t("ui.downloadKind", { kind: format.toUpperCase() })}
-              </button>
-            ))}
-          </div>
-        </details>
+        <DownloadMenu t={t} downloadFormat={downloadFormat} onDownload={download} />
       </div>
     </div>
   );
