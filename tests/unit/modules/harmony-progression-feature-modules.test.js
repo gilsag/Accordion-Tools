@@ -187,9 +187,6 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
   });
   let prog = assistant.useHarmonyProgressionState();
   for (const [field, expected] of Object.entries({
-    harmonyProgressionRecording: false,
-    harmonyRecordedNotationVisible: false,
-    harmonyRecordedProgressionPlaying: false,
     harmonyProgressionManualRoot: "C",
     harmonyProgressionManualPattern: "major-triad",
     harmonyProgressionHandMovementWeight: 0.65,
@@ -199,15 +196,9 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
     harmonyProgressionNotationVisible: false,
   }))
     assert.equal(prog[field], expected, `Progression default: ${field}`);
-  for (const k of [
-    "harmonyProgression",
-    "harmonyRecordedProgression",
-    "harmonyProgressionActiveButtonIds",
-  ])
+  for (const k of ["harmonyProgression", "harmonyProgressionActiveButtonIds"])
     assert.equal(prog[k].length, 0, `${k} initially empty`);
-  assert.equal(prog.harmonyProgressionIdRef.current, 1);
   assert.equal(prog.harmonyProgressionNotationRef.current, null);
-  assert.equal(prog.harmonyRecordedNotationRef.current, null);
   let updates = [];
   const selection = {
     basses: "96",

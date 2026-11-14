@@ -30,32 +30,15 @@ import {
   TREBLE_PRESET_BUTTON_SIZE,
   PIANO_TREBLE_PRESET_BUTTON_SIZE,
 } from "../instrument/sizePresets";
-import { useDiagramOverlays } from "../diagram/useDiagramOverlays";
-import { useDiagramAnnotations } from "../features/annotateDiagram/useDiagramAnnotations";
-import {
-  useBassPatternState,
-  useBassPatternResults,
-} from "../features/bassPatternPlayer/useBassPatternPlayer";
+import { useBassPatternResults } from "../features/bassPatternPlayer/useBassPatternPlayer";
 import { useRhythmTrainer } from "../features/rhythmTrainer/useRhythmTrainer";
-import { useSequenceState, useSequenceResults } from "../features/sequences/useSequenceState";
-import { useAbcPlayerState, useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
-import {
-  useHarmonyExplorerState,
-  useHarmonyExplorerResults,
-} from "../features/harmonyExplorer/useHarmonyExplorer";
-import {
-  useHarmonyProgressionState,
-  useHarmonyProgressionResults,
-} from "../features/progressionAssistant/useProgressionAssistant";
-import {
-  useStradellaChordFinderState,
-  useStradellaChordFinderResults,
-} from "../features/stradellaChordFinder/useStradellaChordFinder";
-import { useScaleFinderState, useScaleFinderResults } from "../features/scaleFinder/useScaleFinder";
-import {
-  useTrebleChordFinderState,
-  useTrebleChordFinderButtons,
-} from "../features/trebleChordFinder/useTrebleChordFinder";
+import { useSequenceResults } from "../features/sequences/useSequenceState";
+import { useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
+import { useHarmonyExplorerResults } from "../features/harmonyExplorer/useHarmonyExplorer";
+import { useHarmonyProgressionResults } from "../features/progressionAssistant/useProgressionAssistant";
+import { useStradellaChordFinderResults } from "../features/stradellaChordFinder/useStradellaChordFinder";
+import { useScaleFinderResults } from "../features/scaleFinder/useScaleFinder";
+import { useTrebleChordFinderButtons } from "../features/trebleChordFinder/useTrebleChordFinder";
 import { flushSync } from "react-dom";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { translateKnownLabel } from "../i18n/catalog";
@@ -80,9 +63,16 @@ import {
 } from "../diagram/diagramExport";
 import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
 import { calculateDiagramGeometry } from "../diagram/diagramGeometry";
-import { resetStradellaFinder } from "./resetCommands";
 import { useToolHandle } from "./platform/useToolHandle";
-import type { ToolHandle } from "./toolCoordinator";
+import { playerHandle } from "./tools/toolHandles";
+import { useHarmonyExplorer } from "../features/harmonyExplorer/harmonyExplorerContext";
+import { useProgressionAssistant } from "../features/progressionAssistant/progressionAssistantContext";
+import { useScaleFinder } from "../features/scaleFinder/scaleFinderContext";
+import { useTrebleChordFinder } from "../features/trebleChordFinder/trebleChordFinderContext";
+import { useStradellaChordFinder } from "../features/stradellaChordFinder/stradellaChordFinderContext";
+import { useAnnotateDiagram } from "../features/annotateDiagram/annotateDiagramContext";
+import { useAbcPlayer } from "../features/abcPlayer/abcPlayerContext";
+import { useBassPatternPlayer } from "../features/bassPatternPlayer/bassPatternPlayerContext";
 import { activeToolStatusLabel } from "./workspacePresentation";
 import {
   sequenceArrowStyleFromMode,
@@ -113,9 +103,6 @@ import { useDiagramLabels } from "./useDiagramLabels";
 import { useHarmonyActions } from "./useHarmonyActions";
 import { useProgressionActions } from "./useProgressionActions";
 import { useProgressionNotation } from "./useProgressionNotation";
-
-/** Two-voice tune the ABC Player loads the first time it opens empty. */
-const DEFAULT_ABC_EXAMPLE = "happy-birthday";
 
 /**
  * Builds the model the views render: owns the order in which the feature hooks
@@ -255,10 +242,10 @@ export function useAppController() {
   } = usePlatformTools();
 
   /* Physical-button overlays/fingerings are independent of musical selection. */
-  const overlayState = useDiagramOverlays();
+  const annotateDiagram = useAnnotateDiagram();
+  const overlayState = annotateDiagram.overlays;
   const {
     overlays,
-    setOverlays,
     fingeringPosition,
     setFingeringPosition,
     fingeringDraft,
@@ -276,10 +263,9 @@ export function useAppController() {
   } = overlayState;
 
   /* Sequence steps and path-display state is independent of the physical manual and sound. */
-  const sequenceState = useSequenceState();
+  const sequenceState = annotateDiagram.sequence;
   const {
     sequenceSteps,
-    setSequenceSteps,
     sequenceDisplayMode,
     setSequenceDisplayMode,
     sequenceColorPreset,
@@ -303,7 +289,7 @@ export function useAppController() {
 
   /* Finder requests are independent feature state. App coordinates only which
    * tool is shown; the tools own their preferences, selections, and results. */
-  const scaleFinderState = useScaleFinderState();
+  const scaleFinderState = useScaleFinder();
   const {
     scaleFinderActive,
     setScaleFinderActive,
@@ -316,7 +302,7 @@ export function useAppController() {
     scaleFinderDisplayMode,
     setScaleFinderDisplayMode,
   } = scaleFinderState;
-  const trebleChordFinderState = useTrebleChordFinderState();
+  const trebleChordFinderState = useTrebleChordFinder();
   const {
     chordFinderActive,
     setChordFinderActive,
@@ -335,7 +321,7 @@ export function useAppController() {
   } = trebleChordFinderState;
 
   /* ABC Player state for file/paste playback and diagram highlighting. */
-  const abcPlayerState = useAbcPlayerState();
+  const abcPlayerState = useAbcPlayer();
   const {
     abcText,
     setAbcText,
@@ -367,7 +353,7 @@ export function useAppController() {
   } = abcPlayerState;
 
   /* Bass-pattern preferences, editor, library and pattern selection are feature-owned. */
-  const bassPatternState = useBassPatternState(t);
+  const bassPatternState = useBassPatternPlayer();
   const {
     customBassPatternDefinitions,
     bassPatternDefinitions,
@@ -479,7 +465,7 @@ export function useAppController() {
 
   /* Finder request, presentation, and cross-tool handoff state live in the feature.
      Shared batch-export and mobile diagram state remain in the application shell. */
-  const stradellaChordFinderState = useStradellaChordFinderState();
+  const stradellaChordFinderState = useStradellaChordFinder();
   const {
     stradellaChordFinderActive,
     setStradellaChordFinderActive,
@@ -502,6 +488,8 @@ export function useAppController() {
     setStradellaMinimumNominalGap,
     showFinderRealizationNote,
     setShowFinderRealizationNote,
+    showStradellaVoicingIntervals,
+    setShowStradellaVoicingIntervals,
     stradellaNoteLevels,
     setStradellaNoteLevels,
     finderExplanationFontSize,
@@ -518,7 +506,7 @@ export function useAppController() {
   const [mobileDiagramView, setMobileDiagramView] = useState<"readable" | "fit">("readable");
 
   /* Harmony Explorer retains its independent selection/display state. */
-  const harmonyExplorerState = useHarmonyExplorerState();
+  const harmonyExplorerState = useHarmonyExplorer();
   const {
     harmonyReferenceFamilyId,
     setHarmonyReferenceFamilyId,
@@ -558,12 +546,6 @@ export function useAppController() {
     setHarmonySelection,
     harmonyFocusedReferenceRootPc,
     setHarmonyFocusedReferenceRootPc,
-  } = harmonyExplorerState;
-  /* Progression state is separate from both the instrument and sound. */
-  const progressionState = useHarmonyProgressionState();
-  const {
-    harmonyProgression,
-    setHarmonyProgression,
     harmonyRecordedProgression,
     setHarmonyRecordedProgression,
     harmonyProgressionRecording,
@@ -572,6 +554,16 @@ export function useAppController() {
     setHarmonyRecordedNotationVisible,
     harmonyRecordedProgressionPlaying,
     setHarmonyRecordedProgressionPlaying,
+    harmonyRecordedPlaybackTimeoutsRef,
+    harmonyRecordedNotationRef,
+    harmonyProgressionIdRef,
+    resetHarmonyExplorer,
+  } = harmonyExplorerState;
+  /* Progression state is separate from both the instrument and sound. */
+  const progressionState = useProgressionAssistant();
+  const {
+    harmonyProgression,
+    setHarmonyProgression,
     harmonyProgressionManualRoot,
     setHarmonyProgressionManualRoot,
     harmonyProgressionManualPattern,
@@ -596,9 +588,6 @@ export function useAppController() {
     setHarmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible,
     setHarmonyProgressionNotationVisible,
-    harmonyRecordedPlaybackTimeoutsRef,
-    harmonyRecordedNotationRef,
-    harmonyProgressionIdRef,
     harmonyProgressionNotationRef,
   } = progressionState;
 
@@ -617,24 +606,10 @@ export function useAppController() {
     setHarmonyProgressionNotationVisible(false);
   }
 
-  useEffect(() => {
-    if (activeToolSection !== "progressionAssistant") {
-      setHarmonyProgressionNotationVisible(false);
-      setHarmonyProgressionActiveButtonIds([]);
-      setHarmonyProgressionPulseSilent(false);
-    }
-  }, [
-    activeToolSection,
-    setHarmonyProgressionNotationVisible,
-    setHarmonyProgressionActiveButtonIds,
-    setHarmonyProgressionPulseSilent,
-  ]);
-
   /* Annotation editor and saved note state live outside the renderer. */
-  const annotationState = useDiagramAnnotations(buttonSize);
+  const annotationState = annotateDiagram.annotations;
   const {
     textNotes,
-    setTextNotes,
     textNoteFontSize,
     setTextNoteFontSize,
     textNoteColor,
@@ -698,7 +673,6 @@ export function useAppController() {
     soundOptions,
   } = usePlatformSound();
   const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
-  const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
 
   /* Each owner hands its settings to the settings registry (platform owners
    * do so in src/app/platform/). These registrations move into the tools'
@@ -709,18 +683,6 @@ export function useAppController() {
     downloadFormat,
     setDownloadFormat,
   });
-  useOwnedSettings("scaleFinder", scaleFinderState);
-  useOwnedSettings("trebleChordFinder", trebleChordFinderState);
-  useOwnedSettings("stradellaChordFinder", {
-    ...stradellaChordFinderState,
-    showStradellaVoicingIntervals,
-    setShowStradellaVoicingIntervals,
-  });
-  useOwnedSettings("annotateDiagram", { ...overlayState, ...sequenceState, ...annotationState });
-  useOwnedSettings("abcPlayer", abcPlayerState);
-  useOwnedSettings("bassPatternPlayer", bassPatternState);
-  useOwnedSettings("harmonyExplorer", harmonyExplorerState);
-  useOwnedSettings("progressionAssistant", progressionState);
   const { downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults } =
     useSettingsTransfer(t);
 
@@ -1131,21 +1093,6 @@ export function useAppController() {
     soundSequenceTempoBpm,
   });
 
-  /* The first time the ABC Player opens with nothing loaded, it loads Happy
-   * Birthday, a two-voice tune, so both hands are shown and heard right away.
-   * Only once per visit: after Clear ABC the editor stays empty. */
-  const abcDefaultTuneLoadedRef = useRef(false);
-  useEffect(() => {
-    if (abcDefaultTuneLoadedRef.current || activeToolSection !== "abcPlayer") return;
-    if (abcText.trim()) {
-      abcDefaultTuneLoadedRef.current = true;
-      return;
-    }
-    if (!abcExampleOptions.some((option) => option.value === DEFAULT_ABC_EXAMPLE)) return;
-    abcDefaultTuneLoadedRef.current = true;
-    void loadAbcExample(DEFAULT_ABC_EXAMPLE);
-  }, [activeToolSection, abcText, abcExampleOptions, loadAbcExample]);
-
   /** ABC Player Hands choice. Stradella or Treble also switches the workspace
    * to that side; any change stops playback, since the mapping changes. */
   function chooseAbcHands(next: AbcHands) {
@@ -1265,7 +1212,6 @@ export function useAppController() {
     previewHarmonyProgressionStepOnStradella,
     toggleHarmonyProgressionStepNotes,
     playOptimizedHarmonyProgression,
-    resetHarmonyExplorer,
     showHarmonySelectionOnStradella,
     exploreCurrentStradellaChordInHarmony,
     progressionPathVisible,
@@ -1289,13 +1235,7 @@ export function useAppController() {
     navigateToTool,
     progressionRhythmPulses,
     setChordFinderActive,
-    setHarmonyColorByFamily,
-    setHarmonyDiameter,
-    setHarmonyDiatonicOnly,
     setHarmonyFocusedReferenceRootPc,
-    setHarmonyFontSize,
-    setHarmonyHighlightDiatonic,
-    setHarmonyPlaybackStyle,
     setHarmonyProgression,
     setHarmonyProgressionActiveButtonIds,
     setHarmonyProgressionNoteStepId,
@@ -1304,19 +1244,8 @@ export function useAppController() {
     setHarmonyProgressionRealizationKeys,
     setHarmonyProgressionRecording,
     setHarmonyRecordedNotationVisible,
-    setHarmonyRecordedProgression,
-    setHarmonyReferenceFamilyId,
     setHarmonyRelatedFamilyId,
-    setHarmonyRingVisibility,
-    setHarmonyScaleId,
     setHarmonySelection,
-    setHarmonyShowEnharmonics,
-    setHarmonyShowExplanation,
-    setHarmonyShowLegend,
-    setHarmonyShowNoteRing,
-    setHarmonyShowSeparators,
-    setHarmonyShowToneTooltips,
-    setHarmonyVoicingStyle,
     setScaleFinderActive,
     setSoundEnginePlayer,
     setStradellaChordFinderActive,
@@ -1335,25 +1264,6 @@ export function useAppController() {
     stradellaChordFinderRoot,
     t,
   });
-
-  /** Reset Finder-local preferences, without altering instrument or sound state. */
-  function resetStradellaFinderDefaults() {
-    resetStradellaFinder({
-      setRoot: setStradellaChordFinderRoot,
-      setPattern: setStradellaChordFinderPattern,
-      setMode: setStradellaChordFinderMode,
-      setRequestedBass: setStradellaChordFinderRequestedBass,
-      setRealizationIndex: setStradellaChordFinderRealizationIndex,
-      setMaxButtons: setFinderMaxButtons,
-      setSpanColumns: setFinderSpanColumns,
-      setMinimumNominalGap: setStradellaMinimumNominalGap,
-      setMarkRootBass: setStradellaChordFinderMarkRootBass,
-      setShowRealizationNote: setShowFinderRealizationNote,
-      setShowVoicingIntervals: setShowStradellaVoicingIntervals,
-      setNoteLevels: setStradellaNoteLevels,
-      setExplanationFontSize: setFinderExplanationFontSize,
-    });
-  }
 
   const {
     getMainLabel,
@@ -1727,61 +1637,8 @@ export function useAppController() {
    * own providers as the tools leave the controller. */
   const clearHarmonyWork = () => resetWork("harmony");
   const resetDiagramWork = () => resetWork("accordion");
-  const finderHandle = (setActive: (active: boolean) => void): ToolHandle => ({
-    activate: () => setActive(true),
-    deactivate: () => setActive(false),
-    resetWork: (workspace) => {
-      if (workspace === "accordion") setActive(false);
-    },
-    onLayoutChange: () => setActive(false),
-  });
-  const playerHandle = (stop: () => void): ToolHandle => ({
-    stop,
-    resetWork: (workspace) => {
-      if (workspace === "accordion") stop();
-    },
-  });
-  function clearDiagramMarks() {
-    setOverlays({});
-    setSequenceSteps([]);
-    setTextNotes([]);
-  }
-  useToolHandle("scaleFinder", finderHandle(setScaleFinderActive));
-  useToolHandle("chordFinder", finderHandle(setChordFinderActive));
-  useToolHandle("stradellaChordFinder", {
-    ...finderHandle(setStradellaChordFinderActive),
-    resetPreferences() {
-      resetStradellaFinderDefaults();
-      resetDiagramWork();
-    },
-  });
-  useToolHandle("annotateDiagram", {
-    resetWork: (workspace) => {
-      if (workspace === "accordion") clearDiagramMarks();
-    },
-    onLayoutChange: clearDiagramMarks,
-  });
   useToolHandle("abcPlayer", playerHandle(stopAbcPlayback));
   useToolHandle("bassPatternPlayer", playerHandle(stopBassPatternPlayback));
-  useToolHandle("progressionAssistant", {
-    resetWork(workspace) {
-      setHarmonyProgressionPreviewIndex(null);
-      setHarmonyProgressionNoteStepId(null);
-      setHarmonyProgressionActiveButtonIds([]);
-      if (workspace === "harmony") setHarmonyProgressionPulseSilent(false);
-    },
-  });
-  useToolHandle("harmonyExplorer", {
-    resetWork(workspace) {
-      if (workspace !== "harmony") return;
-      setHarmonySelection(null);
-      setHarmonyFocusedReferenceRootPc(null);
-      setHarmonyProgressionRecording(false);
-      setHarmonyRecordedProgression([]);
-      setHarmonyRecordedNotationVisible(false);
-    },
-    resetPreferences: resetHarmonyExplorer,
-  });
   useToolHandle("playback", { stop: stopSoundPlayback });
 
   return {

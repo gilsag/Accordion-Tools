@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AccidentalMode, BassCount } from "../../types";
 import type { FinderChordPattern } from "../../types";
-import type {
-  HarmonyProgressionChord,
-  HarmonyRecordedEvent,
-} from "../../tools/harmonyExplorer/progression";
+import type { HarmonyProgressionChord } from "../../tools/harmonyExplorer/progression";
 import {
   optimizeStradellaProgression,
   progressionRealizationsForChord,
@@ -15,20 +12,13 @@ import type { ProgressionRhythmPattern } from "../../sound";
 import { generateStradella } from "../../stradella";
 import { progressionNoteStep } from "./progressionNoteSelection";
 
-/** Owns the editable/recorded progression and preview state. The monotonic ID
- * counter must survive renders; imported settings only modify the optimization
- * preferences, not recorded events or the counter. Audio scheduling is shared.
+/** Owns the Progression Assistant's progression, optimization preferences,
+ * pinned realizations, preview and score state. The recording it may receive
+ * belongs to Harmony Explorer (`useHarmonyRecordingState`), which also numbers
+ * the chords. Imported settings only change the optimization preferences.
  */
 export function useHarmonyProgressionState() {
   const [harmonyProgression, setHarmonyProgression] = useState<HarmonyProgressionChord[]>([]);
-  const [harmonyRecordedProgression, setHarmonyRecordedProgression] = useState<
-    HarmonyRecordedEvent[]
-  >([]);
-  const [harmonyProgressionRecording, setHarmonyProgressionRecording] = useState(false);
-  const [harmonyRecordedNotationVisible, setHarmonyRecordedNotationVisible] = useState(false);
-  const [harmonyRecordedProgressionPlaying, setHarmonyRecordedProgressionPlaying] = useState(false);
-  const harmonyRecordedPlaybackTimeoutsRef = useRef<number[]>([]);
-  const harmonyRecordedNotationRef = useRef<HTMLDivElement | null>(null);
   const [harmonyProgressionManualRoot, setHarmonyProgressionManualRoot] = useState("C");
   const [harmonyProgressionManualPattern, setHarmonyProgressionManualPattern] =
     useState<FinderChordPattern>("major-triad");
@@ -56,19 +46,10 @@ export function useHarmonyProgressionState() {
   >([]);
   const [harmonyProgressionPulseSilent, setHarmonyProgressionPulseSilent] = useState(false);
   const [harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible] = useState(false);
-  const harmonyProgressionIdRef = useRef(1);
   const harmonyProgressionNotationRef = useRef<HTMLDivElement | null>(null);
   return {
     harmonyProgression,
     setHarmonyProgression,
-    harmonyRecordedProgression,
-    setHarmonyRecordedProgression,
-    harmonyProgressionRecording,
-    setHarmonyProgressionRecording,
-    harmonyRecordedNotationVisible,
-    setHarmonyRecordedNotationVisible,
-    harmonyRecordedProgressionPlaying,
-    setHarmonyRecordedProgressionPlaying,
     harmonyProgressionManualRoot,
     setHarmonyProgressionManualRoot,
     harmonyProgressionManualPattern,
@@ -93,9 +74,6 @@ export function useHarmonyProgressionState() {
     setHarmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible,
     setHarmonyProgressionNotationVisible,
-    harmonyRecordedPlaybackTimeoutsRef,
-    harmonyRecordedNotationRef,
-    harmonyProgressionIdRef,
     harmonyProgressionNotationRef,
   };
 }

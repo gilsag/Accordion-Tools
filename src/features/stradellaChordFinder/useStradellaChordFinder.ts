@@ -52,6 +52,8 @@ export function useStradellaChordFinderState() {
   const [stradellaMinimumNominalGap, setStradellaMinimumNominalGap] =
     useState<MinimumNominalGap>(0);
   const [showFinderRealizationNote, setShowFinderRealizationNote] = useState(true);
+  // Interval chart under the voicing line of the diagram note.
+  const [showStradellaVoicingIntervals, setShowStradellaVoicingIntervals] = useState(true);
   const [stradellaNoteLevels, setStradellaNoteLevels] = useState<StradellaNoteLevels>({
     ...DEFAULT_STRADELLA_NOTE_LEVELS,
   });
@@ -88,6 +90,8 @@ export function useStradellaChordFinderState() {
     setStradellaMinimumNominalGap,
     showFinderRealizationNote,
     setShowFinderRealizationNote,
+    showStradellaVoicingIntervals,
+    setShowStradellaVoicingIntervals,
     stradellaNoteLevels,
     setStradellaNoteLevels,
     finderExplanationFontSize,

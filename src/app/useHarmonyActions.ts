@@ -1,6 +1,6 @@
 import { audioTimelineOrigin, msUntilAudioTime, scheduleAtAudioOffset } from "../audio/audioClock";
 import type { useHarmonyExplorerState } from "../features/harmonyExplorer/useHarmonyExplorer";
-import type { useHarmonyProgressionState } from "../features/progressionAssistant/useProgressionAssistant";
+import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
 import type { useSoundSettings } from "../audio/useSoundSettings";
 import { clearPlaybackTimers } from "../audio/playbackTransport";
 import {
@@ -23,7 +23,7 @@ export type UseHarmonyActionsDeps = Pick<
   "harmonyPlaybackStyle"
 > &
   Pick<
-    ReturnType<typeof useHarmonyProgressionState>,
+    ReturnType<typeof useHarmonyRecordingState>,
     | "harmonyProgressionIdRef"
     | "harmonyProgressionRecording"
     | "harmonyRecordedPlaybackTimeoutsRef"

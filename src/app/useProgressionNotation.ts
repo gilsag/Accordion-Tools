@@ -1,3 +1,4 @@
+import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
 import type { useAccordionNotation } from "./useAccordionNotation";
 import { progressionPulsePlan } from "../audio/progressionPulsePlan";
 import { useCallback, useMemo } from "react";
@@ -28,10 +29,11 @@ export type UseProgressionNotationDeps = Pick<
   | "harmonyProgressionNotationRef"
   | "harmonyProgressionNotationVisible"
   | "harmonyProgressionRhythmPattern"
-  | "harmonyRecordedNotationRef"
-  | "harmonyRecordedNotationVisible"
-  | "harmonyRecordedProgression"
 > &
+  Pick<
+    ReturnType<typeof useHarmonyRecordingState>,
+    "harmonyRecordedNotationRef" | "harmonyRecordedNotationVisible" | "harmonyRecordedProgression"
+  > &
   Pick<ReturnType<typeof useHarmonyProgressionResults>, "harmonyProgressionPlan"> &
   Pick<ReturnType<typeof useHarmonyExplorerState>, "harmonyShowEnharmonics"> &
   Pick<ReturnType<typeof useAccordionNotation>, "renderNotationInto"> &

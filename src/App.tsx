@@ -6,7 +6,7 @@ import { WorkspaceInspectorSlot } from "./app/inspector/WorkspaceInspectorSlot";
 import { LanguageProvider } from "./i18n/context";
 import { AppShell } from "./app/components/AppShell";
 import { useAppController } from "./app/useAppController";
-import { PlatformProviders } from "./app/platform/PlatformProviders";
+import { AppProviders } from "./app/AppProviders";
 import { usePhonePanel } from "./app/usePhonePanel";
 import { ToolsView } from "./app/views/ToolsView";
 import { WorkspaceView } from "./app/views/WorkspaceView";
@@ -26,9 +26,9 @@ const DEFAULT_INSPECTOR_TRACK = "minmax(300px, 360px)";
  * state (language, instrument, appearance, sound, notation, navigation). */
 export default function App() {
   return (
-    <PlatformProviders>
+    <AppProviders>
       <AppLayout />
-    </PlatformProviders>
+    </AppProviders>
   );
 }
 

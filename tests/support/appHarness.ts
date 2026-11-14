@@ -10,7 +10,7 @@ import { resolve } from "node:path";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, vi } from "vitest";
 import { useAppController, type AppControllerModel } from "../../src/app/useAppController";
-import { PlatformProviders } from "../../src/app/platform/PlatformProviders";
+import { AppProviders } from "../../src/app/AppProviders";
 import { usePlatformSettings } from "../../src/app/platform/platformContexts";
 import type { SettingsRegistry } from "../../src/settings/settingsRegistry";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
@@ -92,7 +92,7 @@ export interface RenderAppOptions {
 export async function renderApp(options: RenderAppOptions = {}): Promise<RenderedApp> {
   const { result } = renderHook(
     () => ({ model: useAppController(), settings: usePlatformSettings() }),
-    { wrapper: PlatformProviders },
+    { wrapper: AppProviders },
   );
   const app: RenderedApp = {
     get model() {
