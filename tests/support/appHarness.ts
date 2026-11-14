@@ -98,8 +98,20 @@ export interface RenderedApp {
   readonly scoreToggle: ScoreToggle | null;
   /** The results panel a tool offers beside the diagram, or null. */
   readonly results: ReactNode | null;
+  /** What the diagram shows: its title, its footer lines, how many buttons a
+   * Finder lights, the status line, and the name Download gives the file. */
+  readonly diagram: PresentedDiagram;
   /** Runs commands and lets React apply the resulting state and effects. */
   run(commands: (model: AppControllerModel) => void): Promise<void>;
+}
+
+export interface PresentedDiagram {
+  title: string;
+  footer: string[];
+  finderHighlights: number;
+  status: string;
+  /** Downloads the diagram as SVG and returns the file name used. */
+  downloadName(): string | undefined;
 }
 
 export interface RenderAppOptions {
@@ -109,6 +121,9 @@ export interface RenderAppOptions {
 
 /** Renders the composition. Sound is switched off after startup, because
  * jsdom has no Web Audio; playback order is covered by the audio tests. */
+/** File names passed to the diagram export while `downloadExports()` is mocked. */
+export const downloads: string[] = [];
+
 export async function renderApp(options: RenderAppOptions = {}): Promise<RenderedApp> {
   const { result } = renderHook(
     () => ({
@@ -136,6 +151,27 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
     },
     get scoreToggle() {
       return result.current.scoreToggle;
+    },
+    get diagram() {
+      const workspace = result.current.model.workspace;
+      return {
+        title: workspace.finalTitle,
+        footer: workspace.finderFooterEnabled
+          ? workspace.finderAnnotationDisplayLines
+          : workspace.trebleFooterEnabled
+            ? [workspace.trebleVoicingNote]
+            : [],
+        finderHighlights: workspace.finderButtonIds.size,
+        status: workspace.statusBarText,
+        downloadName() {
+          const svg = () => document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          workspace.svgRef.current = svg();
+          workspace.harmonySvgRef.current = svg();
+          downloads.length = 0;
+          workspace.downloadCurrentDiagram("svg");
+          return downloads[0];
+        },
+      };
     },
     get results() {
       return result.current.results;
