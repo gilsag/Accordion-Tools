@@ -5,12 +5,28 @@ import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { renderApp, resetBrowserState, serveBundledFiles } from "../../support/appHarness";
 import type { RenderedApp } from "../../support/appHarness";
+import type { HarmonySelection } from "../../../src/tools/harmonyExplorer/types";
 
 beforeEach(() => {
   resetBrowserState();
   serveBundledFiles();
 });
 afterEach(cleanup);
+
+/** G major selected on the circle. */
+const G_MAJOR_SELECTION: HarmonySelection = {
+  sectorIndex: 1,
+  sharedCount: 2,
+  referenceRootPc: 0,
+  referenceFamilyId: "major",
+  candidate: {
+    rootPc: 7,
+    familyId: "major",
+    pitchClasses: [7, 11, 2],
+    sharedCount: 1,
+    diatonic: true,
+  },
+};
 
 /** Selects the first two buttons and records the third in a sequence. */
 async function markDiagram(app: RenderedApp) {
@@ -54,7 +70,9 @@ test("Reset work clears the marks, the Finders and the progression preview but k
   await app.run((model) => model.tools.setScaleFinderActive(true));
   await app.run((model) => model.tools.setHarmonyProgressionPreviewIndex(0));
   expect(app.model.tools.harmonyProgressionPreviewIndex).toBe(0);
+  await app.run((model) => model.workspace.setHarmonySelection(G_MAJOR_SELECTION));
   await app.run((model) => model.workspace.resetDiagramWork());
+  expect(app.model.tools.harmonySelection).toEqual(G_MAJOR_SELECTION);
   expect(app.model.workspace.overlays).toEqual({});
   expect(app.model.tools.sequenceSteps).toEqual([]);
   expect(app.model.tools.scaleFinderActive).toBe(false);
@@ -102,4 +120,44 @@ test("Reset tool in the Harmony workspace restores the circle's defaults and lea
   expect(app.model.tools.harmonyProgressionRecording).toBe(false);
   expect(app.model.tools.harmonyRecordedProgression).toEqual([]);
   expect(app.model.tools.selectedButtons).toHaveLength(2);
+});
+
+test("Reset work in the Harmony workspace clears the selection and the recording but keeps the circle's settings", async () => {
+  const app = await renderApp();
+  await markDiagram(app);
+  await app.run((model) => model.workspace.navigateToTool("harmonyExplorer"));
+  await app.run((model) => model.settings.setHarmonyDiameter(700));
+  await app.run((model) => model.workspace.setHarmonySelection(G_MAJOR_SELECTION));
+  await app.run((model) => model.tools.toggleHarmonyProgressionRecording());
+  await app.run((model) => model.workspace.handleHarmonyChordActivated(7, "major", 1));
+  await app.run((model) => model.workspace.toggleHarmonyRecordedNotation());
+  expect(app.model.tools.harmonyRecordedNotationVisible).toBe(true);
+
+  await app.run((model) => model.workspace.clearHarmonyWork());
+  expect(app.model.tools.harmonySelection).toBeNull();
+  expect(app.model.tools.harmonyProgressionRecording).toBe(false);
+  expect(app.model.tools.harmonyRecordedProgression).toEqual([]);
+  expect(app.model.tools.harmonyRecordedNotationVisible).toBe(false);
+  expect(app.model.settings.harmonyDiameter).toBe(700);
+  expect(app.model.tools.selectedButtons).toHaveLength(2);
+});
+
+test("Reset tool does nothing in a tool without preferences to restore", async () => {
+  const app = await renderApp();
+  await markDiagram(app);
+  await app.run((model) => model.tools.setStradellaChordFinderRoot("E"));
+  expect(app.model.tools.activeToolSection).toBe("annotateDiagram");
+  await app.run((model) => model.workspace.resetCurrentToolDefaults());
+  expect(app.model.tools.stradellaChordFinderRoot).toBe("E");
+  expect(app.model.tools.selectedButtons).toHaveLength(2);
+});
+
+test("Reset tool does nothing when the open tool is not offered on this side", async () => {
+  const app = await renderApp();
+  await app.run((model) => model.tools.toggleToolSection("stradellaChordFinder"));
+  await app.run((model) => model.tools.setStradellaChordFinderRoot("E"));
+  await app.run((model) => model.workspace.selectAccordionSide("treble"));
+  expect(app.model.tools.activeToolSection).toBe("stradellaChordFinder");
+  await app.run((model) => model.workspace.resetCurrentToolDefaults());
+  expect(app.model.tools.stradellaChordFinderRoot).toBe("E");
 });

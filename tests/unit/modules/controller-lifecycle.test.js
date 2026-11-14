@@ -135,28 +135,6 @@ test("Pause keeps the last played buttons of each voice lit", () => {
   assert.equal(trace[7][1], 0);
   assert.equal(trace[10][1], true);
   assert.equal(trace[3][1], "root", "Restoring Finder defaults returns to root position");
-  trace.length = 0;
-  const workMethods = [
-    "setOverlays",
-    "setSequenceSteps",
-    "setTextNotes",
-    "setScaleFinderActive",
-    "setChordFinderActive",
-    "setStradellaChordFinderActive",
-    "setProgressionPreview",
-    "stopAbc",
-    "stopBassPattern",
-    "stopSound",
-    "setProgressionActiveButtons",
-  ];
-  reset.resetDiagramWorkState(
-    Object.fromEntries(workMethods.map((method) => [method, () => trace.push(method)])),
-  );
-  assert.deepEqual(
-    trace,
-    workMethods,
-    "Diagram reset preserves timer and audio cancellation order",
-  );
   const batchTrace = [];
   const capture = load("src/diagram/stradellaBatchCapture.ts", {
     "../download": { serializeSvg: (_svg, png) => `svg-${png}` },

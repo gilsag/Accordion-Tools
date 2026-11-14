@@ -24,8 +24,8 @@ import {
   usePlatformNotation,
   usePlatformSound,
   usePlatformSpelling,
+  usePlatformTools,
 } from "./platform/platformContexts";
-import type { ToolSection } from "../app/toolRegistry";
 import {
   TREBLE_PRESET_BUTTON_SIZE,
   PIANO_TREBLE_PRESET_BUTTON_SIZE,
@@ -80,7 +80,9 @@ import {
 } from "../diagram/diagramExport";
 import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
 import { calculateDiagramGeometry } from "../diagram/diagramGeometry";
-import { resetStradellaFinder, resetDiagramWorkState } from "./resetCommands";
+import { resetStradellaFinder } from "./resetCommands";
+import { useToolHandle } from "./platform/useToolHandle";
+import type { ToolHandle } from "./toolCoordinator";
 import { activeToolStatusLabel } from "./workspacePresentation";
 import {
   sequenceArrowStyleFromMode,
@@ -96,7 +98,7 @@ import {
 import { analyzeConfiguredStradellaVoicing } from "../tools/stradellaChordFinder/registerModel";
 import { voicingIntervalLayout } from "../tools/stradellaChordFinder/voicingIntervalLayout";
 import { describeTrebleChord } from "../tools/trebleChordExplanation";
-import { playButtonSound, stopAllSound } from "../sound";
+import { playButtonSound } from "../sound";
 import type { ProgressionSearchSettings } from "../tools/harmonyExplorer/progression";
 import { progressionFinderPattern } from "../tools/harmonyExplorer/progression";
 import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
@@ -133,7 +135,6 @@ export function useAppController() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
   const harmonySvgRef = useRef<SVGSVGElement | null>(null);
-  const previousLayoutSignatureRef = useRef<string | null>(null);
   const abcPlaybackTimeoutsRef = useRef<number[]>([]);
   const abcPlaybackStartedAtRef = useRef<number | null>(null);
   const abcPlaybackStartBeatRef = useRef(0);
@@ -239,12 +240,19 @@ export function useAppController() {
     activeSettingsSection,
     activeToolSection,
     toggleSettingsSection,
-    toggleToolSection: toggleWorkspaceToolSection,
     navigateToTool,
     selectAccordionSide,
     setPanel,
     toggleFocusPanel,
   } = usePlatformNavigation();
+  /* Opening and closing tools and the Reset menu go through the tool
+   * coordinator, which applies the rules that span tools (see the handles
+   * registered below). */
+  const {
+    toggleTool: toggleToolSection,
+    resetWork,
+    resetTool: resetCurrentToolDefaults,
+  } = usePlatformTools();
 
   /* Physical-button overlays/fingerings are independent of musical selection. */
   const overlayState = useDiagramOverlays();
@@ -884,54 +892,6 @@ export function useAppController() {
     progressionSearch,
   });
 
-  /* Signature of layout-changing options used to clear stale tool markings. */
-  const layoutSignature = [
-    side,
-    basses,
-    trebleLayout,
-    trebleRows,
-    trebleSize,
-    // Chord/scale selections and diagram markings do not change the physical
-    // keyboard configuration. Including them here would clear the finder as
-    // soon as the user selects a chord or scale (notably in compact layouts).
-    pianoTrebleRange,
-    buttonSize,
-    spacing,
-    diagramVerticalSpacing,
-    pianoKeyWidthScale,
-    pianoKeyHeightScale,
-    pianoBlackKeyWidthScale,
-    pianoBlackKeyHeightScale,
-    trebleAngle,
-    showTrebleOctaves,
-  ].join("|");
-
-  /* Clears tool-created marks whenever the physical layout changes. */
-  useEffect(() => {
-    if (previousLayoutSignatureRef.current === null) {
-      previousLayoutSignatureRef.current = layoutSignature;
-      return;
-    }
-
-    if (previousLayoutSignatureRef.current !== layoutSignature) {
-      setOverlays({});
-      setSequenceSteps([]);
-      setTextNotes([]);
-      setScaleFinderActive(false);
-      setChordFinderActive(false);
-      setStradellaChordFinderActive(false);
-      previousLayoutSignatureRef.current = layoutSignature;
-    }
-  }, [
-    layoutSignature,
-    setScaleFinderActive,
-    setChordFinderActive,
-    setStradellaChordFinderActive,
-    setSequenceSteps,
-    setOverlays,
-    setTextNotes,
-  ]);
-
   const selectedButtons = selectedButtonIds
     .map((id) => buttons.find((button) => button.id === id))
     .filter(Boolean) as DiagramButton[];
@@ -1171,40 +1131,6 @@ export function useAppController() {
     soundSequenceTempoBpm,
   });
 
-  /** Tool-specific side effects remain explicit until the command service is extracted.
-   * Navigation itself is owned by the workspace controller, not by tool state. */
-  function toggleToolSection(section: Exclude<ToolSection, null>) {
-    const opening = activeToolSection !== section;
-    toggleWorkspaceToolSection(section);
-    // Opening a Chord Finder shows its current chord at once; "Hide chord"
-    // remains the explicit way to clear it. Finder highlights stay exclusive.
-    // Opening any other tool hides both Chord Finders' highlights and the
-    // Results panel; their chord and selected realization are kept, so
-    // reopening the Chord Finder shows the same result again.
-    if (opening && section !== "stradellaChordFinder" && section !== "chordFinder") {
-      setStradellaChordFinderActive(false);
-      setChordFinderActive(false);
-    }
-    if (opening && section === "stradellaChordFinder") {
-      setStradellaChordFinderActive(true);
-      setScaleFinderActive(false);
-      setChordFinderActive(false);
-    }
-    if (opening && section === "chordFinder") {
-      setChordFinderActive(true);
-      setScaleFinderActive(false);
-      setStradellaChordFinderActive(false);
-    }
-    if (section === "rhythmTrainer") stopSoundPlayback();
-    if (section === "progressionAssistant") {
-      setStradellaChordFinderActive(false);
-      setScaleFinderActive(false);
-      setChordFinderActive(false);
-      stopAbcPlayback();
-      stopBassPatternPlayback();
-    }
-  }
-
   /* The first time the ABC Player opens with nothing loaded, it loads Happy
    * Birthday, a two-voice tune, so both hands are shown and heard right away.
    * Only once per visit: after Clear ABC the editor stays empty. */
@@ -1410,20 +1336,6 @@ export function useAppController() {
     t,
   });
 
-  /** Clear Harmony selection/recording without discarding user preferences. */
-  function clearHarmonyWork() {
-    setHarmonySelection(null);
-    setHarmonyFocusedReferenceRootPc(null);
-    setHarmonyProgressionRecording(false);
-    setHarmonyRecordedProgression([]);
-    setHarmonyRecordedNotationVisible(false);
-    setHarmonyProgressionPreviewIndex(null);
-    setHarmonyProgressionNoteStepId(null);
-    setHarmonyProgressionActiveButtonIds([]);
-    setHarmonyProgressionPulseSilent(false);
-    stopAllSound();
-  }
-
   /** Reset Finder-local preferences, without altering instrument or sound state. */
   function resetStradellaFinderDefaults() {
     resetStradellaFinder({
@@ -1440,32 +1352,6 @@ export function useAppController() {
       setShowVoicingIntervals: setShowStradellaVoicingIntervals,
       setNoteLevels: setStradellaNoteLevels,
       setExplanationFontSize: setFinderExplanationFontSize,
-    });
-  }
-
-  function resetCurrentToolDefaults() {
-    if (workspaceMode === "harmony") resetHarmonyExplorer();
-    else if (side === "stradella" && activeToolSection === "stradellaChordFinder") {
-      resetStradellaFinderDefaults();
-      resetDiagramWork();
-    }
-  }
-
-  /** Work reset deliberately leaves preferences (including sample settings) alone. */
-  function resetDiagramWork() {
-    setHarmonyProgressionNoteStepId(null);
-    resetDiagramWorkState({
-      setOverlays,
-      setSequenceSteps,
-      setTextNotes,
-      setScaleFinderActive,
-      setChordFinderActive,
-      setStradellaChordFinderActive,
-      setProgressionPreview: setHarmonyProgressionPreviewIndex,
-      stopAbc: stopAbcPlayback,
-      stopBassPattern: stopBassPatternPlayback,
-      stopSound: stopAllSound,
-      setProgressionActiveButtons: setHarmonyProgressionActiveButtonIds,
     });
   }
 
@@ -1834,6 +1720,69 @@ export function useAppController() {
     activeTool: activeToolLabel,
     language,
   });
+
+  /* Each tool's part in the rules that span tools: Finder exclusivity, what
+   * toggling a tool does to others, the Reset menu and layout changes (see
+   * src/app/toolCoordinator.ts). These registrations move into the tools'
+   * own providers as the tools leave the controller. */
+  const clearHarmonyWork = () => resetWork("harmony");
+  const resetDiagramWork = () => resetWork("accordion");
+  const finderHandle = (setActive: (active: boolean) => void): ToolHandle => ({
+    activate: () => setActive(true),
+    deactivate: () => setActive(false),
+    resetWork: (workspace) => {
+      if (workspace === "accordion") setActive(false);
+    },
+    onLayoutChange: () => setActive(false),
+  });
+  const playerHandle = (stop: () => void): ToolHandle => ({
+    stop,
+    resetWork: (workspace) => {
+      if (workspace === "accordion") stop();
+    },
+  });
+  function clearDiagramMarks() {
+    setOverlays({});
+    setSequenceSteps([]);
+    setTextNotes([]);
+  }
+  useToolHandle("scaleFinder", finderHandle(setScaleFinderActive));
+  useToolHandle("chordFinder", finderHandle(setChordFinderActive));
+  useToolHandle("stradellaChordFinder", {
+    ...finderHandle(setStradellaChordFinderActive),
+    resetPreferences() {
+      resetStradellaFinderDefaults();
+      resetDiagramWork();
+    },
+  });
+  useToolHandle("annotateDiagram", {
+    resetWork: (workspace) => {
+      if (workspace === "accordion") clearDiagramMarks();
+    },
+    onLayoutChange: clearDiagramMarks,
+  });
+  useToolHandle("abcPlayer", playerHandle(stopAbcPlayback));
+  useToolHandle("bassPatternPlayer", playerHandle(stopBassPatternPlayback));
+  useToolHandle("progressionAssistant", {
+    resetWork(workspace) {
+      setHarmonyProgressionPreviewIndex(null);
+      setHarmonyProgressionNoteStepId(null);
+      setHarmonyProgressionActiveButtonIds([]);
+      if (workspace === "harmony") setHarmonyProgressionPulseSilent(false);
+    },
+  });
+  useToolHandle("harmonyExplorer", {
+    resetWork(workspace) {
+      if (workspace !== "harmony") return;
+      setHarmonySelection(null);
+      setHarmonyFocusedReferenceRootPc(null);
+      setHarmonyProgressionRecording(false);
+      setHarmonyRecordedProgression([]);
+      setHarmonyRecordedNotationVisible(false);
+    },
+    resetPreferences: resetHarmonyExplorer,
+  });
+  useToolHandle("playback", { stop: stopSoundPlayback });
 
   return {
     language,

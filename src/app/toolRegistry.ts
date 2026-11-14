@@ -20,6 +20,17 @@ type ToolDefinition = {
   /** Keep the section's controls mounted after it is closed, for a panel that
    * holds choices of its own (the Progression Assistant's preset picker). */
   keepMounted?: true;
+  /** Finders whose result is highlighted on the diagram; at most one shows
+   * at a time. A chord Finder shows its chord when its section opens and
+   * hides it when another tool opens. The Scale Finder is shown and hidden by
+   * its own button, and only an opening chord Finder hides it. */
+  highlights?: "on-open" | "own-button";
+  /** What toggling the section, open or closed, does to other tools. */
+  onToggle?: {
+    hideFinders?: true;
+    stopPlayers?: readonly ("abcPlayer" | "bassPatternPlayer")[];
+    stopAllPlayback?: true;
+  };
 };
 
 export const TOOL_REGISTRY = {
@@ -29,6 +40,7 @@ export const TOOL_REGISTRY = {
     titleKey: "ui.scaleFinder",
     summaryKey: "tools.summary.scaleFinder",
     sides: "both",
+    highlights: "own-button",
   },
   chordFinder: {
     workspace: "accordion",
@@ -36,6 +48,7 @@ export const TOOL_REGISTRY = {
     titleKey: "tools.chordFinder",
     summaryKey: "tools.summary.trebleChordFinder",
     sides: "treble",
+    highlights: "on-open",
   },
   bassPatternPlayer: {
     workspace: "accordion",
@@ -50,6 +63,7 @@ export const TOOL_REGISTRY = {
     titleKey: "rhythm.title",
     summaryKey: "rhythm.summary",
     sides: "both",
+    onToggle: { stopAllPlayback: true },
   },
   abcPlayer: {
     workspace: "accordion",
@@ -65,6 +79,7 @@ export const TOOL_REGISTRY = {
     summaryKey: "tools.summary.stradellaChordFinder",
     sides: "stradella",
     defaultSide: "stradella",
+    highlights: "on-open",
   },
   harmonyExplorer: {
     workspace: "harmony",
@@ -81,6 +96,7 @@ export const TOOL_REGISTRY = {
     sides: "stradella",
     defaultSide: "stradella",
     keepMounted: true,
+    onToggle: { hideFinders: true, stopPlayers: ["abcPlayer", "bassPatternPlayer"] },
   },
   annotateDiagram: {
     workspace: "accordion",

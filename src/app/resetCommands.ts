@@ -3,19 +3,13 @@ import {
   DEFAULT_STRADELLA_NOTE_LEVELS,
   type StradellaNoteLevels,
 } from "../tools/stradellaChordFinder/diagramAnnotations";
-import type {
-  FinderChordPattern,
-  StradellaChordFinderMode,
-  Overlay,
-  SequenceStep,
-  TextNote,
-} from "../types";
+import type { FinderChordPattern, StradellaChordFinderMode } from "../types";
 import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
 
-/** Narrow reset ports: all affected state remains owned by its feature.
- * The explicit calls (not a generic settings reset) preserve the original
- * reset scope, values and order. Sound/instrument/global preferences survive.
- */
+/** The Stradella Chord Finder's "Reset tool": its own preferences return to
+ * their defaults through narrow ports, in a fixed order. Instrument, sound
+ * and global preferences are untouched. "Reset work" is the tool
+ * coordinator's (src/app/toolCoordinator.ts). */
 export interface StradellaFinderResetPorts {
   setRoot(value: string): void;
   setPattern(value: FinderChordPattern): void;
@@ -46,32 +40,4 @@ export function resetStradellaFinder(ports: StradellaFinderResetPorts) {
   ports.setShowVoicingIntervals(true);
   ports.setNoteLevels({ ...DEFAULT_STRADELLA_NOTE_LEVELS });
   ports.setExplanationFontSize(26);
-}
-
-export interface DiagramWorkResetPorts {
-  setOverlays(value: Record<string, Overlay>): void;
-  setSequenceSteps(value: SequenceStep[]): void;
-  setTextNotes(value: TextNote[]): void;
-  setScaleFinderActive(value: boolean): void;
-  setChordFinderActive(value: boolean): void;
-  setStradellaChordFinderActive(value: boolean): void;
-  setProgressionPreview(value: number | null): void;
-  stopAbc(): void;
-  stopBassPattern(): void;
-  stopSound(): void;
-  setProgressionActiveButtons(value: string[]): void;
-}
-
-export function resetDiagramWorkState(ports: DiagramWorkResetPorts) {
-  ports.setOverlays({});
-  ports.setSequenceSteps([]);
-  ports.setTextNotes([]);
-  ports.setScaleFinderActive(false);
-  ports.setChordFinderActive(false);
-  ports.setStradellaChordFinderActive(false);
-  ports.setProgressionPreview(null);
-  ports.stopAbc();
-  ports.stopBassPattern();
-  ports.stopSound();
-  ports.setProgressionActiveButtons([]);
 }
