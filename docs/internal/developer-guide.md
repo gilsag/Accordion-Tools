@@ -223,6 +223,10 @@ The diagram's x axis is the instrument's circle-of-fifths direction; `utils.ts` 
 - Colours set from TypeScript (SVG presentation attributes, the PNG background, the footer's inline style, the default note colour) come from `DIAGRAM_COLORS` in `src/diagram/diagramColors.ts`; the token test keeps each equal to the `--diagram-*` token of the same name. User-chosen colours and the data tables (`COLOR_PRESETS`, the Harmony family colours) stay where they are.
 - `e2e/theme.spec.ts` checks that the page follows the system, that a chosen theme overrides it and survives a reload, and that SVG and PNG downloads and the score download are identical in both themes.
 
+## Page metadata
+
+`index.html` carries the description, a theme colour for each scheme (matching `--ui-bg`) and the Open Graph tags that give a shared link its title, description and image. Crawlers need absolute URLs, so the tags name the published site, `https://gilsag.github.io/Accordion-Tools/`; change them together with `base` in `vite.config.ts`. The image is `public/social-preview.png`, 1200 × 630, made from the Stradella Chord Finder's Em7 diagram. `tests/unit/release/site-metadata.test.ts` checks the tags, the URL against `base` and the image size.
+
 ## Testing
 
 - `npm test` runs the unit and component tests in `tests/unit/` with Vitest; `npm run test:watch` reruns the affected files while you work, and `npm run test:<area>` runs one folder (for example `test:chords`).
