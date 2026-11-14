@@ -1,45 +1,15 @@
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import type { ChordDisplayStyle } from "../../tools/chordDisplay";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type HarmonySectionModel = Pick<
-  AppControllerModel["settings"],
-  | "chordDisplayStyle"
-  | "harmonyAvailableCounts"
-  | "harmonyColorByFamily"
-  | "harmonyDiameter"
-  | "harmonyFontSize"
-  | "harmonyPlaybackStyle"
-  | "harmonyRingVisibility"
-  | "harmonyShowEnharmonics"
-  | "harmonyShowExplanation"
-  | "harmonyShowLegend"
-  | "harmonyShowNoteRing"
-  | "harmonyShowSeparators"
-  | "harmonyShowToneTooltips"
-  | "harmonyVoicingStyle"
-  | "setChordDisplayStyle"
-  | "setHarmonyColorByFamily"
-  | "setHarmonyDiameter"
-  | "setHarmonyFontSize"
-  | "setHarmonyPlaybackStyle"
-  | "setHarmonyRingVisibility"
-  | "setHarmonyShowEnharmonics"
-  | "setHarmonyShowExplanation"
-  | "setHarmonyShowLegend"
-  | "setHarmonyShowNoteRing"
-  | "setHarmonyShowSeparators"
-  | "setHarmonyShowToneTooltips"
-  | "setHarmonyVoicingStyle"
-  | "t"
->;
+import {
+  useHarmonyExplorer,
+  useHarmonyExplorerOutput,
+} from "../../features/harmonyExplorer/harmonyExplorerContext";
+import { usePlatformLanguage, usePlatformSpelling } from "../platform/platformContexts";
 
 /** Harmony workspace: circle size, voicing and sound. */
-export default function HarmonySection({ model }: { model: HarmonySectionModel }) {
+export default function HarmonySection() {
+  const { t } = usePlatformLanguage();
   const {
-    chordDisplayStyle,
-    harmonyAvailableCounts,
     harmonyColorByFamily,
     harmonyDiameter,
     harmonyFontSize,
@@ -52,7 +22,6 @@ export default function HarmonySection({ model }: { model: HarmonySectionModel }
     harmonyShowSeparators,
     harmonyShowToneTooltips,
     harmonyVoicingStyle,
-    setChordDisplayStyle,
     setHarmonyColorByFamily,
     setHarmonyDiameter,
     setHarmonyFontSize,
@@ -65,8 +34,9 @@ export default function HarmonySection({ model }: { model: HarmonySectionModel }
     setHarmonyShowSeparators,
     setHarmonyShowToneTooltips,
     setHarmonyVoicingStyle,
-    t,
-  } = model;
+  } = useHarmonyExplorer();
+  const { harmonyAvailableCounts } = useHarmonyExplorerOutput();
+  const { chordDisplayStyle, setChordDisplayStyle } = usePlatformSpelling();
   return (
     <>
       <fieldset className="tool-fieldset">

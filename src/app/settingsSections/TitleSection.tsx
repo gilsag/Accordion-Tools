@@ -1,33 +1,19 @@
 import type { FontFamily, TitleMode } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type TitleSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "customTitle"
-  | "setCustomTitle"
-  | "setTitleFont"
-  | "setTitleMode"
-  | "setTitleSize"
-  | "t"
-  | "titleFont"
-  | "titleMode"
-  | "titleSize"
->;
+import { usePlatformAppearance, usePlatformLanguage } from "../platform/platformContexts";
 
 /** Diagram title: text, font and size. */
-export default function TitleSection({ model }: { model: TitleSectionModel }) {
+export default function TitleSection() {
+  const { t } = usePlatformLanguage();
   const {
     customTitle,
     setCustomTitle,
     setTitleFont,
     setTitleMode,
     setTitleSize,
-    t,
     titleFont,
     titleMode,
     titleSize,
-  } = model;
+  } = usePlatformAppearance();
   return (
     <>
       <label>

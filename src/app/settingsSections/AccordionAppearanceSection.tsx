@@ -1,67 +1,18 @@
 import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import type { AccidentalStyle, ColorTheme, FontFamily } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type AccordionAppearanceSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "accidentalStyle"
-  | "buttonSize"
-  | "buttonStrokeWidth"
-  | "chordFillStrength"
-  | "colorTheme"
-  | "diagramScale"
-  | "diagramVerticalSpacing"
-  | "interfaceDensity"
-  | "isPianoTreble"
-  | "labelFont"
-  | "labelFontSize"
-  | "pianoBlackKeyHeightScale"
-  | "pianoBlackKeyWidthScale"
-  | "pianoKeyHeightScale"
-  | "pianoKeyWidthScale"
-  | "referenceStrokeWidth"
-  | "setAccidentalStyle"
-  | "setButtonSize"
-  | "setButtonStrokeWidth"
-  | "setChordFillStrength"
-  | "setColorTheme"
-  | "setDiagramScale"
-  | "setDiagramVerticalSpacing"
-  | "setInterfaceDensity"
-  | "setLabelFont"
-  | "setLabelFontSize"
-  | "setPianoBlackKeyHeightScale"
-  | "setPianoBlackKeyWidthScale"
-  | "setPianoKeyHeightScale"
-  | "setPianoKeyWidthScale"
-  | "setReferenceStrokeWidth"
-  | "setShowBellowsGuide"
-  | "setShowButtonLabels"
-  | "setShowStatusBar"
-  | "setShowStradellaRowLabels"
-  | "setShowTrebleOctaves"
-  | "setSpacing"
-  | "setTrebleAngle"
-  | "showBellowsGuide"
-  | "showButtonLabels"
-  | "showStatusBar"
-  | "showStradellaRowLabels"
-  | "showTrebleOctaves"
-  | "side"
-  | "spacing"
-  | "t"
-  | "trebleAngle"
-  | "trebleLayout"
->;
+import {
+  usePlatformAppearance,
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformShell,
+} from "../platform/platformContexts";
+import { useInstrumentPresets } from "../platform/useInstrumentPresets";
 
 /** Appearance of the accordion diagrams: labels, sizes, colors and layout. */
-export default function AccordionAppearanceSection({
-  model,
-}: {
-  model: AccordionAppearanceSectionModel;
-}) {
+export default function AccordionAppearanceSection() {
+  const { t } = usePlatformLanguage();
+  const { isPianoTreble } = useInstrumentPresets();
   const {
     accidentalStyle,
     buttonSize,
@@ -70,8 +21,6 @@ export default function AccordionAppearanceSection({
     colorTheme,
     diagramScale,
     diagramVerticalSpacing,
-    interfaceDensity,
-    isPianoTreble,
     labelFont,
     labelFontSize,
     pianoBlackKeyHeightScale,
@@ -86,7 +35,6 @@ export default function AccordionAppearanceSection({
     setColorTheme,
     setDiagramScale,
     setDiagramVerticalSpacing,
-    setInterfaceDensity,
     setLabelFont,
     setLabelFontSize,
     setPianoBlackKeyHeightScale,
@@ -98,20 +46,17 @@ export default function AccordionAppearanceSection({
     setShowButtonLabels,
     setShowStatusBar,
     setShowStradellaRowLabels,
-    setShowTrebleOctaves,
     setSpacing,
     setTrebleAngle,
     showBellowsGuide,
     showButtonLabels,
     showStatusBar,
     showStradellaRowLabels,
-    showTrebleOctaves,
-    side,
     spacing,
-    t,
     trebleAngle,
-    trebleLayout,
-  } = model;
+  } = usePlatformAppearance();
+  const { setShowTrebleOctaves, showTrebleOctaves, side, trebleLayout } = usePlatformInstrument();
+  const { interfaceDensity, setInterfaceDensity } = usePlatformShell();
   return (
     <>
       <SegmentedChoice

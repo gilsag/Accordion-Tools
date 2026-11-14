@@ -143,7 +143,7 @@ function AppLayout() {
             <h1>{leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}</h1>
             {leftPanelMode === "settings" && (
               <Suspense fallback={<div className="section-content" aria-busy="true" />}>
-                <SettingsView model={model.settings} />
+                <SettingsView />
               </Suspense>
             )}
             {leftPanelMode === "tools" && <ToolsView model={model.tools} />}

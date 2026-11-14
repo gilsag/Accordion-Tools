@@ -6,6 +6,7 @@ import { physicalLayoutSignature } from "../physicalLayoutSignature";
 import { createSettingsRegistry } from "../../settings/settingsRegistry";
 import { useOwnedSettings } from "./useOwnedSettings";
 import { usePlaybackState } from "./usePlaybackState";
+import { useShellState } from "./useShellState";
 import { useLanguageSettings } from "../../settings/useLanguageSettings";
 import { useInstrumentState } from "../../instrument/useInstrumentState";
 import { useDiagramAppearanceState } from "../../diagram/useDiagramAppearanceState";
@@ -21,6 +22,7 @@ import {
   PlatformNotationContext,
   PlatformPlaybackContext,
   PlatformSettingsContext,
+  PlatformShellContext,
   PlatformSoundContext,
   PlatformSpellingContext,
   PlatformToolsContext,
@@ -53,9 +55,11 @@ export function PlatformProviders({ children }: ProviderProps) {
             <SoundProvider>
               <NotationProvider>
                 <NavigationProvider>
-                  <PlaybackProvider>
-                    <ToolCoordinatorProvider>{children}</ToolCoordinatorProvider>
-                  </PlaybackProvider>
+                  <ShellProvider>
+                    <PlaybackProvider>
+                      <ToolCoordinatorProvider>{children}</ToolCoordinatorProvider>
+                    </PlaybackProvider>
+                  </ShellProvider>
                 </NavigationProvider>
               </NotationProvider>
             </SoundProvider>
@@ -129,6 +133,12 @@ function NavigationProvider({ children }: ProviderProps) {
       {children}
     </PlatformNavigationContext.Provider>
   );
+}
+
+function ShellProvider({ children }: ProviderProps) {
+  const value = useShellState();
+  useOwnedSettings("shell", value);
+  return <PlatformShellContext.Provider value={value}>{children}</PlatformShellContext.Provider>;
 }
 
 function ToolCoordinatorProvider({ children }: ProviderProps) {

@@ -7,7 +7,7 @@ import {
   displayRoot,
   realizedChordName,
 } from "../tools/stradellaChordFinder/chordSpelling";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   BASS_OPTIONS,
   TREBLE_SIZE_OPTIONS,
@@ -26,6 +26,7 @@ import {
   usePlatformSpelling,
   usePlatformTools,
   usePlatformPlayback,
+  usePlatformShell,
 } from "./platform/platformContexts";
 import { useRhythmTrainer } from "../features/rhythmTrainer/rhythmTrainerContext";
 import {
@@ -39,7 +40,6 @@ import type {
   AbcHands,
   DiagramButton,
   DownloadFormat,
-  InterfaceDensity,
   PianoTrebleRange,
   TrebleLayout,
   TrebleSizePreset,
@@ -93,7 +93,6 @@ import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
 // The controller composes the feature hooks below. Each one owns a part of the
 // app and receives only the values it needs, typed from the hooks that own them.
 import { useSettingsTransfer } from "./useSettingsTransfer";
-import { useOwnedSettings } from "./platform/useOwnedSettings";
 import { useScoreRendering } from "./platform/useScoreRendering";
 import { useDiagramLabels } from "./useDiagramLabels";
 import { useProgressionActions } from "./useProgressionActions";
@@ -114,8 +113,6 @@ import { useProgressionActions } from "./useProgressionActions";
  */
 export function useAppController() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const harmonySvgRef = useRef<SVGSVGElement | null>(null);
 
   /* Shared state is owned by the platform providers (src/app/platform/);
    * the controller only reads it. */
@@ -208,7 +205,16 @@ export function useAppController() {
     colorTheme,
     setColorTheme,
   } = usePlatformAppearance();
-  const [interfaceDensity, setInterfaceDensity] = useState<InterfaceDensity>("compact");
+  const {
+    interfaceDensity,
+    setInterfaceDensity,
+    downloadFormat,
+    setDownloadFormat,
+    mobileDiagramView,
+    setMobileDiagramView,
+    svgRef,
+    harmonySvgRef,
+  } = usePlatformShell();
 
   /* The application shell owns workspace/tool visibility; physical side stays
    * in useInstrumentState, and audio cancellation remains with the commands. */
@@ -445,7 +451,6 @@ export function useAppController() {
   } = stradellaChordFinderState;
   const [batchExporting, setBatchExporting] = useState(false);
   // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
-  const [mobileDiagramView, setMobileDiagramView] = useState<"readable" | "fit">("readable");
 
   /* Harmony Explorer retains its independent selection/display state. */
   const harmonyExplorerState = useHarmonyExplorer();
@@ -596,17 +601,10 @@ export function useAppController() {
     setStradellaBassVoicing,
     soundOptions,
   } = usePlatformSound();
-  const [downloadFormat, setDownloadFormat] = useState<DownloadFormat>("svg");
 
   /* Each owner hands its settings to the settings registry (platform owners
    * do so in src/app/platform/). These registrations move into the tools'
    * own providers as the tools leave the controller. */
-  useOwnedSettings("shell", {
-    interfaceDensity,
-    setInterfaceDensity,
-    downloadFormat,
-    setDownloadFormat,
-  });
   const { downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults } =
     useSettingsTransfer(t);
 

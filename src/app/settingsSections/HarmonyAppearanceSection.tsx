@@ -1,35 +1,17 @@
 import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import type { ColorTheme } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type HarmonyAppearanceSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "colorTheme"
-  | "interfaceDensity"
-  | "setColorTheme"
-  | "setInterfaceDensity"
-  | "setShowStatusBar"
-  | "showStatusBar"
-  | "t"
->;
+import {
+  usePlatformAppearance,
+  usePlatformLanguage,
+  usePlatformShell,
+} from "../platform/platformContexts";
 
 /** Appearance options that apply to the Harmony workspace. */
-export default function HarmonyAppearanceSection({
-  model,
-}: {
-  model: HarmonyAppearanceSectionModel;
-}) {
-  const {
-    colorTheme,
-    interfaceDensity,
-    setColorTheme,
-    setInterfaceDensity,
-    setShowStatusBar,
-    showStatusBar,
-    t,
-  } = model;
+export default function HarmonyAppearanceSection() {
+  const { t } = usePlatformLanguage();
+  const { colorTheme, setColorTheme, setShowStatusBar, showStatusBar } = usePlatformAppearance();
+  const { interfaceDensity, setInterfaceDensity } = usePlatformShell();
   return (
     <>
       <SegmentedChoice

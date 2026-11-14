@@ -4,48 +4,20 @@ import { translateKnownLabel } from "../../i18n/catalog";
 import { pianoRangeStatusLabel } from "../../i18n/diagramLabels";
 import { formatRegisterRange } from "../../tools/stradellaChordFinder/registerModel";
 import type { BassCount, PianoTrebleRange, TrebleLayout, TrebleSizePreset } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type InstrumentSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "BASS_OPTIONS"
-  | "basses"
-  | "changePianoTrebleRange"
-  | "changeTrebleLayout"
-  | "changeTrebleSize"
-  | "language"
-  | "PIANO_TREBLE_RANGE_OPTIONS"
-  | "pianoTrebleRange"
-  | "setBasses"
-  | "setStradellaBassRegisterGrouping"
-  | "setStradellaBassRegisterOctave"
-  | "setStradellaChordRegisterGrouping"
-  | "setStradellaChordRegisterOctave"
-  | "setTrebleRows"
-  | "side"
-  | "stradellaBassRegisterGrouping"
-  | "stradellaBassRegisterOctave"
-  | "stradellaChordRegisterGrouping"
-  | "stradellaChordRegisterOctave"
-  | "stradellaRegisterModel"
-  | "t"
-  | "TREBLE_SIZE_OPTIONS"
-  | "trebleLayout"
-  | "trebleRows"
-  | "trebleSize"
->;
+import {
+  BASS_OPTIONS,
+  PIANO_TREBLE_RANGE_OPTIONS,
+  TREBLE_SIZE_OPTIONS,
+} from "../controllerOptions";
+import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
+import { useInstrumentPresets } from "../platform/useInstrumentPresets";
 
 /** Instrument: side, layout, size and range of the diagram. */
-export default function InstrumentSection({ model }: { model: InstrumentSectionModel }) {
+export default function InstrumentSection() {
+  const { language, t } = usePlatformLanguage();
+  const { changePianoTrebleRange, changeTrebleLayout, changeTrebleSize } = useInstrumentPresets();
   const {
-    BASS_OPTIONS,
     basses,
-    changePianoTrebleRange,
-    changeTrebleLayout,
-    changeTrebleSize,
-    language,
-    PIANO_TREBLE_RANGE_OPTIONS,
     pianoTrebleRange,
     setBasses,
     setStradellaBassRegisterGrouping,
@@ -59,12 +31,10 @@ export default function InstrumentSection({ model }: { model: InstrumentSectionM
     stradellaChordRegisterGrouping,
     stradellaChordRegisterOctave,
     stradellaRegisterModel,
-    t,
-    TREBLE_SIZE_OPTIONS,
     trebleLayout,
     trebleRows,
     trebleSize,
-  } = model;
+  } = usePlatformInstrument();
   return (
     <>
       {side === "stradella" && (

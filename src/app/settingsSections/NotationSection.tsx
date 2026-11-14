@@ -1,24 +1,15 @@
 import type { ChordDisplayStyle } from "../../tools/chordDisplay";
 import type { AccidentalMode, ChordLabelMode, NotationMode } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type NotationSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "accidental"
-  | "chordDisplayStyle"
-  | "chordLabelMode"
-  | "notation"
-  | "setAccidental"
-  | "setChordDisplayStyle"
-  | "setChordLabelMode"
-  | "setNotation"
-  | "side"
-  | "t"
->;
+import {
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformSpelling,
+} from "../platform/platformContexts";
 
 /** Note names: accidentals, note-name system and chord symbols. */
-export default function NotationSection({ model }: { model: NotationSectionModel }) {
+export default function NotationSection() {
+  const { t } = usePlatformLanguage();
+  const { side } = usePlatformInstrument();
   const {
     accidental,
     chordDisplayStyle,
@@ -28,9 +19,7 @@ export default function NotationSection({ model }: { model: NotationSectionModel
     setChordDisplayStyle,
     setChordLabelMode,
     setNotation,
-    side,
-    t,
-  } = model;
+  } = usePlatformSpelling();
   return (
     <>
       <div className="chord-display-style-setting">

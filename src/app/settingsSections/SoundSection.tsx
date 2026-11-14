@@ -6,46 +6,18 @@ import type {
   SoundWaveform,
   StradellaBassVoicing,
 } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type SoundSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "laMelodiosaBassRegister"
-  | "laMelodiosaFollowStradellaRegisters"
-  | "laMelodiosaTrebleRegister"
-  | "setLaMelodiosaBassRegister"
-  | "setLaMelodiosaFollowStradellaRegisters"
-  | "setLaMelodiosaTrebleRegister"
-  | "setSoundArticulation"
-  | "setSoundAttackMs"
-  | "setSoundMusetteDetuneCents"
-  | "setSoundNoteDurationMs"
-  | "setSoundReleaseMs"
-  | "setSoundSequenceTempoBpm"
-  | "setSoundSource"
-  | "setSoundVoicePreset"
-  | "setSoundVolume"
-  | "setSoundWaveform"
-  | "setStradellaBassVoicing"
-  | "side"
-  | "soundArticulation"
-  | "soundAttackMs"
-  | "soundMusetteDetuneCents"
-  | "soundNoteDurationMs"
-  | "soundReleaseMs"
-  | "soundSequenceTempoBpm"
-  | "soundSource"
-  | "soundVoicePreset"
-  | "soundVolume"
-  | "soundWaveform"
-  | "stradellaBassVoicing"
-  | "t"
-  | "workspaceMode"
->;
+import {
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformNavigation,
+  usePlatformSound,
+} from "../platform/platformContexts";
 
 /** Sound: source, registers, Stradella voicing and note length. */
-export default function SoundSection({ model }: { model: SoundSectionModel }) {
+export default function SoundSection() {
+  const { t } = usePlatformLanguage();
+  const { side } = usePlatformInstrument();
+  const { workspaceMode } = usePlatformNavigation();
   const {
     laMelodiosaBassRegister,
     laMelodiosaFollowStradellaRegisters,
@@ -64,7 +36,6 @@ export default function SoundSection({ model }: { model: SoundSectionModel }) {
     setSoundVolume,
     setSoundWaveform,
     setStradellaBassVoicing,
-    side,
     soundArticulation,
     soundAttackMs,
     soundMusetteDetuneCents,
@@ -76,9 +47,7 @@ export default function SoundSection({ model }: { model: SoundSectionModel }) {
     soundVolume,
     soundWaveform,
     stradellaBassVoicing,
-    t,
-    workspaceMode,
-  } = model;
+  } = usePlatformSound();
   return (
     <>
       <SegmentedChoice

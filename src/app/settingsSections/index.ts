@@ -1,6 +1,5 @@
 import type { ComponentType } from "react";
 import type { TranslationKey } from "../../i18n/catalog";
-import type { AppControllerModel } from "../useAppController";
 import type { SettingsSection } from "../useWorkspaceNavigation";
 import AboutSection from "./AboutSection";
 import AccordionAppearanceSection from "./AccordionAppearanceSection";
@@ -19,11 +18,11 @@ type SettingsSectionDefinition = {
   workspace: "accordion" | "harmony" | "both";
   /** Optional hint shown above the section. */
   introKey?: TranslationKey;
-  Component: ComponentType<{ model: AppControllerModel["settings"] }>;
+  Component: ComponentType;
 };
 
-/** The Settings panel, top to bottom. Each section declares, as a `Pick` of
- * the controller model, exactly the fields it reads. "Appearance" has one
+/** The Settings panel, top to bottom. Each section reads the platform and
+ * tool contexts that own its settings. "Appearance" has one
  * component per workspace because the two share a name but no controls.
  */
 export const SETTINGS_SECTIONS: readonly SettingsSectionDefinition[] = [

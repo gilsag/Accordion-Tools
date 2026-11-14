@@ -1,16 +1,13 @@
 import { AboutPanel } from "../../components/settings/AboutPanel";
 import { ResetSettingsControl } from "../../components/settings/ResetSettingsControl";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type AboutSectionModel = Pick<
-  AppControllerModel["settings"],
-  "downloadCurrentSettings" | "importSettingsFile" | "resetSettingsToDefaults" | "t"
->;
+import { usePlatformLanguage } from "../platform/platformContexts";
+import { useSettingsTransfer } from "../useSettingsTransfer";
 
 /** About: app information, guides, and saving, loading and resetting settings. */
-export default function AboutSection({ model }: { model: AboutSectionModel }) {
-  const { downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults, t } = model;
+export default function AboutSection() {
+  const { t } = usePlatformLanguage();
+  const { downloadCurrentSettings, importSettingsFile, resetSettingsToDefaults } =
+    useSettingsTransfer(t);
   return (
     <AboutPanel>
       <div className="button-row">

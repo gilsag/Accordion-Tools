@@ -2,21 +2,14 @@ import { Fragment } from "react";
 import { CollapsibleSection } from "../../components/ui/CollapsibleSection";
 import { SUPPORTED_LANGUAGES, type InterfaceLanguagePreference } from "../../i18n/catalog";
 import { SETTINGS_SECTIONS } from "../settingsSections";
-import type { AppControllerModel } from "../useAppController";
+import { usePlatformLanguage, usePlatformNavigation } from "../platform/platformContexts";
 
 /** The Settings panel: the language choice, then one collapsible section per
- * entry of SETTINGS_SECTIONS that applies to the current workspace. All state
- * and commands originate in the controller.
+ * entry of SETTINGS_SECTIONS that applies to the current workspace.
  */
-export function SettingsView({ model }: { model: AppControllerModel["settings"] }) {
-  const {
-    activeSettingsSection,
-    changeLanguage,
-    languagePreference,
-    t,
-    toggleSettingsSection,
-    workspaceMode,
-  } = model;
+export function SettingsView() {
+  const { changeLanguage, languagePreference, t } = usePlatformLanguage();
+  const { activeSettingsSection, toggleSettingsSection, workspaceMode } = usePlatformNavigation();
   return (
     <>
       <section className="control-section">
@@ -54,7 +47,7 @@ export function SettingsView({ model }: { model: AppControllerModel["settings"] 
             isOpen={activeSettingsSection === id}
             onToggle={() => toggleSettingsSection(id)}
           >
-            <Component model={model} />
+            <Component />
           </CollapsibleSection>
         </Fragment>
       ))}

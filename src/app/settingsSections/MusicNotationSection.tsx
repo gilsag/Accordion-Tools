@@ -1,42 +1,9 @@
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type MusicNotationSectionModel = Pick<
-  AppControllerModel["settings"],
-  | "musicNotationBarsPerLine"
-  | "musicNotationChordFontSize"
-  | "musicNotationIncludeDescription"
-  | "musicNotationIncludeSummary"
-  | "musicNotationIncludeTitle"
-  | "musicNotationNoteNamesInNoteheads"
-  | "musicNotationPlacement"
-  | "musicNotationScale"
-  | "musicNotationStaffSeparator"
-  | "musicNotationStaffWidth"
-  | "musicNotationUseBarsPerLine"
-  | "setMusicNotationBarsPerLine"
-  | "setMusicNotationChordFontSize"
-  | "setMusicNotationIncludeDescription"
-  | "setMusicNotationIncludeSummary"
-  | "setMusicNotationIncludeTitle"
-  | "setMusicNotationNoteNamesInNoteheads"
-  | "setMusicNotationPlacement"
-  | "setMusicNotationScale"
-  | "setMusicNotationStaffSeparator"
-  | "setMusicNotationStaffWidth"
-  | "setMusicNotationUseBarsPerLine"
-  | "setStradellaChordQualityLabels"
-  | "setStradellaMarkCounterbass"
-  | "setStradellaNotationMode"
-  | "stradellaChordQualityLabels"
-  | "stradellaMarkCounterbass"
-  | "stradellaNotationMode"
-  | "t"
->;
+import { usePlatformLanguage, usePlatformNotation } from "../platform/platformContexts";
 
 /** Music notation: score position, engraving options and Stradella writing. */
-export default function MusicNotationSection({ model }: { model: MusicNotationSectionModel }) {
+export default function MusicNotationSection() {
+  const { t } = usePlatformLanguage();
   const {
     musicNotationBarsPerLine,
     musicNotationChordFontSize,
@@ -66,8 +33,7 @@ export default function MusicNotationSection({ model }: { model: MusicNotationSe
     stradellaChordQualityLabels,
     stradellaMarkCounterbass,
     stradellaNotationMode,
-    t,
-  } = model;
+  } = usePlatformNotation();
   return (
     <>
       <SegmentedChoice
