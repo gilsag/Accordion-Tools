@@ -27,20 +27,11 @@ import {
   usePlatformTools,
   usePlatformPlayback,
 } from "./platform/platformContexts";
-import { useSideButtonSettings } from "./platform/useSideButtonSettings";
 import { useRhythmTrainer } from "../features/rhythmTrainer/rhythmTrainerContext";
 import {
   TREBLE_PRESET_BUTTON_SIZE,
   PIANO_TREBLE_PRESET_BUTTON_SIZE,
 } from "../instrument/sizePresets";
-import { useBassPatternResults } from "../features/bassPatternPlayer/useBassPatternPlayer";
-import { useSequenceResults } from "../features/sequences/useSequenceState";
-import { useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
-import { useHarmonyExplorerResults } from "../features/harmonyExplorer/useHarmonyExplorer";
-import { useHarmonyProgressionResults } from "../features/progressionAssistant/useProgressionAssistant";
-import { useStradellaChordFinderResults } from "../features/stradellaChordFinder/useStradellaChordFinder";
-import { useScaleFinderResults } from "../features/scaleFinder/useScaleFinder";
-import { useTrebleChordFinderButtons } from "../features/trebleChordFinder/useTrebleChordFinder";
 import { flushSync } from "react-dom";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { translateKnownLabel } from "../i18n/catalog";
@@ -54,7 +45,6 @@ import type {
   TrebleSizePreset,
 } from "../types";
 import { stradellaVisibleRoots, stradellaVisibleRows } from "../stradella";
-import { stradellaButtonsFor, trebleButtonsFor } from "./sideButtons";
 
 import {
   accordionDiagramFilename,
@@ -67,6 +57,15 @@ import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
 import { calculateDiagramGeometry } from "../diagram/diagramGeometry";
 import { useToolHandle } from "./platform/useToolHandle";
 import { playerHandle } from "./tools/toolHandles";
+import { useDiagramButtons } from "./diagram/diagramButtonsContext";
+import { useScaleFinderOutput } from "../features/scaleFinder/scaleFinderContext";
+import { useTrebleChordFinderOutput } from "../features/trebleChordFinder/trebleChordFinderContext";
+import { useStradellaChordFinderOutput } from "../features/stradellaChordFinder/stradellaChordFinderContext";
+import { useAnnotateDiagramOutput } from "../features/annotateDiagram/annotateDiagramContext";
+import { useAbcPlayerOutput } from "../features/abcPlayer/abcPlayerContext";
+import { useBassPatternPlayerOutput } from "../features/bassPatternPlayer/bassPatternPlayerContext";
+import { useHarmonyExplorerOutput } from "../features/harmonyExplorer/harmonyExplorerContext";
+import { useProgressionAssistantOutput } from "../features/progressionAssistant/progressionAssistantContext";
 import { useHarmonyExplorer } from "../features/harmonyExplorer/harmonyExplorerContext";
 import { useProgressionAssistant } from "../features/progressionAssistant/progressionAssistantContext";
 import { useScaleFinder } from "../features/scaleFinder/scaleFinderContext";
@@ -81,8 +80,7 @@ import {
   sequenceModeShowsArrows,
   sequenceModeShowsNumbers,
 } from "../tools/sequenceTools";
-import { SCALE_FINDER_OPTIONS, getScaleFinderTrebleButtons } from "../tools/scaleFinderTools";
-import { getChordFinderTrebleButtons } from "../tools/chordFinderTools";
+import { SCALE_FINDER_OPTIONS } from "../tools/scaleFinderTools";
 import {
   realizationAnnotation,
   finderChordSymbol,
@@ -91,7 +89,6 @@ import { analyzeConfiguredStradellaVoicing } from "../tools/stradellaChordFinder
 import { voicingIntervalLayout } from "../tools/stradellaChordFinder/voicingIntervalLayout";
 import { describeTrebleChord } from "../tools/trebleChordExplanation";
 import { playButtonSound } from "../sound";
-import type { ProgressionSearchSettings } from "../tools/harmonyExplorer/progression";
 import { progressionFinderPattern } from "../tools/harmonyExplorer/progression";
 import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
 
@@ -255,7 +252,6 @@ export function useAppController() {
     setFingeringDraft,
     annotateMode,
     setAnnotateMode,
-    selectedButtonIds,
     toggleButtonSelected,
     toggleButtonFinger,
     applyFingerToSelected,
@@ -341,7 +337,6 @@ export function useAppController() {
     setAbcPositionBeat,
     abcPlaybackState,
     setAbcPlaybackState,
-    abcActiveButtonIds,
     setAbcActiveButtonIds,
     abcStradellaMode,
     setAbcStradellaMode,
@@ -388,7 +383,6 @@ export function useAppController() {
     bassPatternEditorMessage,
     bassPatternPlaybackState,
     setBassPatternPlaybackState,
-    bassPatternActiveButtonIds,
     setBassPatternActiveButtonIds,
     bassPatternTimeoutsRef,
     bassPatternPlaybackRunRef,
@@ -446,7 +440,6 @@ export function useAppController() {
     setStradellaChordFinderRealizationIndex,
     stradellaChordFinderRequestedBass,
     setStradellaChordFinderRequestedBass,
-    stradellaChordFinderRootPreferred,
     finderMaxButtons,
     setFinderMaxButtons,
     finderSpanColumns,
@@ -461,8 +454,6 @@ export function useAppController() {
     setStradellaNoteLevels,
     finderExplanationFontSize,
     setFinderExplanationFontSize,
-    pendingProgressionRealizationKey,
-    setPendingProgressionRealizationKey,
     stradellaChordFinderMarkRootBass,
     setStradellaChordFinderMarkRootBass,
     stradellaRequestedBassOnBassButton,
@@ -665,140 +656,23 @@ export function useAppController() {
   const isPianoTreble = side === "treble" && trebleLayout === "piano";
   const stradellaAccidental = accidental === "enharmonic" ? "natural" : accidental;
 
-  /* Layout settings shared by the current side and the ABC Player's second diagram. */
-  const sideButtonSettings = useSideButtonSettings();
-
   /* Generated button list for the current side and layout settings. */
-  const buttons = useMemo(() => {
-    if (side === "stradella") return stradellaButtonsFor(sideButtonSettings);
-    // Compact treble sizes keep the Finder result and the marked buttons visible.
-    return trebleButtonsFor(sideButtonSettings, (reference) => {
-      const requested = chordFinderActive
-        ? getChordFinderTrebleButtons(
-            reference,
-            chordFinderRoot,
-            chordFinderPattern,
-            chordFinderInversion,
-            chordFinderOctave,
-            trebleChordVoicingMode,
-          )
-        : scaleFinderActive
-          ? getScaleFinderTrebleButtons(
-              reference,
-              scaleFinderRoot,
-              scaleFinderPattern,
-              scaleFinderRowLimit,
-            )
-          : [];
-      const markedIds = new Set([
-        ...Object.entries(overlays)
-          .filter(([, overlay]) => overlay.selected || overlay.finger)
-          .map(([id]) => id),
-        ...sequenceSteps.map((step) => step.id),
-      ]);
-      return [...requested, ...reference.filter((button) => markedIds.has(button.id))];
-    });
-  }, [
-    side,
-    sideButtonSettings,
-    chordFinderActive,
-    chordFinderRoot,
-    chordFinderPattern,
-    chordFinderInversion,
-    chordFinderOctave,
-    trebleChordVoicingMode,
-    scaleFinderActive,
-    scaleFinderRoot,
-    scaleFinderPattern,
-    scaleFinderRowLimit,
-    overlays,
-    sequenceSteps,
-  ]);
+  const { buttons } = useDiagramButtons();
 
-  /* The ABC Player's Both hands view plays voice 1 on the treble and voice 2
-   * on the Stradella, so it also needs the buttons of the side not on screen. */
-  const abcCompanionButtons = useMemo(() => {
-    if (workspaceMode !== "accordion" || abcHands !== "both" || !abcText.trim()) return null;
-    return side === "stradella"
-      ? trebleButtonsFor(sideButtonSettings)
-      : stradellaButtonsFor(sideButtonSettings);
-  }, [workspaceMode, abcHands, abcText, side, sideButtonSettings]);
-
-  // The Progression Assistant searches each chord with the Chord Finder's own
-  // limits, register model and bass rules, so that with both weights at 0 every
-  // chord gets the Chord Finder's first realization.
-  const progressionSearch = useMemo<ProgressionSearchSettings>(
-    () => ({
-      rootPosition: harmonyProgressionRootPosition,
-      requestedBassOnBassButton: stradellaRequestedBassOnBassButton,
-      maxButtons: finderMaxButtons,
-      spanColumns: finderSpanColumns,
-      registerModel: stradellaRegisterModel,
-      minimumNominalGap: stradellaMinimumNominalGap,
-    }),
-    [
-      harmonyProgressionRootPosition,
-      stradellaRequestedBassOnBassButton,
-      finderMaxButtons,
-      finderSpanColumns,
-      stradellaRegisterModel,
-      stradellaMinimumNominalGap,
-    ],
-  );
   const {
     harmonyProgressionPlan,
     harmonyProgressionRealizationOptions,
     progressionPreviewButtonIds,
     harmonyProgressionActiveButtonIdSet,
     harmonyProgressionNoteStep,
-  } = useHarmonyProgressionResults({
-    basses,
-    buttonSize,
-    spacing,
-    stradellaAccidental,
-    diagramVerticalSpacing,
-    harmonyProgression,
-    harmonyProgressionHandMovementWeight,
-    harmonyProgressionVoiceLeadingWeight,
-    harmonyProgressionRealizationKeys,
-    harmonyProgressionPreviewIndex,
-    harmonyProgressionNoteStepId,
-    setHarmonyProgressionRealizationKeys,
-    setHarmonyProgressionPreviewIndex,
-    setHarmonyProgressionNoteStepId,
-    harmonyProgressionActiveButtonIds,
-    harmonyProgressionPulseSilent,
-    activeToolSection,
-    progressionSearch,
-  });
+  } = useProgressionAssistantOutput();
 
-  const selectedButtons = selectedButtonIds
-    .map((id) => buttons.find((button) => button.id === id))
-    .filter(Boolean) as DiagramButton[];
-
-  const sequenceStepsWithButtons = useSequenceResults(sequenceSteps, buttons);
+  const { selectedButtons, sequenceStepsWithButtons } = useAnnotateDiagramOutput();
 
   /* Finder result selectors use the *existing diagram buttons*, retaining exact
    * button identity, ordering, octave/row choices, and playback/export semantics. */
-  const { stradellaScaleFinderResult, scaleFinderButtons } = useScaleFinderResults({
-    buttons,
-    side,
-    isTrebleLikeSide,
-    scaleFinderActive,
-    scaleFinderRoot,
-    scaleFinderPattern,
-    scaleFinderRowLimit,
-  });
-  const chordFinderButtons = useTrebleChordFinderButtons({
-    buttons,
-    isTrebleLikeSide,
-    chordFinderActive,
-    chordFinderRoot,
-    chordFinderPattern,
-    chordFinderInversion,
-    chordFinderOctave,
-    trebleChordVoicingMode,
-  });
+  const { stradellaScaleFinderResult, scaleFinderButtons } = useScaleFinderOutput();
+  const { chordFinderButtons } = useTrebleChordFinderOutput();
 
   const {
     abcParseResult,
@@ -808,18 +682,8 @@ export function useAppController() {
     abcActiveButtonIdSet,
     abcVoiceCount,
     abcBothHands,
-  } = useAbcPlayerResults({
-    abcText,
-    abcPlaybackState,
-    setAbcTempoBpm,
-    abcActiveButtonIds,
-    abcStradellaMode,
-    abcTrebleChordSymbolsMode,
-    side,
-    isTrebleLikeSide,
-    buttons,
-    companionButtons: abcCompanionButtons,
-  });
+    abcCompanionButtons,
+  } = useAbcPlayerOutput();
 
   const {
     selectedBassPattern,
@@ -828,18 +692,7 @@ export function useAppController() {
     bassPatternTotalBeats,
     bassPatternMissingText,
     bassPatternActiveButtonIdSet,
-  } = useBassPatternResults({
-    bassPatternDefinitions,
-    bassPatternId,
-    chordProgressionDefinitions,
-    chordProgressionId,
-    buttons,
-    side,
-    bassPatternRoot,
-    bassPatternChordVoicing,
-    bassPatternBarsPerChord,
-    bassPatternActiveButtonIds,
-  });
+  } = useBassPatternPlayerOutput();
 
   const { renderNotationInto, bassPatternRenderedNotationAbc, sequenceRenderedNotationAbc } =
     useAccordionNotation({
@@ -909,26 +762,7 @@ export function useAppController() {
     stradellaChordFinderBassButtonFallback,
     stradellaChordFinderReachExtendedTo,
     stradellaChordFinderEffectiveRequestedBass,
-  } = useStradellaChordFinderResults({
-    buttons,
-    side,
-    stradellaRegisterModel,
-    stradellaChordFinderActive,
-    stradellaChordFinderRoot,
-    stradellaChordFinderPattern,
-    stradellaChordFinderMode,
-    stradellaChordFinderRealizationIndex,
-    stradellaChordFinderRequestedBass,
-    stradellaChordFinderRootPreferred,
-    finderMaxButtons,
-    finderSpanColumns,
-    stradellaMinimumNominalGap,
-    stradellaChordFinderMarkRootBass,
-    stradellaRequestedBassOnBassButton,
-    pendingProgressionRealizationKey,
-    setPendingProgressionRealizationKey,
-    setStradellaChordFinderRealizationIndex,
-  });
+  } = useStradellaChordFinderOutput();
 
   const finderButtons = stradellaChordFinderActive
     ? stradellaChordFinderButtons
@@ -974,17 +808,7 @@ export function useAppController() {
     harmonyRelatedName,
     harmonyScale,
     harmonyExplanation,
-  } = useHarmonyExplorerResults({
-    harmonyReferenceFamilyId,
-    harmonyRelatedFamilyId,
-    harmonyScaleId,
-    harmonyDiatonicOnly,
-    harmonyHighlightDiatonic,
-    harmonyRingVisibility,
-    harmonyShowNoteRing,
-    language,
-    t,
-  });
+  } = useHarmonyExplorerOutput();
 
   const {
     playHarmonyChord,

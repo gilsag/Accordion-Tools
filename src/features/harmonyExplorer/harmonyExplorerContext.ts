@@ -1,5 +1,5 @@
 import { createToolContext } from "../../app/tools/createToolContext";
-import type { useHarmonyExplorerState } from "./useHarmonyExplorer";
+import type { useHarmonyExplorerResults, useHarmonyExplorerState } from "./useHarmonyExplorer";
 import type { useHarmonyRecordingState } from "./useHarmonyRecording";
 
 /** The circle's selection and display preferences, the recording made on
@@ -12,3 +12,8 @@ export type HarmonyExplorerState = ReturnType<typeof useHarmonyExplorerState> &
   };
 export const [HarmonyExplorerContext, useHarmonyExplorer] =
   createToolContext<HarmonyExplorerState>("useHarmonyExplorer");
+
+/** What the tool derives from its state and the diagram's buttons. */
+export type HarmonyExplorerOutput = ReturnType<typeof useHarmonyExplorerResults>;
+export const [HarmonyExplorerOutputContext, useHarmonyExplorerOutput] =
+  createToolContext<HarmonyExplorerOutput>("useHarmonyExplorerOutput");

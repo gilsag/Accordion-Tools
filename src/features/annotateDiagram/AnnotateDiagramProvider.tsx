@@ -1,4 +1,6 @@
-import { useEffect, type ReactNode } from "react";
+import { useCallback, useEffect, type ReactNode } from "react";
+import { KeepVisibleRequest } from "../../app/diagram/KeepVisible";
+import type { DiagramButton } from "../../types";
 import {
   usePlatformAppearance,
   usePlatformNavigation,
@@ -46,11 +48,26 @@ export function AnnotateDiagramProvider({ children }: { children: ReactNode }) {
     if (activeToolSection !== "annotateDiagram" || annotateMode !== "sequence")
       setSequenceRenderedNotationVisible(false);
   }, [activeToolSection, annotateMode, setSequenceRenderedNotationVisible]);
+  // On a compact treble size, the diagram keeps the marked buttons on screen.
+  const { overlays: overlayMap } = overlays;
+  const { sequenceSteps } = sequence;
+  const keepMarksVisible = useCallback(
+    (reference: DiagramButton[]) => {
+      const markedIds = new Set([
+        ...Object.entries(overlayMap)
+          .filter(([, overlay]) => overlay.selected || overlay.finger)
+          .map(([id]) => id),
+        ...sequenceSteps.map((step) => step.id),
+      ]);
+      return reference.filter((button) => markedIds.has(button.id));
+    },
+    [overlayMap, sequenceSteps],
+  );
   return (
     <AnnotateDiagramContext.Provider
       value={{ overlays, sequence, annotations, toggleSequenceNotation }}
     >
-      {children}
+      <KeepVisibleRequest request={keepMarksVisible}>{children}</KeepVisibleRequest>
     </AnnotateDiagramContext.Provider>
   );
 }
