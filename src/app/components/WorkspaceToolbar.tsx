@@ -6,6 +6,7 @@ import { DOWNLOAD_FORMATS, useDismissibleMenu } from "./toolbarMenuSupport";
 import type { Side, LeftPanelMode, DownloadFormat } from "../../types";
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 import type { ToolSection, WorkspaceMode } from "../toolRegistry";
+import { useShareLink } from "../shareLink/shareLinkContext";
 
 /** Presentational toolbar. Callbacks must retain App's stop/cancel and reset ordering. */
 export type WorkspaceToolbarProps = {
@@ -96,6 +97,7 @@ export function WorkspaceToolbar({
     };
   }, []);
   useDismissibleMenu(overflowRef);
+  const { copyShareLink } = useShareLink();
   function closeOverflow() {
     if (overflowRef.current) overflowRef.current.open = false;
   }
@@ -237,6 +239,15 @@ export function WorkspaceToolbar({
                 {t("ui.downloadKind", { kind: format.toUpperCase() })}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => {
+                closeOverflow();
+                void copyShareLink();
+              }}
+            >
+              {t("ui.copyLink")}
+            </button>
           </div>
         </div>
       </details>

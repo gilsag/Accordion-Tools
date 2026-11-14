@@ -8,6 +8,10 @@
  * session half a second after the last change, and never before startup has
  * finished, so a slow defaults file cannot replace the saved session.
  *
+ * A shared link is shown over the saved session without replacing it
+ * (`holdSession`): the session is stored again only once the settings differ
+ * from what the link showed, that is, once the person changes something.
+ *
  * Validation, aliases, migrations and the exported key order stay in
  * `settingsController.ts`; this module only gathers what those functions
  * need. */
@@ -53,6 +57,12 @@ export interface SettingsRegistry {
   missingOwners(): SettingsOwnerId[];
   /** Stops saving and forgets the saved session (the caller then reloads). */
   forgetSession(): void;
+  /** Runs `callback` once startup has applied the defaults and the saved
+   * session (at once if it already has). Returns a function that cancels it. */
+  whenStarted(callback: () => void): () => void;
+  /** Keeps the saved session as it is until the settings change after the
+   * values now being applied have settled. */
+  holdSession(): void;
 }
 
 type AnySlice = Record<string, unknown>;
@@ -62,6 +72,10 @@ export function createSettingsRegistry(): SettingsRegistry {
   let ready = false;
   let lastSaved: string | null = null;
   let saveTimer: ReturnType<typeof setTimeout> | undefined;
+  const startedCallbacks = new Set<() => void>();
+  // While a shared view is held: null until the view has settled, then the
+  // settings it showed. Saving resumes when the settings differ from it.
+  let held: { shown: string | null } | null = null;
 
   function missingOwners() {
     return SETTINGS_OWNER_IDS.filter((owner) => !readers.has(owner));
@@ -94,6 +108,11 @@ export function createSettingsRegistry(): SettingsRegistry {
 
   function save() {
     const serialized = serializeSession(collect());
+    if (held) {
+      if (held.shown === null) held.shown = serialized;
+      if (serialized === held.shown) return;
+      held = null;
+    }
     if (serialized === lastSaved) return;
     if (writeSavedSession(serialized)) lastSaved = serialized;
   }
@@ -148,6 +167,8 @@ export function createSettingsRegistry(): SettingsRegistry {
           }
         }
         ready = true;
+        for (const callback of startedCallbacks) callback();
+        startedCallbacks.clear();
         scheduleSave();
       })();
       return () => {
@@ -164,6 +185,17 @@ export function createSettingsRegistry(): SettingsRegistry {
       ready = false;
       clearTimeout(saveTimer);
       clearSavedSession();
+    },
+    whenStarted(callback) {
+      if (ready) {
+        callback();
+        return () => {};
+      }
+      startedCallbacks.add(callback);
+      return () => startedCallbacks.delete(callback);
+    },
+    holdSession() {
+      held = { shown: null };
     },
   };
 }

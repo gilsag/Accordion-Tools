@@ -916,6 +916,9 @@ export const EN = {
   "ui.pngExportFailed": "The PNG could not be created. Try downloading SVG instead.",
   "ui.batchExportFailed": "The diagrams could not be exported.",
   "ui.diagramExportFailed": "The diagram could not be exported.",
+  "ui.copyLink": "Copy link",
+  "ui.linkCopied": "Link copied. It opens this instrument and chord.",
+  "ui.linkNotCopied": "The link could not be copied. Copy it from here: {url}",
   "ui.onlyChordsTransferred":
     "Individual notes cannot be sent to the Progression Assistant. Only chords will be transferred.",
   "ui.cannotSave": "Cannot save: {reason}",

@@ -49,7 +49,7 @@ If sound is enabled, the current scale path can be played back.
 
 ## Export
 
-Scale Finder markings are included in SVG/PNG downloads.
+Scale Finder markings are included in SVG/PNG downloads. **Copy link** copies a link that opens the same instrument and scale; see **Sharing a link** in the [Settings guide](settings.md).
 
 ## Related settings
 

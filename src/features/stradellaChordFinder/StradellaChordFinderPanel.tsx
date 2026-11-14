@@ -16,6 +16,7 @@ import { permittedRequestedBasses, ROOT_POSITION_BASS } from "./engine/harmonicI
 import { chordToneName } from "./engine/chordSpelling";
 import type { StradellaNoteLevels } from "./engine/diagramAnnotations";
 import type { MinimumNominalGap } from "./engine/voicingDensity";
+import { CopyLinkButton } from "../../app/shareLink/CopyLinkButton";
 
 type StradellaChordFinderPanelProps = {
   root: string;
@@ -226,6 +227,7 @@ export function StradellaChordFinderPanel({
           <button className="small-button" onClick={onExploreHarmony} disabled={!canExploreHarmony}>
             {t("tools.exploreHarmony")}
           </button>
+          <CopyLinkButton />
         </div>
 
         {mode === "bass-and-chords" && isActive && realizations.length > 1 && (

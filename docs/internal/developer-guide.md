@@ -223,6 +223,12 @@ The diagram's x axis is the instrument's circle-of-fifths direction; `utils.ts` 
 - Colours set from TypeScript (SVG presentation attributes, the PNG background, the footer's inline style, the default note colour) come from `DIAGRAM_COLORS` in `src/diagram/diagramColors.ts`; the token test keeps each equal to the `--diagram-*` token of the same name. User-chosen colours and the data tables (`COLOR_PRESETS`, the Harmony family colours) stay where they are.
 - `e2e/theme.spec.ts` checks that the page follows the system, that a chosen theme overrides it and survives a reload, and that SVG and PNG downloads and the score download are identical in both themes.
 
+## Shared links
+
+`src/app/shareLink/shareLink.ts` writes and reads the query string (`?side=stradella&basses=72&tool=stradella-chords&root=E&chord=minor7&n=2`). Instrument keys and the treble Chord Finder's and Scale Finder's choices are settings, so they travel as a settings document that the settings controller validates like an imported file; the Stradella Chord Finder's chord, bass, button limits and realization are tool state, validated in the module. A bad value is dropped, never an error.
+
+`ShareLinkProvider` (innermost in `AppProviders`) reads a link once, removes the query, and after startup calls `registry.holdSession()` and applies the settings. The registry then leaves the saved session alone until the settings differ from what the link showed, so a reload returns to the person's own setup unless they changed something. The tool opens in a later task: a new instrument layout clears the Finders when its render commits (`ToolCoordinatorProvider`), and the Stradella search resets the realization when its inputs change, so both steps wait for those effects. `copyShareLink()` builds the link from the current state; `CopyLinkButton` and both Download menus call it. Only the three Finders are shared; another open tool shares the instrument only.
+
 ## Page metadata
 
 `index.html` carries the description, a theme colour for each scheme (matching `--ui-bg`) and the Open Graph tags that give a shared link its title, description and image. Crawlers need absolute URLs, so the tags name the published site, `https://gilsag.github.io/Accordion-Tools/`; change them together with `base` in `vite.config.ts`. The image is `public/social-preview.png`, 1200 × 630, made from the Stradella Chord Finder's Em7 diagram. `tests/unit/release/site-metadata.test.ts` checks the tags, the URL against `base` and the image size.

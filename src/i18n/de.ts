@@ -930,6 +930,9 @@ export const DE: Record<TranslationKey, string> = {
     "Das PNG konnte nicht erstellt werden. Laden Sie stattdessen das SVG herunter.",
   "ui.batchExportFailed": "Die Diagramme konnten nicht exportiert werden.",
   "ui.diagramExportFailed": "Das Diagramm konnte nicht exportiert werden.",
+  "ui.copyLink": "Link kopieren",
+  "ui.linkCopied": "Link kopiert. Er öffnet dieses Instrument und diesen Akkord.",
+  "ui.linkNotCopied": "Der Link konnte nicht kopiert werden. Kopieren Sie ihn hier: {url}",
   "ui.onlyChordsTransferred":
     "Einzeltöne können nicht an den Akkordfolgen-Assistenten übertragen werden. Nur Akkorde werden übertragen.",
   "ui.cannotSave": "Speichern nicht möglich: {reason}",

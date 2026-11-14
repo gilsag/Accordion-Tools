@@ -9,6 +9,7 @@ import { CHORD_FINDER_OPTIONS } from "../../music/chordDefinitions";
 import { isExtendedChord } from "../../music/chordVoicingPolicy";
 import { HelpTip } from "../../components/ui/HelpTip";
 import { useI18n } from "../../i18n/useI18n";
+import { CopyLinkButton } from "../../app/shareLink/CopyLinkButton";
 
 type TrebleChordFinderPanelProps = {
   targetToneText: string;
@@ -168,6 +169,7 @@ export function TrebleChordFinderPanel({
           <button className="small-button" onClick={onPlay} disabled={buttonCount === 0}>
             {t("tools.playChord")}
           </button>
+          <CopyLinkButton />
         </div>
         <label className="checkbox-line">
           <input

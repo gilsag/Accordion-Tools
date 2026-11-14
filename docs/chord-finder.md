@@ -100,6 +100,10 @@ Choose the root, octave, chord type, **Inversion** and **Voicing**:
 
 If the chosen octave or keyboard range is missing a note, the result says so. **Show chord realization note below diagram** adds a line with the notes played and any notes missing, and **More explanation** explains why the result is complete or reduced.
 
+## Sharing a chord
+
+**Copy link** copies a link that opens the same instrument and chord, with the same requested bass and, in the Stradella Chord Finder, the same realization. See **Sharing a link** in the [Settings guide](settings.md).
+
 ## Titles and file names
 
 With **Settings → Title → Contextual** (the default), the diagram title names the chord as played, for example **Cm7/B♭ - Exact - 2 buttons** on Stradella or **Cmaj7 - selected 1st inversion - Exact** on the treble side. Downloaded files are named after the chord and the buttons used, in plain letters and numbers, so different realizations get different names.

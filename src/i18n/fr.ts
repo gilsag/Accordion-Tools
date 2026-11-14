@@ -937,6 +937,9 @@ export const FR: Record<TranslationKey, string> = {
   "ui.pngExportFailed": "Impossible de créer le PNG. Essayez de télécharger le SVG.",
   "ui.batchExportFailed": "Les diagrammes n’ont pas pu être exportés.",
   "ui.diagramExportFailed": "Le diagramme n’a pas pu être exporté.",
+  "ui.copyLink": "Copier le lien",
+  "ui.linkCopied": "Lien copié. Il ouvre cet instrument et cet accord.",
+  "ui.linkNotCopied": "Impossible de copier le lien. Copiez-le ici : {url}",
   "ui.onlyChordsTransferred":
     "Les notes individuelles ne peuvent pas être envoyées à l’assistant de progression. Seuls les accords seront transférés.",
   "ui.cannotSave": "Enregistrement impossible : {reason}",

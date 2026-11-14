@@ -3,6 +3,7 @@ import type { DownloadFormat } from "../../types";
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 import { DownloadIcon, ResetIcon } from "./toolbarIcons";
 import { DOWNLOAD_FORMATS, useDismissibleMenu } from "./toolbarMenuSupport";
+import { useShareLink } from "../shareLink/shareLinkContext";
 
 type Translate = ReturnType<typeof useLanguageSettings>["t"];
 
@@ -57,7 +58,8 @@ export function ResetMenu({
 }
 
 /** One menu for both formats; the last one used is remembered (it is also
- * the format of "Download all diagrams (ZIP)") and listed first. */
+ * the format of "Download all diagrams (ZIP)") and listed first. Copy link
+ * shares the instrument and the open Finder's choice. */
 export function DownloadMenu({
   t,
   downloadFormat,
@@ -68,6 +70,7 @@ export function DownloadMenu({
   onDownload: (format: DownloadFormat) => void;
 }) {
   const menuRef = useRef<HTMLDetailsElement | null>(null);
+  const { copyShareLink } = useShareLink();
   useDismissibleMenu(menuRef);
   return (
     <details ref={menuRef} className="reset-menu export-menu">
@@ -93,6 +96,15 @@ export function DownloadMenu({
             </button>
           ),
         )}
+        <button
+          type="button"
+          onClick={() => {
+            if (menuRef.current) menuRef.current.open = false;
+            void copyShareLink();
+          }}
+        >
+          {t("ui.copyLink")}
+        </button>
       </div>
     </details>
   );

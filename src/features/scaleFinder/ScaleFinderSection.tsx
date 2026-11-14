@@ -12,6 +12,7 @@ import { useTrebleChordFinder } from "../trebleChordFinder/trebleChordFinderCont
 import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../../app/optionLists";
 import { usePlatformInstrument, usePlatformLanguage } from "../../app/platform/platformContexts";
 import { useDiagramLabels } from "../../app/useDiagramLabels";
+import { CopyLinkButton } from "../../app/shareLink/CopyLinkButton";
 
 /** Scale Finder: scale, root, display mode and row limit. */
 export default function ScaleFinderSection() {
@@ -147,6 +148,7 @@ export default function ScaleFinderSection() {
           >
             {t("ui.playScale")}
           </button>
+          <CopyLinkButton />
         </div>
       </fieldset>
     </>

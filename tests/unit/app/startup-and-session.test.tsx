@@ -59,3 +59,24 @@ test("without default-settings.json the built-in defaults start the session", as
   const app = await renderApp();
   expect(savedSession().basses).toBe(app.model.settings.basses);
 });
+
+test("a held session (a shared link) is kept until the person changes something", async () => {
+  const app = await renderApp();
+  await expect.poll(() => savedSession()?.basses, { timeout: 2000 }).toBe("96");
+  // What a shared link does: hold the session, then show its own values.
+  app.settings.holdSession();
+  await app.run((model) => model.settings.setBasses("72"));
+  await new Promise((resolve) => setTimeout(resolve, 1200));
+  expect(savedSession().basses).toBe("96");
+  // The first change of the person's own adopts what is shown.
+  await app.run((model) => model.tools.setScaleFinderRoot("G"));
+  await expect.poll(() => savedSession().basses, { timeout: 2000 }).toBe("72");
+  expect(savedSession().scaleFinderRoot).toBe("G");
+});
+
+test("a callback waiting for startup runs once startup is done", async () => {
+  const app = await renderApp();
+  let ran = 0;
+  app.settings.whenStarted(() => ran++);
+  expect(ran, "startup had already finished, so it runs at once").toBe(1);
+});
