@@ -1,5 +1,5 @@
 import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
-import type { useAccordionNotation } from "./useAccordionNotation";
+import type { useScoreRendering } from "./platform/useScoreRendering";
 import { progressionPulsePlan } from "../audio/progressionPulsePlan";
 import { useCallback, useMemo } from "react";
 import type { useHarmonyExplorerState } from "../features/harmonyExplorer/useHarmonyExplorer";
@@ -36,7 +36,7 @@ export type UseProgressionNotationDeps = Pick<
   > &
   Pick<ReturnType<typeof useHarmonyProgressionResults>, "harmonyProgressionPlan"> &
   Pick<ReturnType<typeof useHarmonyExplorerState>, "harmonyShowEnharmonics"> &
-  Pick<ReturnType<typeof useAccordionNotation>, "renderNotationInto"> &
+  Pick<ReturnType<typeof useScoreRendering>, "renderNotationInto"> &
   Pick<ReturnType<typeof useSoundSettings>, "soundOptions" | "soundSequenceTempoBpm"> & {
     stradellaNotationMode: StradellaNotationPreferences["mode"];
     stradellaChordQualityLabels: StradellaNotationPreferences["chordQualityLabels"];

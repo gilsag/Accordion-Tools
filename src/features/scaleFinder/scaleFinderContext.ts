@@ -6,6 +6,9 @@ export const [ScaleFinderContext, useScaleFinder] =
   createToolContext<ScaleFinderState>("useScaleFinder");
 
 /** What the tool derives from its state and the diagram's buttons. */
-export type ScaleFinderOutput = ReturnType<typeof useScaleFinderResults>;
+export type ScaleFinderOutput = ReturnType<typeof useScaleFinderResults> & {
+  /** Plays the shown scale, one button after another. */
+  playScaleFinder(): void;
+};
 export const [ScaleFinderOutputContext, useScaleFinderOutput] =
   createToolContext<ScaleFinderOutput>("useScaleFinderOutput");

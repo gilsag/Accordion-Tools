@@ -5,8 +5,12 @@ import { useSideButtonSettings } from "../../app/platform/useSideButtonSettings"
 import { stradellaButtonsFor, trebleButtonsFor } from "../../app/sideButtons";
 import { AbcPlayerOutputContext, useAbcPlayer } from "./abcPlayerContext";
 import { useAbcPlayerResults } from "./useAbcPlayer";
+import { useAbcTransport } from "./useAbcTransport";
+import { useToolHandle } from "../../app/platform/useToolHandle";
+import { playerHandle } from "../../app/tools/toolHandles";
 
-/** The parsed tune, its events mapped to buttons, and what is lit. */
+/** The parsed tune, its events mapped to buttons, what is lit, and the
+ * transport that plays them. */
 export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
   const { buttons } = useDiagramButtons();
   const { side } = usePlatformInstrument();
@@ -31,10 +35,9 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
     buttons,
     companionButtons: abcCompanionButtons,
   });
-  const value = useMemo(
-    () => ({ ...results, abcCompanionButtons }),
-    [results, abcCompanionButtons],
-  );
+  const transport = useAbcTransport(state, results);
+  useToolHandle("abcPlayer", playerHandle(transport.stopAbcPlayback));
+  const value = { ...results, ...transport, abcCompanionButtons };
   return (
     <AbcPlayerOutputContext.Provider value={value}>{children}</AbcPlayerOutputContext.Provider>
   );

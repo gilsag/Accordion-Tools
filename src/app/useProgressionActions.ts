@@ -1,6 +1,7 @@
 import type { PlatformPlayback, PlatformTools } from "./platform/platformContexts";
 import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
-import type { useAccordionPlayback } from "./useAccordionPlayback";
+import type { AbcPlayerOutput } from "../features/abcPlayer/abcPlayerContext";
+import type { BassPatternPlayerOutput } from "../features/bassPatternPlayer/bassPatternPlayerContext";
 import type { useHarmonyActions } from "./useHarmonyActions";
 import { ROOT_POSITION_BASS } from "../tools/stradellaChordFinder/harmonicIdentity";
 import { convertProgressionPreset } from "../tools/harmonyExplorer/progressionPresets";
@@ -89,7 +90,8 @@ export type UseProgressionActionsDeps = Pick<
   Pick<ReturnType<typeof useWorkspaceNavigation>, "navigateToTool"> &
   Pick<ReturnType<typeof useTrebleChordFinderState>, "setChordFinderActive"> &
   Pick<ReturnType<typeof useScaleFinderState>, "setScaleFinderActive"> &
-  Pick<ReturnType<typeof useAccordionPlayback>, "stopAbcPlayback" | "stopBassPatternPlayback"> &
+  Pick<AbcPlayerOutput, "stopAbcPlayback"> &
+  Pick<BassPatternPlayerOutput, "stopBassPatternPlayback"> &
   Pick<PlatformPlayback, "setSoundEnginePlayer" | "startWhenSamplesReady"> & {
     stopSoundPlayback: PlatformTools["stopAllPlayback"];
   } & Pick<

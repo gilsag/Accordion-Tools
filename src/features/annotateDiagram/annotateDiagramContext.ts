@@ -20,6 +20,12 @@ export const [AnnotateDiagramContext, useAnnotateDiagram] =
 export type AnnotateDiagramOutput = {
   selectedButtons: DiagramButton[];
   sequenceStepsWithButtons: ReturnType<typeof useSequenceResults>;
+  /** The sequence's score. */
+  sequenceRenderedNotationAbc: string;
+  /** Plays the selection as an arpeggio, then together, in selection order. */
+  playSelectedButtons(): void;
+  /** Plays the sequence in step order once its samples are ready. */
+  playRecordedSequence(): void;
 };
 export const [AnnotateDiagramOutputContext, useAnnotateDiagramOutput] =
   createToolContext<AnnotateDiagramOutput>("useAnnotateDiagramOutput");

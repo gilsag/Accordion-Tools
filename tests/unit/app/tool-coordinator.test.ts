@@ -146,3 +146,10 @@ test("a tool's handle is the union of the parts registered for it", () => {
   coordinator.scoreToggled("bassPatternPlayer");
   expect(trace).toEqual(["hideScore", "stop", "stopAllSound"]);
 });
+
+test("a starting player can stop one other tool or hide one Finder", () => {
+  const { coordinator, trace } = recordingCoordinator();
+  coordinator.stopTool("bassPatternPlayer");
+  coordinator.deactivateTool("stradellaChordFinder");
+  expect(trace).toEqual(["bassPatternPlayer.stop", "stradellaChordFinder.deactivate"]);
+});

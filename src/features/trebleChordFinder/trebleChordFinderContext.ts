@@ -11,6 +11,8 @@ export const [TrebleChordFinderContext, useTrebleChordFinder] =
 /** What the tool derives from its state and the diagram's buttons. */
 export type TrebleChordFinderOutput = {
   chordFinderButtons: ReturnType<typeof useTrebleChordFinderButtons>;
+  /** Plays the shown chord as an arpeggio, then together. */
+  playChordFinder(): void;
 };
 export const [TrebleChordFinderOutputContext, useTrebleChordFinderOutput] =
   createToolContext<TrebleChordFinderOutput>("useTrebleChordFinderOutput");

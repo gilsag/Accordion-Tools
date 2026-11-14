@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
-import { usePlatformInstrument } from "../../app/platform/platformContexts";
+import { usePlatformInstrument, usePlatformSound } from "../../app/platform/platformContexts";
+import { playButtonSequence } from "../../sound";
 import { ScaleFinderOutputContext, useScaleFinder } from "./scaleFinderContext";
 import { useScaleFinderResults } from "./useScaleFinder";
 
@@ -9,13 +10,18 @@ import { useScaleFinderResults } from "./useScaleFinder";
 export function ScaleFinderOutputProvider({ children }: { children: ReactNode }) {
   const { buttons } = useDiagramButtons();
   const { side } = usePlatformInstrument();
+  const { soundOptions } = usePlatformSound();
   const state = useScaleFinder();
-  const value = useScaleFinderResults({
+  const results = useScaleFinderResults({
     ...state,
     buttons,
     side,
     isTrebleLikeSide: side === "treble",
   });
+  const value = {
+    ...results,
+    playScaleFinder: () => playButtonSequence(results.scaleFinderButtons, soundOptions),
+  };
   return (
     <ScaleFinderOutputContext.Provider value={value}>{children}</ScaleFinderOutputContext.Provider>
   );

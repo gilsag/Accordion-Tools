@@ -46,6 +46,10 @@ export interface ToolCoordinator {
   stopAllPlayback(): void;
   /** A tool's score was shown or hidden: hide the scores it hides. */
   scoreToggled(id: ToolId): void;
+  /** Stops one tool's playback, for a player that starts or pauses. */
+  stopTool(id: ToolId): void;
+  /** Hides one Finder's result, for a player that starts. */
+  deactivateTool(id: ToolId): void;
 }
 
 const TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];
@@ -118,6 +122,14 @@ export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoor
     },
 
     stopAllPlayback,
+
+    stopTool(id) {
+      handle(id)?.stop?.();
+    },
+
+    deactivateTool(id) {
+      handle(id)?.deactivate?.();
+    },
 
     scoreToggled(id) {
       for (const hidden of definition(id).score?.hides ?? []) handle(hidden)?.hideScore?.();

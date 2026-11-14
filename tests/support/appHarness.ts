@@ -120,3 +120,18 @@ export function resetBrowserState() {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 }
+
+/** jsdom has no Web Audio. With sound off the transports still read the
+ * audio clock to time their steps; this stand-in provides only that clock. */
+export function installAudioClock() {
+  class ClockOnlyAudioContext {
+    state = "running";
+    get currentTime() {
+      return performance.now() / 1000;
+    }
+    resume() {
+      return Promise.resolve();
+    }
+  }
+  vi.stubGlobal("AudioContext", ClockOnlyAudioContext);
+}

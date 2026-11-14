@@ -55,8 +55,6 @@ import {
 } from "../diagram/diagramExport";
 import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
 import { calculateDiagramGeometry } from "../diagram/diagramGeometry";
-import { useToolHandle } from "./platform/useToolHandle";
-import { playerHandle } from "./tools/toolHandles";
 import { useDiagramButtons } from "./diagram/diagramButtonsContext";
 import { useScaleFinderOutput } from "../features/scaleFinder/scaleFinderContext";
 import { useTrebleChordFinderOutput } from "../features/trebleChordFinder/trebleChordFinderContext";
@@ -96,8 +94,7 @@ import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
 // app and receives only the values it needs, typed from the hooks that own them.
 import { useSettingsTransfer } from "./useSettingsTransfer";
 import { useOwnedSettings } from "./platform/useOwnedSettings";
-import { useAccordionPlayback } from "./useAccordionPlayback";
-import { useAccordionNotation } from "./useAccordionNotation";
+import { useScoreRendering } from "./platform/useScoreRendering";
 import { useDiagramLabels } from "./useDiagramLabels";
 import { useHarmonyActions } from "./useHarmonyActions";
 import { useProgressionActions } from "./useProgressionActions";
@@ -110,8 +107,8 @@ import { useProgressionNotation } from "./useProgressionNotation";
  * settings, tools and workspace prop groups.
  *
  * Feature work lives in its own hooks:
- * - Accordion workspace: useAccordionPlayback (sound, transports, sample
- *   preloading), useAccordionNotation (player staff notation), useDiagramLabels.
+ * - Accordion workspace: useDiagramLabels. Each tool's transport, Play
+ *   commands and score text are in its output provider.
  * - Harmony workspace: useHarmonyActions (chord playback, recording).
  * - Shared: useProgressionActions and useProgressionNotation (Progression
  *   Assistant and the commands between Harmony, the assistant and the
@@ -121,9 +118,6 @@ export function useAppController() {
   /* Reference to the SVG element, used for downloads and click-coordinate conversion. */
   const svgRef = useRef<SVGSVGElement | null>(null);
   const harmonySvgRef = useRef<SVGSVGElement | null>(null);
-  const abcPlaybackTimeoutsRef = useRef<number[]>([]);
-  const abcPlaybackStartedAtRef = useRef<number | null>(null);
-  const abcPlaybackStartBeatRef = useRef(0);
 
   /* Shared state is owned by the platform providers (src/app/platform/);
    * the controller only reads it. */
@@ -368,10 +362,6 @@ export function useAppController() {
     setBassPatternChordVoicing,
     bassPatternBarsPerChord,
     setBassPatternBarsPerChord,
-    bassPatternLoopMode,
-    setBassPatternLoopMode,
-    bassPatternLoopCount,
-    setBassPatternLoopCount,
     bassPatternExportFormat,
     setBassPatternExportFormat,
     bassPatternEditorExpanded,
@@ -382,10 +372,6 @@ export function useAppController() {
     setBassPatternEditorText,
     bassPatternEditorMessage,
     bassPatternPlaybackState,
-    setBassPatternPlaybackState,
-    setBassPatternActiveButtonIds,
-    bassPatternTimeoutsRef,
-    bassPatternPlaybackRunRef,
     bassPatternNotationRef,
     bassPatternEditorErrors,
     saveCustomBassPattern,
@@ -667,12 +653,19 @@ export function useAppController() {
     harmonyProgressionNoteStep,
   } = useProgressionAssistantOutput();
 
-  const { selectedButtons, sequenceStepsWithButtons } = useAnnotateDiagramOutput();
+  const {
+    selectedButtons,
+    sequenceStepsWithButtons,
+    sequenceRenderedNotationAbc,
+    playSelectedButtons,
+    playRecordedSequence,
+  } = useAnnotateDiagramOutput();
 
   /* Finder result selectors use the *existing diagram buttons*, retaining exact
    * button identity, ordering, octave/row choices, and playback/export semantics. */
-  const { stradellaScaleFinderResult, scaleFinderButtons } = useScaleFinderOutput();
-  const { chordFinderButtons } = useTrebleChordFinderOutput();
+  const { stradellaScaleFinderResult, scaleFinderButtons, playScaleFinder } =
+    useScaleFinderOutput();
+  const { chordFinderButtons, playChordFinder } = useTrebleChordFinderOutput();
 
   const {
     abcParseResult,
@@ -683,6 +676,9 @@ export function useAppController() {
     abcVoiceCount,
     abcBothHands,
     abcCompanionButtons,
+    stopAbcPlayback,
+    pauseAbcPlayback,
+    scheduleAbcPlayback,
   } = useAbcPlayerOutput();
 
   const {
@@ -692,64 +688,15 @@ export function useAppController() {
     bassPatternTotalBeats,
     bassPatternMissingText,
     bassPatternActiveButtonIdSet,
+    stopBassPatternPlayback,
+    exportSelectedBassPattern,
+    scheduleBassPatternPlayback,
+    bassPatternRepeatSelection,
+    setBassPatternRepeatSelection,
+    bassPatternRenderedNotationAbc,
   } = useBassPatternPlayerOutput();
 
-  const { renderNotationInto, bassPatternRenderedNotationAbc, sequenceRenderedNotationAbc } =
-    useAccordionNotation({
-      abcNotationRef,
-      abcRenderedNotationVisible,
-      abcText,
-      bassPatternBarsPerChord,
-      bassPatternEvents,
-      bassPatternLoopCount,
-      bassPatternLoopMode,
-      bassPatternNotationRef,
-      bassPatternRenderedNotationVisible,
-      bassPatternRoot,
-      bassPatternTempoBpm,
-      musicNotationBarsPerLine,
-      musicNotationChordFontSize,
-      musicNotationIncludeDescription,
-      musicNotationIncludeSummary,
-      musicNotationIncludeTitle,
-      musicNotationScale,
-      musicNotationStaffSeparator,
-      musicNotationStaffWidth,
-      musicNotationUseBarsPerLine,
-      stradellaNotationMode,
-      stradellaChordQualityLabels,
-      stradellaMarkCounterbass,
-      musicNotationNoteNamesInNoteheads,
-      selectedBassPattern,
-      selectedChordProgression,
-      sequenceNotationRef,
-      sequenceRenderedNotationVisible,
-      sequenceStepsWithButtons,
-      side,
-    });
-
-  const bassPatternRepeatSelection =
-    bassPatternLoopMode === "infinite"
-      ? "loop"
-      : bassPatternLoopMode === "fixed"
-        ? String(bassPatternLoopCount)
-        : "1";
-
-  function setBassPatternRepeatSelection(value: string) {
-    stopBassPatternPlayback();
-    if (value === "loop") {
-      setBassPatternLoopMode("infinite");
-      return;
-    }
-    const count = Math.max(1, Math.min(64, Math.round(Number(value) || 1)));
-    if (count <= 1) {
-      setBassPatternLoopMode("once");
-      setBassPatternLoopCount(1);
-    } else {
-      setBassPatternLoopMode("fixed");
-      setBassPatternLoopCount(count);
-    }
-  }
+  const { renderNotationInto } = useScoreRendering();
 
   const {
     stradellaChordFinderRealizations,
@@ -762,6 +709,7 @@ export function useAppController() {
     stradellaChordFinderBassButtonFallback,
     stradellaChordFinderReachExtendedTo,
     stradellaChordFinderEffectiveRequestedBass,
+    playStradellaChordFinder,
   } = useStradellaChordFinderOutput();
 
   const finderButtons = stradellaChordFinderActive
@@ -867,57 +815,6 @@ export function useAppController() {
 
   const { samplesLoading, soundEnginePlayer, setSoundEnginePlayer, startWhenSamplesReady } =
     usePlatformPlayback();
-  const {
-    playStradellaChordFinder,
-    playScaleFinder,
-    playChordFinder,
-    playSelectedButtons,
-    playRecordedSequence,
-    stopAbcPlayback,
-    pauseAbcPlayback,
-    scheduleAbcPlayback,
-    stopBassPatternPlayback,
-    exportSelectedBassPattern,
-    scheduleBassPatternPlayback,
-  } = useAccordionPlayback({
-    bassPatternRenderedNotationAbc,
-    abcMappedEvents,
-    abcPlaybackStartBeatRef,
-    abcPlaybackStartedAtRef,
-    abcPlaybackState,
-    abcPlaybackTimeoutsRef,
-    abcPositionBeat,
-    abcTempoBpm,
-    abcTotalBeats,
-    bassPatternBarsPerChord,
-    bassPatternEvents,
-    bassPatternExportFormat,
-    bassPatternLoopCount,
-    bassPatternLoopMode,
-    bassPatternPlaybackRunRef,
-    bassPatternRoot,
-    bassPatternTempoBpm,
-    bassPatternTimeoutsRef,
-    bassPatternTotalBeats,
-    chordFinderButtons,
-    scaleFinderButtons,
-    selectedBassPattern,
-    selectedButtons,
-    selectedChordProgression,
-    sequenceStepsWithButtons,
-    setAbcActiveButtonIds,
-    setAbcPlaybackState,
-    setAbcPositionBeat,
-    setBassPatternActiveButtonIds,
-    setBassPatternPlaybackState,
-    setChordFinderActive,
-    setHarmonyProgressionActiveButtonIds,
-    setScaleFinderActive,
-    setStradellaChordFinderActive,
-    soundOptions,
-    stradellaChordFinderMode,
-    stradellaChordFinderPlaybackButtons,
-  });
 
   const rhythmTrainer = useRhythmTrainer();
 
@@ -1357,8 +1254,6 @@ export function useAppController() {
    * own providers as the tools leave the controller. */
   const clearHarmonyWork = () => resetWork("harmony");
   const resetDiagramWork = () => resetWork("accordion");
-  useToolHandle("abcPlayer", playerHandle(stopAbcPlayback));
-  useToolHandle("bassPatternPlayer", playerHandle(stopBassPatternPlayback));
 
   return {
     language,
