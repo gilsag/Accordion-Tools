@@ -17,6 +17,8 @@ On wider screens you can drag the edge between the diagram and the Tools or Sett
 
 Every player (ABC Player, Bass Pattern Player, Progression Assistant, Sequence in Annotate Diagram and the Harmony recording) uses one playback bar under the diagram, with **Play** (or **Continue** after Pause), **Pause** where the player supports it, and **Stop**. On phones it stays visible with the diagram when the Tools sheet is closed. While the needed La Melodiosa samples load, it shows **Loading sounds…** and starts as soon as they are ready.
 
+The ABC Player, Bass Pattern Player, Progression Assistant and Rhythm Trainer keep time, so their playback bar also has **Count-in** and **Metronome**. **Count-in** plays one bar of clicks before the music starts; **Metronome** clicks on every beat while it plays, with the first beat of each bar higher. Compound meters such as 6/8 click on the dotted quarter. Both are remembered and apply to all four players from the next **Play**; the clicks follow the volume and the sound switch.
+
 ## Sharing a link
 
 **Copy link** (in the Chord Finder, the Scale Finder and the **Download** menu) copies a link to what you are looking at: the side, the number of basses or the treble layout, and the open Finder with its chord or scale, including which realization of a Stradella chord is shown. A teacher can send "Em7 on a 72-bass" this way.

@@ -24,6 +24,7 @@ import {
   type LaMelodiosaRegion,
   type LaMelodiosaSide,
 } from "../instrument/laMelodiosa";
+import { clickGrid, countInMs, scheduleBeatClicks, scheduleCountIn } from "./clickTrack";
 
 /*
   Browser sound engine for the accordion diagram.
@@ -45,6 +46,10 @@ export type SoundOptions = {
   noteDurationMs: number;
   /** Share of a written note's length that sounds in timed playback (0.3–1). */
   articulation: number;
+  /** One bar of clicks before the rhythmic players start (playback bar). */
+  countIn?: boolean;
+  /** A click on every beat while the rhythmic players play (playback bar). */
+  metronome?: boolean;
   sequenceTempoBpm: number;
   musetteDetuneCents: number;
   attackMs: number;
@@ -599,6 +604,27 @@ export function playButtonSound(button: DiagramButton, options: SoundOptions, ti
   playNotes(notesForButton(button, options), options, 0, timing);
 }
 
+/** A short woodblock-like click for the count-in and metronome
+ * (`clickTrack.ts`). The accented first beat of a bar is higher and louder.
+ * Like every note, it stops with stopAllSound(). */
+export function playMetronomeClick(when: number, accent: boolean, options: SoundOptions) {
+  if (!options.enabled) return;
+  const context = getAudioContext();
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const peak = clamp(options.volume, 0, 1) * (accent ? 0.9 : 0.6);
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(accent ? 1760 : 1320, when);
+  gain.gain.setValueAtTime(0, when);
+  gain.gain.linearRampToValueAtTime(peak, when + 0.002);
+  gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.05);
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(when);
+  oscillator.stop(when + 0.06);
+  activeOscillators.push(oscillator);
+}
+
 /** Current AudioContext time in seconds, the clock timed players schedule on. */
 export function audioClockNow() {
   return getAudioContext().currentTime;
@@ -725,7 +751,18 @@ export function playButtonRhythmProgression(
   const beatsPerChord =
     pattern === "march" ? 4 : pattern === "waltz" ? 3 : pattern === "oom-pah" ? 2 : 1;
   const ports = soundClockPorts();
-  const origin = audioTimelineOrigin(ports.now);
+  // The rhythm's meter: one chord per bar, except "block", one chord per beat of 4/4.
+  const grid = clickGrid(
+    pattern === "waltz" ? "3/4" : pattern === "oom-pah" ? "2/4" : "4/4",
+    beatMs,
+  );
+  const origin = audioTimelineOrigin(ports.now) + countInMs(grid, options) / 1000;
+  const click = (when: number, accent: boolean) => playMetronomeClick(when, accent, options);
+  scheduleCountIn(ports, origin, grid, options, click);
+  scheduleBeatClicks(ports, origin, grid, options, click, {
+    fromMs: 0,
+    toMs: combinations.length * beatsPerChord * beatMs,
+  });
   // Each pulse lasts one beat; "block" holds the whole chord for its beat.
   const pulseDurationMs = beatMs * options.articulation;
 

@@ -212,9 +212,15 @@ test("Timer cancellation remains per-feature", () => {
     "src/audio/playbackScheduling.ts",
     {
       "./audioClock": audioClock,
+      "./clickTrack": loadTs(
+        "src/audio/clickTrack.ts",
+        { "./audioClock": audioClock },
+        { window: windowMock },
+      ),
       "./sound": {
         playButtonSound: (button, options, timing) =>
           soundCalls.push([button.id, options.volume, timing]),
+        playMetronomeClick: () => {},
         audioClockNow: () => audioNow,
         TIMED_NOTE_ARTICULATION: 0.85,
       },

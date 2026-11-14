@@ -176,6 +176,7 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
           canPlay: harmonyProgressionPlan.playable,
           onPlay: playOptimizedHarmonyProgression,
           onStop: stopAllPlayback,
+          rhythmic: true,
         }
       : null;
   const scoreToggle: ScoreToggle | null =

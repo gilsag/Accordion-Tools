@@ -99,6 +99,8 @@
   "soundReleaseMs": 120,
   "soundNoteDurationMs": 420,
   "soundArticulation": 0.85,
+  "countIn": false,
+  "metronome": false,
   "harmonyShowEnharmonics": false,
   "harmonyShowSeparators": true,
   "harmonyShowLegend": true,

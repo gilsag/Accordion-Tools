@@ -13,6 +13,7 @@ import { scheduleAbcMappedPlayback } from "../../audio/playbackScheduling";
 import { startAbcTransport } from "../../audio/playbackStart";
 import { clearPlaybackTimers, playbackClockMs } from "../../audio/playbackTransport";
 import { stopAllSound } from "../../audio/sound";
+import { abcMeter } from "./abcMeter";
 import type { AbcPlayerState } from "./abcPlayerContext";
 import type { useAbcPlayerResults } from "./useAbcPlayer";
 
@@ -103,6 +104,7 @@ export function useAbcTransport(
           schedule: () =>
             scheduleAbcMappedPlayback({
               abcMappedEvents,
+              abcMeter: abcMeter(state.abcText),
               startBeat,
               abcTempoBpm,
               abcTotalBeats,

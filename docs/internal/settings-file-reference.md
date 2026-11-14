@@ -145,6 +145,8 @@ Both were added after v0.18.0 without a settings-version change: files without t
 | `soundAttackMs` | Default sound attack time. |
 | `soundReleaseMs` | Default sound release time. |
 | `soundNoteDurationMs` | Note duration for clicks, chord previews and step-by-step playback. The ABC Player, Bass Pattern Player and Progression Assistant rhythms instead sound each note for its written length (by default 85% of it; see `soundArticulation`). |
+| `countIn` | **Count-in** on the playback bar: one bar of clicks before the ABC Player, Bass Pattern Player, Progression Assistant and Rhythm Trainer start. Default: `false`. |
+| `metronome` | **Metronome** on the playback bar: a click on every beat while those players play. Default: `false`. |
 | `soundArticulation` | **Note length in players**: how much of each written note sounds in the ABC Player, Bass Pattern Player, Progression Assistant rhythms and the Harmony recording, from `0.3` to `1` (100% is fully legato). The button stays highlighted for the same time. Default: `0.85`. |
 | `stradellaBassVoicing` | Chooses the synthetic voicing used for Stradella bass buttons. |
 

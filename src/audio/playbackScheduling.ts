@@ -1,6 +1,7 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import type { SoundOptions } from "./sound";
-import { audioClockNow, playButtonSound } from "./sound";
+import { audioClockNow, playButtonSound, playMetronomeClick } from "./sound";
+import { clickGrid, countInMs, scheduleBeatClicks, scheduleCountIn } from "./clickTrack";
 import {
   AUDIO_LOOKAHEAD_MS,
   audioTimelineOrigin,
@@ -12,6 +13,8 @@ import type { BassPatternPlaybackEvent } from "../features/bassPatternPlayer/bas
 
 type AbcScheduleArgs = {
   abcMappedEvents: MappedAbcEvent[];
+  /** The tune's meter, for the count-in and metronome. */
+  abcMeter?: string;
   startBeat: number;
   abcTempoBpm: number;
   abcTotalBeats: number;
@@ -29,6 +32,7 @@ type AbcScheduleArgs = {
  */
 export function scheduleAbcMappedPlayback({
   abcMappedEvents,
+  abcMeter = "4/4",
   startBeat,
   abcTempoBpm,
   abcTotalBeats,
@@ -48,7 +52,19 @@ export function scheduleAbcMappedPlayback({
     now: audioClockNow,
     push: (id: number) => abcPlaybackTimeoutsRef.current.push(id),
   };
-  const origin = audioTimelineOrigin(ports.now);
+  // ABC beats are quarter notes. With a count-in the tune starts one bar later,
+  // so the pause position counts from then.
+  const grid = clickGrid(abcMeter, beatMs);
+  const leadInMs = countInMs(grid, soundOptions);
+  const origin = audioTimelineOrigin(ports.now) + leadInMs / 1000;
+  if (abcPlaybackStartedAtRef.current !== null) abcPlaybackStartedAtRef.current += leadInMs;
+  const click = (when: number, accent: boolean) => playMetronomeClick(when, accent, soundOptions);
+  scheduleCountIn(ports, origin, grid, soundOptions, click);
+  scheduleBeatClicks(ports, origin, grid, soundOptions, click, {
+    fromMs: startBeat * beatMs,
+    toMs: abcTotalBeats * beatMs,
+    positionMs: startBeat * beatMs,
+  });
 
   eventsToSchedule.forEach((event) => {
     const offsetMs = Math.max(0, (event.startBeat - startBeat) * beatMs);
@@ -94,7 +110,7 @@ export function scheduleAbcMappedPlayback({
       setAbcActiveButtonIds([]);
       abcPlaybackStartedAtRef.current = null;
     },
-    Math.max(0, (abcTotalBeats - startBeat) * beatMs) + 120,
+    leadInMs + Math.max(0, (abcTotalBeats - startBeat) * beatMs) + 120,
   );
   abcPlaybackTimeoutsRef.current.push(stopTimeout);
 }
@@ -104,6 +120,8 @@ type BassPatternScheduleArgs = {
   bassPatternTempoBpm: number;
   /** Meter units in one tempo beat: 3 in compound meters such as 6/8, else 1. */
   bassPatternUnitsPerBeat?: number;
+  /** The pattern's meter, for the count-in and metronome. */
+  bassPatternMeter?: string;
   bassPatternTotalBeats: number;
   bassPatternLoopMode: "once" | "fixed" | "infinite";
   bassPatternLoopCount: number;
@@ -122,6 +140,7 @@ export function scheduleBassPatternEvents({
   bassPatternEvents,
   bassPatternTempoBpm,
   bassPatternUnitsPerBeat = 1,
+  bassPatternMeter = "4/4",
   bassPatternTotalBeats,
   bassPatternLoopMode,
   bassPatternLoopCount,
@@ -143,11 +162,21 @@ export function scheduleBassPatternEvents({
     now: audioClockNow,
     push: (id: number) => bassPatternTimeoutsRef.current.push(id),
   };
-  const origin = audioTimelineOrigin(ports.now);
+  // A meter unit is the meter's written note (an eighth in 6/8).
+  const denominator = Number(bassPatternMeter.split("/")[1]) || 4;
+  const grid = clickGrid(bassPatternMeter, (beatMs * denominator) / 4);
+  const leadInMs = countInMs(grid, soundOptions);
+  const origin = audioTimelineOrigin(ports.now) + leadInMs / 1000;
+  const click = (when: number, accent: boolean) => playMetronomeClick(when, accent, soundOptions);
+  scheduleCountIn(ports, origin, grid, soundOptions, click);
 
   const scheduleCycle = (cycleIndex: number) => {
     if (bassPatternPlaybackRunRef.current !== runId) return;
     const cycleOffsetMs = cycleIndex * cycleBeats * beatMs;
+    scheduleBeatClicks(ports, origin, grid, soundOptions, click, {
+      fromMs: cycleOffsetMs,
+      toMs: cycleOffsetMs + cycleBeats * beatMs,
+    });
 
     bassPatternEvents.forEach((event) => {
       const eventSoundOptions = {
@@ -216,7 +245,7 @@ export function scheduleBassPatternEvents({
       setBassPatternPlaybackState("stopped");
       setBassPatternActiveButtonIds([]);
     },
-    Math.max(0, cycleBeats * repeats * beatMs) + 140,
+    leadInMs + Math.max(0, cycleBeats * repeats * beatMs) + 140,
   );
   bassPatternTimeoutsRef.current.push(stopTimeout);
 }

@@ -125,6 +125,31 @@
   color: var(--ui-on-accent);
   opacity: 1;
 }
+/* Count-in and metronome: small switches after the transport buttons. */
+.playback-bar-clicks {
+  display: flex;
+  gap: var(--space-2);
+}
+.playback-bar-toggle {
+  min-height: 30px;
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ui-text-secondary);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.playback-bar-toggle:hover {
+  background: var(--ui-accent-subtle);
+}
+.playback-bar-toggle[aria-pressed="true"] {
+  border-color: var(--ui-accent);
+  background: var(--ui-accent-subtle);
+  color: var(--ui-accent-strong);
+}
 @media (max-width: 620px) {
   .playback-bar {
     margin: var(--space-3) var(--space-3) 0;
@@ -137,6 +162,13 @@
     flex: 1 1 0;
     justify-content: center;
     min-height: 44px;
+  }
+  .playback-bar-clicks {
+    width: 100%;
+  }
+  .playback-bar-toggle {
+    flex: 1 1 0;
+    min-height: 40px;
   }
 }
 

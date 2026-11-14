@@ -79,6 +79,8 @@ export const SETTINGS_OWNERS = {
   laMelodiosaFollowStradellaRegisters: "sound",
   laMelodiosaTrebleRegister: "sound",
   soundArticulation: "sound",
+  countIn: "sound",
+  metronome: "sound",
   soundAttackMs: "sound",
   soundEnabled: "sound",
   soundMusetteDetuneCents: "sound",

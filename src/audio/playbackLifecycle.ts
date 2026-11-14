@@ -71,7 +71,8 @@ export function pauseAbcTransport(ports: AbcPausePorts) {
   const elapsedBeats =
     ports.startedAt === null
       ? 0
-      : ((ports.nowMs() - ports.startedAt) / 1000) * (ports.tempoBpm / 60);
+      : // Before the count-in ends, the tune has not moved.
+        Math.max(0, ((ports.nowMs() - ports.startedAt) / 1000) * (ports.tempoBpm / 60));
   const position = Math.min(ports.totalBeats, ports.startingBeat + elapsedBeats);
   ports.setPosition(position);
   ports.setState("paused");

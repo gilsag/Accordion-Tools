@@ -919,6 +919,11 @@ export const EN = {
   "ui.copyLink": "Copy link",
   "ui.linkCopied": "Link copied. It opens this instrument and chord.",
   "ui.linkNotCopied": "The link could not be copied. Copy it from here: {url}",
+  "ui.clicks": "Count-in and metronome",
+  "ui.countIn": "Count-in",
+  "ui.countInHelp": "One bar of clicks before the music starts",
+  "ui.metronome": "Metronome",
+  "ui.metronomeHelp": "A click on every beat while it plays",
   "ui.onlyChordsTransferred":
     "Individual notes cannot be sent to the Progression Assistant. Only chords will be transferred.",
   "ui.cannotSave": "Cannot save: {reason}",

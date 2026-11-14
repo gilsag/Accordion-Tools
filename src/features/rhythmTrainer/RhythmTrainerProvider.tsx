@@ -55,6 +55,7 @@ export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
     canPlay: value.canPlay,
     onPlay: () => void value.play(),
     onStop: value.stop,
+    rhythmic: true,
   };
   // The Rhythm Trainer's score is a panel of its own (two hands, cursor).
   const scoreToggle: ScoreToggle | null =

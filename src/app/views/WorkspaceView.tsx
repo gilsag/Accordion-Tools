@@ -105,7 +105,8 @@ export function WorkspaceView({
   const { colorTheme, accidentalStyle, buttonSize, labelFont, labelFontSize, showButtonLabels } =
     usePlatformAppearance();
   const { chordLabelMode } = usePlatformSpelling();
-  const { soundEnabled, setSoundEnabled } = usePlatformSound();
+  const { soundEnabled, setSoundEnabled, countIn, setCountIn, metronome, setMetronome } =
+    usePlatformSound();
   const { samplesLoading } = usePlatformPlayback();
   const { coordinator, resetWork, resetTool } = usePlatformTools();
   const { svgRef, downloadFormat, setDownloadFormat, mobileDiagramView, setMobileDiagramView } =
@@ -304,6 +305,7 @@ export function WorkspaceView({
         <PlaybackBar
           transport={transport}
           loading={samplesLoading || rhythmTrainer.loading}
+          clicks={{ countIn, metronome, setCountIn, setMetronome }}
           t={t}
         />
       )}

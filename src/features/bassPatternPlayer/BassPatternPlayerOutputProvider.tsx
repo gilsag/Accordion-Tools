@@ -71,6 +71,7 @@ export function BassPatternPlayerOutputProvider({ children }: { children: ReactN
           canPlay: results.bassPatternEvents.length > 0,
           onPlay: transport.scheduleBassPatternPlayback,
           onStop: transport.stopBassPatternPlayback,
+          rhythmic: true,
         }
       : null;
   const { language } = usePlatformLanguage();

@@ -938,6 +938,11 @@ export const IT: Record<TranslationKey, string> = {
   "ui.copyLink": "Copia link",
   "ui.linkCopied": "Link copiato. Apre questo strumento e questo accordo.",
   "ui.linkNotCopied": "Impossibile copiare il link. Copialo da qui: {url}",
+  "ui.clicks": "Conteggio iniziale e metronomo",
+  "ui.countIn": "Conteggio iniziale",
+  "ui.countInHelp": "Una battuta di clic prima che inizi la musica",
+  "ui.metronome": "Metronomo",
+  "ui.metronomeHelp": "Un clic su ogni movimento durante la riproduzione",
   "ui.onlyChordsTransferred":
     "Le note singole non possono essere inviate all’Assistente delle progressioni. Verranno trasferiti solo gli accordi.",
   "ui.cannotSave": "Impossibile salvare: {reason}",

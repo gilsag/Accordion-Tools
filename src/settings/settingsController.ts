@@ -196,6 +196,8 @@ export interface SettingsSetters {
   ) => void;
   setSoundNoteDurationMs: (value: NonNullable<DefaultSettingsFile["soundNoteDurationMs"]>) => void;
   setSoundArticulation: (value: NonNullable<DefaultSettingsFile["soundArticulation"]>) => void;
+  setCountIn: (value: NonNullable<DefaultSettingsFile["countIn"]>) => void;
+  setMetronome: (value: NonNullable<DefaultSettingsFile["metronome"]>) => void;
   setSoundReleaseMs: (value: NonNullable<DefaultSettingsFile["soundReleaseMs"]>) => void;
   setSoundSequenceTempoBpm: (
     value: NonNullable<DefaultSettingsFile["soundSequenceTempoBpm"]>,
@@ -285,6 +287,8 @@ export function applyStartupSettings(
     setDownloadFormat,
     setInterfaceDensity,
     setInterfaceTheme,
+    setCountIn,
+    setMetronome,
     setLaMelodiosaBassRegister,
     setLaMelodiosaFollowStradellaRegisters,
     setLaMelodiosaTrebleRegister,
@@ -433,6 +437,8 @@ export function applyStartupSettings(
   if (isOneOf(defaults.interfaceTheme, INTERFACE_THEME_VALUES)) {
     setInterfaceTheme(defaults.interfaceTheme);
   }
+  if (typeof defaults.countIn === "boolean") setCountIn(defaults.countIn);
+  if (typeof defaults.metronome === "boolean") setMetronome(defaults.metronome);
   if (typeof defaults.showStatusBar === "boolean") {
     setShowStatusBar(defaults.showStatusBar);
   }
@@ -923,6 +929,8 @@ export function applyImportedSettings(
     setDownloadFormat,
     setInterfaceDensity,
     setInterfaceTheme,
+    setCountIn,
+    setMetronome,
     setMusicNotationBarsPerLine,
     setMusicNotationChordFontSize,
     setMusicNotationIncludeDescription,
@@ -1037,6 +1045,8 @@ export function applyImportedSettings(
     setInterfaceDensity(settings.interfaceDensity);
   if (isOneOf(settings.interfaceTheme, INTERFACE_THEME_VALUES))
     setInterfaceTheme(settings.interfaceTheme);
+  if (typeof settings.countIn === "boolean") setCountIn(settings.countIn);
+  if (typeof settings.metronome === "boolean") setMetronome(settings.metronome);
   if (typeof settings.showStatusBar === "boolean") setShowStatusBar(settings.showStatusBar);
   if (isOneOf(settings.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES))
     setScaleFinderDisplayMode(settings.scaleFinderDisplayMode);
@@ -1276,6 +1286,8 @@ export type SettingsExportSnapshot = Required<
     | "soundReleaseMs"
     | "soundNoteDurationMs"
     | "soundArticulation"
+    | "countIn"
+    | "metronome"
     | "harmonyShowEnharmonics"
     | "harmonyShowSeparators"
     | "harmonyShowLegend"
@@ -1408,6 +1420,8 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     soundMusetteDetuneCents,
     soundNoteDurationMs,
     soundArticulation,
+    countIn,
+    metronome,
     soundReleaseMs,
     soundSequenceTempoBpm,
     soundSource,
@@ -1549,6 +1563,8 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     soundReleaseMs,
     soundNoteDurationMs,
     soundArticulation,
+    countIn,
+    metronome,
     harmonyShowEnharmonics,
     harmonyShowSeparators,
     harmonyShowLegend,

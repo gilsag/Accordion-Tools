@@ -9,6 +9,7 @@ import {
   currentPlaybackGeneration,
   onStopAllSound,
   playButtonSound,
+  playMetronomeClick,
   prepareSamplesFor,
   samplesReadyFor,
   stopAllSound,
@@ -34,6 +35,7 @@ import {
   rhythmEventKey,
   type RhythmMeter,
 } from "./rhythmModel";
+import { clickGrid, countInMs, scheduleBeatClicks, scheduleCountIn } from "../../audio/clickTrack";
 
 export function useRhythmTrainerState({
   sideButtonSettings,
@@ -217,7 +219,16 @@ export function useRhythmTrainerState({
         timeouts.current.push(id);
       },
     };
-    const origin = audioTimelineOrigin(ports.now);
+    // A unit is the meter's written note (an eighth in 6/8).
+    const grid = clickGrid(meter, (msUnit * Number(meter.split("/")[1])) / 4);
+    const leadInMs = countInMs(grid, soundOptions);
+    const origin = audioTimelineOrigin(ports.now) + leadInMs / 1000;
+    const click = (when: number, accent: boolean) => playMetronomeClick(when, accent, soundOptions);
+    scheduleCountIn(ports, origin, grid, soundOptions, click);
+    scheduleBeatClicks(ports, origin, grid, soundOptions, click, {
+      fromMs: 0,
+      toMs: repeats * cycleUnits * msUnit,
+    });
     const addIds = (ids: string[]) => {
       ids.forEach((id) => activeCounts.current.set(id, (activeCounts.current.get(id) ?? 0) + 1));
       setActiveIds([...activeCounts.current.keys()]);
@@ -278,7 +289,7 @@ export function useRhythmTrainerState({
         () => {
           if (run.current === runId) stopTimers();
         },
-        repeats * cycleUnits * msUnit + 170,
+        leadInMs + repeats * cycleUnits * msUnit + 170,
       ),
     );
   };

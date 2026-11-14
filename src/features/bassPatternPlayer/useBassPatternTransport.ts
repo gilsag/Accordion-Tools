@@ -94,6 +94,7 @@ export function useBassPatternTransport(
               bassPatternTempoBpm,
               bassPatternUnitsPerBeat: bassPatternBeat(selectedBassPattern?.meter ?? "4/4")
                 .unitsPerBeat,
+              bassPatternMeter: selectedBassPattern?.meter ?? "4/4",
               bassPatternTotalBeats,
               bassPatternLoopMode,
               bassPatternLoopCount,

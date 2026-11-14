@@ -14,6 +14,9 @@ export type PlaybackTransport = {
   onPlay: () => void;
   onPause?: () => void;
   onStop: () => void;
+  /** Plays in time, so the bar offers the count-in and metronome switches
+   * (ABC Player, Bass Pattern Player, Progression Assistant, Rhythm Trainer). */
+  rhythmic?: boolean;
 };
 
 /** Each player's entry for the playback bar, keyed by tool. A player whose

@@ -933,6 +933,11 @@ export const DE: Record<TranslationKey, string> = {
   "ui.copyLink": "Link kopieren",
   "ui.linkCopied": "Link kopiert. Er öffnet dieses Instrument und diesen Akkord.",
   "ui.linkNotCopied": "Der Link konnte nicht kopiert werden. Kopieren Sie ihn hier: {url}",
+  "ui.clicks": "Einzählen und Metronom",
+  "ui.countIn": "Einzählen",
+  "ui.countInHelp": "Ein Takt Klicks, bevor die Musik beginnt",
+  "ui.metronome": "Metronom",
+  "ui.metronomeHelp": "Ein Klick auf jedem Schlag während der Wiedergabe",
   "ui.onlyChordsTransferred":
     "Einzeltöne können nicht an den Akkordfolgen-Assistenten übertragen werden. Nur Akkorde werden übertragen.",
   "ui.cannotSave": "Speichern nicht möglich: {reason}",

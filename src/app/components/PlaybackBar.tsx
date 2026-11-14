@@ -19,18 +19,30 @@ function Icon({ kind }: { kind: "play" | "pause" | "stop" }) {
   );
 }
 
+/** The count-in and metronome switches (saved settings, src/audio/clickTrack.ts). */
+export type ClickSwitches = {
+  countIn: boolean;
+  metronome: boolean;
+  setCountIn: (value: boolean) => void;
+  setMetronome: (value: boolean) => void;
+};
+
 /** One transport under the diagram, shared by every player, so playback is
- * reachable next to what it highlights (and on phones without the Tools sheet). */
+ * reachable next to what it highlights (and on phones without the Tools sheet).
+ * Players that play in time also get the count-in and metronome switches;
+ * a change applies from the next Play. */
 export function PlaybackBar({
   transport,
   loading,
+  clicks,
   t,
 }: {
   transport: PlaybackTransport;
   loading: boolean;
+  clicks: ClickSwitches;
   t: ReturnType<typeof useLanguageSettings>["t"];
 }) {
-  const { label, state, canPlay, onPlay, onPause, onStop } = transport;
+  const { label, state, canPlay, onPlay, onPause, onStop, rhythmic } = transport;
   return (
     <div className="playback-bar" role="group" aria-label={`${t("ui.playback")}: ${label}`}>
       <span className="playback-bar-label">{label}</span>
@@ -62,6 +74,28 @@ export function PlaybackBar({
           <Icon kind="stop" /> {t("ui.stop")}
         </button>
       </div>
+      {rhythmic && (
+        <div className="playback-bar-clicks" role="group" aria-label={t("ui.clicks")}>
+          <button
+            type="button"
+            className="playback-bar-toggle"
+            aria-pressed={clicks.countIn}
+            title={t("ui.countInHelp")}
+            onClick={() => clicks.setCountIn(!clicks.countIn)}
+          >
+            {t("ui.countIn")}
+          </button>
+          <button
+            type="button"
+            className="playback-bar-toggle"
+            aria-pressed={clicks.metronome}
+            title={t("ui.metronomeHelp")}
+            onClick={() => clicks.setMetronome(!clicks.metronome)}
+          >
+            {t("ui.metronome")}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

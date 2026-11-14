@@ -166,6 +166,8 @@ export type DefaultSettingsFile = Partial<{
   soundNoteDurationMs: number;
   /** Share of each written note that sounds in timed playback (0.3–1). New in version 2. */
   soundArticulation: number;
+  countIn: boolean;
+  metronome: boolean;
   harmonyShowEnharmonics: boolean;
   harmonyShowSeparators: boolean;
   harmonyShowLegend: boolean;

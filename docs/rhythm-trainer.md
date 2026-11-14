@@ -7,7 +7,7 @@ The Rhythm Trainer plays a left-hand accompaniment and a right-hand rhythm toget
 1. Choose a meter: **2/4**, **3/4**, **4/4** or **6/8**. The lists of accompaniments and right-hand rhythms change to match.
 2. Choose the left-hand accompaniment, the right-hand rhythm and the **Treble notes** pattern. The three are independent.
 3. Choose a key and a chord progression. The progressions are the same ones the Bass Pattern Player offers (cadences, jazz, pop, blues and others). Each chord lasts the number of bars the progression gives it.
-4. Set the tempo and the number of repetitions (1, 2 or 4), then press **Play** in the Tools panel or in the playback bar under the diagram. **Stop** silences the exercise and clears the highlights.
+4. Set the tempo and the number of repetitions (1, 2 or 4), then press **Play** in the Tools panel or in the playback bar under the diagram. **Stop** silences the exercise and clears the highlights. **Count-in** and **Metronome** on the playback bar add a bar of clicks before the exercise and a click on every beat while it plays.
 
 If a button or pattern the exercise needs is not available on the current layout, Play is disabled and the missing item is named. Short button keyboards may widen their visible range to include the notes required.
 

@@ -59,6 +59,7 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
     onPlay: () => transport.scheduleAbcPlayback(state.abcPositionBeat),
     onPause: transport.pauseAbcPlayback,
     onStop: transport.stopAbcPlayback,
+    rhythmic: true,
   };
   // The tune's own score, rendered from the editor's text.
   const abcScoreTitle = results.abcParseResult.title || "ABC notation";

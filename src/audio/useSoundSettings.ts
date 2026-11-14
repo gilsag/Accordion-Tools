@@ -32,6 +32,9 @@ export function useSoundSettings(stradellaRegisterModel: StradellaRegisterModel)
   // and Harmony players (also how long its button stays highlighted).
   const [soundArticulation, setSoundArticulation] = useState(DEFAULT_NOTE_ARTICULATION);
   const [soundSequenceTempoBpm, setSoundSequenceTempoBpm] = useState(80);
+  // Playback-bar switches for the rhythmic players (src/audio/clickTrack.ts).
+  const [countIn, setCountIn] = useState(false);
+  const [metronome, setMetronome] = useState(false);
   const [stradellaBassVoicing, setStradellaBassVoicing] =
     useState<StradellaBassVoicing>("single-low");
   /* Consolidated sound options passed to the Web Audio helper functions. */
@@ -53,6 +56,8 @@ export function useSoundSettings(stradellaRegisterModel: StradellaRegisterModel)
       articulation: soundArticulation,
       sequenceTempoBpm: soundSequenceTempoBpm,
       stradellaBassVoicing,
+      countIn,
+      metronome,
     }),
     [
       soundEnabled,
@@ -71,6 +76,8 @@ export function useSoundSettings(stradellaRegisterModel: StradellaRegisterModel)
       soundArticulation,
       soundSequenceTempoBpm,
       stradellaBassVoicing,
+      countIn,
+      metronome,
     ],
   );
 
@@ -105,6 +112,10 @@ export function useSoundSettings(stradellaRegisterModel: StradellaRegisterModel)
     setSoundSequenceTempoBpm,
     stradellaBassVoicing,
     setStradellaBassVoicing,
+    countIn,
+    setCountIn,
+    metronome,
+    setMetronome,
     soundOptions,
   };
 }

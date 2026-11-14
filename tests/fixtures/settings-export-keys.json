@@ -111,6 +111,8 @@
   "soundReleaseMs",
   "soundNoteDurationMs",
   "soundArticulation",
+  "countIn",
+  "metronome",
   "harmonyShowEnharmonics",
   "harmonyShowSeparators",
   "harmonyShowLegend",

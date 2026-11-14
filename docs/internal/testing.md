@@ -23,7 +23,7 @@ Coverage counts statements run by the unit tests only; the browser tests are not
 | `abc` | `src/features/abcPlayer` | ABC parsing, ties, repeats, two-hand playback, the bundled example tunes and their catalog, the player's hooks |
 | `rhythm` | `src/features/rhythmTrainer` | Rhythm Trainer meters, templates, treble pitch patterns, generated notation and score highlighting |
 | `harmony` | `src/features/harmonyExplorer`, `src/features/progressionAssistant`, `tests/unit/harmony` | Harmony Explorer engine, integration, recording and hooks; the progression optimizer, its realization selection, note selection, hooks and panel; the progression checks that span both |
-| `audio` | `tests/unit/audio` | Sample and register pitch mapping |
+| `audio` | `tests/unit/audio` | Sample and register pitch mapping; count-in and metronome click grids and timing |
 | `display` | `tests/unit/display` | Chord symbols, voicing chart layout, row label fitting, PNG export conversion, the design tokens (no colour outside the token files, every token defined, TypeScript drawing colours equal to their tokens) |
 | `i18n` | `tests/unit/i18n` | Six catalogs, language detection, translated options, explanations and diagram labels |
 | `modules` | `tests/unit/modules` | Settings I/O, migrations, import traces and the saved session; in-page notices; navigation and the tool registry; the diagram's appearance, overlay and annotation hooks; command and capture order; audio scheduling and export services; progression chord types, ranking weights and rhythms |
