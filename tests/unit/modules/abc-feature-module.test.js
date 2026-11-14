@@ -1,121 +1,99 @@
-/** ABC Player behavioral boundary tests for the extracted ABC state/selector.
- * Musical parsing and timing accuracy are covered separately by test:abc.
+/** ABC Player behavioral boundary tests for the ABC state and results hooks,
+ * rendered with React. The parser engine is replaced, so the tests see what
+ * the hook asks of it; musical parsing and timing accuracy are covered
+ * separately by test:abc.
+ * @vitest-environment jsdom
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { loadIsolated, withRootBaseUrl } from "../../support/isolatedModule.js";
-import { test } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, test, vi } from "vitest";
+import {
+  useAbcPlayerResults,
+  useAbcPlayerState,
+} from "../../../src/features/abcPlayer/useAbcPlayer";
 
-const path = "src/features/abcPlayer/useAbcPlayer.ts";
-const source = readFileSync(path, "utf8");
-let index = 0;
-const slots = [];
-const effects = [];
-const stateCalls = [];
-const mockReact = {
-  useState(initial) {
-    const slot = index++;
-    if (!slots[slot]) {
-      const value = typeof initial === "function" ? initial() : initial;
-      slots[slot] = {
-        value,
-        set(next) {
-          slots[slot].value = typeof next === "function" ? next(slots[slot].value) : next;
-          stateCalls.push([slot, slots[slot].value]);
-        },
-      };
-    }
-    return [slots[slot].value, slots[slot].set];
+const fixtures = vi.hoisted(() => {
+  const calls = [];
+  const scoreEvents = [
+    { startBeat: 0, durationBeats: 2, voiceId: "1" },
+    { startBeat: 2, durationBeats: 1, voiceId: "2" },
+  ];
+  const score = {
+    events: scoreEvents,
+    tempoBpm: 92,
+    keyTonicPitchClass: 2,
+    title: "Example",
+    errors: [],
+    key: "D",
+    voiceIds: ["1", "2"],
+  };
+  const mapped = [
+    { buttons: [{ id: "bass-D" }, { id: "chord-A" }], startBeat: 0, durationBeats: 2 },
+  ];
+  const tools = {
+    parseAbc(value) {
+      calls.push(["parse", value]);
+      return score;
+    },
+    abcEventsForStradellaSide(events) {
+      calls.push(["stradellaEvents", events]);
+      return events;
+    },
+    abcEventsForTrebleSide(events) {
+      calls.push(["trebleEvents", events]);
+      return events;
+    },
+    mapAbcEventsToStradellaButtons(...args) {
+      calls.push(["stradellaMap", args]);
+      return mapped;
+    },
+    mapAbcEventsToTrebleButtons(...args) {
+      calls.push(["trebleMap", args]);
+      return mapped;
+    },
+    totalAbcBeats(events) {
+      calls.push(["totalBeats", events]);
+      return events.length ? 3 : 0;
+    },
+    abcMissingNotes(events) {
+      calls.push(["missing", events]);
+      return ["F#", "C#"];
+    },
+  };
+  const loads = { count: 0 };
+  return { calls, scoreEvents, score, mapped, tools, loads };
+});
+const { calls, scoreEvents, score, mapped } = fixtures;
+vi.mock("../../../src/features/abcPlayer/abcEngineLoader", () => ({
+  loadAbcEngine: async () => {
+    fixtures.loads.count += 1;
+    return fixtures.tools;
   },
-  useRef(value) {
-    const slot = index++;
-    if (!slots[slot]) slots[slot] = { current: value };
-    return slots[slot];
-  },
-  useEffect(fn) {
-    effects.push(fn);
-  },
-  useMemo(fn) {
-    return fn();
-  },
-};
-const calls = [];
-const scoreEvents = [
-  { startBeat: 0, durationBeats: 2, voiceId: "1" },
-  { startBeat: 2, durationBeats: 1, voiceId: "2" },
-];
-const score = {
-  events: scoreEvents,
-  tempoBpm: 92,
-  keyTonicPitchClass: 2,
-  title: "Example",
-  errors: [],
-  key: "D",
-  voiceIds: ["1", "2"],
-};
-const mapped = [{ buttons: [{ id: "bass-D" }, { id: "chord-A" }], startBeat: 0, durationBeats: 2 }];
-const tools = {
-  parseAbc(value) {
-    calls.push(["parse", value]);
-    return score;
-  },
-  abcEventsForStradellaSide(events) {
-    calls.push(["stradellaEvents", events]);
-    return events;
-  },
-  abcEventsForTrebleSide(events) {
-    calls.push(["trebleEvents", events]);
-    return events;
-  },
-  mapAbcEventsToStradellaButtons(...args) {
-    calls.push(["stradellaMap", args]);
-    return mapped;
-  },
-  mapAbcEventsToTrebleButtons(...args) {
-    calls.push(["trebleMap", args]);
-    return mapped;
-  },
-  totalAbcBeats(events) {
-    calls.push(["totalBeats", events]);
-    return events.length ? 3 : 0;
-  },
-  abcMissingNotes(events) {
-    calls.push(["missing", events]);
-    return ["F#", "C#"];
-  },
-};
+}));
+
 const downloaded = "X:1\nT:Example\nK:D\nD2 A2|";
 const fetchCalls = [];
-const context = {
-  fetch: async (url, options) => {
-    fetchCalls.push([url, options]);
-    if (url.endsWith("examples.json"))
-      return {
-        ok: true,
-        json: async () => [
-          { value: "example", label: "Valid example", file: "abc/example.abc" },
-          { value: "bad", label: 42, file: "abc/bad.abc" },
-        ],
-      };
-    if (url.endsWith("example.abc")) return { ok: true, text: async () => downloaded };
-    return { ok: false };
-  },
+const fetchStub = async (url, options) => {
+  fetchCalls.push([url, options]);
+  if (url.endsWith("examples.json"))
+    return {
+      ok: true,
+      json: async () => [
+        { value: "example", label: "Valid example", file: "abc/example.abc" },
+        { value: "bad", label: 42, file: "abc/bad.abc" },
+      ],
+    };
+  if (url.endsWith("example.abc")) return { ok: true, text: async () => downloaded };
+  return { ok: false };
 };
 
+afterEach(() => vi.unstubAllGlobals());
+const base = import.meta.env.BASE_URL;
+
 test("ABC feature state, manifest, settings setters, mapping and tempo contracts", async () => {
-  // Vite injects import.meta.env.BASE_URL. Supply the equivalent root URL
-  // only inside this isolated hook test, not in production sources.
-  assert.equal((source.match(/import\.meta\.env\.BASE_URL/g) ?? []).length, 2);
-  const { useAbcPlayerState, useAbcPlayerResults } = loadIsolated(path, {
-    imports: { react: mockReact, "./abcEngineLoader": { loadAbcEngine: async () => tools } },
-    globals: context,
-    transformSource: withRootBaseUrl,
-  });
-  function stateRender() {
-    index = 0;
-    return useAbcPlayerState();
-  }
-  let state = stateRender();
+  vi.stubGlobal("fetch", fetchStub);
+  const stateHook = renderHook(() => useAbcPlayerState());
+  let state = stateHook.result.current;
   for (const [key, expected] of Object.entries({
     abcText: "",
     abcEditorExpanded: false,
@@ -148,54 +126,61 @@ test("ABC feature state, manifest, settings setters, mapping and tempo contracts
     "loadAbcExample",
   ])
     assert.equal(typeof state[key], "function", `Controller interface ${key}`);
-  assert.equal(effects.length, 1, "Manifest effect retained");
-  effects.shift()();
-  await new Promise((resolve) => setImmediate(resolve));
-  state = stateRender();
+  // The manifest is fetched once the hook has rendered.
+  await waitFor(() => assert.equal(stateHook.result.current.abcExampleOptions.length, 2));
+  state = stateHook.result.current;
   assert.equal(state.abcExampleOptions.length, 2, "Invalid manifest entries still skipped");
   assert.equal(state.abcExampleOptions[1].value, "example");
-  assert.equal(fetchCalls[0][0], "/abc/examples.json");
+  assert.equal(fetchCalls[0][0], `${base}abc/examples.json`);
   assert.equal(fetchCalls[0][1].cache, "no-store");
   const previousSetText = state.setAbcText;
-  await state.loadAbcExample("example");
-  state = stateRender();
+  await act(() => state.loadAbcExample("example"));
+  state = stateHook.result.current;
   assert.equal(previousSetText, state.setAbcText, "Stable setter survives rerender");
   assert.equal(state.abcText, downloaded);
   assert.equal(state.abcFileName, "Valid example");
   assert.equal(state.abcExampleValue, "example");
   assert.equal(state.abcPositionBeat, 0);
   assert.equal(state.abcPlaybackState, "stopped");
-  assert.equal(fetchCalls[1][0], "/abc/example.abc");
-  await state.loadAbcExample("");
-  assert.equal(stateRender().abcExampleValue, "", "Empty option does not load a file");
+  assert.equal(fetchCalls[1][0], `${base}abc/example.abc`);
+  await act(() => state.loadAbcExample(""));
+  assert.equal(stateHook.result.current.abcExampleValue, "", "Empty option does not load a file");
+  const baseInput = {
+    abcText: downloaded,
+    abcPlaybackState: "stopped",
+    setAbcTempoBpm: (value) => calls.push(["tempo", value]),
+    abcActiveButtonIds: ["bass-D", "chord-A"],
+    abcStradellaMode: "bass-notes-and-chord-symbols",
+    abcTrebleChordSymbolsMode: "ignore",
+    side: "stradella",
+    isTrebleLikeSide: false,
+    buttons: [{ id: "bass-D" }],
+  };
+  calls.length = 0;
+  const resultsHook = renderHook((input) => useAbcPlayerResults(input), {
+    initialProps: baseInput,
+  });
+  // One hook across renders, so the engine loaded once stays loaded.
   function results(input) {
-    effects.length = 0;
     calls.length = 0;
-    index = 100; // Keep the dynamically loaded engine in the same hook slot across renders.
-    return useAbcPlayerResults({
-      abcText: downloaded,
-      abcPlaybackState: "stopped",
-      setAbcTempoBpm: (value) => calls.push(["tempo", value]),
-      abcActiveButtonIds: ["bass-D", "chord-A"],
-      abcStradellaMode: "bass-notes-and-chord-symbols",
-      abcTrebleChordSymbolsMode: "ignore",
-      side: "stradella",
-      isTrebleLikeSide: false,
-      buttons: [{ id: "bass-D" }],
-      ...input,
-    });
+    resultsHook.rerender({ ...baseInput, ...input });
+    return resultsHook.result.current;
   }
-  const beforeLoad = results();
+  const beforeLoad = resultsHook.result.current;
   assert.equal(
     beforeLoad.abcPlayableEvents.length,
     0,
     "No eager parser is requested during initial render",
   );
-  assert.equal(calls.length, 0);
-  assert.equal(effects.length, 2, "Deferred loader and historical tempo synchronization effects");
-  effects[0](); // Start the single engine import after nonempty ABC text.
-  await new Promise((resolve) => setImmediate(resolve));
-  const initial = results();
+  assert.equal(
+    calls.some(([name]) => name !== "tempo"),
+    false,
+    "Nothing is parsed or mapped before the engine loads",
+  );
+  // The engine is imported once the text is nonempty; the score then follows,
+  // mapped once, and its tempo replaces the editor's while stopped.
+  await waitFor(() => assert.equal(resultsHook.result.current.abcParseResult, score));
+  const initial = resultsHook.result.current;
   assert.equal(initial.abcParseResult, score);
   assert.equal(initial.abcPlayableEvents, scoreEvents);
   assert.equal(initial.abcMappedEvents, mapped, "Exact mapped event objects retained");
@@ -207,11 +192,12 @@ test("ABC feature state, manifest, settings setters, mapping and tempo contracts
     calls.find(([name]) => name === "stradellaMap")[1][3],
     "bass-notes-and-chord-symbols",
   );
-  assert.equal(effects.length, 2);
-  effects[1]();
-  assert.deepEqual(calls.at(-1), ["tempo", 92], "Score tempo sync while stopped");
+  assert.deepEqual(
+    calls.filter(([name]) => name === "tempo").at(-1),
+    ["tempo", 92],
+    "Score tempo sync while stopped",
+  );
   results({ abcPlaybackState: "playing" });
-  effects[1]();
   assert.equal(
     calls.some(([name]) => name === "tempo"),
     false,
@@ -232,4 +218,24 @@ test("ABC feature state, manifest, settings setters, mapping and tempo contracts
   assert.equal(empty.abcMappedEvents.length, 0);
   assert.equal(empty.abcPlayableEvents.length, 0);
   assert.equal(empty.abcTotalBeats, 0, "Empty playable event list remains zero beats");
+});
+
+test("an empty editor never loads the ABC parser", async () => {
+  fixtures.loads.count = 0;
+  const hook = renderHook(() =>
+    useAbcPlayerResults({
+      abcText: "  ",
+      abcPlaybackState: "stopped",
+      setAbcTempoBpm: () => {},
+      abcActiveButtonIds: [],
+      abcStradellaMode: "bass-notes-and-chord-symbols",
+      abcTrebleChordSymbolsMode: "ignore",
+      side: "stradella",
+      isTrebleLikeSide: false,
+      buttons: [],
+    }),
+  );
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(fixtures.loads.count, 0);
+  assert.equal(hook.result.current.abcParseResult.tempoBpm, 180);
 });

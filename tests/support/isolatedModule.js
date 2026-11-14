@@ -1,9 +1,10 @@
 /** Loads one TypeScript source file in isolation, with every runtime import
  * replaced by a test double.
  *
- * This is for modules whose contract is "what they call, and in which order":
- * transport lifecycles, capture sequences, and feature hooks tested through a
- * minimal React double. The module under test is the real production file;
+ * This is for modules whose contract is "what they call, and in which order",
+ * without React: transport lifecycles, capture sequences, settings
+ * compatibility. Hooks are tested with Testing Library's `renderHook`, never
+ * through a React double. The module under test is the real production file;
  * only its dependencies are substituted, and an import that was not listed
  * fails the test, so a new dependency can never be picked up silently.
  *

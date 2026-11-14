@@ -1,27 +1,38 @@
-/** Behavioral contracts for the first two feature-state extractions.
- * Load TypeScript via the compiler and stub React hooks only; the musical
- * selection engines have their own regression tests in test:chords.
+/** Behavioral contracts of the Scale Finder and treble Chord Finder hooks,
+ * rendered with React; the selection engines are replaced so the tests see
+ * what the hooks pass them. The engines have their own regression tests in
+ * test:chords.
+ * @vitest-environment jsdom
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { loadIsolated } from "../../support/isolatedModule.js";
-import { test } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { test, vi } from "vitest";
+import {
+  useScaleFinderResults,
+  useScaleFinderState,
+} from "../../../src/features/scaleFinder/useScaleFinder";
+import {
+  useTrebleChordFinderButtons,
+  useTrebleChordFinderState,
+} from "../../../src/features/trebleChordFinder/useTrebleChordFinder";
 
-const source = (path) => readFileSync(path, "utf8");
-const scaleCalls = [];
-const chordCalls = [];
-const scaleResultButtons = [{ id: "treble-C" }, { id: "treble-E" }];
-const stradellaResultButtons = [{ id: "stradella-C" }];
-const chordResultButtons = [{ id: "treble-chord-C" }];
-const mockReact = {
-  useState: (initial) => [typeof initial === "function" ? initial() : initial, () => {}],
-  useMemo: (factory) => factory(),
-};
-const scaleEngines = {
+const { scaleCalls, chordCalls, scaleResultButtons, stradellaResultButtons, chordResultButtons } =
+  vi.hoisted(() => ({
+    scaleCalls: [],
+    chordCalls: [],
+    scaleResultButtons: [{ id: "treble-C" }, { id: "treble-E" }],
+    stradellaResultButtons: [{ id: "stradella-C" }],
+    chordResultButtons: [{ id: "treble-chord-C" }],
+  }));
+vi.mock("../../../src/tools/scaleFinderTools", async (original) => ({
+  ...(await original()),
   getScaleFinderTrebleButtons: (...args) => {
     scaleCalls.push(["treble", args]);
     return scaleResultButtons;
   },
+}));
+vi.mock("../../../src/tools/stradellaScaleFinderTools", async (original) => ({
+  ...(await original()),
   getStradellaScaleFinderResult: (...args) => {
     scaleCalls.push(["stradella", args]);
     return {
@@ -33,24 +44,24 @@ const scaleEngines = {
       found: true,
     };
   },
-};
-const chordEngines = {
+}));
+vi.mock("../../../src/tools/chordFinderTools", async (original) => ({
+  ...(await original()),
   getChordFinderTrebleButtons: (...args) => {
     chordCalls.push(args);
     return chordResultButtons;
   },
+}));
+
+const render = (hook) => renderHook(hook).result.current;
+const scale = {
+  useScaleFinderResults: (args) => render(() => useScaleFinderResults(args)),
 };
-const loadModule = (file, imports) =>
-  loadIsolated(file, { imports: { react: mockReact, ...imports } });
-const scale = loadModule("src/features/scaleFinder/useScaleFinder.ts", {
-  "../../tools/scaleFinderTools": scaleEngines,
-  "../../tools/stradellaScaleFinderTools": scaleEngines,
-});
-const chord = loadModule("src/features/trebleChordFinder/useTrebleChordFinder.ts", {
-  "../../tools/chordFinderTools": chordEngines,
-});
-const scaleState = scale.useScaleFinderState();
-const chordState = chord.useTrebleChordFinderState();
+const chord = {
+  useTrebleChordFinderButtons: (args) => render(() => useTrebleChordFinderButtons(args)),
+};
+const scaleState = render(useScaleFinderState);
+const chordState = render(useTrebleChordFinderState);
 
 test("Finder module defaults, physical button identities, and inactive/active selection contracts", () => {
   for (const [actual, expected] of [

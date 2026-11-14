@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { loadIsolated } from "../../support/isolatedModule.js";
+import * as panelWidths from "../../../src/app/panelWidths";
 import { test } from "vitest";
 
 const load = (path, mocked = {}) => loadIsolated(path, { imports: mocked });
@@ -243,9 +244,7 @@ test("Pause keeps the last played buttons of each voice lit", () => {
     "clamp(230px, 15vw, 270px) minmax(0, 1fr)",
   );
   // Panel widths: limits, room for the diagram, stored values and grid tracks.
-  const panels = load("src/app/panelWidths.ts", {
-    react: { useCallback: (fn) => fn, useState: (init) => [init, () => {}] },
-  });
+  const panels = panelWidths;
   assert.equal(panels.clampPanelWidth("left", 100, 1600, 0), 220, "left panel minimum");
   assert.equal(panels.clampPanelWidth("left", 900, 1600, 0), 560, "left panel maximum");
   assert.equal(panels.clampPanelWidth("left", 500, 1200, 360), 360, "the diagram keeps 480 px");

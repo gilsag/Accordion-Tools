@@ -1,64 +1,56 @@
-/** Bass Pattern and Sequence behavioral contracts at the Bass Pattern and Sequence boundaries.
- * Real notation/engine/sound algorithms are covered by their existing tests.
+/** Bass Pattern and Sequence behavioral contracts at their hooks, rendered
+ * with React; the pattern engine is replaced so the tests see what the hook
+ * passes it. Real notation, engine and sound algorithms have their own tests.
+ * @vitest-environment jsdom
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { loadIsolated, withRootBaseUrl } from "../../support/isolatedModule.js";
-import { test } from "vitest";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { afterEach, test, vi } from "vitest";
+import {
+  useBassPatternResults,
+  useBassPatternState,
+} from "../../../src/features/bassPatternPlayer/useBassPatternPlayer";
+import {
+  useSequenceResults,
+  useSequenceState,
+} from "../../../src/features/sequences/useSequenceState";
 
-const read = (p) => readFileSync(p, "utf8");
-function hooks() {
-  const slots = [];
-  const effects = [];
-  let index = 0;
-  return {
-    effects,
-    reset() {
-      index = 0;
+const fixtures = vi.hoisted(() => {
+  const calls = [];
+  const engine = {
+    validateBassPatternLibrary(library) {
+      calls.push(["validate", library]);
+      return library.patterns.some((p) => !p.id) ? ["missing id"] : [];
     },
-    react: {
-      useState(initial) {
-        const i = index++;
-        if (!slots[i]) {
-          const entry = { value: typeof initial === "function" ? initial() : initial };
-          entry.set = (next) => {
-            entry.value = typeof next === "function" ? next(entry.value) : next;
-          };
-          slots[i] = entry;
-        }
-        return [slots[i].value, slots[i].set];
-      },
-      useMemo(factory) {
-        return factory();
-      },
-      useEffect(callback) {
-        effects.push(callback);
-      },
-      useRef(value) {
-        const i = index++;
-        if (!slots[i]) slots[i] = { current: value };
-        return slots[i];
-      },
-      useCallback(callback) {
-        return callback;
-      },
+    makeBassPatternEvents(...args) {
+      calls.push(["events", args]);
+      return [{ buttons: [args[0][0]], startBeat: 0, durationBeats: 1 }];
+    },
+    totalBassPatternBeats(events) {
+      calls.push(["beats", events]);
+      return events.length ? 8 : 0;
+    },
+    bassPatternMissingItems(events) {
+      calls.push(["missing", events]);
+      return ["D♭"];
     },
   };
-}
-const load = (file, react, imports, globals = {}) =>
-  loadIsolated(file, { imports: { react, ...imports }, globals, transformSource: withRootBaseUrl });
-const bassHooks = hooks();
-const storage = new Map();
-const writes = [];
-const store = {
-  getItem(key) {
-    return storage.get(key) ?? null;
+  return { calls, engine };
+});
+const { calls } = fixtures;
+vi.mock("../../../src/tools/bassPatternPlayerTools", async (original) => ({
+  ...(await original()),
+  ...fixtures.engine,
+}));
+vi.mock("../../../src/tools/sequenceTools", async (original) => ({
+  ...(await original()),
+  getSequenceStepsWithButtons(steps, buttons) {
+    return steps
+      .map((s) => ({ ...s, button: buttons.find((b) => b.id === s.id) }))
+      .filter((s) => s.button);
   },
-  setItem(key, value) {
-    writes.push([key, value]);
-    storage.set(key, value);
-  },
-};
+}));
+
 const validPattern = {
   id: "custom-x",
   name: "New",
@@ -66,52 +58,32 @@ const validPattern = {
   tags: ["custom"],
   pattern: ">B C A C",
 };
-const calls = [];
-const engine = {
-  validateBassPatternLibrary(library) {
-    calls.push(["validate", library]);
-    return library.patterns.some((p) => !p.id) ? ["missing id"] : [];
-  },
-  makeBassPatternEvents(...args) {
-    calls.push(["events", args]);
-    return [{ buttons: [args[0][0]], startBeat: 0, durationBeats: 1 }];
-  },
-  totalBassPatternBeats(events) {
-    calls.push(["beats", events]);
-    return events.length ? 8 : 0;
-  },
-  bassPatternMissingItems(events) {
-    calls.push(["missing", events]);
-    return ["D♭"];
-  },
-};
-const fetches = [];
 const patterns = {
   version: 2,
   legend: "Built-in legend",
   patterns: [{ id: "polka", name: "Polka", meter: "4/4", pattern: ">B C" }],
 };
 const progressions = [{ id: "i-iv-v-i", name: "I-IV-V-I", chords: ["C", "F", "G", "C"] }];
-const fetch = async (url) => {
+const fetches = [];
+const fetchStub = async (url) => {
   fetches.push(url);
   return { ok: true, json: async () => (url.includes("bass-patterns/") ? patterns : progressions) };
 };
-const bass = load(
-  "src/features/bassPatternPlayer/useBassPatternPlayer.ts",
-  bassHooks.react,
-  {
-    "../../tools/bassPatternPlayerTools": engine,
-  },
-  { window: { localStorage: store }, fetch },
-);
+const writes = [];
+afterEach(() => vi.unstubAllGlobals());
 const t = (key, params) => key + (params ? `:${Object.values(params).join(",")}` : "");
-function renderBass() {
-  bassHooks.reset();
-  return bass.useBassPatternState(t);
-}
-let state = renderBass();
+const base = import.meta.env.BASE_URL;
 
 test("Bass Pattern library/editor/persistence/results and Sequence recording/identity contracts", async () => {
+  localStorage.clear();
+  vi.stubGlobal("fetch", fetchStub);
+  const setItem = Storage.prototype.setItem;
+  vi.spyOn(Storage.prototype, "setItem").mockImplementation(function (key, value) {
+    writes.push([key, value]);
+    return setItem.call(this, key, value);
+  });
+  const bassHook = renderHook(() => useBassPatternState(t));
+  let state = bassHook.result.current;
   for (const [key, value] of Object.entries({
     bassPatternId: "polka",
     chordProgressionId: "i-iv-v-i",
@@ -131,11 +103,10 @@ test("Bass Pattern library/editor/persistence/results and Sequence recording/ide
   assert.equal(state.bassPatternEditorMessage, "");
   assert.equal(state.bassPatternActiveButtonIds.length, 0);
   assert.equal(state.bassPatternNotationRef.current, null);
-  assert.equal(bassHooks.effects.length, 1);
   const setter = state.setBassPatternTempoBpm;
-  bassHooks.effects[0]();
-  await new Promise((resolve) => setImmediate(resolve));
-  state = renderBass();
+  // The libraries are fetched once the hook has rendered.
+  await waitFor(() => assert.equal(bassHook.result.current.bassPatternDefinitions.length, 1));
+  state = bassHook.result.current;
   assert.strictEqual(state.setBassPatternTempoBpm, setter, "React setter preserved");
   assert.equal(
     state.bassPatternDefinitions[0].legend,
@@ -144,32 +115,32 @@ test("Bass Pattern library/editor/persistence/results and Sequence recording/ide
   );
   assert.equal(state.chordProgressionDefinitions[0].id, "i-iv-v-i");
   assert.deepEqual(fetches, [
-    "/bass-patterns/bass-patterns.json",
-    "/chord-progressions/chord-progressions.json",
+    `${base}bass-patterns/bass-patterns.json`,
+    `${base}chord-progressions/chord-progressions.json`,
   ]);
-  state.setBassPatternEditorText(JSON.stringify(validPattern));
-  state = renderBass();
+  act(() => state.setBassPatternEditorText(JSON.stringify(validPattern)));
+  state = bassHook.result.current;
   assert.equal(state.bassPatternEditorErrors.length, 0);
-  state.saveCustomBassPattern();
-  state = renderBass();
+  act(() => state.saveCustomBassPattern());
+  state = bassHook.result.current;
   assert.equal(state.bassPatternId, "custom-x");
   assert.equal(state.customBassPatternDefinitions.length, 1);
   assert.equal(state.bassPatternEditorMessage, "ui.savedCustomPattern:New");
   assert.equal(writes.at(-1)[0], "accordionTools.customBassPatterns.v2");
   assert.equal(JSON.parse(writes.at(-1)[1])[0].id, "custom-x");
-  state.loadSelectedPatternIntoEditor();
-  state = renderBass();
+  act(() => state.loadSelectedPatternIntoEditor());
+  state = bassHook.result.current;
   assert.equal(JSON.parse(state.bassPatternEditorText).id, "custom-x");
-  state.removeSelectedCustomBassPattern();
-  state = renderBass();
+  act(() => state.removeSelectedCustomBassPattern());
+  state = bassHook.result.current;
   assert.equal(state.customBassPatternDefinitions.length, 0);
   assert.equal(state.bassPatternId, "polka", "Deletion returns to first built-in pattern");
   assert.equal(state.bassPatternEditorMessage, "ui.removedCustomPattern");
-  state.setBassPatternEditorText("not JSON");
-  state = renderBass();
+  act(() => state.setBassPatternEditorText("not JSON"));
+  state = bassHook.result.current;
   assert.equal(state.bassPatternEditorErrors.length, 1, "JSON validation retained");
-  state.saveCustomBassPattern();
-  state = renderBass();
+  act(() => state.saveCustomBassPattern());
+  state = bassHook.result.current;
   assert.ok(
     state.bassPatternEditorMessage.includes("JSON") ||
       state.bassPatternEditorMessage.includes("token"),
@@ -191,7 +162,8 @@ test("Bass Pattern library/editor/persistence/results and Sequence recording/ide
     bassPatternBarsPerChord: 2,
     bassPatternActiveButtonIds: ["bass-1"],
   };
-  let result = bass.useBassPatternResults(input);
+  const results = (args) => renderHook(() => useBassPatternResults(args)).result.current;
+  let result = results(input);
   assert.strictEqual(result.selectedBassPattern, state.bassPatternDefinitions[0]);
   assert.equal(
     result.bassPatternEvents[0].buttons[0],
@@ -202,39 +174,20 @@ test("Bass Pattern library/editor/persistence/results and Sequence recording/ide
   assert.equal(result.bassPatternMissingText, "D♭");
   assert.ok(result.bassPatternActiveButtonIdSet.has("bass-1"));
   assert.equal(calls.find(([type]) => type === "events")[1][4], "simple");
-  result = bass.useBassPatternResults({ ...input, side: "treble" });
+  result = results({ ...input, side: "treble" });
   assert.equal(
     result.bassPatternEvents.length,
     0,
     "Treble cannot generate Stradella accompaniment",
   );
   // Existing custom definitions are loaded before asynchronous public patterns.
-  const restored = hooks();
-  storage.set("accordionTools.customBassPatterns.v2", JSON.stringify([validPattern]));
-  const restoredBass = load(
-    "src/features/bassPatternPlayer/useBassPatternPlayer.ts",
-    restored.react,
-    {
-      "../../tools/bassPatternPlayerTools": engine,
-    },
-    { window: { localStorage: store }, fetch },
+  localStorage.setItem("accordionTools.customBassPatterns.v2", JSON.stringify([validPattern]));
+  assert.equal(
+    renderHook(() => useBassPatternState(t)).result.current.customBassPatternDefinitions[0].id,
+    "custom-x",
   );
-  assert.equal(restoredBass.useBassPatternState(t).customBassPatternDefinitions[0].id, "custom-x");
-  const seqHooks = hooks();
-  const sequence = load("src/features/sequences/useSequenceState.ts", seqHooks.react, {
-    "../../tools/sequenceTools": {
-      getSequenceStepsWithButtons(steps, buttons) {
-        return steps
-          .map((s) => ({ ...s, button: buttons.find((b) => b.id === s.id) }))
-          .filter((s) => s.button);
-      },
-    },
-  });
-  function renderSeq() {
-    seqHooks.reset();
-    return sequence.useSequenceState();
-  }
-  let seq = renderSeq();
+  const seqHook = renderHook(() => useSequenceState());
+  let seq = seqHook.result.current;
   for (const [key, value] of Object.entries({
     sequenceDisplayMode: "numbers-and-curved-arrows",
     sequenceColorPreset: "red",
@@ -246,10 +199,12 @@ test("Bass Pattern library/editor/persistence/results and Sequence recording/ide
     sequenceRenderedNotationVisible: false,
   }))
     assert.equal(seq[key], value, key);
-  seq.appendRecordedButton("bass-1");
-  seq.appendRecordedButton("chord-1");
-  seq.appendRecordedButton("bass-1");
-  seq = renderSeq();
+  act(() => {
+    seq.appendRecordedButton("bass-1");
+    seq.appendRecordedButton("chord-1");
+    seq.appendRecordedButton("bass-1");
+  });
+  seq = seqHook.result.current;
   assert.equal(
     JSON.stringify(seq.sequenceSteps),
     JSON.stringify([
@@ -258,10 +213,10 @@ test("Bass Pattern library/editor/persistence/results and Sequence recording/ide
       { id: "bass-1", step: 3 },
     ]),
   );
-  const selected = sequence.useSequenceResults(seq.sequenceSteps, physical);
+  const selected = renderHook(() => useSequenceResults(seq.sequenceSteps, physical)).result.current;
   assert.strictEqual(selected[0].button, physical[0]);
   assert.strictEqual(selected[1].button, physical[1]);
   assert.strictEqual(selected[2].button, physical[0]);
-  seq.clearSequence();
-  assert.equal(renderSeq().sequenceSteps.length, 0);
+  act(() => seq.clearSequence());
+  assert.equal(seqHook.result.current.sequenceSteps.length, 0);
 });

@@ -1,59 +1,42 @@
-/** Harmony/Progression state ownership, musical engine forwarding, and cross-tool invariants.
- * The original harmony and progression algorithm suites independently validate
- * actual chord/voice computations; this test locks down the feature boundary.
+/** Harmony and Progression Assistant state ownership, musical engine
+ * forwarding and cross-tool invariants, rendered with React; the engines are
+ * replaced so the tests see what the hooks pass them. The harmony and
+ * progression algorithm suites validate the actual chord and voice work.
+ * @vitest-environment jsdom
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { runInNewContext } from "node:vm";
-import { loadIsolated } from "../../support/isolatedModule.js";
-import { test } from "vitest";
+import { act, renderHook } from "@testing-library/react";
+import { test, vi } from "vitest";
+import {
+  useHarmonyExplorerResults,
+  useHarmonyExplorerState,
+} from "../../../src/features/harmonyExplorer/useHarmonyExplorer";
+import {
+  useHarmonyProgressionResults,
+  useHarmonyProgressionState,
+} from "../../../src/features/progressionAssistant/useProgressionAssistant";
 
-const source = (file) => readFileSync(file, "utf8");
-function reactMock() {
-  const slots = [];
-  let index = 0;
-  const effects = [];
+const doubles = vi.hoisted(() => ({
+  refVisibility: { 0: true, 1: true, 2: true },
+  sectorArgs: [],
+  sectorResults: [],
+  countArgs: [],
+  explanationCalls: [],
+  generatedArgs: [],
+  optimizedArgs: [],
+  progression: { playable: true },
+  physicalButtons: [
+    { id: "bass-C", kind: "bass-root" },
+    { id: "chord-C", kind: "chord-major" },
+  ],
+  playbackButtons: null,
+}));
+doubles.playbackButtons = [doubles.physicalButtons[0], doubles.physicalButtons[1]];
+const refVisibility = doubles.refVisibility;
+vi.mock("../../../src/tools/harmonyExplorer/music", async (original) => {
+  const { refVisibility, sectorArgs, sectorResults, countArgs } = doubles;
   return {
-    effects,
-    reset() {
-      index = 0;
-      effects.length = 0;
-    },
-    react: {
-      useState(initial) {
-        const i = index++;
-        if (!slots[i]) {
-          const cell = { value: typeof initial === "function" ? initial() : initial };
-          cell.set = (next) => {
-            cell.value = typeof next === "function" ? next(cell.value) : next;
-          };
-          slots[i] = cell;
-        }
-        return [slots[i].value, slots[i].set];
-      },
-      useRef(initial) {
-        const i = index++;
-        if (!slots[i]) slots[i] = { current: initial };
-        return slots[i];
-      },
-      useEffect(fn) {
-        effects.push(fn);
-      },
-      useMemo(fn) {
-        return fn();
-      },
-    },
-  };
-}
-const load = (file, react, dependencies) =>
-  loadIsolated(file, { imports: { react, ...dependencies } });
-const refVisibility = { 0: true, 1: true, 2: true };
-const sectorArgs = [];
-const sectorResults = [];
-let countArgs = [];
-
-test("Harmony and progression defaults, selectors, physical IDs, and commands", () => {
-  const harmonyMusic = {
+    ...(await original()),
     DEFAULT_RING_VISIBILITY: refVisibility,
     buildSectorRelationships(...args) {
       sectorArgs.push(args);
@@ -66,7 +49,8 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
       return [2, 1];
     },
     filterRelationshipCounts(counts, vis) {
-      assert.equal(JSON.stringify(vis), JSON.stringify(refVisibility));
+      if (JSON.stringify(vis) !== JSON.stringify(refVisibility))
+        throw new Error("ring visibility not forwarded");
       return counts;
     },
     chordFamily(id) {
@@ -79,19 +63,75 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
       return { id, name: "Ionian" };
     },
   };
-  const explanationCalls = [];
-  const eh = reactMock();
-  const explorer = load("src/features/harmonyExplorer/useHarmonyExplorer.ts", eh.react, {
-    "../../tools/harmonyExplorer/music": harmonyMusic,
-    "../../i18n/musicTerms": { familyName: (_id, name) => name, scaleName: (_id, name) => name },
-    "../../tools/harmonyExplorer/explanation": {
-      buildDiagramExplanation(options) {
-        explanationCalls.push(options);
-        return "expected explanation";
-      },
+});
+vi.mock("../../../src/i18n/musicTerms", async (original) => ({
+  ...(await original()),
+  familyName: (_id, name) => name,
+  scaleName: (_id, name) => name,
+}));
+vi.mock("../../../src/tools/harmonyExplorer/explanation", async (original) => ({
+  ...(await original()),
+  buildDiagramExplanation(options) {
+    doubles.explanationCalls.push(options);
+    return "expected explanation";
+  },
+}));
+vi.mock("../../../src/tools/harmonyExplorer/progression", async (original) => {
+  const { progression } = doubles;
+  const playbackButtons = () => doubles.playbackButtons;
+  return {
+    ...(await original()),
+    progressionRealizationKey(result) {
+      return result.playbackButtons
+        .map((button) => button.id)
+        .sort()
+        .join("|");
     },
-  });
-  let state = explorer.useHarmonyExplorerState();
+    progressionRealizationsForChord() {
+      return [
+        {
+          result: { playbackButtons: playbackButtons(), playable: true, exact: true },
+          realizationIndex: 0,
+        },
+      ];
+    },
+    optimizeStradellaProgression(...args) {
+      doubles.optimizedArgs.push(args);
+      return {
+        playable: progression.playable,
+        steps: progression.playable
+          ? [
+              {
+                result: { playbackButtons: playbackButtons() },
+                chord: { rootPc: 0, familyId: "major" },
+              },
+            ]
+          : [],
+      };
+    },
+  };
+});
+vi.mock("../../../src/stradella", async (original) => ({
+  ...(await original()),
+  generateStradella(...args) {
+    doubles.generatedArgs.push(args);
+    return doubles.physicalButtons;
+  },
+}));
+vi.mock(
+  "../../../src/features/progressionAssistant/progressionNoteSelection",
+  async (original) => ({
+    ...(await original()),
+    progressionNoteStep: (plan, id) =>
+      plan.playable ? (plan.steps.find((step) => step.chord.id === id) ?? null) : null,
+  }),
+);
+
+const render = (hook) => renderHook(hook).result.current;
+
+test("Harmony and progression defaults, selectors, physical IDs, and commands", () => {
+  const explorerHook = renderHook(() => useHarmonyExplorerState());
+  let state = explorerHook.result.current;
   for (const [field, expected] of Object.entries({
     harmonyReferenceFamilyId: "major",
     harmonyRelatedFamilyId: "minor7",
@@ -119,73 +159,32 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
     refVisibility,
     "ring visibility initialized independently",
   );
-  assert.equal(eh.effects.length, 1, "Selection reset effect retained");
   const setter = state.setHarmonyShowNoteRing;
-  state.setHarmonyShowNoteRing(false);
-  eh.reset();
-  state = explorer.useHarmonyExplorerState();
+  act(() => state.setHarmonyShowNoteRing(false));
+  state = explorerHook.result.current;
   assert.strictEqual(setter, state.setHarmonyShowNoteRing, "Stable setter across renders");
   assert.equal(state.harmonyShowNoteRing, false);
   const t = (key) => key;
   const options = { ...state, language: "en", t };
-  let calculated = explorer.useHarmonyExplorerResults(options);
+  let calculated = render(() => useHarmonyExplorerResults(options));
   assert.equal(calculated.harmonyAllFamiliesMode, false);
   assert.equal(calculated.harmonyEffectiveDiatonicOnly, false);
   assert.equal(calculated.harmonyEffectiveHighlightDiatonic, true);
-  assert.deepEqual([...sectorArgs[0]], ["major", "minor7", "ionian", false, true]);
-  assert.strictEqual(countArgs[0], sectorResults[0]);
-  assert.strictEqual(calculated.harmonySectors, sectorResults[0]);
+  assert.deepEqual([...doubles.sectorArgs[0]], ["major", "minor7", "ionian", false, true]);
+  assert.strictEqual(doubles.countArgs[0], doubles.sectorResults[0]);
+  assert.strictEqual(calculated.harmonySectors, doubles.sectorResults[0]);
   assert.equal(calculated.harmonyExplanation, "expected explanation");
-  assert.equal(explanationCalls[0].showNoteRing, false);
-  assert.equal(explanationCalls[0].referenceFamilyName, "Major triad");
-  calculated = explorer.useHarmonyExplorerResults({ ...options, harmonyRelatedFamilyId: "all" });
+  assert.equal(doubles.explanationCalls[0].showNoteRing, false);
+  assert.equal(doubles.explanationCalls[0].referenceFamilyName, "Major triad");
+  calculated = render(() =>
+    useHarmonyExplorerResults({ ...options, harmonyRelatedFamilyId: "all" }),
+  );
   assert.equal(calculated.harmonyAllFamiliesMode, true);
   assert.equal(calculated.harmonyEffectiveDiatonicOnly, true);
   assert.equal(calculated.harmonyEffectiveHighlightDiatonic, false);
-  assert.equal(explanationCalls.at(-1).relatedFamilyName, "ui.allDiatonicFamilies");
-  const physicalButtons = [
-    { id: "bass-C", kind: "bass-root" },
-    { id: "chord-C", kind: "chord-major" },
-  ];
-  let generatedArgs = [],
-    optimizedArgs = [];
-  let playable = true;
-  const playbackButtons = [physicalButtons[0], physicalButtons[1]];
-  const progression = {
-    progressionRealizationKey(result) {
-      return result.playbackButtons
-        .map((button) => button.id)
-        .sort()
-        .join("|");
-    },
-    progressionRealizationsForChord() {
-      return [{ result: { playbackButtons, playable: true, exact: true }, realizationIndex: 0 }];
-    },
-    optimizeStradellaProgression(...args) {
-      optimizedArgs.push(args);
-      return {
-        playable,
-        steps: playable
-          ? [{ result: { playbackButtons }, chord: { rootPc: 0, familyId: "major" } }]
-          : [],
-      };
-    },
-  };
-  const ph = reactMock();
-  const assistant = load("src/features/progressionAssistant/useProgressionAssistant.ts", ph.react, {
-    "../../tools/harmonyExplorer/progression": progression,
-    "../../stradella": {
-      generateStradella(...args) {
-        generatedArgs.push(args);
-        return physicalButtons;
-      },
-    },
-    "./progressionNoteSelection": {
-      progressionNoteStep: (plan, id) =>
-        plan.playable ? (plan.steps.find((step) => step.chord.id === id) ?? null) : null,
-    },
-  });
-  let prog = assistant.useHarmonyProgressionState();
+  assert.equal(doubles.explanationCalls.at(-1).relatedFamilyName, "ui.allDiatonicFamilies");
+  const physicalButtons = doubles.physicalButtons;
+  let prog = render(useHarmonyProgressionState);
   for (const [field, expected] of Object.entries({
     harmonyProgressionManualRoot: "C",
     harmonyProgressionManualPattern: "major-triad",
@@ -215,12 +214,12 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
     harmonyProgressionActiveButtonIds: [],
     activeToolSection: "progressionAssistant",
   };
-  let result = assistant.useHarmonyProgressionResults(selection);
-  assert.deepEqual([...generatedArgs[0]], ["96", 40, 1.2, "sharps", 6]);
-  assert.strictEqual(optimizedArgs[0][0], physicalButtons);
-  assert.strictEqual(optimizedArgs[0][1], selection.harmonyProgression);
+  let result = render(() => useHarmonyProgressionResults(selection));
+  assert.deepEqual([...doubles.generatedArgs[0]], ["96", 40, 1.2, "sharps", 6]);
+  assert.strictEqual(doubles.optimizedArgs[0][0], physicalButtons);
+  assert.strictEqual(doubles.optimizedArgs[0][1], selection.harmonyProgression);
   assert.equal(
-    JSON.stringify(optimizedArgs[0][2]),
+    JSON.stringify(doubles.optimizedArgs[0][2]),
     JSON.stringify({
       allowApproximations: true,
       handMovementWeight: 0.4,
@@ -230,30 +229,32 @@ test("Harmony and progression defaults, selectors, physical IDs, and commands", 
   );
   assert.strictEqual(
     result.harmonyProgressionPlan.steps[0].result.playbackButtons,
-    playbackButtons,
+    doubles.playbackButtons,
   );
   assert.equal(
     JSON.stringify([...result.progressionPreviewButtonIds]),
     JSON.stringify(["bass-C", "chord-C"]),
   );
-  assert.equal(ph.effects.length, 3);
-  ph.effects[1]();
+  // The preview-clamping effect ran when the hook rendered.
   assert.equal(updates[0](0), 0, "Existing preview-clamping updater retained");
-  result = assistant.useHarmonyProgressionResults({
-    ...selection,
-    activeToolSection: "scaleFinder",
-  });
+  result = render(() =>
+    useHarmonyProgressionResults({
+      ...selection,
+      activeToolSection: "scaleFinder",
+    }),
+  );
   assert.equal(result.progressionPreviewButtonIds.size, 0, "Preview hidden outside Assistant");
-  result = assistant.useHarmonyProgressionResults({
-    ...selection,
-    harmonyProgressionActiveButtonIds: ["chord-C"],
-  });
+  result = render(() =>
+    useHarmonyProgressionResults({
+      ...selection,
+      harmonyProgressionActiveButtonIds: ["chord-C"],
+    }),
+  );
   assert.equal(result.progressionPreviewButtonIds.size, 0, "Playback markings supersede preview");
   assert.ok(result.harmonyProgressionActiveButtonIdSet.has("chord-C"));
-  playable = false;
-  result = assistant.useHarmonyProgressionResults(selection);
+  doubles.progression.playable = false;
+  result = render(() => useHarmonyProgressionResults(selection));
   assert.equal(result.harmonyProgressionPlan.playable, false);
   assert.equal(result.progressionPreviewButtonIds.size, 0);
-  ph.effects.at(-2)();
   assert.equal(updates.at(-1), null, "Unplayable plan clears stale preview");
 });

@@ -1,89 +1,88 @@
-/** Stradella Finder ownership and forwarding contracts. Heavy chord-search correctness
- * remains covered by the unchanged Stradella musical regression suite.
+/** Stradella Finder ownership and forwarding contracts, rendered with React;
+ * the search engine is replaced so the tests see what the hook passes it.
+ * Heavy chord-search correctness remains covered by the Stradella musical
+ * regression suite.
+ * @vitest-environment jsdom
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { loadIsolated } from "../../support/isolatedModule.js";
-import { test } from "vitest";
+import { renderHook } from "@testing-library/react";
+import { test, vi } from "vitest";
+import {
+  useStradellaChordFinderResults,
+  useStradellaChordFinderState,
+} from "../../../src/features/stradellaChordFinder/useStradellaChordFinder";
 
-const path = "src/features/stradellaChordFinder/useStradellaChordFinder.ts";
-const source = readFileSync(path, "utf8");
-// Capture lives in the diagram module; the controller still selects synchronously.
-
-const effects = [];
-const calls = [];
-const selected = [{ id: "bass-C" }, { id: "chord-G" }];
-const visualGuide = { id: "visual-root-only" };
-const alt = [{ id: "counterbass-E" }, { id: "chord-G" }];
-const candidates = [
-  {
-    playable: true,
-    buttons: [visualGuide, ...selected],
-    playbackButtons: selected,
-    rootBassButtonIds: ["visual-root-only"],
-    primaryButtonIds: ["bass-C", "chord-G"],
-  },
-  {
-    playable: true,
-    buttons: alt,
-    playbackButtons: alt,
-    rootBassButtonIds: [],
-    primaryButtonIds: ["counterbass-E", "chord-G"],
-  },
-];
-const fallback = {
-  playable: false,
-  buttons: [],
-  playbackButtons: [],
-  rootBassButtonIds: [],
-  primaryButtonIds: [],
-};
-const mockReact = {
-  useState: (initial) => [typeof initial === "function" ? initial() : initial, () => {}],
-  useMemo: (factory) => factory(),
-  useEffect: (fn) => effects.push(fn),
-};
-let noResultForBass = null; // when set, searches requesting this bass find nothing
-let onlyWithoutBassButton = false; // when set, that bass is found only without the bass-button rule
-let onlyAtSpan = null; // when set, that bass is found on a bass button only at this hand span
-const engines = {
-  nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
-  getStradellaChordFinderResults: (...args) => {
-    calls.push(["many", args]);
-    const blocked =
-      noResultForBass !== null &&
-      args[7] === noResultForBass &&
-      (!onlyWithoutBassButton || args[10] === true) &&
-      (onlyAtSpan === null || args[6] !== onlyAtSpan);
-    return blocked ? [fallback] : candidates;
-  },
-  getStradellaChordFinderResult: (...args) => {
-    calls.push(["single", args]);
-    return fallback;
-  },
-};
-const module = {
-  exports: loadIsolated(path, {
-    imports: {
-      react: mockReact,
-      "../../tools/stradellaChordFinderTools": engines,
-      "../../tools/stradellaChordFinder/harmonicIdentity": {
-        ROOT_POSITION_BASS: "root",
-        resolveRequestedBass: (root, choice) => (choice === "root" ? root : choice),
-      },
-      "../../tools/stradellaChordFinder/diagramAnnotations": {
-        DEFAULT_STRADELLA_NOTE_LEVELS: {
-          essentials: true,
-          harmonic: true,
-          registral: true,
-          voicing: true,
-        },
-      },
+const fixtures = vi.hoisted(() => {
+  const calls = [];
+  const selected = [{ id: "bass-C" }, { id: "chord-G" }];
+  const visualGuide = { id: "visual-root-only" };
+  const alt = [{ id: "counterbass-E" }, { id: "chord-G" }];
+  const candidates = [
+    {
+      playable: true,
+      buttons: [visualGuide, ...selected],
+      playbackButtons: selected,
+      rootBassButtonIds: ["visual-root-only"],
+      primaryButtonIds: ["bass-C", "chord-G"],
     },
-  }),
-};
-const { useStradellaChordFinderState, useStradellaChordFinderResults } = module.exports;
-const state = useStradellaChordFinderState();
+    {
+      playable: true,
+      buttons: alt,
+      playbackButtons: alt,
+      rootBassButtonIds: [],
+      primaryButtonIds: ["counterbass-E", "chord-G"],
+    },
+  ];
+  const fallback = {
+    playable: false,
+    buttons: [],
+    playbackButtons: [],
+    rootBassButtonIds: [],
+    primaryButtonIds: [],
+  };
+  const search = { noResultForBass: null, onlyWithoutBassButton: false, onlyAtSpan: null };
+  return { calls, selected, visualGuide, alt, candidates, fallback, search };
+});
+const { calls, selected, visualGuide, alt, candidates, fallback, search } = fixtures;
+vi.mock("../../../src/tools/stradellaChordFinderTools", async (original) => {
+  const { calls, candidates, fallback, search } = fixtures;
+  return {
+    ...(await original()),
+    nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
+    getStradellaChordFinderResults: (...args) => {
+      calls.push(["many", args]);
+      // A search finds nothing for search.noResultForBass, unless only the
+      // bass-button rule is lifted or the hand span is search.onlyAtSpan.
+      const blocked =
+        search.noResultForBass !== null &&
+        args[7] === search.noResultForBass &&
+        (!search.onlyWithoutBassButton || args[10] === true) &&
+        (search.onlyAtSpan === null || args[6] !== search.onlyAtSpan);
+      return blocked ? [fallback] : candidates;
+    },
+    getStradellaChordFinderResult: (...args) => {
+      calls.push(["single", args]);
+      return fallback;
+    },
+  };
+});
+vi.mock("../../../src/tools/stradellaChordFinder/harmonicIdentity", async (original) => ({
+  ...(await original()),
+  ROOT_POSITION_BASS: "root",
+  resolveRequestedBass: (root, choice) => (choice === "root" ? root : choice),
+}));
+vi.mock("../../../src/tools/stradellaChordFinder/diagramAnnotations", async (original) => ({
+  ...(await original()),
+  DEFAULT_STRADELLA_NOTE_LEVELS: {
+    essentials: true,
+    harmonic: true,
+    registral: true,
+    voicing: true,
+  },
+}));
+
+const results = (args) => renderHook(() => useStradellaChordFinderResults(args)).result.current;
+const state = renderHook(useStradellaChordFinderState).result.current;
 
 test("Requested bass tries one step more reach, then falls back from bass button to lowest note, and the root…", () => {
   for (const [key, expected] of Object.entries({
@@ -151,7 +150,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
     setPendingProgressionRealizationKey: (value) => updates.push(["pending", value]),
     setStradellaChordFinderRealizationIndex: (value) => updates.push(["index", value]),
   };
-  let result = useStradellaChordFinderResults(selection);
+  let result = results(selection);
   assert.deepEqual(
     calls.at(-1),
     [
@@ -165,8 +164,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
   assert.strictEqual(result.stradellaChordFinderButtons, alt);
   assert.strictEqual(result.stradellaChordFinderPlaybackButtons, alt);
   assert.deepEqual([...result.stradellaPrimaryFinderButtonIds], ["counterbass-E", "chord-G"]);
-  assert.equal(effects.length, 2, "Both existing synchronization effects are retained");
-  effects.forEach((fn) => fn());
+  // Both synchronization effects ran when the hook rendered.
   assert.deepEqual(
     updates,
     [
@@ -177,8 +175,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
     "Reset ordering and exact progression button-ID matching remain unchanged",
   );
   calls.length = 0;
-  effects.length = 0;
-  result = useStradellaChordFinderResults({
+  result = results({
     ...selection,
     stradellaChordFinderRealizationIndex: 99,
     pendingProgressionRealizationKey: null,
@@ -199,8 +196,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
     "Candidates without a visual guide may share the same button array",
   );
   calls.length = 0;
-  effects.length = 0;
-  result = useStradellaChordFinderResults({
+  result = results({
     ...selection,
     stradellaChordFinderRealizationIndex: 0,
   });
@@ -209,8 +205,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
   assert.deepEqual([...result.stradellaRootBassFinderButtonIds], ["visual-root-only"]);
   for (const disabled of [{ stradellaChordFinderActive: false }, { side: "treble" }]) {
     calls.length = 0;
-    effects.length = 0;
-    result = useStradellaChordFinderResults({ ...selection, ...disabled });
+    result = results({ ...selection, ...disabled });
     assert.equal(
       calls.filter(([name]) => name === "many").length,
       0,
@@ -226,9 +221,8 @@ test("Requested bass tries one step more reach, then falls back from bass button
   // Root position is a preference: with no root-position realization, any-bass
   // results are shown and the effective requested bass becomes null.
   calls.length = 0;
-  effects.length = 0;
-  noResultForBass = "E";
-  result = useStradellaChordFinderResults({
+  search.noResultForBass = "E";
+  result = results({
     ...selection,
     stradellaChordFinderRequestedBass: "E",
     stradellaChordFinderRootPreferred: true,
@@ -248,8 +242,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
   assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
   // An explicit slash bass stays strict.
   calls.length = 0;
-  effects.length = 0;
-  result = useStradellaChordFinderResults({
+  result = results({
     ...selection,
     stradellaChordFinderRequestedBass: "E",
     stradellaChordFinderRootPreferred: false,
@@ -260,9 +253,8 @@ test("Requested bass tries one step more reach, then falls back from bass button
   assert.equal(result.stradellaChordFinderEffectiveRequestedBass, "E");
   // When only the bass-button rule fails, the requested bass is kept as the lowest note.
   calls.length = 0;
-  effects.length = 0;
-  onlyWithoutBassButton = true;
-  result = useStradellaChordFinderResults({
+  search.onlyWithoutBassButton = true;
+  result = results({
     ...selection,
     stradellaChordFinderRequestedBass: "E",
     stradellaChordFinderRootPreferred: true,
@@ -280,10 +272,9 @@ test("Requested bass tries one step more reach, then falls back from bass button
   assert.equal(result.stradellaChordFinderEffectiveRequestedBass, "E");
   // One step more reach is tried before giving up the bass button.
   calls.length = 0;
-  effects.length = 0;
-  onlyWithoutBassButton = false;
-  onlyAtSpan = 5.5;
-  result = useStradellaChordFinderResults({
+  search.onlyWithoutBassButton = false;
+  search.onlyAtSpan = 5.5;
+  result = results({
     ...selection,
     finderSpanColumns: 4.3,
     stradellaChordFinderRequestedBass: "E",
@@ -300,7 +291,7 @@ test("Requested bass tries one step more reach, then falls back from bass button
   assert.equal(result.stradellaChordFinderReachExtendedTo, 5.5);
   assert.equal(result.stradellaChordFinderBassButtonFallback, false);
   assert.strictEqual(result.stradellaChordFinderRealizations, candidates);
-  noResultForBass = null;
-  onlyWithoutBassButton = false;
-  onlyAtSpan = null;
+  search.noResultForBass = null;
+  search.onlyWithoutBassButton = false;
+  search.onlyAtSpan = null;
 });
