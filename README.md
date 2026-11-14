@@ -84,6 +84,6 @@ The **La Melodiosa** accordion samples were sampled, edited, and originally prog
 
 The Stradella Chord Finder was informed in part by the [Stradella Explorer](https://accordionchords.com/stradella-bass-chord-calculator-interactive-stacking-engine/) at AccordionChords.com.
 
-The project source and documentation are licensed under **CC BY-NC 4.0**. Diagrams you create with Accordion Tools may be used for any purpose, including commercial use. See [LICENSE](LICENSE) for details. Third-party assets retain their own licenses and attribution requirements.
+The source code is licensed under the **PolyForm Noncommercial License 1.0.0**, and the documentation and other content under **CC BY-NC 4.0**: both allow free noncommercial use, and commercial use needs permission. Diagrams you create with Accordion Tools may be used for any purpose, including commercial use. See [LICENSE](LICENSE) for which licence covers which files. Third-party assets retain their own licenses and attribution requirements.
 
 **Version:** 0.22.0 · [Release history](VERSION_HISTORY.md)

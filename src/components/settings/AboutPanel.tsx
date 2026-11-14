@@ -39,7 +39,7 @@ export function AboutPanel({ children }: AboutPanelProps) {
       <p className="hint">
         {t("about.license")}:{" "}
         <a href={APP_INFO.licenseUrl} target="_blank" rel="noreferrer">
-          CC BY-NC 4.0
+          {APP_INFO.licenseName}
         </a>
       </p>
       <p className="hint">

@@ -6,6 +6,8 @@ export const APP_INFO = {
   authorName: "gilsag",
   authorGithubUrl: "https://github.com/gilsag",
   readmeUrl: "https://github.com/gilsag/Accordion-Tools/blob/main/README.md",
-  licenseName: "CC BY-NC 4.0",
-  licenseUrl: "https://creativecommons.org/licenses/by-nc/4.0/",
+  // Code under PolyForm Noncommercial 1.0.0, documentation under CC BY-NC 4.0;
+  // the LICENSE file says which applies to what.
+  licenseName: "PolyForm Noncommercial 1.0.0 · CC BY-NC 4.0",
+  licenseUrl: "https://github.com/gilsag/Accordion-Tools/blob/main/LICENSE",
 } as const;
