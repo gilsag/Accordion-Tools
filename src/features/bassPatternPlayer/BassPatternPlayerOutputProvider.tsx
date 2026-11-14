@@ -1,3 +1,6 @@
+import { bassPatternName, progressionName } from "../../i18n/optionLabels";
+import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import type { ScoreEntry } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage } from "../../app/platform/platformContexts";
@@ -68,10 +71,22 @@ export function BassPatternPlayerOutputProvider({ children }: { children: ReactN
           onStop: transport.stopBassPatternPlayback,
         }
       : null;
+  const { language } = usePlatformLanguage();
+  // The pattern has no events off the Stradella side, so the score needs no side check.
+  const scoreEntry: ScoreEntry | null =
+    state.bassPatternRenderedNotationVisible && results.bassPatternEvents.length > 0
+      ? {
+          title: `${selectedBassPattern ? bassPatternName(selectedBassPattern.id, selectedBassPattern.name, language) : t("ui.bassPatternPlayer")} ${t("ui.over")} ${selectedChordProgression ? progressionName(selectedChordProgression.id, selectedChordProgression.name, language) : t("ui.progression")}`,
+          abc: bassPatternRenderedNotationAbc,
+          filename: `${selectedBassPattern?.id ?? "bass-pattern"}-notation`,
+        }
+      : null;
   return (
     <BassPatternPlayerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="bassPatternPlayer" transport={playbackEntry}>
-        {children}
+        <ScoreEntryProvider tool="bassPatternPlayer" score={scoreEntry}>
+          {children}
+        </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </BassPatternPlayerOutputContext.Provider>
   );

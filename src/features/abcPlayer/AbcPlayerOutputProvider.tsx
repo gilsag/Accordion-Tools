@@ -1,3 +1,5 @@
+import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import type { ScoreEntry } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage } from "../../app/platform/platformContexts";
@@ -50,10 +52,23 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
     onPause: transport.pauseAbcPlayback,
     onStop: transport.stopAbcPlayback,
   };
+  // The tune's own score, rendered from the editor's text.
+  const abcScoreTitle = results.abcParseResult.title || "ABC notation";
+  const scoreEntry: ScoreEntry | null =
+    state.abcRenderedNotationVisible && state.abcText.trim()
+      ? {
+          title: abcScoreTitle,
+          abc: state.abcText,
+          filename: `${abcScoreTitle}-notation`,
+          imported: true,
+        }
+      : null;
   return (
     <AbcPlayerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="abcPlayer" transport={playbackEntry}>
-        {children}
+        <ScoreEntryProvider tool="abcPlayer" score={scoreEntry}>
+          {children}
+        </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </AbcPlayerOutputContext.Provider>
   );

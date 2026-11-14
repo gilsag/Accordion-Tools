@@ -8,7 +8,7 @@ import type { DiagramButton, Side } from "../../types";
 import { AbcHandsDiagram } from "../../diagram/components/AbcHandsDiagram";
 import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimeline";
 import { NotationWorkspaceContent } from "../inspector/NotationWorkspaceContent";
-import type { NotationKind } from "../../notation/notationSelection";
+import type { ScoreEntry } from "../notation/scoreEntries";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { PlaybackBar } from "../components/PlaybackBar";
 import { useActivePlaybackTransport } from "../playback/playbackTransports";
@@ -62,8 +62,7 @@ import type { AppControllerModel } from "../useAppController";
 /** View-only component: all state and commands originate in the controller. */
 export function WorkspaceView({
   model,
-  tools,
-  notationKind,
+  score,
   isPhone = false,
   phoneSheetOpen = false,
   onOpenPhonePanel,
@@ -74,8 +73,7 @@ export function WorkspaceView({
   panelHandles,
 }: {
   model: AppControllerModel["workspace"];
-  tools: AppControllerModel["tools"];
-  notationKind: NotationKind | null;
+  score: ScoreEntry | null;
   isPhone?: boolean;
   phoneSheetOpen?: boolean;
   onOpenPhonePanel?: (mode: "tools" | "settings") => void;
@@ -822,9 +820,9 @@ export function WorkspaceView({
         />
       )}
 
-      {notationKind && !notationInInspector && (
+      {score && !notationInInspector && (
         <div className="rendered-notation-panel">
-          <NotationWorkspaceContent kind={notationKind} tools={tools} />
+          <NotationWorkspaceContent score={score} />
         </div>
       )}
     </section>

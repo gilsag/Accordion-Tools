@@ -17,6 +17,7 @@ import {
   useActivePlaybackTransport,
   type PlaybackTransport,
 } from "../../src/app/playback/playbackTransports";
+import { useActiveScore, type ScoreEntry } from "../../src/app/notation/scoreEntries";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
 
 const PUBLIC_DIR = resolve(import.meta.dirname, "../../public");
@@ -84,6 +85,8 @@ export interface RenderedApp {
   readonly settings: SettingsRegistry;
   /** The playback bar's entry for what the workspace shows, or null. */
   readonly playbackBar: PlaybackTransport | null;
+  /** The score the workspace shows, or null. */
+  readonly score: ScoreEntry | null;
   /** Runs commands and lets React apply the resulting state and effects. */
   run(commands: (model: AppControllerModel) => void): Promise<void>;
 }
@@ -101,6 +104,7 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
       model: useAppController(),
       settings: usePlatformSettings(),
       playbackBar: useActivePlaybackTransport(),
+      score: useActiveScore(),
     }),
     { wrapper: AppProviders },
   );
@@ -113,6 +117,9 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
     },
     get playbackBar() {
       return result.current.playbackBar;
+    },
+    get score() {
+      return result.current.score;
     },
     async run(commands) {
       await act(async () => {

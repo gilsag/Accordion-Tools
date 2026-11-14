@@ -1,3 +1,7 @@
+import { RhythmNotationPanel } from "../../app/inspector/RhythmNotationInspector";
+import { useScoreRendering } from "../../app/platform/useScoreRendering";
+import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import type { ScoreEntry } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import type { ReactNode } from "react";
@@ -17,8 +21,13 @@ import { useRhythmTrainerState } from "./useRhythmTrainer";
  * score. It reads the progression and pattern libraries from the Bass
  * Pattern Player, whose provider is outside this one. Its state is not saved. */
 export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
-  const { stradellaNotationMode, stradellaChordQualityLabels, stradellaMarkCounterbass } =
-    usePlatformNotation();
+  const {
+    stradellaNotationMode,
+    stradellaChordQualityLabels,
+    stradellaMarkCounterbass,
+    musicNotationIncludeTitle,
+  } = usePlatformNotation();
+  const { renderNotationInto } = useScoreRendering();
   const { soundOptions } = usePlatformSound();
   const { activeToolSection } = usePlatformNavigation();
   const { stopAllPlayback } = usePlatformTools();
@@ -44,10 +53,25 @@ export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
     onPlay: () => void value.play(),
     onStop: value.stop,
   };
+  // The Rhythm Trainer's score is a panel of its own (two hands, cursor).
+  const scoreEntry: ScoreEntry | null =
+    value.notationVisible && value.exercise.barCount > 0
+      ? {
+          panel: (
+            <RhythmNotationPanel
+              trainer={value}
+              renderNotationInto={renderNotationInto}
+              showTitle={musicNotationIncludeTitle}
+            />
+          ),
+        }
+      : null;
   return (
     <RhythmTrainerContext.Provider value={value}>
       <PlaybackTransportEntry tool="rhythmTrainer" transport={playbackEntry}>
-        {children}
+        <ScoreEntryProvider tool="rhythmTrainer" score={scoreEntry}>
+          {children}
+        </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </RhythmTrainerContext.Provider>
   );

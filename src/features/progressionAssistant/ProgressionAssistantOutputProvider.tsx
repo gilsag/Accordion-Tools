@@ -1,3 +1,5 @@
+import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import type { ScoreEntry } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
@@ -140,10 +142,22 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
           onStop: stopAllPlayback,
         }
       : null;
+  const scoreEntry: ScoreEntry | null =
+    side === "stradella" &&
+    state.harmonyProgressionNotationVisible &&
+    harmonyProgressionPlan.playable
+      ? {
+          title: t("ui.optimizedStradellaProgression"),
+          abc: notation.harmonyProgressionRenderedNotationAbc,
+          filename: "optimized-stradella-progression-notation",
+        }
+      : null;
   return (
     <ProgressionAssistantOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="progressionAssistant" transport={playbackEntry}>
-        {children}
+        <ScoreEntryProvider tool="progressionAssistant" score={scoreEntry}>
+          {children}
+        </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </ProgressionAssistantOutputContext.Provider>
   );

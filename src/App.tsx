@@ -13,7 +13,8 @@ import { WorkspaceView } from "./app/views/WorkspaceView";
 import { PanelResizeHandle } from "./app/components/PanelResizeHandle";
 import { clampPanelWidth, panelTrack, usePanelWidths } from "./app/panelWidths";
 import { workspaceGridColumns } from "./app/workspacePresentation";
-import { selectNotationKind, notationLocation } from "./notation/notationSelection";
+import { notationLocation } from "./notation/notationSelection";
+import { useActiveScore } from "./app/notation/scoreEntries";
 
 // The Tools panel is open at startup; Settings loads the first time it is opened.
 const SettingsView = lazy(() =>
@@ -52,25 +53,9 @@ function AppLayout() {
     if (leftPanelMode !== mode) model.workspace.setPanel(mode);
     showSheet();
   }
-  const notationKind = selectNotationKind({
-    workspaceMode: model.tools.workspaceMode,
-    side: model.tools.side,
-    activeToolSection: model.tools.activeToolSection,
-    annotateMode: model.tools.annotateMode,
-    rhythm:
-      model.tools.rhythmTrainer.notationVisible && model.tools.rhythmTrainer.exercise.barCount > 0,
-    abc: model.tools.abcRenderedNotationVisible && Boolean(model.tools.abcText.trim()),
-    bassPattern:
-      model.tools.bassPatternRenderedNotationVisible && model.tools.bassPatternEvents.length > 0,
-    sequence: model.tools.sequenceRenderedNotationVisible && model.tools.sequenceSteps.length > 0,
-    progression:
-      model.tools.harmonyProgressionNotationVisible && model.tools.harmonyProgressionPlan.playable,
-    recording:
-      model.tools.harmonyRecordedNotationVisible &&
-      model.tools.harmonyRecordedProgression.length > 0,
-  });
+  const score = useActiveScore();
   const showNotationRight =
-    notationKind !== null &&
+    score !== null &&
     notationLocation(model.tools.musicNotationPlacement, isPhone, inspectorVisible) === "right";
   const availableInspector = resolveWorkspaceInspector({
     leftPanelMode,
@@ -175,8 +160,7 @@ function AppLayout() {
         )}
         <WorkspaceView
           model={model.workspace}
-          tools={model.tools}
-          notationKind={notationKind}
+          score={score}
           isPhone={isPhone}
           phoneSheetOpen={isPhone && sheetOpen}
           onOpenPhonePanel={openPhonePanel}
@@ -190,7 +174,7 @@ function AppLayout() {
           <WorkspaceInspectorSlot
             inspector={inspector}
             tools={model.tools}
-            notationKind={notationKind}
+            score={score}
             blocked={isPhone && sheetOpen}
           />
         )}

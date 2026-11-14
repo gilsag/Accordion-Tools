@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /** At most one tool's score is shown, and a tool's score is hidden when the
  * tool closes. Which score wins and where it goes are covered by the pure
- * tests of `selectNotationKind()` and `notationLocation()`. */
+ * tests in which-score.test.tsx and of `notationLocation()`. */
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { renderApp, resetBrowserState, serveBundledFiles } from "../../support/appHarness";

@@ -3,7 +3,7 @@ import type { AppControllerModel } from "../useAppController";
 import type { WorkspaceInspectorId } from "./inspectorSelection";
 // Small, and it owns the notation host element, so it is not lazy.
 import { NotationWorkspaceContent } from "./NotationWorkspaceContent";
-import type { NotationKind } from "../../notation/notationSelection";
+import type { ScoreEntry } from "../notation/scoreEntries";
 
 // The slot is shared; loading and inputs stay feature-specific. Do not eagerly
 // import a future tool's inspector or copy its selection into local state.
@@ -23,21 +23,21 @@ export function WorkspaceInspectorSlot({
   inspector,
   tools,
   blocked = false,
-  notationKind,
+  score,
 }: {
   inspector: WorkspaceInspectorId;
   tools: AppControllerModel["tools"];
   blocked?: boolean;
-  notationKind?: NotationKind | null;
+  score?: ScoreEntry | null;
 }) {
-  if (inspector === "notation" && notationKind)
+  if (inspector === "notation" && score)
     return (
       <aside
         className="workspace-inspector notation-inspector"
         aria-label="Music notation"
         inert={blocked}
       >
-        <NotationWorkspaceContent kind={notationKind} tools={tools} />
+        <NotationWorkspaceContent score={score} />
       </aside>
     );
   return (

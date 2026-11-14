@@ -1,3 +1,5 @@
+import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import type { ScoreEntry } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
@@ -68,10 +70,23 @@ export function AnnotateDiagramOutputProvider({ children }: { children: ReactNod
           onStop: stopAllPlayback,
         }
       : null;
+  // The sequence's score belongs to Sequence mode.
+  const scoreEntry: ScoreEntry | null =
+    overlays.annotateMode === "sequence" &&
+    sequence.sequenceRenderedNotationVisible &&
+    sequence.sequenceSteps.length > 0
+      ? {
+          title: t("ui.sequenceNotation"),
+          abc: sequenceRenderedNotationAbc,
+          filename: "sequence-notation",
+        }
+      : null;
   return (
     <AnnotateDiagramOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="annotateDiagram" transport={playbackEntry}>
-        {children}
+        <ScoreEntryProvider tool="annotateDiagram" score={scoreEntry}>
+          {children}
+        </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </AnnotateDiagramOutputContext.Provider>
   );
