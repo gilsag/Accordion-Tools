@@ -1,3 +1,6 @@
+import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
+import type { PlaybackTransport } from "../../app/playback/playbackTransports";
+import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
 import { useMemo, type ReactNode } from "react";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import {
@@ -51,9 +54,25 @@ export function AnnotateDiagramOutputProvider({ children }: { children: ReactNod
     playSelectedButtons: () => playButtonArpeggioThenChord(selectedButtons, soundOptions),
     playRecordedSequence,
   };
+  const { t } = usePlatformLanguage();
+  const { soundEnginePlayer } = usePlatformPlayback();
+  const { stopAllPlayback } = usePlatformTools();
+  // Sequence mode owns the sequence's transport.
+  const playbackEntry: PlaybackTransport | null =
+    overlays.annotateMode === "sequence"
+      ? {
+          label: t("ui.sequence"),
+          state: soundEnginePlayer === "sequence" ? "playing" : "stopped",
+          canPlay: sequence.sequenceSteps.length > 0,
+          onPlay: playRecordedSequence,
+          onStop: stopAllPlayback,
+        }
+      : null;
   return (
     <AnnotateDiagramOutputContext.Provider value={value}>
-      {children}
+      <PlaybackTransportEntry tool="annotateDiagram" transport={playbackEntry}>
+        {children}
+      </PlaybackTransportEntry>
     </AnnotateDiagramOutputContext.Provider>
   );
 }

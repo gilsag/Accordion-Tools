@@ -1,8 +1,11 @@
+import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
+import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import type { ReactNode } from "react";
 import {
   usePlatformNavigation,
   usePlatformNotation,
   usePlatformSound,
+  usePlatformLanguage,
   usePlatformTools,
 } from "../../app/platform/platformContexts";
 import { useSideButtonSettings } from "../../app/platform/useSideButtonSettings";
@@ -33,5 +36,19 @@ export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
     activeToolSection,
     stopOtherPlayback: stopAllPlayback,
   });
-  return <RhythmTrainerContext.Provider value={value}>{children}</RhythmTrainerContext.Provider>;
+  const { t } = usePlatformLanguage();
+  const playbackEntry: PlaybackTransport = {
+    label: t("rhythm.title"),
+    state: value.playing ? "playing" : "stopped",
+    canPlay: value.canPlay,
+    onPlay: () => void value.play(),
+    onStop: value.stop,
+  };
+  return (
+    <RhythmTrainerContext.Provider value={value}>
+      <PlaybackTransportEntry tool="rhythmTrainer" transport={playbackEntry}>
+        {children}
+      </PlaybackTransportEntry>
+    </RhythmTrainerContext.Provider>
+  );
 }

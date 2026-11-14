@@ -1,22 +1,26 @@
-import { audioTimelineOrigin, msUntilAudioTime, scheduleAtAudioOffset } from "../audio/audioClock";
-import type { useHarmonyExplorerState } from "../features/harmonyExplorer/useHarmonyExplorer";
-import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
-import type { useSoundSettings } from "../audio/useSoundSettings";
-import { clearPlaybackTimers } from "../audio/playbackTransport";
+import {
+  audioTimelineOrigin,
+  msUntilAudioTime,
+  scheduleAtAudioOffset,
+} from "../../audio/audioClock";
+import type { useHarmonyExplorerState } from "./useHarmonyExplorer";
+import type { useHarmonyRecordingState } from "./useHarmonyRecording";
+import type { useSoundSettings } from "../../audio/useSoundSettings";
+import { clearPlaybackTimers } from "../../audio/playbackTransport";
 import {
   stopAllSound,
   audioClockNow,
   playHarmonyPitchClassChord,
   playHarmonyRelationship,
-} from "../sound";
-import type { ChordFamilyId } from "../tools/harmonyExplorer/music";
+} from "../../sound";
+import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";
 import {
   CIRCLE_OF_FIFTHS,
   pitchClassesForChord as harmonyPitchClassesForChord,
-} from "../tools/harmonyExplorer/music";
-import type { HarmonyPlaybackStyle } from "../tools/harmonyExplorer/types";
-import type { HarmonyRecordedChord } from "../tools/harmonyExplorer/progression";
-import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
+} from "../../tools/harmonyExplorer/music";
+import type { HarmonyPlaybackStyle } from "../../tools/harmonyExplorer/types";
+import type { HarmonyRecordedChord } from "../../tools/harmonyExplorer/progression";
+import { pitchClassNameFromNumber } from "../../tools/harmonyExplorer/integration";
 
 export type UseHarmonyActionsDeps = Pick<
   ReturnType<typeof useHarmonyExplorerState>,

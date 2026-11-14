@@ -1,3 +1,6 @@
+import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
+import type { PlaybackTransport } from "../../app/playback/playbackTransports";
+import { usePlatformLanguage } from "../../app/platform/platformContexts";
 import { useMemo, type ReactNode } from "react";
 import { useScoreRendering } from "../../app/platform/useScoreRendering";
 import { useToolHandle } from "../../app/platform/useToolHandle";
@@ -53,9 +56,23 @@ export function BassPatternPlayerOutputProvider({ children }: { children: ReactN
   const transport = useBassPatternTransport(state, results, bassPatternRenderedNotationAbc);
   useToolHandle("bassPatternPlayer", playerHandle(transport.stopBassPatternPlayback));
   const value = { ...results, ...transport, bassPatternRenderedNotationAbc };
+  const { t } = usePlatformLanguage();
+  // The Bass Pattern Player plays the Stradella side only.
+  const playbackEntry: PlaybackTransport | null =
+    side === "stradella"
+      ? {
+          label: t("ui.bassPatternPlayer"),
+          state: state.bassPatternPlaybackState === "playing" ? "playing" : "stopped",
+          canPlay: results.bassPatternEvents.length > 0,
+          onPlay: transport.scheduleBassPatternPlayback,
+          onStop: transport.stopBassPatternPlayback,
+        }
+      : null;
   return (
     <BassPatternPlayerOutputContext.Provider value={value}>
-      {children}
+      <PlaybackTransportEntry tool="bassPatternPlayer" transport={playbackEntry}>
+        {children}
+      </PlaybackTransportEntry>
     </BassPatternPlayerOutputContext.Provider>
   );
 }

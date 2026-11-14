@@ -10,7 +10,8 @@ import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimel
 import { NotationWorkspaceContent } from "../inspector/NotationWorkspaceContent";
 import type { NotationKind } from "../../notation/notationSelection";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import { PlaybackBar, type PlaybackTransport } from "../components/PlaybackBar";
+import { PlaybackBar } from "../components/PlaybackBar";
+import { useActivePlaybackTransport } from "../playback/playbackTransports";
 import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
 
 import { stradellaDiagramRowLabel } from "../../i18n/musicTerms";
@@ -236,81 +237,15 @@ export function WorkspaceView({
     viewWidth,
     visibleRows,
     workspaceMode,
-    abcMappedEvents,
-    abcPlaybackState,
-    abcPositionBeat,
-    bassPatternPlaybackState,
-    harmonyRecordedProgressionPlaying,
-    pauseAbcPlayback,
-    playHarmonyRecordedProgression,
-    playOptimizedHarmonyProgression,
-    playRecordedSequence,
     samplesLoading,
-    scheduleAbcPlayback,
-    scheduleBassPatternPlayback,
-    soundEnginePlayer,
-    stopHarmonyRecordedProgressionPlayback,
-    stopSoundPlayback,
     progressionPathVisible,
   } = model;
-  // The one transport under the diagram follows the active player.
-  // Annotate Diagram's Sequence mode owns the sequence transport and notation;
-  // Notes mode owns the note cursor and the button anchor markers.
+  // The one transport under the diagram follows the active player; each
+  // player provides its entry (src/app/playback/playbackTransports.ts).
+  // Annotate Diagram's Notes mode owns the note cursor and anchor markers.
   const sequenceModeActive = activeToolSection === "annotateDiagram" && annotateMode === "sequence";
   const notesModeActive = activeToolSection === "annotateDiagram" && annotateMode === "notes";
-  const transport: PlaybackTransport | null =
-    workspaceMode === "harmony"
-      ? harmonyRecordedProgression.length > 0
-        ? {
-            label: t("tools.harmonyExplorer"),
-            state: harmonyRecordedProgressionPlaying ? "playing" : "stopped",
-            canPlay: true,
-            onPlay: playHarmonyRecordedProgression,
-            onStop: stopHarmonyRecordedProgressionPlayback,
-          }
-        : null
-      : activeToolSection === "rhythmTrainer"
-        ? {
-            label: t("rhythm.title"),
-            state: rhythmTrainer.playing ? "playing" : "stopped",
-            canPlay: rhythmTrainer.canPlay,
-            onPlay: () => void rhythmTrainer.play(),
-            onStop: rhythmTrainer.stop,
-          }
-        : activeToolSection === "abcPlayer"
-          ? {
-              label: t("ui.abcDefault"),
-              state: abcPlaybackState,
-              canPlay: abcMappedEvents.length > 0,
-              onPlay: () => scheduleAbcPlayback(abcPositionBeat),
-              onPause: pauseAbcPlayback,
-              onStop: stopAbcPlayback,
-            }
-          : activeToolSection === "bassPatternPlayer" && side === "stradella"
-            ? {
-                label: t("ui.bassPatternPlayer"),
-                state: bassPatternPlaybackState === "playing" ? "playing" : "stopped",
-                canPlay: bassPatternEvents.length > 0,
-                onPlay: scheduleBassPatternPlayback,
-                onStop: stopBassPatternPlayback,
-              }
-            : activeToolSection === "progressionAssistant" && side === "stradella"
-              ? {
-                  label: t("ui.progressionAssistant"),
-                  state: soundEnginePlayer === "progression" ? "playing" : "stopped",
-                  canPlay: harmonyProgressionPlan.playable,
-                  onPlay: playOptimizedHarmonyProgression,
-                  onStop: stopSoundPlayback,
-                }
-              : sequenceModeActive
-                ? {
-                    label: t("ui.sequence"),
-                    state: soundEnginePlayer === "sequence" ? "playing" : "stopped",
-                    canPlay: sequenceSteps.length > 0,
-                    onPlay: playRecordedSequence,
-                    onStop: stopSoundPlayback,
-                  }
-                : null;
+  const transport = useActivePlaybackTransport();
   const showProgressionPath =
     workspaceMode === "accordion" &&
     side === "stradella" &&

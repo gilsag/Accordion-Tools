@@ -13,6 +13,10 @@ import { useAppController, type AppControllerModel } from "../../src/app/useAppC
 import { AppProviders } from "../../src/app/AppProviders";
 import { usePlatformSettings } from "../../src/app/platform/platformContexts";
 import type { SettingsRegistry } from "../../src/settings/settingsRegistry";
+import {
+  useActivePlaybackTransport,
+  type PlaybackTransport,
+} from "../../src/app/playback/playbackTransports";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
 
 const PUBLIC_DIR = resolve(import.meta.dirname, "../../public");
@@ -78,6 +82,8 @@ export interface RenderedApp {
   readonly model: AppControllerModel;
   /** The settings registry, as the Settings panel's file commands use it. */
   readonly settings: SettingsRegistry;
+  /** The playback bar's entry for what the workspace shows, or null. */
+  readonly playbackBar: PlaybackTransport | null;
   /** Runs commands and lets React apply the resulting state and effects. */
   run(commands: (model: AppControllerModel) => void): Promise<void>;
 }
@@ -91,7 +97,11 @@ export interface RenderAppOptions {
  * jsdom has no Web Audio; playback order is covered by the audio tests. */
 export async function renderApp(options: RenderAppOptions = {}): Promise<RenderedApp> {
   const { result } = renderHook(
-    () => ({ model: useAppController(), settings: usePlatformSettings() }),
+    () => ({
+      model: useAppController(),
+      settings: usePlatformSettings(),
+      playbackBar: useActivePlaybackTransport(),
+    }),
     { wrapper: AppProviders },
   );
   const app: RenderedApp = {
@@ -100,6 +110,9 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
     },
     get settings() {
       return result.current.settings;
+    },
+    get playbackBar() {
+      return result.current.playbackBar;
     },
     async run(commands) {
       await act(async () => {

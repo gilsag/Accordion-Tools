@@ -1,3 +1,6 @@
+import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
+import type { PlaybackTransport } from "../../app/playback/playbackTransports";
+import { usePlatformLanguage } from "../../app/platform/platformContexts";
 import { useMemo, type ReactNode } from "react";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import { usePlatformInstrument, usePlatformNavigation } from "../../app/platform/platformContexts";
@@ -38,7 +41,20 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
   const transport = useAbcTransport(state, results);
   useToolHandle("abcPlayer", playerHandle(transport.stopAbcPlayback));
   const value = { ...results, ...transport, abcCompanionButtons };
+  const { t } = usePlatformLanguage();
+  const playbackEntry: PlaybackTransport = {
+    label: t("ui.abcDefault"),
+    state: state.abcPlaybackState,
+    canPlay: results.abcMappedEvents.length > 0,
+    onPlay: () => transport.scheduleAbcPlayback(state.abcPositionBeat),
+    onPause: transport.pauseAbcPlayback,
+    onStop: transport.stopAbcPlayback,
+  };
   return (
-    <AbcPlayerOutputContext.Provider value={value}>{children}</AbcPlayerOutputContext.Provider>
+    <AbcPlayerOutputContext.Provider value={value}>
+      <PlaybackTransportEntry tool="abcPlayer" transport={playbackEntry}>
+        {children}
+      </PlaybackTransportEntry>
+    </AbcPlayerOutputContext.Provider>
   );
 }

@@ -96,9 +96,7 @@ import { useSettingsTransfer } from "./useSettingsTransfer";
 import { useOwnedSettings } from "./platform/useOwnedSettings";
 import { useScoreRendering } from "./platform/useScoreRendering";
 import { useDiagramLabels } from "./useDiagramLabels";
-import { useHarmonyActions } from "./useHarmonyActions";
 import { useProgressionActions } from "./useProgressionActions";
-import { useProgressionNotation } from "./useProgressionNotation";
 
 /**
  * Builds the model the views render: owns the order in which the feature hooks
@@ -491,14 +489,11 @@ export function useAppController() {
     harmonyFocusedReferenceRootPc,
     setHarmonyFocusedReferenceRootPc,
     harmonyRecordedProgression,
-    setHarmonyRecordedProgression,
     harmonyProgressionRecording,
     setHarmonyProgressionRecording,
     harmonyRecordedNotationVisible,
     setHarmonyRecordedNotationVisible,
     harmonyRecordedProgressionPlaying,
-    setHarmonyRecordedProgressionPlaying,
-    harmonyRecordedPlaybackTimeoutsRef,
     harmonyRecordedNotationRef,
     harmonyProgressionIdRef,
     resetHarmonyExplorer,
@@ -530,7 +525,6 @@ export function useAppController() {
     harmonyProgressionActiveButtonIds,
     setHarmonyProgressionActiveButtonIds,
     harmonyProgressionPulseSilent,
-    setHarmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible,
     harmonyProgressionNotationRef,
     toggleHarmonyProgressionNotation,
@@ -651,6 +645,8 @@ export function useAppController() {
     progressionPreviewButtonIds,
     harmonyProgressionActiveButtonIdSet,
     harmonyProgressionNoteStep,
+    harmonyProgressionRenderedNotationAbc,
+    playOptimizedHarmonyProgression,
   } = useProgressionAssistantOutput();
 
   const {
@@ -724,28 +720,6 @@ export function useAppController() {
   );
 
   const {
-    progressionRhythmPulses,
-    harmonyProgressionRenderedNotationAbc,
-    harmonyRecordedProgressionNotationAbc,
-  } = useProgressionNotation({
-    buttons,
-    harmonyProgressionNotationRef,
-    harmonyProgressionNotationVisible,
-    harmonyProgressionPlan,
-    harmonyProgressionRhythmPattern,
-    harmonyRecordedNotationRef,
-    harmonyRecordedNotationVisible,
-    harmonyRecordedProgression,
-    harmonyShowEnharmonics,
-    renderNotationInto,
-    soundOptions,
-    soundSequenceTempoBpm,
-    stradellaNotationMode,
-    stradellaChordQualityLabels,
-    stradellaMarkCounterbass,
-  });
-
-  const {
     harmonyAllFamiliesMode,
     harmonyEffectiveDiatonicOnly,
     harmonyEffectiveHighlightDiatonic,
@@ -756,9 +730,6 @@ export function useAppController() {
     harmonyRelatedName,
     harmonyScale,
     harmonyExplanation,
-  } = useHarmonyExplorerOutput();
-
-  const {
     playHarmonyChord,
     playHarmonyChordRelationship,
     harmonyProgressionSectorIndex,
@@ -769,19 +740,8 @@ export function useAppController() {
     stopHarmonyRecordedProgressionPlayback,
     playHarmonyRecordedProgression,
     clearHarmonyRecordedProgression,
-  } = useHarmonyActions({
-    harmonyPlaybackStyle,
-    harmonyProgressionIdRef,
-    harmonyProgressionRecording,
-    harmonyRecordedPlaybackTimeoutsRef,
-    harmonyRecordedProgression,
-    setHarmonyProgressionRecording,
-    setHarmonyRecordedNotationVisible,
-    setHarmonyRecordedProgression,
-    setHarmonyRecordedProgressionPlaying,
-    soundOptions,
-    soundSequenceTempoBpm,
-  });
+    harmonyRecordedProgressionNotationAbc,
+  } = useHarmonyExplorerOutput();
 
   /** ABC Player Hands choice. Stradella or Treble also switches the workspace
    * to that side; any change stops playback, since the mapping changes. */
@@ -813,8 +773,7 @@ export function useAppController() {
     playButtonSound(button, soundOptions);
   }
 
-  const { samplesLoading, soundEnginePlayer, setSoundEnginePlayer, startWhenSamplesReady } =
-    usePlatformPlayback();
+  const { samplesLoading, soundEnginePlayer } = usePlatformPlayback();
 
   const rhythmTrainer = useRhythmTrainer();
 
@@ -828,13 +787,11 @@ export function useAppController() {
     cycleHarmonyProgressionRealization,
     previewHarmonyProgressionStepOnStradella,
     toggleHarmonyProgressionStepNotes,
-    playOptimizedHarmonyProgression,
     showHarmonySelectionOnStradella,
     exploreCurrentStradellaChordInHarmony,
     progressionPathVisible,
     setProgressionPathVisible,
   } = useProgressionActions({
-    buttons,
     chordProgressionDefinitions,
     harmonyProgression,
     harmonyProgressionIdRef,
@@ -844,35 +801,29 @@ export function useAppController() {
     harmonyProgressionPlan,
     harmonyProgressionRealizationKeys,
     harmonyProgressionRealizationOptions,
-    harmonyProgressionRhythmPattern,
     harmonyProgressionSectorIndex,
     harmonyRecordedProgression,
     harmonySelection,
     makeHarmonyProgressionChord,
     navigateToTool,
-    progressionRhythmPulses,
     setChordFinderActive,
     setHarmonyFocusedReferenceRootPc,
     setHarmonyProgression,
     setHarmonyProgressionActiveButtonIds,
     setHarmonyProgressionNoteStepId,
     setHarmonyProgressionPreviewIndex,
-    setHarmonyProgressionPulseSilent,
     setHarmonyProgressionRealizationKeys,
     setHarmonyProgressionRecording,
     setHarmonyRecordedNotationVisible,
     setHarmonyRelatedFamilyId,
     setHarmonySelection,
     setScaleFinderActive,
-    setSoundEnginePlayer,
     setStradellaChordFinderActive,
     setStradellaChordFinderMode,
     setStradellaChordFinderPattern,
     setStradellaChordFinderRealizationIndex,
     setStradellaChordFinderRequestedBass,
     setStradellaChordFinderRoot,
-    soundOptions,
-    startWhenSamplesReady,
     stopAbcPlayback,
     stopBassPatternPlayback,
     stopHarmonyRecordedProgressionPlayback,
@@ -1880,20 +1831,10 @@ export function useAppController() {
       visibleRows,
       workspaceMode,
       // Shared playback bar under the diagram (one transport for every player).
-      abcMappedEvents,
-      abcPlaybackState,
-      abcPositionBeat,
-      bassPatternPlaybackState,
-      harmonyRecordedProgressionPlaying,
-      pauseAbcPlayback,
-      playHarmonyRecordedProgression,
-      playOptimizedHarmonyProgression,
-      playRecordedSequence,
       samplesLoading,
       scheduleAbcPlayback,
       scheduleBassPatternPlayback,
       soundEnginePlayer,
-      stopHarmonyRecordedProgressionPlayback,
       stopSoundPlayback,
       progressionPathVisible,
     },

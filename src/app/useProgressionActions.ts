@@ -1,8 +1,8 @@
-import type { PlatformPlayback, PlatformTools } from "./platform/platformContexts";
+import type { PlatformTools } from "./platform/platformContexts";
 import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
 import type { AbcPlayerOutput } from "../features/abcPlayer/abcPlayerContext";
 import type { BassPatternPlayerOutput } from "../features/bassPatternPlayer/bassPatternPlayerContext";
-import type { useHarmonyActions } from "./useHarmonyActions";
+import type { useHarmonyActions } from "../features/harmonyExplorer/useHarmonyActions";
 import { ROOT_POSITION_BASS } from "../tools/stradellaChordFinder/harmonicIdentity";
 import { convertProgressionPreset } from "../tools/harmonyExplorer/progressionPresets";
 import { useState } from "react";
@@ -26,23 +26,17 @@ import {
 import type { useStradellaChordFinderState } from "../features/stradellaChordFinder/useStradellaChordFinder";
 import type { useScaleFinderState } from "../features/scaleFinder/useScaleFinder";
 import type { useTrebleChordFinderState } from "../features/trebleChordFinder/useTrebleChordFinder";
-import type { useSoundSettings } from "../audio/useSoundSettings";
-import type { DiagramButton } from "../types";
-import { playButtonRhythmProgression, stopAllSound } from "../sound";
+import { stopAllSound } from "../sound";
 import type { HarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
 import { progressionFinderPattern } from "../tools/harmonyExplorer/progression";
 import { isHarmonyProgressionChord } from "../tools/harmonyExplorer/progression";
-import {
-  progressionBassPulseButtons,
-  progressionRealizationKey,
-} from "../tools/harmonyExplorer/progression";
+import { progressionRealizationKey } from "../tools/harmonyExplorer/progression";
 import {
   finderPatternForHarmonyFamily,
   harmonyFamilyForFinderPattern,
   pitchClassNameFromNumber,
   pitchClassNumberFromName,
 } from "../tools/harmonyExplorer/integration";
-import type { OptimizedProgressionStep } from "../tools/harmonyExplorer/progression";
 
 export type UseProgressionActionsDeps = Pick<
   ReturnType<typeof useBassPatternState>,
@@ -55,12 +49,10 @@ export type UseProgressionActionsDeps = Pick<
     | "harmonyProgressionManualRoot"
     | "harmonyProgressionNoteStepId"
     | "harmonyProgressionRealizationKeys"
-    | "harmonyProgressionRhythmPattern"
     | "setHarmonyProgression"
     | "setHarmonyProgressionActiveButtonIds"
     | "setHarmonyProgressionNoteStepId"
     | "setHarmonyProgressionPreviewIndex"
-    | "setHarmonyProgressionPulseSilent"
     | "setHarmonyProgressionRealizationKeys"
   > &
   Pick<
@@ -91,8 +83,7 @@ export type UseProgressionActionsDeps = Pick<
   Pick<ReturnType<typeof useTrebleChordFinderState>, "setChordFinderActive"> &
   Pick<ReturnType<typeof useScaleFinderState>, "setScaleFinderActive"> &
   Pick<AbcPlayerOutput, "stopAbcPlayback"> &
-  Pick<BassPatternPlayerOutput, "stopBassPatternPlayback"> &
-  Pick<PlatformPlayback, "setSoundEnginePlayer" | "startWhenSamplesReady"> & {
+  Pick<BassPatternPlayerOutput, "stopBassPatternPlayback"> & {
     stopSoundPlayback: PlatformTools["stopAllPlayback"];
   } & Pick<
     ReturnType<typeof useStradellaChordFinderState>,
@@ -105,16 +96,11 @@ export type UseProgressionActionsDeps = Pick<
     | "stradellaChordFinderPattern"
     | "stradellaChordFinderRoot"
   > &
-  Pick<ReturnType<typeof useSoundSettings>, "soundOptions"> &
-  Pick<ReturnType<typeof useLanguageSettings>, "t"> & {
-    buttons: DiagramButton[];
-    progressionRhythmPulses: (step: OptimizedProgressionStep) => DiagramButton[][];
-  };
+  Pick<ReturnType<typeof useLanguageSettings>, "t">;
 
 /** Progression Assistant editing, path display and playback, and the commands that move chords between Harmony Explorer, the Progression Assistant and the Stradella Chord Finder. */
 export function useProgressionActions(deps: UseProgressionActionsDeps) {
   const {
-    buttons,
     chordProgressionDefinitions,
     harmonyProgression,
     harmonyProgressionIdRef,
@@ -124,35 +110,29 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     harmonyProgressionPlan,
     harmonyProgressionRealizationKeys,
     harmonyProgressionRealizationOptions,
-    harmonyProgressionRhythmPattern,
     harmonyProgressionSectorIndex,
     harmonyRecordedProgression,
     harmonySelection,
     makeHarmonyProgressionChord,
     navigateToTool,
-    progressionRhythmPulses,
     setChordFinderActive,
     setHarmonyFocusedReferenceRootPc,
     setHarmonyProgression,
     setHarmonyProgressionActiveButtonIds,
     setHarmonyProgressionNoteStepId,
     setHarmonyProgressionPreviewIndex,
-    setHarmonyProgressionPulseSilent,
     setHarmonyProgressionRealizationKeys,
     setHarmonyProgressionRecording,
     setHarmonyRecordedNotationVisible,
     setHarmonyRelatedFamilyId,
     setHarmonySelection,
     setScaleFinderActive,
-    setSoundEnginePlayer,
     setStradellaChordFinderActive,
     setStradellaChordFinderMode,
     setStradellaChordFinderPattern,
     setStradellaChordFinderRealizationIndex,
     setStradellaChordFinderRequestedBass,
     setStradellaChordFinderRoot,
-    soundOptions,
-    startWhenSamplesReady,
     stopAbcPlayback,
     stopBassPatternPlayback,
     stopHarmonyRecordedProgressionPlayback,
@@ -335,36 +315,6 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     }
   }
 
-  function playOptimizedHarmonyProgression() {
-    if (!harmonyProgressionPlan.playable) return;
-    setHarmonyProgressionActiveButtonIds([]);
-    setHarmonyProgressionPulseSilent(false);
-    const pulses = harmonyProgressionPlan.steps.map(progressionRhythmPulses);
-    startWhenSamplesReady(pulses.flat(2), () => {
-      playButtonRhythmProgression(
-        harmonyProgressionPlan.steps.map((step) => step.result.playbackButtons),
-        soundOptions,
-        harmonyProgressionRhythmPattern,
-        {
-          onActiveButtons: (buttonIds, progressionIndex) => {
-            setHarmonyProgressionPulseSilent(buttonIds.length === 0);
-            setHarmonyProgressionActiveButtonIds(buttonIds);
-            setHarmonyProgressionPreviewIndex(progressionIndex);
-          },
-          onDone: () => {
-            setHarmonyProgressionActiveButtonIds([]);
-            setHarmonyProgressionPulseSilent(false);
-            setSoundEnginePlayer(null);
-          },
-        },
-        harmonyProgressionPlan.steps.map((step) => progressionBassPulseButtons(buttons, step)),
-        pulses,
-      );
-      // Set after the player's own stopAllSound(), which clears this state.
-      if (soundOptions.enabled) setSoundEnginePlayer("progression");
-    });
-  }
-
   function showHarmonySelectionOnStradella() {
     if (!harmonySelection) return;
     const pattern = finderPatternForHarmonyFamily(harmonySelection.candidate.familyId);
@@ -419,7 +369,6 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     cycleHarmonyProgressionRealization,
     previewHarmonyProgressionStepOnStradella,
     toggleHarmonyProgressionStepNotes,
-    playOptimizedHarmonyProgression,
     showHarmonySelectionOnStradella,
     exploreCurrentStradellaChordInHarmony,
     progressionPathVisible,

@@ -1,42 +1,25 @@
-import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
-import type { useScoreRendering } from "./platform/useScoreRendering";
-import { progressionPulsePlan } from "../audio/progressionPulsePlan";
+import { progressionPulsePlan } from "../../audio/progressionPulsePlan";
 import { useCallback, useMemo } from "react";
-import type { useHarmonyExplorerState } from "../features/harmonyExplorer/useHarmonyExplorer";
 import type {
   useHarmonyProgressionState,
   useHarmonyProgressionResults,
-} from "../features/progressionAssistant/useProgressionAssistant";
-import type { useSoundSettings } from "../audio/useSoundSettings";
-import type { DiagramButton } from "../types";
-import { notesForButton } from "../sound";
+} from "./useProgressionAssistant";
+import type { useSoundSettings } from "../../audio/useSoundSettings";
+import type { DiagramButton } from "../../types";
+import { notesForButton } from "../../sound";
 import {
   stradellaButtonToken,
   type StradellaNotationPreferences,
-} from "../notation/stradellaNotation";
-import {
-  chordLabel as harmonyChordLabel,
-  chordMidiNotes as harmonyChordMidiNotes,
-} from "../tools/harmonyExplorer/music";
-import { progressionBassPulseButtons } from "../tools/harmonyExplorer/progression";
-import {
-  pitchClassNameFromNumber,
-  pitchClassNumberFromName,
-} from "../tools/harmonyExplorer/integration";
+} from "../../notation/stradellaNotation";
+import { progressionBassPulseButtons } from "../../tools/harmonyExplorer/progression";
+import { pitchClassNumberFromName } from "../../tools/harmonyExplorer/integration";
+import { abcNameForConcreteNote } from "../../notation/concreteNoteAbc";
 
 export type UseProgressionNotationDeps = Pick<
   ReturnType<typeof useHarmonyProgressionState>,
-  | "harmonyProgressionNotationRef"
-  | "harmonyProgressionNotationVisible"
-  | "harmonyProgressionRhythmPattern"
+  "harmonyProgressionRhythmPattern"
 > &
-  Pick<
-    ReturnType<typeof useHarmonyRecordingState>,
-    "harmonyRecordedNotationRef" | "harmonyRecordedNotationVisible" | "harmonyRecordedProgression"
-  > &
   Pick<ReturnType<typeof useHarmonyProgressionResults>, "harmonyProgressionPlan"> &
-  Pick<ReturnType<typeof useHarmonyExplorerState>, "harmonyShowEnharmonics"> &
-  Pick<ReturnType<typeof useScoreRendering>, "renderNotationInto"> &
   Pick<ReturnType<typeof useSoundSettings>, "soundOptions" | "soundSequenceTempoBpm"> & {
     stradellaNotationMode: StradellaNotationPreferences["mode"];
     stradellaChordQualityLabels: StradellaNotationPreferences["chordQualityLabels"];
@@ -45,46 +28,18 @@ export type UseProgressionNotationDeps = Pick<
     buttons: DiagramButton[];
   };
 
-/** Rhythm pulses for the Progression Assistant and staff notation for it and for the Harmony recording, rendered into their notation panels when shown. */
+/** The Progression Assistant's rhythm pulses and score. */
 export function useProgressionNotation(deps: UseProgressionNotationDeps) {
   const {
     buttons,
     harmonyProgressionPlan,
     harmonyProgressionRhythmPattern,
-    harmonyRecordedProgression,
-    harmonyShowEnharmonics,
     soundOptions,
     soundSequenceTempoBpm,
     stradellaNotationMode,
     stradellaChordQualityLabels,
     stradellaMarkCounterbass,
   } = deps;
-
-  function abcNameForConcreteNote(pitchClass: string, octave: number) {
-    const accidentalMap: Record<string, string> = {
-      C: "C",
-      "C#": "^C",
-      Db: "_D",
-      D: "D",
-      "D#": "^D",
-      Eb: "_E",
-      E: "E",
-      F: "F",
-      "F#": "^F",
-      Gb: "_G",
-      G: "G",
-      "G#": "^G",
-      Ab: "_A",
-      A: "A",
-      "A#": "^A",
-      Bb: "_B",
-      B: "B",
-    };
-    const base = accidentalMap[pitchClass] ?? "C";
-    if (octave >= 5) return base.toLowerCase() + "'".repeat(Math.max(0, octave - 5));
-    if (octave <= 3) return base + ",".repeat(Math.max(0, 4 - octave));
-    return base;
-  }
 
   const progressionRhythmPulses = useCallback(
     (step: (typeof harmonyProgressionPlan.steps)[number]) =>
@@ -163,42 +118,8 @@ export function useProgressionNotation(deps: UseProgressionNotationDeps) {
     stradellaMarkCounterbass,
   ]);
 
-  const harmonyRecordedProgressionNotationAbc = useMemo(() => {
-    if (harmonyRecordedProgression.length === 0) return "";
-    const bars = harmonyRecordedProgression.map((event) => {
-      if (event.kind === "note") {
-        const pitchClass = pitchClassNameFromNumber(event.pitchClass);
-        const note = abcNameForConcreteNote(pitchClass, 4);
-        return `"${pitchClass}"${note}4`;
-      }
-      const notes = harmonyChordMidiNotes(event.rootPc, event.familyId, 4).map((midi) => {
-        const pitchClass = pitchClassNameFromNumber(((midi % 12) + 12) % 12);
-        const octave = Math.floor(midi / 12) - 1;
-        return abcNameForConcreteNote(pitchClass, octave);
-      });
-      const label = harmonyChordLabel(
-        event.rootPc,
-        event.familyId,
-        event.sectorIndex,
-        harmonyShowEnharmonics,
-      );
-      return `"${label}"[${notes.join("")}]4`;
-    });
-    return [
-      "X:1",
-      "T:Recorded Harmony progression",
-      "M:4/4",
-      "L:1/4",
-      `Q:1/4=${soundSequenceTempoBpm}`,
-      "K:C",
-      `${bars.map((bar) => `| ${bar} `).join("")} |`,
-      "",
-    ].join("\n");
-  }, [harmonyRecordedProgression, harmonyShowEnharmonics, soundSequenceTempoBpm]);
-
   return {
     progressionRhythmPulses,
     harmonyProgressionRenderedNotationAbc,
-    harmonyRecordedProgressionNotationAbc,
   };
 }

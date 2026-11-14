@@ -1,18 +1,8 @@
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 
-export type PlaybackBarState = "stopped" | "playing" | "paused";
+import type { PlaybackTransport } from "../playback/playbackTransports";
 
-/** What the shared playback bar controls for the active tool. Players without
- * a tracked transport state (Progression Assistant, Sequence) stay "stopped":
- * Play restarts them and Stop silences everything. */
-export type PlaybackTransport = {
-  label: string;
-  state: PlaybackBarState;
-  canPlay: boolean;
-  onPlay: () => void;
-  onPause?: () => void;
-  onStop: () => void;
-};
+export type { PlaybackBarState, PlaybackTransport } from "../playback/playbackTransports";
 
 function Icon({ kind }: { kind: "play" | "pause" | "stop" }) {
   return (
