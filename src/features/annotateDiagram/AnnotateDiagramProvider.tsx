@@ -9,7 +9,7 @@ import {
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { useDiagramOverlays } from "../../diagram/useDiagramOverlays";
-import { useSequenceState } from "../sequences/useSequenceState";
+import { useSequenceState } from "./useSequenceState";
 import { AnnotateDiagramContext } from "./annotateDiagramContext";
 import { useDiagramAnnotations } from "./useDiagramAnnotations";
 

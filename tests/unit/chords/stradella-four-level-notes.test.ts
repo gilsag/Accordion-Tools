@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
 import {
   DEFAULT_STRADELLA_NOTE_LEVELS,
   normalizeStradellaNoteLevels,
   realizationAnnotation,
   type StradellaNoteLevels,
-} from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
-import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
+} from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
+import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/features/stradellaChordFinder/engine/registerModel";
 import { EN, ES } from "../../../src/i18n/allCatalogs";
 import { test } from "vitest";
 

@@ -7,7 +7,7 @@ import {
   translateKnownLabel,
 } from "../../../src/i18n/allCatalogs";
 import { CHORD_FINDER_OPTIONS } from "../../../src/music/chordDefinitions";
-import { stradellaRowLabel } from "../../../src/stradella";
+import { stradellaRowLabel } from "../../../src/instrument/stradella";
 import { stradellaDiagramRowLabel } from "../../../src/i18n/musicTerms";
 import { test } from "vitest";
 

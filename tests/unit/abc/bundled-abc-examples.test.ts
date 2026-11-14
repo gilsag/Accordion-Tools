@@ -10,8 +10,8 @@ import {
   abcEventsForTrebleSide,
   mapAbcEventsToStradellaButtons,
   parseAbc,
-} from "../../../src/tools/abcPlayerTools";
-import { generateStradella } from "../../../src/stradella";
+} from "../../../src/features/abcPlayer/abcPlayerTools";
+import { generateStradella } from "../../../src/instrument/stradella";
 import { discoverAbcExamples } from "../../../scripts/abc-example-catalog.mjs";
 import { join, resolve } from "node:path";
 import { test } from "vitest";

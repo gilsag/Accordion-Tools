@@ -1,5 +1,5 @@
 import { diagramAutoTitle } from "../i18n/diagramLabels";
-import { displayStradellaButtonChord } from "../tools/chordDisplay";
+import { displayStradellaButtonChord } from "../music/chordDisplay";
 import { useTrebleChordFinder } from "../features/trebleChordFinder/trebleChordFinderContext";
 import {
   usePlatformInstrument,

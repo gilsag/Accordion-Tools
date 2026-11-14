@@ -3,9 +3,9 @@
  */
 import assert from "node:assert/strict";
 import { CHORD_FINDER_OPTIONS, intervalsForChordFinder } from "../../../src/music/chordDefinitions";
-import { displayFinderChord } from "../../../src/tools/chordDisplay";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
+import { displayFinderChord } from "../../../src/music/chordDisplay";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
 import {
   progressionFinderPattern,
   progressionChordLabel,
@@ -13,9 +13,9 @@ import {
   progressionRealizationsForChord,
   optimizeStradellaProgression,
   progressionRealizationKey,
-} from "../../../src/tools/harmonyExplorer/progression";
-import { convertProgressionPreset } from "../../../src/tools/harmonyExplorer/progressionPresets";
-import { CHORD_FAMILIES } from "../../../src/tools/harmonyExplorer/music";
+} from "../../../src/features/progressionAssistant/engine/progression";
+import { convertProgressionPreset } from "../../../src/features/progressionAssistant/engine/progressionPresets";
+import { CHORD_FAMILIES } from "../../../src/features/harmonyExplorer/engine/music";
 import { test } from "vitest";
 
 test("All 35 chord types, legacy Harmony mapping, ranked candidates, pins, presets and UI terminology", () => {

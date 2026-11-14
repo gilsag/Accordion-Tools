@@ -3,7 +3,7 @@ import type { StradellaNotationPreferences } from "../../notation/stradellaNotat
 import type { ToolSection } from "../../app/toolRegistry";
 import type { SideButtonSettings } from "../../app/sideButtons";
 import { stradellaButtonsFor, trebleButtonsFor } from "../../app/sideButtons";
-import type { SoundOptions } from "../../sound";
+import type { SoundOptions } from "../../audio/sound";
 import {
   audioClockNow,
   currentPlaybackGeneration,
@@ -12,14 +12,14 @@ import {
   prepareSamplesFor,
   samplesReadyFor,
   stopAllSound,
-} from "../../sound";
+} from "../../audio/sound";
 import { audioTimelineOrigin, scheduleAtAudioOffset } from "../../audio/audioClock";
 import {
   chordProgressionSteps,
   resolveRomanChord,
   type BassPatternDefinition,
   type ChordProgressionDefinition,
-} from "../../tools/bassPatternPlayerTools";
+} from "../bassPatternPlayer/bassPatternPlayerTools";
 import {
   treblePitchTargets,
   trebleButtonForTarget,

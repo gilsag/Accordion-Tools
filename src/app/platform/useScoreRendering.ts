@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import { renderNotationInto as renderSharedNotation } from "../../notation/notationService";
 import type { StradellaNotationPreferences } from "../../notation/stradellaNotation";
-import type { StradellaNotationAbcOptions } from "../../tools/bassPatternPlayerTools";
+import type { StradellaNotationAbcOptions } from "../../features/bassPatternPlayer/bassPatternPlayerTools";
 import { usePlatformNotation } from "./platformContexts";
 
 /** What every score shares, derived from the notation settings: the

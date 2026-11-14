@@ -6,8 +6,8 @@ import type {
   SampleRegister,
   StradellaBassVoicing,
 } from "../types";
-import type { StradellaRegisterModel } from "../tools/stradellaChordFinder/registerModel";
-import { DEFAULT_NOTE_ARTICULATION, type SoundOptions } from "../sound";
+import type { StradellaRegisterModel } from "../features/stradellaChordFinder/engine/registerModel";
+import { DEFAULT_NOTE_ARTICULATION, type SoundOptions } from "./sound";
 
 /** Owns audio preferences independently of instrument geometry and registers.
  * The opt-in La Melodiosa register adapter is applied in SoundOptions, never

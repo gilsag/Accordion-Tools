@@ -3,8 +3,8 @@
  * to 265 ms and the slowest 438 ms; they now take about 2 ms and 20 ms. The
  * limits are loose enough for slow CI machines but fail on that regression. */
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools.ts";
 import { CHORD_FINDER_OPTIONS } from "../../../src/music/chordDefinitions.ts";
 import { test } from "vitest";
 

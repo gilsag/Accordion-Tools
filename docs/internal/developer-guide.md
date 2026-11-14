@@ -19,13 +19,13 @@ The rules to follow when changing the code: who owns what, which contracts other
 
 | Layer | Main files | Responsibility |
 | --- | --- | --- |
-| Diagram/layout generation | `src/stradella.ts`, `src/treble.ts`, `src/pianoTreble.ts` | Produce physical `DiagramButton` positions and note identities |
-| Music definitions | `src/music.tsx`, `src/music/chordDefinitions.ts`, `src/music/chordVoicingPolicy.ts` | Pitch classes, chord/scale intervals, and permissible omissions |
-| Stradella candidate search | `src/tools/stradellaChordFinder/*.ts`, `src/tools/stradellaChordFinderTools.ts` | Generate, validate, deduplicate, and rank realizations of a requested chord |
+| Diagram/layout generation | `src/instrument/stradella.ts`, `src/instrument/treble.ts`, `src/instrument/pianoTreble.ts` | Produce physical `DiagramButton` positions and note identities |
+| Music definitions | `src/music/index.tsx`, `src/music/chordDefinitions.ts`, `src/music/chordVoicingPolicy.ts` | Pitch classes, chord/scale intervals, and permissible omissions |
+| Stradella candidate search | `src/tools/stradellaChordFinder/*.ts`, `src/features/stradellaChordFinder/stradellaChordFinderTools.ts` | Generate, validate, deduplicate, and rank realizations of a requested chord |
 | Registral interpretation | `registralAnalysis.ts`, `registralPreference.ts`, `registralExplanation.ts` in the Stradella finder directory | Derive structural roles of sounded bass versus preset-chord buttons, apply limited ranking preference, and explain conditional interpretations |
 | Harmony and progressions | `src/tools/harmonyExplorer/*.ts` | Shared-note analysis, musical motion, and global progression optimization |
-| Playback | `src/sound.ts`, `src/laMelodiosa.ts`, `src/audio/` | Convert selected buttons into nominal sounding pitches, render synthesizer/sample audio and schedule players on the audio clock |
-| Import/notation | `src/tools/abcPlayerTools.ts`, `src/tools/bassPatternPlayerTools.ts` | Parse musical events, choose physical buttons, and create notation/export formats |
+| Playback | `src/audio/sound.ts`, `src/instrument/laMelodiosa.ts`, `src/audio/` | Convert selected buttons into nominal sounding pitches, render synthesizer/sample audio and schedule players on the audio clock |
+| Import/notation | `src/features/abcPlayer/abcPlayerTools.ts`, `src/features/bassPatternPlayer/bassPatternPlayerTools.ts` | Parse musical events, choose physical buttons, and create notation/export formats |
 | Instrument state | `src/instrument/useInstrumentState.ts` | Physical layout selection and four nominal Stradella register fields (separate from sound configuration) |
 | Settings schema and I/O | `src/settings/settingsSchema.ts`, `src/settings/settingsPersistence.ts`, `src/settings/settingsMigrations.ts` | Partial JSON contract, versioned migrations, defaults fetch, import parsing and download |
 | Settings validation and export projection | `src/settings/settingsController.ts` | Distinct startup/import validation, old aliases, typed state-owner callbacks, and ordered export serialization |
@@ -36,7 +36,7 @@ The rules to follow when changing the code: who owns what, which contracts other
 | Stradella Chord Finder feature | `src/features/stradellaChordFinder/useStradellaChordFinder.ts` | Finder request and explanation-display state, search-input forwarding, ranked result selection, reset on physical/register changes, and exact progression realization handoff by played button IDs; instrument register model is an input |
 | ABC Player feature | `src/features/abcPlayer/useAbcPlayer.ts` | Editor/file/example state, manifest fetch and validation, tempo and transport state, mapping preferences, notation visibility, and memoized two-voice parsing and physical-button mapping |
 | Bass Pattern Player feature | `src/features/bassPatternPlayer/useBassPatternPlayer.ts` | Bundled and custom patterns, chord progression library, editor validation/save/remove, historical localStorage key, settings setters, transport highlighting and Stradella-only derived events |
-| Sequence feature | `src/features/sequences/useSequenceState.ts` | Ordered button IDs added in Annotate Diagram's Sequence mode, path/number display preferences, notation visibility, and current physical-button identity lookups |
+| Sequence feature | `src/features/annotateDiagram/useSequenceState.ts` | Ordered button IDs added in Annotate Diagram's Sequence mode, path/number display preferences, notation visibility, and current physical-button identity lookups |
 | Harmony Explorer feature | `src/features/harmonyExplorer/useHarmonyExplorer.ts` | Circle configuration/selection, diatonic and family filters, display options, derived relationships and localized explanations; chord engine remains in tools |
 | Progression Assistant feature | `src/features/progressionAssistant/useProgressionAssistant.ts` | Edited/recorded progression state, stable incremental ID ref, optimization preferences, notation/transport UI state, Stradella-only derived plan, preview and sounding-button highlighting |
 | Rhythm Trainer feature | `src/features/rhythmTrainer/useRhythmTrainer.ts`, `rhythmModel.ts`, `treblePitchPatterns.ts`, `rhythmNotation.ts`, `rhythmScoreHighlight.ts` | Meter, template and bass-style state; the two-hand exercise built from the shared chord progressions; audio-clock scheduling; treble pitch assignment per bar; symbolic ABC for the score; and the mapping from rendered score notes to the event keys that also light buttons and timeline markers |
@@ -89,7 +89,7 @@ Up to 860 CSS px the diagram offers Readable (scrolling) and Fit views through `
 - Each button group is `role="button"` with a name such as "C, Root note", one roving tab stop, arrow-key movement along and between rows, and Enter/Space acting as a click. `data-focus` marks highlighted buttons (`active`) and the C reference (`home`); in the Readable phone view `scrollDiagramToFocus()` centres them when the highlighted set changes, not during playback and not when already visible.
 - `cloneSvgWithEmbeddedStyles()` strips `role`, `tabindex`, `aria-label`, `data-focus` and `data-button-id`, so exports contain only the drawing.
 - `src/diagram/diagramGeometry.ts` is a pure sizing function; both the on-screen viewport and PNG dimensions depend on its numbers. `tests/fixtures/diagram-geometry-reference.json` freezes five reference results.
-- PNG export calls `makeSvgCanvasSafe()` (`src/svgRasterExport.ts`) while the diagram is mounted, converting the HTML `foreignObject` footer and interval chart to SVG primitives so the canvas is not tainted. When changing footer content, check that the visible text and chart survive conversion, not merely that `toBlob` succeeds.
+- PNG export calls `makeSvgCanvasSafe()` (`src/diagram/svgRasterExport.ts`) while the diagram is mounted, converting the HTML `foreignObject` footer and interval chart to SVG primitives so the canvas is not tainted. When changing footer content, check that the visible text and chart survive conversion, not merely that `toBlob` succeeds.
 - `src/diagram/stradellaBatchCapture.ts` selects and serializes each candidate synchronously (`flushSync`) and restores the original realization in `finally`; ZIP encoding happens afterwards. `src/diagram/diagramExport.ts` owns filename rules (ASCII-safe, Windows-reserved names avoided), SVG/PNG dispatch and pointer-to-viewBox conversion.
 - Diagram state: `useDiagramAppearanceState()` (sizes, spacing, visibility, titles), `useDiagramOverlays()` (selection and fingering by physical ID; no audio), `useDiagramAnnotations(buttonSize)` (text notes and anchor positions). Changing the physical layout or resetting clears overlays and notes.
 
@@ -173,7 +173,7 @@ Every score, whichever tool produced it, goes through one path:
 
 ### Result contract
 
-`src/tools/stradellaChordFinder/results.ts` builds each `StradellaChordFinderResult`:
+`src/features/stradellaChordFinder/engine/results.ts` builds each `StradellaChordFinderResult`:
 
 - `buttons`: what the diagram may highlight, including visual reference markers.
 - `playbackButtons`: the buttons actually played. Use these for coverage, registral analysis, playback and rhythms.
@@ -196,7 +196,7 @@ The diagram's x axis is the instrument's circle-of-fifths direction; `utils.ts` 
 - `registralAnalysis.ts` reads only `playbackButtons`. One non-root bass with chord buttons suggests a slash chord; several bass pitches are ambiguous; chord buttons alone have no separate root bass.
 - `voicingDensity.ts` works on distinct configured MIDI notes. Its capped cost stays below requested bass, button economy and completeness and never discards a valid chord.
 - `diagramAnnotations.ts` produces the four note lines; `StradellaNoteLevels` only toggles them. `explainStradellaRealization()` is independent of the toggles. Never derive a chord identity from a pitch-class set.
-- `src/tools/contextualTitles.ts` formats titles. An explicit slash bass reflects the request; a different modeled lowest note is reported as such. Titles are separate from the ASCII recipe filenames.
+- `src/music/contextualTitles.ts` formats titles. An explicit slash bass reflects the request; a different modeled lowest note is reported as such. Titles are separate from the ASCII recipe filenames.
 
 ## La Melodiosa samples
 

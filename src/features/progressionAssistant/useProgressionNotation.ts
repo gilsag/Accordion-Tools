@@ -6,13 +6,13 @@ import type {
 } from "./useProgressionAssistant";
 import type { useSoundSettings } from "../../audio/useSoundSettings";
 import type { DiagramButton } from "../../types";
-import { notesForButton } from "../../sound";
+import { notesForButton } from "../../audio/sound";
 import {
   stradellaButtonToken,
   type StradellaNotationPreferences,
 } from "../../notation/stradellaNotation";
-import { progressionBassPulseButtons } from "../../tools/harmonyExplorer/progression";
-import { pitchClassNumberFromName } from "../../tools/harmonyExplorer/integration";
+import { progressionBassPulseButtons } from "./engine/progression";
+import { pitchClassNumberFromName } from "../harmonyExplorer/engine/integration";
 import { abcNameForConcreteNote } from "../../notation/concreteNoteAbc";
 
 export type UseProgressionNotationDeps = Pick<

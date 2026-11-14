@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AccidentalMode, BassCount } from "../../types";
 import type { FinderChordPattern } from "../../types";
-import type { HarmonyProgressionChord } from "../../tools/harmonyExplorer/progression";
+import type { HarmonyProgressionChord } from "./engine/progression";
 import {
   optimizeStradellaProgression,
   progressionRealizationsForChord,
   progressionRealizationKey,
   type ProgressionSearchSettings,
-} from "../../tools/harmonyExplorer/progression";
-import type { ProgressionRhythmPattern } from "../../sound";
-import { generateStradella } from "../../stradella";
+} from "./engine/progression";
+import type { ProgressionRhythmPattern } from "../../audio/sound";
+import { generateStradella } from "../../instrument/stradella";
 import { progressionNoteStep } from "./progressionNoteSelection";
 
 /** Owns the Progression Assistant's progression, optimization preferences,

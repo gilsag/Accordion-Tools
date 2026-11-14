@@ -1,19 +1,15 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "../../i18n/useI18n";
-import { displayRealizedChord, type ChordDisplayStyle } from "../../tools/chordDisplay";
-import {
-  chordToneName,
-  displayRoot,
-  realizedChordName,
-} from "../../tools/stradellaChordFinder/chordSpelling";
-import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
+import { displayRealizedChord, type ChordDisplayStyle } from "../../music/chordDisplay";
+import { chordToneName, displayRoot, realizedChordName } from "./engine/chordSpelling";
+import { finderChordSymbol } from "./engine/chordSymbol";
 import {
   analyzeConfiguredStradellaVoicing,
   formatModeledStradellaNotes,
   type StradellaRegisterModel,
-} from "../../tools/stradellaChordFinder/registerModel";
-import { explainStradellaRealization } from "../../tools/stradellaChordFinder/explainRealization";
-import type { StradellaChordFinderResult } from "../../tools/stradellaChordFinder/results";
+} from "./engine/registerModel";
+import { explainStradellaRealization } from "./engine/explainRealization";
+import type { StradellaChordFinderResult } from "./engine/results";
 import type { FinderChordPattern, StradellaChordFinderMode, DiagramButton } from "../../types";
 import { HelpTip } from "../../components/ui/HelpTip";
 import { filterRealizationRows, type RealizationFilters } from "./stradellaInspectorRows";

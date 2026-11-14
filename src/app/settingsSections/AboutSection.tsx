@@ -1,5 +1,5 @@
-import { AboutPanel } from "../../components/settings/AboutPanel";
-import { ResetSettingsControl } from "../../components/settings/ResetSettingsControl";
+import { AboutPanel } from "./AboutPanel";
+import { ResetSettingsControl } from "./ResetSettingsControl";
 import { usePlatformLanguage } from "../platform/platformContexts";
 import { useSettingsTransfer } from "../useSettingsTransfer";
 

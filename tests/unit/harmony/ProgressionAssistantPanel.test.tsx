@@ -4,12 +4,12 @@
  * real component, real translations and a real optimized plan. */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { ProgressionAssistantPanel } from "../../../src/components/tools/ProgressionAssistantPanel";
-import { generateStradella } from "../../../src/stradella";
+import { ProgressionAssistantPanel } from "../../../src/features/progressionAssistant/ProgressionAssistantPanel";
+import { generateStradella } from "../../../src/instrument/stradella";
 import {
   optimizeStradellaProgression,
   type HarmonyProgressionChord,
-} from "../../../src/tools/harmonyExplorer/progression";
+} from "../../../src/features/progressionAssistant/engine/progression";
 
 afterEach(cleanup);
 

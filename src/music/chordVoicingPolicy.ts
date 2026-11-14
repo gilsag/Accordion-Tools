@@ -1,5 +1,5 @@
 import type { FinderChordPattern } from "../types";
-import { transpose } from "../music";
+import { transpose } from ".";
 import { intervalsForChordFinder } from "./chordDefinitions";
 import { chordToneFunctions } from "./chordToneRoles";
 

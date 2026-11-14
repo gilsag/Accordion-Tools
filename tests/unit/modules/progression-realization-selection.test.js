@@ -31,7 +31,7 @@ const candidates = (root) =>
     };
   });
 const deps = {
-  "../../music/chordDefinitions": {
+  "../../../music/chordDefinitions": {
     intervalsForChordFinder() {
       return [0, 4, 7];
     },
@@ -39,19 +39,19 @@ const deps = {
       return "Major";
     },
   },
-  "../chordDisplay": {
+  "../../../music/chordDisplay": {
     displayFinderChord(root) {
       return root;
     },
   },
-  "../stradellaChordFinderTools": {
+  "../../stradellaChordFinder/stradellaChordFinderTools": {
     getStradellaChordFinderResults(_buttons, root) {
       return candidates(root);
     },
     nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
   },
-  "../stradellaChordFinder/registerModel": { DEFAULT_STRADELLA_REGISTER_MODEL: {} },
-  "./music": {
+  "../../stradellaChordFinder/engine/registerModel": { DEFAULT_STRADELLA_REGISTER_MODEL: {} },
+  "../../harmonyExplorer/engine/music": {
     analyzeVoiceLeading() {
       return { totalMotion: 0, sharedPitchClasses: [] };
     },
@@ -65,7 +65,7 @@ const deps = {
       return [];
     },
   },
-  "./integration": {
+  "../../harmonyExplorer/engine/integration": {
     finderPatternForHarmonyFamily() {
       return "major";
     },
@@ -77,7 +77,9 @@ const deps = {
     },
   },
 };
-const engine = loadIsolated("src/tools/harmonyExplorer/progression.ts", { imports: deps });
+const engine = loadIsolated("src/features/progressionAssistant/engine/progression.ts", {
+  imports: deps,
+});
 const chords = [
   { id: "first", rootPc: 0, familyId: "major", sectorIndex: 0 },
   { id: "second", rootPc: 2, familyId: "major", sectorIndex: 0 },

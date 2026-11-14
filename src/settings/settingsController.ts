@@ -1,9 +1,9 @@
 import type { DefaultSettingsFile } from "./settingsSchema";
 import { SETTINGS_VERSION } from "./settingsMigrations";
 import { isInterfaceLanguagePreference } from "../i18n/catalog";
-import { normalizeStradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
-import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
-import { DEFAULT_RING_VISIBILITY } from "../tools/harmonyExplorer/music";
+import { normalizeStradellaNoteLevels } from "../features/stradellaChordFinder/engine/diagramAnnotations";
+import type { MinimumNominalGap } from "../features/stradellaChordFinder/engine/voicingDensity";
+import { DEFAULT_RING_VISIBILITY } from "../features/harmonyExplorer/engine/music";
 
 /** Callbacks supplied by feature owners; the settings controller never owns
  * instrument, sound or tool state. Typed per exported JSON field so future

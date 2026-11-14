@@ -1,10 +1,10 @@
 import { abcNameForConcreteNote } from "../../notation/concreteNoteAbc";
-import { pitchClassNameFromNumber } from "../../tools/harmonyExplorer/integration";
+import { pitchClassNameFromNumber } from "./engine/integration";
 import {
   chordLabel as harmonyChordLabel,
   chordMidiNotes as harmonyChordMidiNotes,
-} from "../../tools/harmonyExplorer/music";
-import type { HarmonyRecordedEvent } from "../../tools/harmonyExplorer/progression";
+} from "./engine/music";
+import type { HarmonyRecordedEvent } from "../progressionAssistant/engine/progression";
 
 /** The Harmony recording's score: one whole note per recorded chord or note,
  * chords in close position from octave 4 with their circle label above. */

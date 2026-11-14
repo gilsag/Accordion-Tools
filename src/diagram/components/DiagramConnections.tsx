@@ -1,6 +1,6 @@
 import type { DiagramButton, SequenceArrowStyle } from "../../types";
-import type { SequenceStepWithButton } from "../../tools/sequenceTools";
-import { makeSequenceArrowPath } from "../../tools/sequenceTools";
+import type { SequenceStepWithButton } from "../sequenceTools";
+import { makeSequenceArrowPath } from "../sequenceTools";
 
 type DiagramConnectionsProps = {
   showScaleFinderArrows: boolean;

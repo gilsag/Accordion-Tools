@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { usePlatformTools } from "../../app/platform/platformContexts";
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
-import { DEFAULT_RING_VISIBILITY } from "../../tools/harmonyExplorer/music";
+import { DEFAULT_RING_VISIBILITY } from "./engine/music";
 import { HarmonyExplorerContext } from "./harmonyExplorerContext";
 import { useHarmonyExplorerState } from "./useHarmonyExplorer";
 import { useHarmonyRecordingState } from "./useHarmonyRecording";

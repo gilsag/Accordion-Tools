@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { DiagramAnnotationAnchor, DiagramButton, FontFamily, TextNote } from "../../types";
-import { makeTextNote } from "../../tools/textNoteTools";
+import { makeTextNote } from "./textNoteTools";
 
 /** Owns annotation drafts and stored text notes. The existing SVG renderer is
  * responsible for screen-to-viewBox conversion; these positions remain in the

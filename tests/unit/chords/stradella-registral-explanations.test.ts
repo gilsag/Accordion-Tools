@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
 import {
   getStradellaChordFinderResults,
   getStradellaChordFinderResult,
-} from "../../../src/tools/stradellaChordFinderTools.ts";
-import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization.ts";
-import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations.ts";
+} from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools.ts";
+import { explainStradellaRealization } from "../../../src/features/stradellaChordFinder/engine/explainRealization.ts";
+import { realizationAnnotation } from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations.ts";
 import type { DiagramButton, FinderChordPattern } from "../../../src/types.ts";
 import { test } from "vitest";
 

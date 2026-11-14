@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import { generateTreble } from "../../../src/treble";
-import { generatePianoTreble } from "../../../src/pianoTreble";
-import { getChordFinderTrebleButtons } from "../../../src/tools/chordFinderTools";
-import { describeTrebleChord } from "../../../src/tools/trebleChordExplanation";
+import { generateTreble } from "../../../src/instrument/treble";
+import { generatePianoTreble } from "../../../src/instrument/pianoTreble";
+import { getChordFinderTrebleButtons } from "../../../src/features/trebleChordFinder/chordFinderTools";
+import { describeTrebleChord } from "../../../src/features/trebleChordFinder/trebleChordExplanation";
 import { intervalsForChordFinder } from "../../../src/music/chordDefinitions";
 import { transpose } from "../../../src/music";
 import type { FinderChordPattern } from "../../../src/types";

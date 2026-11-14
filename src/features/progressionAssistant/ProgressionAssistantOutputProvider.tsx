@@ -18,10 +18,10 @@ import {
   usePlatformSound,
   usePlatformSpelling,
 } from "../../app/platform/platformContexts";
-import { playButtonRhythmProgression } from "../../sound";
-import { progressionBassPulseButtons } from "../../tools/harmonyExplorer/progression";
+import { playButtonRhythmProgression } from "../../audio/sound";
+import { progressionBassPulseButtons } from "./engine/progression";
 import { useProgressionNotation } from "./useProgressionNotation";
-import type { ProgressionSearchSettings } from "../../tools/harmonyExplorer/progression";
+import type { ProgressionSearchSettings } from "./engine/progression";
 import { useStradellaChordFinder } from "../stradellaChordFinder/stradellaChordFinderContext";
 import {
   ProgressionAssistantOutputContext,

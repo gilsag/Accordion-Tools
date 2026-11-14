@@ -1,5 +1,5 @@
 import type { InterfaceLanguage } from "./catalog";
-import type { ChordFamilyId, ScaleId } from "../tools/harmonyExplorer/music";
+import type { ChordFamilyId, ScaleId } from "../features/harmonyExplorer/engine/music";
 
 const HARMONY_FAMILIES_ES: Record<ChordFamilyId, string> = {
   major: "tríada mayor",

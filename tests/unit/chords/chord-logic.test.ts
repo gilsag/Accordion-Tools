@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
 import {
   getStradellaChordFinderResult,
   getStradellaChordFinderResults,
-} from "../../../src/tools/stradellaChordFinderTools.ts";
+} from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools.ts";
 import type {
   DiagramButton,
   FinderChordPattern,

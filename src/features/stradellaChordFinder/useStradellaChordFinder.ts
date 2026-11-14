@@ -8,18 +8,15 @@ import type {
 import {
   DEFAULT_STRADELLA_NOTE_LEVELS,
   type StradellaNoteLevels,
-} from "../../tools/stradellaChordFinder/diagramAnnotations";
-import type { MinimumNominalGap } from "../../tools/stradellaChordFinder/voicingDensity";
-import type { StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
+} from "./engine/diagramAnnotations";
+import type { MinimumNominalGap } from "./engine/voicingDensity";
+import type { StradellaRegisterModel } from "./engine/registerModel";
 import {
   getStradellaChordFinderResult,
   getStradellaChordFinderResults,
   nextWiderHandSpan,
-} from "../../tools/stradellaChordFinderTools";
-import {
-  ROOT_POSITION_BASS,
-  resolveRequestedBass,
-} from "../../tools/stradellaChordFinder/harmonicIdentity";
+} from "./stradellaChordFinderTools";
+import { ROOT_POSITION_BASS, resolveRequestedBass } from "./engine/harmonicIdentity";
 
 /** Finder-owned request and presentation state. The nominal register model and
  * physical layout belong to the instrument, and sample registers belong to

@@ -12,7 +12,7 @@ import {
 import { scheduleAbcMappedPlayback } from "../../audio/playbackScheduling";
 import { startAbcTransport } from "../../audio/playbackStart";
 import { clearPlaybackTimers, playbackClockMs } from "../../audio/playbackTransport";
-import { stopAllSound } from "../../sound";
+import { stopAllSound } from "../../audio/sound";
 import type { AbcPlayerState } from "./abcPlayerContext";
 import type { useAbcPlayerResults } from "./useAbcPlayer";
 

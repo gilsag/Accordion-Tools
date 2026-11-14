@@ -3,12 +3,12 @@ import {
   displayFinderChord,
   displayRealizedChord,
   displayStradellaButtonChord,
-} from "../../../src/tools/chordDisplay";
-import { chordLabel, circleChordLabel } from "../../../src/tools/harmonyExplorer/music";
+} from "../../../src/music/chordDisplay";
+import { chordLabel, circleChordLabel } from "../../../src/features/harmonyExplorer/engine/music";
 import {
   stradellaContextualTitle,
   trebleContextualTitle,
-} from "../../../src/tools/contextualTitles";
+} from "../../../src/music/contextualTitles";
 import { test } from "vitest";
 
 test("Chord display notation tests", () => {

@@ -24,13 +24,13 @@ import {
   stradellaButtonFunction,
   stradellaDiagramRowLabel,
 } from "../../../src/i18n/musicTerms";
-import { generateStradella } from "../../../src/stradella";
-import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
-import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
-import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization";
-import { buildDiagramExplanation } from "../../../src/tools/harmonyExplorer/explanation";
-import { describeTrebleChord } from "../../../src/tools/trebleChordExplanation";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
+import { realizationAnnotation } from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
+import { explainStradellaRealization } from "../../../src/features/stradellaChordFinder/engine/explainRealization";
+import { buildDiagramExplanation } from "../../../src/features/harmonyExplorer/engine/explanation";
+import { describeTrebleChord } from "../../../src/features/trebleChordFinder/trebleChordExplanation";
 import { test } from "vitest";
 
 const languages = ["en", "es", "fr", "pt", "it", "de"] as const;

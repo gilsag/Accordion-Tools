@@ -1,5 +1,5 @@
 import type { DownloadFormat } from "../types";
-import { downloadPng, downloadSvg, downloadZip, svgStringToPngBytes } from "../download";
+import { downloadPng, downloadSvg, downloadZip, svgStringToPngBytes } from "./download";
 
 /** Centralize SVG/PNG download dispatch without changing serialization,
  * CSS embedding, raster dimensions or the existing filename conventions.

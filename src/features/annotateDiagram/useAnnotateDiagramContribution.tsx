@@ -8,7 +8,7 @@ import {
   sequenceModeShowsArrows,
   sequenceModeShowsNumbers,
   type SequenceStepWithButton,
-} from "../../tools/sequenceTools";
+} from "../../diagram/sequenceTools";
 import { useAnnotateDiagram } from "./annotateDiagramContext";
 
 /** What Annotate Diagram draws, whether or not it is open: marks and

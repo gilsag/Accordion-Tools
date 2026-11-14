@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
-import { notesForButton } from "../../../src/sound";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { notesForButton } from "../../../src/audio/sound";
 import {
   analyzeConfiguredStradellaVoicing,
   type StradellaRegisterModel,
-} from "../../../src/tools/stradellaChordFinder/registerModel";
-import { LA_MELODIOSA_REGIONS } from "../../../src/laMelodiosa";
+} from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { LA_MELODIOSA_REGIONS } from "../../../src/instrument/laMelodiosa";
 import { test } from "vitest";
 
 const buttons = generateStradella("96", 38, 1.18, "natural");

@@ -1,7 +1,7 @@
 import { RhythmNotationPanel } from "../../app/inspector/RhythmNotationInspector";
 import { useScoreRendering } from "../../app/platform/useScoreRendering";
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
-import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimeline";
+import { RhythmTrainerTimeline } from "./RhythmTrainerTimeline";
 import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
 import type { DiagramContribution } from "../../app/diagram/diagramContributions";
 import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";

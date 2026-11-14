@@ -7,14 +7,14 @@ import {
   mapAbcEventsToStradellaButtons,
   mapAbcEventsToTrebleButtons,
   parseAbc,
-} from "../../../src/tools/abcPlayerTools";
+} from "../../../src/features/abcPlayer/abcPlayerTools";
 import {
   stradellaButtonsFor,
   trebleButtonsFor,
   type SideButtonSettings,
 } from "../../../src/app/sideButtons";
-import { generateStradella } from "../../../src/stradella";
-import { generateTreble } from "../../../src/treble";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { generateTreble } from "../../../src/instrument/treble";
 import { test } from "vitest";
 
 const settings: SideButtonSettings = {

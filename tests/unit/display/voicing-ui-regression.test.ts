@@ -2,12 +2,12 @@ import assert from "node:assert/strict";
 import {
   voicingIntervalLayout,
   voicingIntervalMetrics,
-} from "../../../src/tools/stradellaChordFinder/voicingIntervalLayout";
+} from "../../../src/features/stradellaChordFinder/engine/voicingIntervalLayout";
 import {
   estimateLegendTextWidth,
   wrapLegendText,
-} from "../../../src/tools/harmonyExplorer/legendTextLayout";
-import type { ModeledStradellaNote } from "../../../src/tools/stradellaChordFinder/registerModel";
+} from "../../../src/features/harmonyExplorer/engine/legendTextLayout";
+import type { ModeledStradellaNote } from "../../../src/features/stradellaChordFinder/engine/registerModel";
 import { test } from "vitest";
 
 const note = (

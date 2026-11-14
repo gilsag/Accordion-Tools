@@ -1,12 +1,12 @@
 import type { StradellaFooter } from "../../app/diagram/diagramContributions";
 import type { PlatformLanguage } from "../../app/platform/platformContexts";
-import { chordToneName } from "../../tools/stradellaChordFinder/chordSpelling";
-import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
+import { chordToneName } from "./engine/chordSpelling";
+import type { StradellaNoteLevels } from "./engine/diagramAnnotations";
 import {
   analyzeConfiguredStradellaVoicing,
   type StradellaRegisterModel,
-} from "../../tools/stradellaChordFinder/registerModel";
-import { voicingIntervalLayout } from "../../tools/stradellaChordFinder/voicingIntervalLayout";
+} from "./engine/registerModel";
+import { voicingIntervalLayout } from "./engine/voicingIntervalLayout";
 import type { DiagramButton, FinderChordPattern } from "../../types";
 
 /** The one diagram-note pipeline, for the Stradella Chord Finder's

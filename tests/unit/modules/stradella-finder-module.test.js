@@ -44,42 +44,48 @@ const fixtures = vi.hoisted(() => {
   return { calls, selected, visualGuide, alt, candidates, fallback, search };
 });
 const { calls, selected, visualGuide, alt, candidates, fallback, search } = fixtures;
-vi.mock("../../../src/tools/stradellaChordFinderTools", async (original) => {
-  const { calls, candidates, fallback, search } = fixtures;
-  return {
-    ...(await original()),
-    nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
-    getStradellaChordFinderResults: (...args) => {
-      calls.push(["many", args]);
-      // A search finds nothing for search.noResultForBass, unless only the
-      // bass-button rule is lifted or the hand span is search.onlyAtSpan.
-      const blocked =
-        search.noResultForBass !== null &&
-        args[7] === search.noResultForBass &&
-        (!search.onlyWithoutBassButton || args[10] === true) &&
-        (search.onlyAtSpan === null || args[6] !== search.onlyAtSpan);
-      return blocked ? [fallback] : candidates;
-    },
-    getStradellaChordFinderResult: (...args) => {
-      calls.push(["single", args]);
-      return fallback;
-    },
-  };
-});
-vi.mock("../../../src/tools/stradellaChordFinder/harmonicIdentity", async (original) => ({
+vi.mock(
+  "../../../src/features/stradellaChordFinder/stradellaChordFinderTools",
+  async (original) => {
+    const { calls, candidates, fallback, search } = fixtures;
+    return {
+      ...(await original()),
+      nextWiderHandSpan: (span) => [3.2, 4.3, 5.5].find((step) => step > span + 1e-9) ?? null,
+      getStradellaChordFinderResults: (...args) => {
+        calls.push(["many", args]);
+        // A search finds nothing for search.noResultForBass, unless only the
+        // bass-button rule is lifted or the hand span is search.onlyAtSpan.
+        const blocked =
+          search.noResultForBass !== null &&
+          args[7] === search.noResultForBass &&
+          (!search.onlyWithoutBassButton || args[10] === true) &&
+          (search.onlyAtSpan === null || args[6] !== search.onlyAtSpan);
+        return blocked ? [fallback] : candidates;
+      },
+      getStradellaChordFinderResult: (...args) => {
+        calls.push(["single", args]);
+        return fallback;
+      },
+    };
+  },
+);
+vi.mock("../../../src/features/stradellaChordFinder/engine/harmonicIdentity", async (original) => ({
   ...(await original()),
   ROOT_POSITION_BASS: "root",
   resolveRequestedBass: (root, choice) => (choice === "root" ? root : choice),
 }));
-vi.mock("../../../src/tools/stradellaChordFinder/diagramAnnotations", async (original) => ({
-  ...(await original()),
-  DEFAULT_STRADELLA_NOTE_LEVELS: {
-    essentials: true,
-    harmonic: true,
-    registral: true,
-    voicing: true,
-  },
-}));
+vi.mock(
+  "../../../src/features/stradellaChordFinder/engine/diagramAnnotations",
+  async (original) => ({
+    ...(await original()),
+    DEFAULT_STRADELLA_NOTE_LEVELS: {
+      essentials: true,
+      harmonic: true,
+      registral: true,
+      voicing: true,
+    },
+  }),
+);
 
 const results = (args) => renderHook(() => useStradellaChordFinderResults(args)).result.current;
 const state = renderHook(useStradellaChordFinderState).result.current;

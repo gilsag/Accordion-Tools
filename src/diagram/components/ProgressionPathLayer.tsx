@@ -1,5 +1,5 @@
 import type { DiagramButton } from "../../types";
-import { makeSequenceArrowPath } from "../../tools/sequenceTools";
+import { makeSequenceArrowPath } from "../sequenceTools";
 
 /** Each step's anchor is its first chord button, or its first bass button for
  * bass-only steps; arrows join consecutive anchors. */

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { DEFAULT_CHORD_DISPLAY_STYLE, type ChordDisplayStyle } from "../tools/chordDisplay";
+import { DEFAULT_CHORD_DISPLAY_STYLE, type ChordDisplayStyle } from "../music/chordDisplay";
 import type { AccidentalMode, ChordLabelMode, NotationMode } from "../types";
 
 /** How notes and chords are spelled on the diagram, in titles and in the

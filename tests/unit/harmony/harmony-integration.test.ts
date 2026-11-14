@@ -4,7 +4,7 @@ import {
   harmonyFamilyForFinderPattern,
   pitchClassNameFromNumber,
   pitchClassNumberFromName,
-} from "../../../src/tools/harmonyExplorer/integration.ts";
+} from "../../../src/features/harmonyExplorer/engine/integration.ts";
 import { test } from "vitest";
 
 test("harmony-integration.test.ts: all Harmony/Stradella adapter tests", () => {

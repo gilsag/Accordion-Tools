@@ -8,14 +8,14 @@ import {
 import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
 import type { DiagramContribution } from "../../app/diagram/diagramContributions";
 import { translateKnownLabel } from "../../i18n/catalog";
-import { SCALE_FINDER_OPTIONS } from "../../tools/scaleFinderTools";
+import { SCALE_FINDER_OPTIONS } from "./scaleFinderTools";
 import {
   sequenceArrowStyleFromMode,
   sequenceModeShowsArrows,
   sequenceModeShowsNumbers,
-} from "../../tools/sequenceTools";
+} from "../../diagram/sequenceTools";
 import { useAnnotateDiagram } from "../annotateDiagram/annotateDiagramContext";
-import { playButtonSequence } from "../../sound";
+import { playButtonSequence } from "../../audio/sound";
 import { ScaleFinderOutputContext, useScaleFinder } from "./scaleFinderContext";
 import { useScaleFinderResults } from "./useScaleFinder";
 

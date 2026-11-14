@@ -1,0 +1,62 @@
+import { HarmonyExplorerPanel } from "./HarmonyExplorerPanel";
+import { useHarmonyExplorer, useHarmonyExplorerOutput } from "./harmonyExplorerContext";
+import { useCrossToolActions } from "../../app/crossTool/crossToolContext";
+import { usePlatformSpelling } from "../../app/platform/platformContexts";
+
+/** Harmony Explorer: connects the panel to the explorer state. */
+export default function HarmonyExplorerSection() {
+  const {
+    addSelectedHarmonyRelationshipToProgression,
+    sendHarmonyRecordedProgressionToAssistant,
+    showHarmonySelectionOnStradella,
+  } = useCrossToolActions();
+  const {
+    harmonyDiatonicOnly,
+    harmonyHighlightDiatonic,
+    harmonyProgressionRecording,
+    harmonyRecordedProgression,
+    harmonyReferenceFamilyId,
+    harmonyRelatedFamilyId,
+    harmonyScaleId,
+    harmonySelection,
+    harmonyShowEnharmonics,
+    harmonyShowNoteRing,
+    resetHarmonyExplorer,
+    setHarmonyDiatonicOnly,
+    setHarmonyHighlightDiatonic,
+    setHarmonyReferenceFamilyId,
+    setHarmonyRelatedFamilyId,
+    setHarmonyScaleId,
+    setHarmonyShowNoteRing,
+  } = useHarmonyExplorer();
+  const { clearHarmonyRecordedProgression, toggleHarmonyProgressionRecording } =
+    useHarmonyExplorerOutput();
+  const { chordDisplayStyle } = usePlatformSpelling();
+  return (
+    <HarmonyExplorerPanel
+      chordDisplayStyle={chordDisplayStyle}
+      referenceFamilyId={harmonyReferenceFamilyId}
+      onReferenceFamilyChange={setHarmonyReferenceFamilyId}
+      relatedFamilyId={harmonyRelatedFamilyId}
+      onRelatedFamilyChange={setHarmonyRelatedFamilyId}
+      scaleId={harmonyScaleId}
+      onScaleChange={setHarmonyScaleId}
+      diatonicOnly={harmonyDiatonicOnly}
+      onDiatonicOnlyChange={setHarmonyDiatonicOnly}
+      highlightDiatonic={harmonyHighlightDiatonic}
+      onHighlightDiatonicChange={setHarmonyHighlightDiatonic}
+      showEnharmonics={harmonyShowEnharmonics}
+      showNoteRing={harmonyShowNoteRing}
+      onShowNoteRingChange={setHarmonyShowNoteRing}
+      selected={harmonySelection}
+      onShowOnStradella={showHarmonySelectionOnStradella}
+      onAddSelectedRelationshipToProgression={addSelectedHarmonyRelationshipToProgression}
+      isRecordingProgression={harmonyProgressionRecording}
+      recordedProgression={harmonyRecordedProgression}
+      onToggleProgressionRecording={toggleHarmonyProgressionRecording}
+      onClearRecordedProgression={clearHarmonyRecordedProgression}
+      onSendRecordedProgressionToAssistant={sendHarmonyRecordedProgressionToAssistant}
+      onReset={resetHarmonyExplorer}
+    />
+  );
+}

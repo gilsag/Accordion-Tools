@@ -1,17 +1,17 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
 import {
   permittedRequestedBasses,
   harmonicIdentitySymbol,
-} from "../../../src/tools/stradellaChordFinder/harmonicIdentity";
+} from "../../../src/features/stradellaChordFinder/engine/harmonicIdentity";
 import {
   analyzeConfiguredStradellaVoicing,
   DEFAULT_STRADELLA_REGISTER_MODEL,
   type StradellaRegisterModel,
-} from "../../../src/tools/stradellaChordFinder/registerModel";
-import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
-import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization";
+} from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { realizationAnnotation } from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
+import { explainStradellaRealization } from "../../../src/features/stradellaChordFinder/engine/explainRealization";
 import { test } from "vitest";
 
 const buttons = generateStradella("96", 38, 1.18, "natural");

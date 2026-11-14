@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools.ts";
 import {
   combinationTones,
   isBassButton,
-} from "../../../src/tools/stradellaChordFinder/voicings.ts";
+} from "../../../src/features/stradellaChordFinder/engine/voicings.ts";
 import type { DiagramButton, FinderChordPattern } from "../../../src/types.ts";
 import { test } from "vitest";
 

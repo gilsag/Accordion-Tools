@@ -1,6 +1,6 @@
 import { createToolContext } from "../../app/tools/createToolContext";
 import type { useDiagramOverlays } from "../../diagram/useDiagramOverlays";
-import type { useSequenceResults, useSequenceState } from "../sequences/useSequenceState";
+import type { useSequenceResults, useSequenceState } from "./useSequenceState";
 import type { DiagramButton } from "../../types";
 import type { useDiagramAnnotations } from "./useDiagramAnnotations";
 

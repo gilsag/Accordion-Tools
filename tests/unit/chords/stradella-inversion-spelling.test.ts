@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
-import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
+import { realizationAnnotation } from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
 import {
   chordToneName,
   realizedInversionDescription,
   safeChordFilenameKey,
   formatChordFinderTone,
-} from "../../../src/tools/stradellaChordFinder/chordSpelling";
-import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
-import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization";
+} from "../../../src/features/stradellaChordFinder/engine/chordSpelling";
+import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { explainStradellaRealization } from "../../../src/features/stradellaChordFinder/engine/explainRealization";
 import { test } from "vitest";
 
 test("Chord tones are spelled by chord function, including double accidentals", () => {

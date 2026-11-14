@@ -9,13 +9,13 @@ import {
   translateKnownLabel,
   type TranslationKey,
 } from "../../../src/i18n/allCatalogs";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
-import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
-import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
-import { explainStradellaRealization } from "../../../src/tools/stradellaChordFinder/explainRealization";
-import { describeTrebleChord } from "../../../src/tools/trebleChordExplanation";
-import { buildDiagramExplanation } from "../../../src/tools/harmonyExplorer/explanation";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
+import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { realizationAnnotation } from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
+import { explainStradellaRealization } from "../../../src/features/stradellaChordFinder/engine/explainRealization";
+import { describeTrebleChord } from "../../../src/features/trebleChordFinder/trebleChordExplanation";
+import { buildDiagramExplanation } from "../../../src/features/harmonyExplorer/engine/explanation";
 import { familyName, scaleName } from "../../../src/i18n/musicTerms";
 import { test } from "vitest";
 

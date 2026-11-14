@@ -1,4 +1,4 @@
-import type { StradellaChordFinderResult } from "../../tools/stradellaChordFinder/results";
+import type { StradellaChordFinderResult } from "./engine/results";
 
 export type RealizationFilters = {
   rootInBass: boolean;

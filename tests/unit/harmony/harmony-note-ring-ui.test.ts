@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { buildDiagramExplanation } from "../../../src/tools/harmonyExplorer/explanation";
+import { buildDiagramExplanation } from "../../../src/features/harmonyExplorer/engine/explanation";
 import { SUPPORTED_LANGUAGES, EN, ES, FR, PT, IT, DE } from "../../../src/i18n/allCatalogs";
 import { test } from "vitest";
 

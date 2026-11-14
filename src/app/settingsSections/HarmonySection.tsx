@@ -1,5 +1,5 @@
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import type { ChordDisplayStyle } from "../../tools/chordDisplay";
+import type { ChordDisplayStyle } from "../../music/chordDisplay";
 import {
   useHarmonyExplorer,
   useHarmonyExplorerOutput,

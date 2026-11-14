@@ -1,6 +1,6 @@
 /** What the workspace draws around the buttons: the status line, the
  * diagram's arrowheads, title, footer, bellows guide and Stradella row names. */
-import { StradellaVoicingIntervals } from "../../components/tools/StradellaVoicingIntervals";
+import { StradellaVoicingIntervals } from "../../features/stradellaChordFinder/StradellaVoicingIntervals";
 import {
   fittedRowLabelFontSize,
   measureRowLabelWidth,
@@ -9,7 +9,7 @@ import {
 import { harmonyStatusText } from "../../i18n/diagramLabels";
 import { stradellaDiagramRowLabel } from "../../i18n/musicTerms";
 import { fontClass } from "../../music";
-import { stradellaRowLabel } from "../../stradella";
+import { stradellaRowLabel } from "../../instrument/stradella";
 import { useAnnotateDiagram } from "../../features/annotateDiagram/annotateDiagramContext";
 import {
   useHarmonyExplorer,

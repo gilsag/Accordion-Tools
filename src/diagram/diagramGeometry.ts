@@ -4,7 +4,7 @@
  * they affect SVG dimensions, PNG scale and annotation placement.
  */
 import type { Side, TitleMode, PianoTrebleRange, TrebleSizePreset } from "../types";
-import { pianoTrebleWhiteKeyCount } from "../pianoTreble";
+import { pianoTrebleWhiteKeyCount } from "../instrument/pianoTreble";
 /** Existing fixed widths for the larger treble presets, colocated with the
  * sizing selector to avoid a diagram-domain dependency on app presentation. */
 const TREBLE_SIZE_VIEW_WIDTH: Record<TrebleSizePreset, number> = {

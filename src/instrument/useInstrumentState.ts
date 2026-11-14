@@ -4,7 +4,7 @@ import {
   DEFAULT_STRADELLA_REGISTER_MODEL,
   type StradellaOctaveGrouping,
   type StradellaRegisterModel,
-} from "../tools/stradellaChordFinder/registerModel";
+} from "../features/stradellaChordFinder/engine/registerModel";
 
 /** Owns physical manual configuration and the *nominal* Stradella register model.
  * These registers describe modeled sounding octaves, not synthesizer voices,

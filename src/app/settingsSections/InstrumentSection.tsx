@@ -2,7 +2,7 @@ import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { translateKnownLabel } from "../../i18n/catalog";
 import { pianoRangeStatusLabel } from "../../i18n/diagramLabels";
-import { formatRegisterRange } from "../../tools/stradellaChordFinder/registerModel";
+import { formatRegisterRange } from "../../features/stradellaChordFinder/engine/registerModel";
 import type { BassCount, PianoTrebleRange, TrebleLayout, TrebleSizePreset } from "../../types";
 import { BASS_OPTIONS, PIANO_TREBLE_RANGE_OPTIONS, TREBLE_SIZE_OPTIONS } from "../optionLists";
 import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";

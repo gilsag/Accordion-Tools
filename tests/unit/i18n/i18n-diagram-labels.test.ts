@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { CHORD_FAMILIES, SCALES } from "../../../src/tools/harmonyExplorer/music";
+import { CHORD_FAMILIES, SCALES } from "../../../src/features/harmonyExplorer/engine/music";
 import { translate } from "../../../src/i18n/allCatalogs";
 import {
   accordionStatusText,

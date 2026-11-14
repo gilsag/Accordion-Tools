@@ -7,17 +7,17 @@
  * verification of reeds or the La Melodiosa sound engine.
  */
 import assert from "node:assert/strict";
-import { STRADELLA_PRESETS, generateStradella } from "../../../src/stradella";
+import { STRADELLA_PRESETS, generateStradella } from "../../../src/instrument/stradella";
 import type { BassCount, FinderChordPattern, StradellaChordFinderMode } from "../../../src/types";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
-import { combinationTones } from "../../../src/tools/stradellaChordFinder/voicings";
-import { ergonomicSpanLimit } from "../../../src/tools/stradellaChordFinder/searchBassAndChordButtons";
-import { ergonomicDistance } from "../../../src/tools/stradellaChordFinder/utils";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
+import { combinationTones } from "../../../src/features/stradellaChordFinder/engine/voicings";
+import { ergonomicSpanLimit } from "../../../src/features/stradellaChordFinder/engine/searchBassAndChordButtons";
+import { ergonomicDistance } from "../../../src/features/stradellaChordFinder/engine/utils";
 import {
   analyzeConfiguredStradellaVoicing,
   nominalRegisterNote,
   type StradellaRegisterModel,
-} from "../../../src/tools/stradellaChordFinder/registerModel";
+} from "../../../src/features/stradellaChordFinder/engine/registerModel";
 import { test } from "vitest";
 
 const layouts = Object.keys(STRADELLA_PRESETS) as BassCount[];

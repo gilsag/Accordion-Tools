@@ -10,7 +10,7 @@ import { useMemo, type ReactNode } from "react";
 import { useScoreRendering } from "../../app/platform/useScoreRendering";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { playerHandle } from "../../app/tools/toolHandles";
-import { bassPatternEventsToStradellaNotationAbc } from "../../tools/bassPatternPlayerTools";
+import { bassPatternEventsToStradellaNotationAbc } from "./bassPatternPlayerTools";
 import { useBassPatternTransport } from "./useBassPatternTransport";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import { usePlatformInstrument } from "../../app/platform/platformContexts";

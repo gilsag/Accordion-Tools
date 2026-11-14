@@ -5,7 +5,7 @@ import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { renderApp, resetBrowserState, serveBundledFiles } from "../../support/appHarness";
 import type { RenderedApp } from "../../support/appHarness";
-import type { HarmonySelection } from "../../../src/tools/harmonyExplorer/types";
+import type { HarmonySelection } from "../../../src/features/harmonyExplorer/engine/types";
 
 beforeEach(() => {
   resetBrowserState();

@@ -1,10 +1,10 @@
 import type { DiagramContribution } from "../../app/diagram/diagramContributions";
 import { usePlatformLanguage, usePlatformSpelling } from "../../app/platform/platformContexts";
-import { displayRealizedChord } from "../../tools/chordDisplay";
-import { displayRoot, realizedChordName } from "../../tools/stradellaChordFinder/chordSpelling";
-import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
-import { realizationAnnotation } from "../../tools/stradellaChordFinder/diagramAnnotations";
-import type { StradellaRegisterModel } from "../../tools/stradellaChordFinder/registerModel";
+import { displayRealizedChord } from "../../music/chordDisplay";
+import { displayRoot, realizedChordName } from "./engine/chordSpelling";
+import { finderChordSymbol } from "./engine/chordSymbol";
+import { realizationAnnotation } from "./engine/diagramAnnotations";
+import type { StradellaRegisterModel } from "./engine/registerModel";
 import type { StradellaChordFinderState } from "./stradellaChordFinderContext";
 import { stradellaFooter } from "./stradellaFooter";
 import type { useStradellaChordFinderResults } from "./useStradellaChordFinder";

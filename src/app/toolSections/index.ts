@@ -10,15 +10,21 @@ type ToolSectionComponent = LazyExoticComponent<ComponentType>;
  * and nothing else in the Tools panel changes.
  */
 export const TOOL_SECTIONS: Record<ToolId, ToolSectionComponent> = {
-  scaleFinder: lazy(() => import("./ScaleFinderSection")),
-  chordFinder: lazy(() => import("./TrebleChordFinderSection")),
-  stradellaChordFinder: lazy(() => import("./StradellaChordFinderSection")),
-  progressionAssistant: lazy(() => import("./ProgressionAssistantSection")),
-  annotateDiagram: lazy(() => import("./AnnotateDiagramSection")),
-  bassPatternPlayer: lazy(() => import("./BassPatternPlayerSection")),
-  rhythmTrainer: lazy(() => import("./RhythmTrainerSection")),
-  abcPlayer: lazy(() => import("./AbcPlayerSection")),
-  harmonyExplorer: lazy(() => import("./HarmonyExplorerSection")),
+  scaleFinder: lazy(() => import("../../features/scaleFinder/ScaleFinderSection")),
+  chordFinder: lazy(() => import("../../features/trebleChordFinder/TrebleChordFinderSection")),
+  stradellaChordFinder: lazy(
+    () => import("../../features/stradellaChordFinder/StradellaChordFinderSection"),
+  ),
+  progressionAssistant: lazy(
+    () => import("../../features/progressionAssistant/ProgressionAssistantSection"),
+  ),
+  annotateDiagram: lazy(() => import("../../features/annotateDiagram/AnnotateDiagramSection")),
+  bassPatternPlayer: lazy(
+    () => import("../../features/bassPatternPlayer/BassPatternPlayerSection"),
+  ),
+  rhythmTrainer: lazy(() => import("../../features/rhythmTrainer/RhythmTrainerSection")),
+  abcPlayer: lazy(() => import("../../features/abcPlayer/AbcPlayerSection")),
+  harmonyExplorer: lazy(() => import("../../features/harmonyExplorer/HarmonyExplorerSection")),
 };
 
 /** Extra class on a section's content wrapper, where its layout needs one. */

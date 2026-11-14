@@ -7,7 +7,7 @@ const serializeModes = [];
 const captureModule = {
   exports: loadIsolated("src/diagram/stradellaBatchCapture.ts", {
     imports: {
-      "../download": {
+      "./download": {
         serializeSvg: (_svg, pngSafe) => {
           serializeModes.push(pngSafe);
           return '<svg xmlns="http://www.w3.org/2000/svg"></svg>';

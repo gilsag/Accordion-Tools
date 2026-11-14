@@ -7,7 +7,7 @@ import type {
   DiagramButton,
   Side,
 } from "../../types";
-import type { AbcParseResult, MappedAbcEvent } from "../../tools/abcPlayerTools";
+import type { AbcParseResult, MappedAbcEvent } from "./abcPlayerTools";
 import { loadAbcEngine } from "./abcEngineLoader";
 
 /** Exact parsed result of an empty ABC editor in the established abcjs engine.

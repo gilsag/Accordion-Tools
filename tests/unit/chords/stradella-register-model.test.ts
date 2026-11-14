@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
+import { generateStradella } from "../../../src/instrument/stradella";
 import type { DiagramButton } from "../../../src/types";
 import {
   analyzeConfiguredStradellaVoicing,
@@ -9,8 +9,8 @@ import {
   explainConfiguredStradellaVoicing,
   DEFAULT_STRADELLA_REGISTER_MODEL,
   type StradellaRegisterModel,
-} from "../../../src/tools/stradellaChordFinder/registerModel";
-import { analyzeStradellaRegistralVoicing } from "../../../src/tools/stradellaChordFinder/registralAnalysis";
+} from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { analyzeStradellaRegistralVoicing } from "../../../src/features/stradellaChordFinder/engine/registralAnalysis";
 import { test } from "vitest";
 
 const buttons = generateStradella("96", 38, 1.18, "natural");

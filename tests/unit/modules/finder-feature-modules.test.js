@@ -24,14 +24,14 @@ const { scaleCalls, chordCalls, scaleResultButtons, stradellaResultButtons, chor
     stradellaResultButtons: [{ id: "stradella-C" }],
     chordResultButtons: [{ id: "treble-chord-C" }],
   }));
-vi.mock("../../../src/tools/scaleFinderTools", async (original) => ({
+vi.mock("../../../src/features/scaleFinder/scaleFinderTools", async (original) => ({
   ...(await original()),
   getScaleFinderTrebleButtons: (...args) => {
     scaleCalls.push(["treble", args]);
     return scaleResultButtons;
   },
 }));
-vi.mock("../../../src/tools/stradellaScaleFinderTools", async (original) => ({
+vi.mock("../../../src/features/scaleFinder/stradellaScaleFinderTools", async (original) => ({
   ...(await original()),
   getStradellaScaleFinderResult: (...args) => {
     scaleCalls.push(["stradella", args]);
@@ -45,7 +45,7 @@ vi.mock("../../../src/tools/stradellaScaleFinderTools", async (original) => ({
     };
   },
 }));
-vi.mock("../../../src/tools/chordFinderTools", async (original) => ({
+vi.mock("../../../src/features/trebleChordFinder/chordFinderTools", async (original) => ({
   ...(await original()),
   getChordFinderTrebleButtons: (...args) => {
     chordCalls.push(args);

@@ -1,6 +1,6 @@
 import type { DownloadFormat } from "../types";
-import type { StradellaChordFinderResult } from "../tools/stradellaChordFinder/results";
-import { serializeSvg } from "../download";
+import type { StradellaChordFinderResult } from "../features/stradellaChordFinder/engine/results";
+import { serializeSvg } from "./download";
 import type { DiagramBatchSnapshot } from "./diagramExport";
 
 /** Take every playable realization as a LIVE, synchronous SVG snapshot.

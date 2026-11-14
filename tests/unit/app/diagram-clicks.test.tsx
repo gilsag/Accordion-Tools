@@ -7,7 +7,7 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { renderApp, resetBrowserState, serveBundledFiles } from "../../support/appHarness";
 
 const sounded: string[] = [];
-vi.mock("../../../src/sound", async (original) => ({
+vi.mock("../../../src/audio/sound", async (original) => ({
   ...(await original<object>()),
   playButtonSound: (button: { id: string }) => sounded.push(button.id),
 }));

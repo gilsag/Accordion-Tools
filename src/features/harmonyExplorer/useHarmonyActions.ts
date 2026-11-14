@@ -12,15 +12,15 @@ import {
   audioClockNow,
   playHarmonyPitchClassChord,
   playHarmonyRelationship,
-} from "../../sound";
-import type { ChordFamilyId } from "../../tools/harmonyExplorer/music";
+} from "../../audio/sound";
+import type { ChordFamilyId } from "./engine/music";
 import {
   CIRCLE_OF_FIFTHS,
   pitchClassesForChord as harmonyPitchClassesForChord,
-} from "../../tools/harmonyExplorer/music";
-import type { HarmonyPlaybackStyle } from "../../tools/harmonyExplorer/types";
-import type { HarmonyRecordedChord } from "../../tools/harmonyExplorer/progression";
-import { pitchClassNameFromNumber } from "../../tools/harmonyExplorer/integration";
+} from "./engine/music";
+import type { HarmonyPlaybackStyle } from "./engine/types";
+import type { HarmonyRecordedChord } from "../progressionAssistant/engine/progression";
+import { pitchClassNameFromNumber } from "./engine/integration";
 
 export type UseHarmonyActionsDeps = Pick<
   ReturnType<typeof useHarmonyExplorerState>,

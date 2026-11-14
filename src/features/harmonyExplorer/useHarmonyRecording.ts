@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { HarmonyRecordedEvent } from "../../tools/harmonyExplorer/progression";
+import type { HarmonyRecordedEvent } from "../progressionAssistant/engine/progression";
 
 /** The progression recorded on the Harmony circle: the events, whether
  * recording is on, its score and its playback state.

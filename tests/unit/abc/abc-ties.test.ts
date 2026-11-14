@@ -5,7 +5,7 @@ import {
   abcEventsForStradellaSide,
   abcEventsForTrebleSide,
   abcPitchNames,
-} from "../../../src/tools/abcPlayerTools";
+} from "../../../src/features/abcPlayer/abcPlayerTools";
 import { test } from "vitest";
 
 test("ABC parser tests", () => {

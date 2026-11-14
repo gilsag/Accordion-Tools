@@ -5,15 +5,15 @@ import {
   progressionNoteStep,
   toggleProgressionNoteId,
 } from "../../../src/features/progressionAssistant/progressionNoteSelection";
-import { generateStradella } from "../../../src/stradella";
+import { generateStradella } from "../../../src/instrument/stradella";
 import {
   progressionRealizationsForChord,
   optimizeStradellaProgression,
-} from "../../../src/tools/harmonyExplorer/progression";
+} from "../../../src/features/progressionAssistant/engine/progression";
 import {
   realizationAnnotation,
   DEFAULT_STRADELLA_NOTE_LEVELS,
-} from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
+} from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
 import { test } from "vitest";
 
 const buttons = generateStradella("120", 24, 6, "natural", 0);

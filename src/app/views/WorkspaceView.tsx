@@ -28,8 +28,8 @@ import { DiagramButtonLayer } from "../../diagram/components/DiagramButtonLayer"
 import { DiagramConnections } from "../../diagram/components/DiagramConnections";
 import { DiagramSvgSurface } from "../../diagram/components/DiagramSvgSurface";
 import { musicLabelText } from "../../music";
-import { stradellaRowLabel } from "../../stradella";
-import { stopAllSound } from "../../sound";
+import { stradellaRowLabel } from "../../instrument/stradella";
+import { stopAllSound } from "../../audio/sound";
 import {
   BellowsGuide,
   DiagramFooter,

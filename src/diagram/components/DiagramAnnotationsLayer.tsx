@@ -1,7 +1,7 @@
 import type { TextNote } from "../../types";
 import type { useDiagramAnnotations } from "../../features/annotateDiagram/useDiagramAnnotations";
 import { fontClass } from "../../music";
-import { splitMultilineText } from "../../tools/textNoteTools";
+import { splitMultilineText } from "../../features/annotateDiagram/textNoteTools";
 
 type EditorController = ReturnType<typeof useDiagramAnnotations>;
 type DiagramAnnotationsLayerProps = {

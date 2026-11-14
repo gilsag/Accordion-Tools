@@ -8,9 +8,9 @@ import {
 } from "../../app/platform/platformContexts";
 import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
 import type { DiagramContribution } from "../../app/diagram/diagramContributions";
-import { trebleContextualTitle } from "../../tools/contextualTitles";
-import { describeTrebleChord } from "../../tools/trebleChordExplanation";
-import { playButtonArpeggioThenChord } from "../../sound";
+import { trebleContextualTitle } from "../../music/contextualTitles";
+import { describeTrebleChord } from "./trebleChordExplanation";
+import { playButtonArpeggioThenChord } from "../../audio/sound";
 import { TrebleChordFinderOutputContext, useTrebleChordFinder } from "./trebleChordFinderContext";
 import { useTrebleChordFinderButtons } from "./useTrebleChordFinder";
 

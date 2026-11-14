@@ -1,7 +1,7 @@
 import { useI18n } from "../../i18n/useI18n";
-import { pitchName } from "../../tools/harmonyExplorer/music";
-import type { OptimizedProgressionPlan } from "../../tools/harmonyExplorer/progression";
-import { realizationText } from "../../components/tools/progressionRealizationText";
+import { pitchName } from "../harmonyExplorer/engine/music";
+import type { OptimizedProgressionPlan } from "./engine/progression";
+import { realizationText } from "./progressionRealizationText";
 import { WorkspaceInspectorFrame } from "../../app/inspector/WorkspaceInspectorFrame";
 
 /** Result-only view. Preview state and the optimized plan remain feature-owned;

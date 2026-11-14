@@ -10,7 +10,7 @@ import {
   bassPatternEventsToMidiBytes,
   type BassPatternDefinition,
   type ChordProgressionDefinition,
-} from "../../../src/tools/bassPatternPlayerTools";
+} from "../../../src/features/bassPatternPlayer/bassPatternPlayerTools";
 import { test } from "vitest";
 
 const expected: Array<[string, string, number, string]> = [

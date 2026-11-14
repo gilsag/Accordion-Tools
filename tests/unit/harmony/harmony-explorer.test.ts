@@ -11,7 +11,7 @@ import {
   pitchClassesForScale,
   relationshipCounts,
   romanNumeralForChord,
-} from "../../../src/tools/harmonyExplorer/music.ts";
+} from "../../../src/features/harmonyExplorer/engine/music.ts";
 import { test } from "vitest";
 
 const cMajor7Diatonic = buildSectorRelationships("major", "major7", "ionian", true)[0];

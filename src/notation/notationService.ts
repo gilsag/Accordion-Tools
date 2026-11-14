@@ -1,4 +1,4 @@
-import { downloadSvg } from "../download";
+import { downloadSvg } from "../diagram/download";
 import { addNativeNoteNames } from "./nativeNoteNames";
 
 /** The renderer is loaded only when a notation panel first becomes visible.

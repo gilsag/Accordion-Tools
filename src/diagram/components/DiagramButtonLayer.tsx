@@ -9,7 +9,7 @@ import type {
   DiagramAnnotationAnchor,
 } from "../../types";
 import { fontClass, isChordKind, isAccidentalPitch, renderMusicLabel } from "../../music";
-import { getSequenceLabelsForButton } from "../../tools/sequenceTools";
+import { getSequenceLabelsForButton } from "../sequenceTools";
 
 /** One DOM-preserving drawing boundary for the physical keys/buttons, overlays,
  * Finder highlights and fingering. Playback still uses its own playbackButtons:

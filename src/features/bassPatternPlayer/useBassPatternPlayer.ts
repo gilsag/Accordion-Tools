@@ -9,7 +9,7 @@ import {
   type BassPatternLibrary,
   type BassPatternPlaybackEvent,
   type ChordProgressionDefinition,
-} from "../../tools/bassPatternPlayerTools";
+} from "./bassPatternPlayerTools";
 import type { translate } from "../../i18n/catalog";
 
 type Translator = (

@@ -4,8 +4,8 @@ import type { ProgressionAssistantOutput } from "../../features/progressionAssis
 import type { AbcPlayerOutput } from "../../features/abcPlayer/abcPlayerContext";
 import type { BassPatternPlayerOutput } from "../../features/bassPatternPlayer/bassPatternPlayerContext";
 import type { useHarmonyActions } from "../../features/harmonyExplorer/useHarmonyActions";
-import { ROOT_POSITION_BASS } from "../../tools/stradellaChordFinder/harmonicIdentity";
-import { convertProgressionPreset } from "../../tools/harmonyExplorer/progressionPresets";
+import { ROOT_POSITION_BASS } from "../../features/stradellaChordFinder/engine/harmonicIdentity";
+import { convertProgressionPreset } from "../../features/progressionAssistant/engine/progressionPresets";
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 import type { useWorkspaceNavigation } from "../useWorkspaceNavigation";
 import {
@@ -26,17 +26,17 @@ import {
 import type { useStradellaChordFinderState } from "../../features/stradellaChordFinder/useStradellaChordFinder";
 import type { useScaleFinderState } from "../../features/scaleFinder/useScaleFinder";
 import type { useTrebleChordFinderState } from "../../features/trebleChordFinder/useTrebleChordFinder";
-import { stopAllSound } from "../../sound";
-import type { HarmonyProgressionChord } from "../../tools/harmonyExplorer/progression";
-import { progressionFinderPattern } from "../../tools/harmonyExplorer/progression";
-import { isHarmonyProgressionChord } from "../../tools/harmonyExplorer/progression";
-import { progressionRealizationKey } from "../../tools/harmonyExplorer/progression";
+import { stopAllSound } from "../../audio/sound";
+import type { HarmonyProgressionChord } from "../../features/progressionAssistant/engine/progression";
+import { progressionFinderPattern } from "../../features/progressionAssistant/engine/progression";
+import { isHarmonyProgressionChord } from "../../features/progressionAssistant/engine/progression";
+import { progressionRealizationKey } from "../../features/progressionAssistant/engine/progression";
 import {
   finderPatternForHarmonyFamily,
   harmonyFamilyForFinderPattern,
   pitchClassNameFromNumber,
   pitchClassNumberFromName,
-} from "../../tools/harmonyExplorer/integration";
+} from "../../features/harmonyExplorer/engine/integration";
 
 export type UseProgressionActionsDeps = Pick<
   ReturnType<typeof useBassPatternState>,

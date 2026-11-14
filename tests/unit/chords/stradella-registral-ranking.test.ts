@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools.ts";
 import {
   ROOT_BASS_SUPPORT_BONUS,
   registralPreferenceAdjustment,
-} from "../../../src/tools/stradellaChordFinder/registralPreference.ts";
-import { isBassButton } from "../../../src/tools/stradellaChordFinder/voicings.ts";
+} from "../../../src/features/stradellaChordFinder/engine/registralPreference.ts";
+import { isBassButton } from "../../../src/features/stradellaChordFinder/engine/voicings.ts";
 import type { DiagramButton, FinderChordPattern } from "../../../src/types.ts";
 import { test } from "vitest";
 

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { InterfaceLanguage } from "../../i18n/catalog";
 import { familyName, scaleName } from "../../i18n/musicTerms";
-import { buildDiagramExplanation } from "../../tools/harmonyExplorer/explanation";
+import { buildDiagramExplanation } from "./engine/explanation";
 import {
   DEFAULT_RING_VISIBILITY,
   buildSectorRelationships,
@@ -10,13 +10,9 @@ import {
   relationshipCounts as harmonyRelationshipCounts,
   filterRelationshipCounts,
   scaleDefinition as harmonyScaleDefinition,
-} from "../../tools/harmonyExplorer/music";
-import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "../../tools/harmonyExplorer/music";
-import type {
-  HarmonyPlaybackStyle,
-  HarmonySelection,
-  HarmonyVoicingStyle,
-} from "../../tools/harmonyExplorer/types";
+} from "./engine/music";
+import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "./engine/music";
+import type { HarmonyPlaybackStyle, HarmonySelection, HarmonyVoicingStyle } from "./engine/types";
 import type { translate } from "../../i18n/catalog";
 
 type Translator = (

@@ -100,7 +100,7 @@ test("Pause keeps the last played buttons of each voice lit", () => {
   assert.deepEqual(trace, ["clearTimers", "state:stopped", "buttons:0", "stopSound"]);
   trace.length = 0;
   const reset = load("src/app/resetCommands.ts", {
-    "../tools/stradellaChordFinder/diagramAnnotations": {
+    "../features/stradellaChordFinder/engine/diagramAnnotations": {
       DEFAULT_STRADELLA_NOTE_LEVELS: {
         identity: true,
         pitchClasses: true,
@@ -108,7 +108,7 @@ test("Pause keeps the last played buttons of each voice lit", () => {
         physical: true,
       },
     },
-    "../tools/stradellaChordFinder/harmonicIdentity": { ROOT_POSITION_BASS: "root" },
+    "../features/stradellaChordFinder/engine/harmonicIdentity": { ROOT_POSITION_BASS: "root" },
   });
   const finderMethods = [
     "setRoot",
@@ -138,7 +138,7 @@ test("Pause keeps the last played buttons of each voice lit", () => {
   assert.equal(trace[3][1], "root", "Restoring Finder defaults returns to root position");
   const batchTrace = [];
   const capture = load("src/diagram/stradellaBatchCapture.ts", {
-    "../download": { serializeSvg: (_svg, png) => `svg-${png}` },
+    "./download": { serializeSvg: (_svg, png) => `svg-${png}` },
   });
   let selected = 4;
   const candidates = [

@@ -1,4 +1,4 @@
-import type { OptimizedProgressionPlan } from "../../tools/harmonyExplorer/progression";
+import type { OptimizedProgressionPlan } from "./engine/progression";
 
 /** Eye selection is a single optional stable chord ID, not a mutable row index.
  * The optimizer may replace/reorder its steps when a user pins a recipe.

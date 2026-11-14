@@ -173,14 +173,14 @@ This release reorganizes Accordion Tools internally while preserving existing mu
 - Extracted the Scale Finder and Treble Chord Finder state into separate feature hooks, including memoized selection adapters that delegate to the unchanged musical algorithms. Preserved default requests, exact selected button identities and ordering, existing settings setters, and inactive-tool semantics.
 - Extracted Stradella Chord Finder request, search-control and explanation-display state, memoized candidate/result selectors, realization reset, and physical-button-based progression handoff into `src/features/stradellaChordFinder/useStradellaChordFinder.ts`. The original chord-search/ranking engines and `playbackButtons` identity contract are unchanged; instrument register modeling and audio remain separate.
 - Added `scripts/stradella-finder-module.test.mjs` for default state, exact engine arguments, candidate selection/clamping, visual versus sounded button identities, and progression handoff. Extended `test:modules` without changing settings/exports or UI behavior.
-- Extracted ABC Player editor, loaded-file/example state, score tempo, transport state, voice-mapping preferences, notation visibility, and manifest/example loading into `src/features/abcPlayer/useAbcPlayer.ts`. Its result hook delegates unchanged two-voice parsing and physical button mapping to `src/tools/abcPlayerTools.ts`, preserving playback events, missing-note reporting and original IDs. Shared playback timers, audio actions and notation rendering remain in App pending separate stages.
+- Extracted ABC Player editor, loaded-file/example state, score tempo, transport state, voice-mapping preferences, notation visibility, and manifest/example loading into `src/features/abcPlayer/useAbcPlayer.ts`. Its result hook delegates unchanged two-voice parsing and physical button mapping to `src/features/abcPlayer/abcPlayerTools.ts`, preserving playback events, missing-note reporting and original IDs. Shared playback timers, audio actions and notation rendering remain in App pending separate stages.
 - Added `scripts/abc-feature-module.test.mjs` to verify original defaults, stable settings setters, manifest filtering, example import, parsing branches, playback tempo synchronization and actual button IDs. Extended `test:modules`.
 - **Combined Phase 3e (Harmony and progressions):** Extracted Harmony Explorer settings, selected harmonic relationship, ring-visibility state, relationship/count/explanation selectors, and reset-on-reference-change effect into `src/features/harmonyExplorer/useHarmonyExplorer.ts`.
 - Extracted Progression Assistant editable and recorded sequence state, tempo-independent UI state, notation refs, physical Stradella realization optimization, plan preview clamping, and highlighted playback-button IDs into `src/features/progressionAssistant/useProgressionAssistant.ts`. Existing optimization, ranking, playback and notation engines remain unchanged.
 - Kept the cross-workspace navigation commands, recorded-chord transfer with monotonic IDs, shared sound scheduling/cancellation, notation rendering, and physical played-button handoff inside `App.tsx` pending separate shared-service extraction.
 - Added `scripts/harmony-progression-feature-modules.test.mjs` to verify feature defaults, settings setter identity, engine parameter forwarding, preview rules and physical playback button identities. Updated the Harmony note-ring test to follow the new owning module. No release-version bump or settings JSON schema changes.
 - **Combined Phase 3d (patterns and sequences):** Extracted Bass Pattern Player state, bundled library and progression loading, custom pattern JSON editing, historical localStorage persistence, and Stradella-only derived accompaniment events into `src/features/bassPatternPlayer/useBassPatternPlayer.ts`. Retained original validation behavior, fallback selection, per-field settings setters, exact engine input order, musical/notation/export formats and playback button references.
-- Extracted Sequence/Recording state, append-order step numbering, visual path preferences, notation visibility, and current physical-button reconnection into `src/features/sequences/useSequenceState.ts`; shared audio/notation rendering and file downloads remain in `App.tsx` pending service extraction.
+- Extracted Sequence/Recording state, append-order step numbering, visual path preferences, notation visibility, and current physical-button reconnection into `src/features/annotateDiagram/useSequenceState.ts`; shared audio/notation rendering and file downloads remain in `App.tsx` pending service extraction.
 - Added `scripts/pattern-sequence-feature-modules.test.mjs` to verify original feature defaults, pattern persistence and editor operations, bundled loading, derived event/button identity, and recorded step order. Registered it in `test:modules`. No public behavior or version changes.
 - Added Finder hook/selection regression checks and refreshed the developer guide and [modularization roadmap](docs/internal/archive/modularization-roadmap.md). Shared SVG rendering, export/playback orchestration, cross-tool commands and lazy loading are **not yet extracted**.
 - **Combined Phase 3f (diagram and annotation state):** Extracted visual geometry/display/title settings to `src/diagram/useDiagramAppearanceState.ts`, moved the unchanged treble/piano size tables into `src/instrument/sizePresets.ts`, and isolated physical-button overlays and fingering editing in `src/diagram/useDiagramOverlays.ts`.
@@ -778,7 +778,7 @@ Suggested format: `vMAJOR.MINOR.PATCH`, for example `v0.7.1`.
 
 ### Files changed
 
-- `src/tools/abcPlayerTools.ts`
+- `src/features/abcPlayer/abcPlayerTools.ts`
 - `src/App.tsx`
 - `public/default-settings.json`
 - `package.json`
@@ -806,7 +806,7 @@ Major 3rd row: D#  A#   F    C    G    D
 
 ### Files changed
 
-- `src/stradella.ts`
+- `src/instrument/stradella.ts`
 
 ---
 

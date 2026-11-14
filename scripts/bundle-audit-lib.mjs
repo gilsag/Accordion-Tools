@@ -6,21 +6,21 @@ import assert from "node:assert/strict";
 /** Modules that must never be part of the first download. */
 export const LAZY_MODULES = [
   // Each tool's controls load when its section in the Tools panel is opened.
-  "src/app/toolSections/ScaleFinderSection.tsx",
-  "src/app/toolSections/TrebleChordFinderSection.tsx",
-  "src/app/toolSections/StradellaChordFinderSection.tsx",
-  "src/app/toolSections/ProgressionAssistantSection.tsx",
-  "src/app/toolSections/AnnotateDiagramSection.tsx",
-  "src/app/toolSections/BassPatternPlayerSection.tsx",
-  "src/app/toolSections/RhythmTrainerSection.tsx",
-  "src/app/toolSections/AbcPlayerSection.tsx",
-  "src/app/toolSections/HarmonyExplorerSection.tsx",
+  "src/features/scaleFinder/ScaleFinderSection.tsx",
+  "src/features/trebleChordFinder/TrebleChordFinderSection.tsx",
+  "src/features/stradellaChordFinder/StradellaChordFinderSection.tsx",
+  "src/features/progressionAssistant/ProgressionAssistantSection.tsx",
+  "src/features/annotateDiagram/AnnotateDiagramSection.tsx",
+  "src/features/bassPatternPlayer/BassPatternPlayerSection.tsx",
+  "src/features/rhythmTrainer/RhythmTrainerSection.tsx",
+  "src/features/abcPlayer/AbcPlayerSection.tsx",
+  "src/features/harmonyExplorer/HarmonyExplorerSection.tsx",
   // The Tools panel is open at startup; Settings loads when first opened.
   "src/app/views/SettingsView.tsx",
-  "src/tools/harmonyExplorer/components/HarmonicCircle.tsx",
-  "src/tools/abcPlayerTools.ts",
+  "src/features/harmonyExplorer/HarmonicCircle.tsx",
+  "src/features/abcPlayer/abcPlayerTools.ts",
   // Opened only from Settings -> About; carries every guide as raw Markdown.
-  "src/components/settings/DocumentationViewer.tsx",
+  "src/app/settingsSections/DocumentationViewer.tsx",
   // Only English is bundled at startup; the other catalogs load on demand.
   "src/i18n/es.ts",
   "src/i18n/fr.ts",

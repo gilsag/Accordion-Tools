@@ -33,7 +33,7 @@ const doubles = vi.hoisted(() => ({
 }));
 doubles.playbackButtons = [doubles.physicalButtons[0], doubles.physicalButtons[1]];
 const refVisibility = doubles.refVisibility;
-vi.mock("../../../src/tools/harmonyExplorer/music", async (original) => {
+vi.mock("../../../src/features/harmonyExplorer/engine/music", async (original) => {
   const { refVisibility, sectorArgs, sectorResults, countArgs } = doubles;
   return {
     ...(await original()),
@@ -69,14 +69,14 @@ vi.mock("../../../src/i18n/musicTerms", async (original) => ({
   familyName: (_id, name) => name,
   scaleName: (_id, name) => name,
 }));
-vi.mock("../../../src/tools/harmonyExplorer/explanation", async (original) => ({
+vi.mock("../../../src/features/harmonyExplorer/engine/explanation", async (original) => ({
   ...(await original()),
   buildDiagramExplanation(options) {
     doubles.explanationCalls.push(options);
     return "expected explanation";
   },
 }));
-vi.mock("../../../src/tools/harmonyExplorer/progression", async (original) => {
+vi.mock("../../../src/features/progressionAssistant/engine/progression", async (original) => {
   const { progression } = doubles;
   const playbackButtons = () => doubles.playbackButtons;
   return {
@@ -111,7 +111,7 @@ vi.mock("../../../src/tools/harmonyExplorer/progression", async (original) => {
     },
   };
 });
-vi.mock("../../../src/stradella", async (original) => ({
+vi.mock("../../../src/instrument/stradella", async (original) => ({
   ...(await original()),
   generateStradella(...args) {
     doubles.generatedArgs.push(args);

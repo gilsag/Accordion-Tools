@@ -2,7 +2,7 @@ import { lazy, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { downloadDiagramBatch } from "../../diagram/diagramExport";
 import { captureStradellaBatch } from "../../diagram/stradellaBatchCapture";
-import { realizationAnnotation } from "../../tools/stradellaChordFinder/diagramAnnotations";
+import { realizationAnnotation } from "./engine/diagramAnnotations";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import { ResultsEntryProvider } from "../../app/inspector/ResultsEntryProvider";
 import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
@@ -14,11 +14,8 @@ import {
   usePlatformSound,
   usePlatformSpelling,
 } from "../../app/platform/platformContexts";
-import {
-  formatChordFinderPitches,
-  formatChordFinderText,
-} from "../../tools/stradellaChordFinder/chordSpelling";
-import { playButtonArpeggioThenChord, playButtonCombination } from "../../sound";
+import { formatChordFinderPitches, formatChordFinderText } from "./engine/chordSpelling";
+import { playButtonArpeggioThenChord, playButtonCombination } from "../../audio/sound";
 import {
   StradellaChordFinderOutputContext,
   useStradellaChordFinder,

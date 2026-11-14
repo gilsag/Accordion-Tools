@@ -37,13 +37,16 @@ import type {
   TrebleSizePreset,
   TitleMode,
 } from "../types";
-import type { StradellaNoteLevels } from "../tools/stradellaChordFinder/diagramAnnotations";
-import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
-import type { ChordDisplayStyle } from "../tools/chordDisplay";
+import type { StradellaNoteLevels } from "../features/stradellaChordFinder/engine/diagramAnnotations";
+import type { MinimumNominalGap } from "../features/stradellaChordFinder/engine/voicingDensity";
+import type { ChordDisplayStyle } from "../music/chordDisplay";
 import type { InterfaceLanguagePreference } from "../i18n/catalog";
-import type { StradellaOctaveGrouping } from "../tools/stradellaChordFinder/registerModel";
-import type { HarmonyPlaybackStyle, HarmonyVoicingStyle } from "../tools/harmonyExplorer/types";
-import type { ProgressionRhythmPattern } from "../sound";
+import type { StradellaOctaveGrouping } from "../features/stradellaChordFinder/engine/registerModel";
+import type {
+  HarmonyPlaybackStyle,
+  HarmonyVoicingStyle,
+} from "../features/harmonyExplorer/engine/types";
+import type { ProgressionRhythmPattern } from "../audio/sound";
 
 export type DefaultSettingsFile = Partial<{
   /** Format version (see settingsMigrations.ts); absent in files from v0.17.0 and earlier. */

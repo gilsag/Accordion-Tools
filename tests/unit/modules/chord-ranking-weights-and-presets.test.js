@@ -5,11 +5,11 @@ import {
   optimizeStradellaProgression,
   progressionRealizationKey,
   progressionRealizationsForChord,
-} from "../../../src/tools/harmonyExplorer/progression";
-import { convertProgressionPreset } from "../../../src/tools/harmonyExplorer/progressionPresets";
-import { generateStradella } from "../../../src/stradella";
-import { CIRCLE_OF_FIFTHS } from "../../../src/tools/harmonyExplorer/music";
-import { resolveRomanChord } from "../../../src/tools/bassPatternPlayerTools";
+} from "../../../src/features/progressionAssistant/engine/progression";
+import { convertProgressionPreset } from "../../../src/features/progressionAssistant/engine/progressionPresets";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { CIRCLE_OF_FIFTHS } from "../../../src/features/harmonyExplorer/engine/music";
+import { resolveRomanChord } from "../../../src/features/bassPatternPlayer/bassPatternPlayerTools";
 import { test } from "vitest";
 
 const buttons = generateStradella("120", 24, 6, "natural", 0);

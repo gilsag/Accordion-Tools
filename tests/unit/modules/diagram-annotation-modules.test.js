@@ -15,7 +15,7 @@ vi.mock("../../../src/instrument/sizePresets", async (original) => ({
   ...(await original()),
   TREBLE_PRESET_BUTTON_SIZE: { small: 28 },
 }));
-vi.mock("../../../src/tools/textNoteTools", async (original) => ({
+vi.mock("../../../src/features/annotateDiagram/textNoteTools", async (original) => ({
   ...(await original()),
   makeTextNote(args) {
     notesMade.push(args);

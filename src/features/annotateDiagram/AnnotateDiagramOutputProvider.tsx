@@ -12,9 +12,9 @@ import {
 } from "../../app/platform/platformContexts";
 import { useScoreRendering } from "../../app/platform/useScoreRendering";
 import { sequenceNotationAbc } from "../../notation/sequenceNotation";
-import { playButtonArpeggioThenChord, playButtonSequence } from "../../sound";
+import { playButtonArpeggioThenChord, playButtonSequence } from "../../audio/sound";
 import type { DiagramButton } from "../../types";
-import { useSequenceResults } from "../sequences/useSequenceState";
+import { useSequenceResults } from "./useSequenceState";
 import { AnnotateDiagramOutputContext, useAnnotateDiagram } from "./annotateDiagramContext";
 import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
 import { useAnnotateDiagramContribution } from "./useAnnotateDiagramContribution";

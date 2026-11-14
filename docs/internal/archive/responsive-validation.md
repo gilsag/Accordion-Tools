@@ -26,7 +26,7 @@ On a 390 px fixture, selecting **Fit entire diagram** returned the SVG width to 
 
 ## Explicit preservation checks
 
-- No code changes under `src/tools/`, `src/sound.ts`, `src/laMelodiosa.ts`, `src/download.ts`, or any sample assets.
+- No code changes under `src/tools/`, `src/audio/sound.ts`, `src/instrument/laMelodiosa.ts`, `src/diagram/download.ts`, or any sample assets.
 - The React viewer's `viewBox` is unchanged; the new minimum width is applied **only through `.canvas-wrap > .diagram`** at small viewport sizes. Downloaded SVGs have no such parent.
 - The default Readable/Fit preference is transient React state, deliberately **not serialized** with musical or diagram settings.
 - Touch help uses a focusable span with button semantics, not a nested `<button>` inside `<label>`.

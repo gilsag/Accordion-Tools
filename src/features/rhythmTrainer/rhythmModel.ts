@@ -3,7 +3,7 @@
  * moving alternate-bass note: a bar's explicit harmonic root is authoritative.
  */
 import type { DiagramButton } from "../../types";
-import { finderChordSymbol } from "../../tools/stradellaChordFinder/chordSymbol";
+import { finderChordSymbol } from "../stradellaChordFinder/engine/chordSymbol";
 import {
   trebleButtonForTarget,
   treblePitchTargets,
@@ -17,7 +17,7 @@ import {
   resolveRomanChord,
   type BassPatternDefinition,
   type ChordProgressionDefinition,
-} from "../../tools/bassPatternPlayerTools";
+} from "../bassPatternPlayer/bassPatternPlayerTools";
 
 export type RhythmMeter = "2/4" | "3/4" | "4/4" | "6/8";
 export type RhythmEvent = {

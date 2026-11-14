@@ -1,6 +1,6 @@
 import { useCallback, type ReactNode } from "react";
 import { KeepVisibleRequest } from "../../app/diagram/KeepVisible";
-import { getChordFinderTrebleButtons } from "../../tools/chordFinderTools";
+import { getChordFinderTrebleButtons } from "./chordFinderTools";
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { finderHandle } from "../../app/tools/toolHandles";

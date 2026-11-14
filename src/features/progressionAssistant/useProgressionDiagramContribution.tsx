@@ -8,9 +8,9 @@ import {
   usePlatformSpelling,
 } from "../../app/platform/platformContexts";
 import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
-import { pitchClassNameFromNumber } from "../../tools/harmonyExplorer/integration";
-import { progressionFinderPattern } from "../../tools/harmonyExplorer/progression";
-import { realizationAnnotation } from "../../tools/stradellaChordFinder/diagramAnnotations";
+import { pitchClassNameFromNumber } from "../harmonyExplorer/engine/integration";
+import { progressionFinderPattern } from "./engine/progression";
+import { realizationAnnotation } from "../stradellaChordFinder/engine/diagramAnnotations";
 import { useStradellaChordFinder } from "../stradellaChordFinder/stradellaChordFinderContext";
 import { stradellaFooter } from "../stradellaChordFinder/stradellaFooter";
 import type {

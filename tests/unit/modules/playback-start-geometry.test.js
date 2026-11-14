@@ -90,7 +90,7 @@ test("Playback-start ordering and reference SVG geometry snapshots", () => {
     "schedule:8",
   ]);
   const { calculateDiagramGeometry } = loadTs("src/diagram/diagramGeometry.ts", {
-    "../pianoTreble": {
+    "../instrument/pianoTreble": {
       pianoTrebleWhiteKeyCount: (range) =>
         ({
           "two-octave": 15,

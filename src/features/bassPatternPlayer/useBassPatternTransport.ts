@@ -7,12 +7,12 @@ import { stopBassPatternTransport } from "../../audio/playbackLifecycle";
 import { scheduleBassPatternEvents } from "../../audio/playbackScheduling";
 import { startBassPatternTransport } from "../../audio/playbackStart";
 import { clearPlaybackTimers } from "../../audio/playbackTransport";
-import { stopAllSound } from "../../sound";
+import { stopAllSound } from "../../audio/sound";
 import {
   bassPatternBeat,
   bassPatternEventsToLilyPond,
   bassPatternEventsToMidiBytes,
-} from "../../tools/bassPatternPlayerTools";
+} from "./bassPatternPlayerTools";
 import type { BassPatternPlayerState } from "./bassPatternPlayerContext";
 import type { useBassPatternResults } from "./useBassPatternPlayer";
 

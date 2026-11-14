@@ -17,7 +17,7 @@ import {
   type BassPatternDefinition,
   type BassPatternLibrary,
   type ChordProgressionDefinition,
-} from "../../../src/tools/bassPatternPlayerTools";
+} from "../../../src/features/bassPatternPlayer/bassPatternPlayerTools";
 import { test } from "vitest";
 
 const button = (

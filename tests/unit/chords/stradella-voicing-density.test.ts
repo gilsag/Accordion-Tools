@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
-import { analyzeVoicingDensity } from "../../../src/tools/stradellaChordFinder/voicingDensity";
+import { analyzeVoicingDensity } from "../../../src/features/stradellaChordFinder/engine/voicingDensity";
 import {
   analyzeConfiguredStradellaVoicing,
   DEFAULT_STRADELLA_REGISTER_MODEL,
   type ModeledStradellaNote,
-} from "../../../src/tools/stradellaChordFinder/registerModel";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
-import { realizationAnnotation } from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
+} from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
+import { realizationAnnotation } from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
 import { test } from "vitest";
 
 const mock = (midi: number): ModeledStradellaNote => ({

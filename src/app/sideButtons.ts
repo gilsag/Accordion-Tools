@@ -5,9 +5,9 @@ import type {
   TrebleLayout,
   TrebleSizePreset,
 } from "../types";
-import { generateStradella } from "../stradella";
-import { generateTreble } from "../treble";
-import { generatePianoTreble } from "../pianoTreble";
+import { generateStradella } from "../instrument/stradella";
+import { generateTreble } from "../instrument/treble";
+import { generatePianoTreble } from "../instrument/pianoTreble";
 
 /** Layout settings that decide the physical buttons of either side. */
 export type SideButtonSettings = {

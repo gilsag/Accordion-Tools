@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { stopAllSound } from "../../sound";
+import { stopAllSound } from "../../audio/sound";
 import { createToolCoordinator } from "../toolCoordinator";
 import { toolOfferedOn, type ToolId } from "../toolRegistry";
 import { physicalLayoutSignature } from "../physicalLayoutSignature";

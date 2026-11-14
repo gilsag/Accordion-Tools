@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
-import { formatPitch } from "../../../src/music.tsx";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
+import { formatPitch } from "../../../src/music/index.tsx";
 import { chordFinderLabel, intervalsForChordFinder } from "../../../src/music/chordDefinitions.ts";
 import type { AccidentalMode, FinderChordPattern, NotationMode } from "../../../src/types.ts";
 import { test } from "vitest";

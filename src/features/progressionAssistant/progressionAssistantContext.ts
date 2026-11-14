@@ -1,5 +1,5 @@
 import { createToolContext } from "../../app/tools/createToolContext";
-import type { ProgressionSearchSettings } from "../../tools/harmonyExplorer/progression";
+import type { ProgressionSearchSettings } from "./engine/progression";
 import type {
   useHarmonyProgressionResults,
   useHarmonyProgressionState,

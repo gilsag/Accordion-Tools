@@ -1,6 +1,10 @@
 import { translate, type InterfaceLanguage } from "./catalog";
 import { familyName, scaleName } from "./musicTerms";
-import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "../tools/harmonyExplorer/music";
+import type {
+  ChordFamilyId,
+  RelatedFamilyId,
+  ScaleId,
+} from "../features/harmonyExplorer/engine/music";
 import type { NotationMode, PianoTrebleRange, TrebleLayout } from "../types";
 
 /** Presentation only: never use these translations for stored music data or download filenames. */

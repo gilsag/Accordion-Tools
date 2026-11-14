@@ -37,7 +37,7 @@ test("Settings compatibility: original import/default traces and exported keys",
           };
         if (id.includes("diagramAnnotations")) return { normalizeStradellaNoteLevels };
         if (id.includes("settingsMigrations")) return { SETTINGS_VERSION: 3 };
-        if (id.includes("harmonyExplorer/music"))
+        if (id.includes("harmonyExplorer/engine/music"))
           return { DEFAULT_RING_VISIBILITY: { 0: false, 1: true, 2: true, 3: true, 4: true } };
         throw new Error(`Unexpected settings controller import: ${id}`);
       },

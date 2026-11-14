@@ -1,8 +1,8 @@
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { calculateDiagramGeometry } from "../../diagram/diagramGeometry";
 import { svgPointFromClient } from "../../diagram/diagramExport";
-import { playButtonSound } from "../../sound";
-import { stradellaVisibleRoots, stradellaVisibleRows } from "../../stradella";
+import { playButtonSound } from "../../audio/sound";
+import { stradellaVisibleRoots, stradellaVisibleRows } from "../../instrument/stradella";
 import type { DiagramButton } from "../../types";
 import {
   usePlatformAppearance,

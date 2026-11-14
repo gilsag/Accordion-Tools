@@ -2,16 +2,16 @@ import assert from "node:assert/strict";
 import {
   analyzeVoicingDensity,
   passesNominalGapFilter,
-} from "../../../src/tools/stradellaChordFinder/voicingDensity";
-import { voicingIntervalLayout } from "../../../src/tools/stradellaChordFinder/voicingIntervalLayout";
-import { createZip } from "../../../src/tools/zipExport";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
+} from "../../../src/features/stradellaChordFinder/engine/voicingDensity";
+import { voicingIntervalLayout } from "../../../src/features/stradellaChordFinder/engine/voicingIntervalLayout";
+import { createZip } from "../../../src/diagram/zipExport";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
 import {
   analyzeConfiguredStradellaVoicing,
   DEFAULT_STRADELLA_REGISTER_MODEL,
-} from "../../../src/tools/stradellaChordFinder/registerModel";
-import type { ModeledStradellaNote } from "../../../src/tools/stradellaChordFinder/registerModel";
+} from "../../../src/features/stradellaChordFinder/engine/registerModel";
+import type { ModeledStradellaNote } from "../../../src/features/stradellaChordFinder/engine/registerModel";
 import { test } from "vitest";
 
 const note = (midi: number): ModeledStradellaNote => ({

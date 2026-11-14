@@ -1,4 +1,4 @@
-import type { describeTrebleChord } from "../../tools/trebleChordExplanation";
+import type { describeTrebleChord } from "./trebleChordExplanation";
 import { createToolContext } from "../../app/tools/createToolContext";
 import type {
   useTrebleChordFinderButtons,

@@ -4,7 +4,7 @@
  * tests; these check where each command lands and what it hands over. */
 import { cleanup } from "@testing-library/react";
 import { afterEach, beforeEach, expect, test } from "vitest";
-import type { HarmonySelection } from "../../../src/tools/harmonyExplorer/types";
+import type { HarmonySelection } from "../../../src/features/harmonyExplorer/engine/types";
 import { renderApp, resetBrowserState, serveBundledFiles } from "../../support/appHarness";
 
 beforeEach(() => {

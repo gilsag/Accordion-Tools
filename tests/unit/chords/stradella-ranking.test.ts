@@ -1,12 +1,12 @@
 import { omissionPenalty } from "../../../src/music/chordVoicingPolicy";
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella.ts";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools.ts";
+import { generateStradella } from "../../../src/instrument/stradella.ts";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools.ts";
 import {
   distance,
   ergonomicDistance,
   STRADELLA_VERTICAL_WEIGHT,
-} from "../../../src/tools/stradellaChordFinder/utils.ts";
+} from "../../../src/features/stradellaChordFinder/engine/utils.ts";
 import type { BassCount, FinderChordPattern } from "../../../src/types.ts";
 import { test } from "vitest";
 

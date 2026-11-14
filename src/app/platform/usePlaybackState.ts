@@ -6,7 +6,7 @@ import {
   prepareSamplesFor,
   samplesReadyFor,
   unlockAudio,
-} from "../../sound";
+} from "../../audio/sound";
 import type { DiagramButton, Side } from "../../types";
 import type { WorkspaceMode } from "../toolRegistry";
 import type { PlatformSound } from "./platformContexts";

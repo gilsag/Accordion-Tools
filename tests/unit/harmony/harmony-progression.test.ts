@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
+import { generateStradella } from "../../../src/instrument/stradella";
 import {
   estimateStradellaButtonSpacing,
   optimizeStradellaProgression,
@@ -8,13 +8,13 @@ import {
   progressionRealizationsForChord,
   progressionRealizationKey,
   type HarmonyProgressionChord,
-} from "../../../src/tools/harmonyExplorer/progression";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
+} from "../../../src/features/progressionAssistant/engine/progression";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
 import {
   finderPatternForHarmonyFamily,
   pitchClassNameFromNumber,
-} from "../../../src/tools/harmonyExplorer/integration";
-import type { ChordFamilyId } from "../../../src/tools/harmonyExplorer/music";
+} from "../../../src/features/harmonyExplorer/engine/integration";
+import type { ChordFamilyId } from "../../../src/features/harmonyExplorer/engine/music";
 import { test } from "vitest";
 
 function chord(id: string, rootPc: number, familyId: ChordFamilyId): HarmonyProgressionChord {

@@ -7,14 +7,14 @@ import type {
   SequenceDisplayMode,
   TrebleSizePreset,
 } from "../types";
-import { PIANO_TREBLE_RANGE_PRESETS } from "../pianoTreble";
+import { PIANO_TREBLE_RANGE_PRESETS } from "../instrument/pianoTreble";
 import type { InterfaceLanguage } from "../i18n/catalog";
 import { translate } from "../i18n/catalog";
 import { progressionName } from "../i18n/optionLabels";
 import {
   chordProgressionSteps,
   type ChordProgressionDefinition,
-} from "../tools/bassPatternPlayerTools";
+} from "../features/bassPatternPlayer/bassPatternPlayerTools";
 
 /** Dropdown options for the supported Stradella bass presets. */
 export const BASS_OPTIONS: Array<{ value: BassCount; label: string }> = [

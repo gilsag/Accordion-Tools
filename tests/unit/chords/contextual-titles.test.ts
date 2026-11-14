@@ -1,15 +1,15 @@
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
-import { getStradellaChordFinderResults } from "../../../src/tools/stradellaChordFinderTools";
+import { generateStradella } from "../../../src/instrument/stradella";
+import { getStradellaChordFinderResults } from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
 import {
   stradellaContextualTitle,
   trebleContextualTitle,
-} from "../../../src/tools/contextualTitles";
+} from "../../../src/music/contextualTitles";
 import {
   realizationAnnotation,
   DEFAULT_STRADELLA_NOTE_LEVELS,
-} from "../../../src/tools/stradellaChordFinder/diagramAnnotations";
-import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
+} from "../../../src/features/stradellaChordFinder/engine/diagramAnnotations";
+import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/features/stradellaChordFinder/engine/registerModel";
 import { test } from "vitest";
 
 const stradella = (requestedBass: string | null, modeledLowest: string | null) =>

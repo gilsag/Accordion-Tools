@@ -17,8 +17,8 @@ import {
 } from "react";
 import type { DiagramButtonLayer } from "../../diagram/components/DiagramButtonLayer";
 import type { DiagramConnections } from "../../diagram/components/DiagramConnections";
-import type { StradellaVoicingIntervals } from "../../components/tools/StradellaVoicingIntervals";
-import type { StradellaNoteLevels } from "../../tools/stradellaChordFinder/diagramAnnotations";
+import type { StradellaVoicingIntervals } from "../../features/stradellaChordFinder/StradellaVoicingIntervals";
+import type { StradellaNoteLevels } from "../../features/stradellaChordFinder/engine/diagramAnnotations";
 import type { DiagramButton, FinderChordPattern, Side } from "../../types";
 import { usePlatformNavigation } from "../platform/platformContexts";
 import type { ToolId } from "../toolRegistry";

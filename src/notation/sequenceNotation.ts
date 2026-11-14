@@ -1,6 +1,6 @@
 /** The recorded sequence's score: one quarter note per step, four per bar,
  * on the bass staff for the Stradella side and the treble staff otherwise. */
-import type { SequenceStepWithButton } from "../tools/sequenceTools";
+import type { SequenceStepWithButton } from "../diagram/sequenceTools";
 import type { DiagramButton, Side } from "../types";
 import { stradellaButtonToken, type StradellaNotationPreferences } from "./stradellaNotation";
 

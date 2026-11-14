@@ -1,4 +1,4 @@
-import type { ChordDisplayStyle } from "../../tools/chordDisplay";
+import type { ChordDisplayStyle } from "../../music/chordDisplay";
 import type { AccidentalMode, ChordLabelMode, NotationMode } from "../../types";
 import {
   usePlatformInstrument,

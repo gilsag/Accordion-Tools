@@ -2,19 +2,19 @@
  * leaving out only the plain fifth costs little, and the Progression
  * Assistant at zero weights picks the Chord Finder's first realization. */
 import assert from "node:assert/strict";
-import { generateStradella } from "../../../src/stradella";
+import { generateStradella } from "../../../src/instrument/stradella";
 import {
   getStradellaChordFinderResults,
   nextWiderHandSpan,
-} from "../../../src/tools/stradellaChordFinderTools";
-import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/tools/stradellaChordFinder/registerModel";
+} from "../../../src/features/stradellaChordFinder/stradellaChordFinderTools";
+import { DEFAULT_STRADELLA_REGISTER_MODEL } from "../../../src/features/stradellaChordFinder/engine/registerModel";
 import {
   optimizeStradellaProgression,
   type ProgressionSearchSettings,
-} from "../../../src/tools/harmonyExplorer/progression";
-import { convertProgressionPreset } from "../../../src/tools/harmonyExplorer/progressionPresets";
+} from "../../../src/features/progressionAssistant/engine/progression";
+import { convertProgressionPreset } from "../../../src/features/progressionAssistant/engine/progressionPresets";
 import type { FinderChordPattern } from "../../../src/types";
-import type { StradellaChordFinderResult } from "../../../src/tools/stradellaChordFinder/results";
+import type { StradellaChordFinderResult } from "../../../src/features/stradellaChordFinder/engine/results";
 import { test } from "vitest";
 
 const buttons = generateStradella("120", 40, 1.2, "sharps", 6);

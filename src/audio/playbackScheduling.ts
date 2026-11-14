@@ -1,14 +1,14 @@
 import type { Dispatch, RefObject, SetStateAction } from "react";
-import type { SoundOptions } from "../sound";
-import { audioClockNow, playButtonSound } from "../sound";
+import type { SoundOptions } from "./sound";
+import { audioClockNow, playButtonSound } from "./sound";
 import {
   AUDIO_LOOKAHEAD_MS,
   audioTimelineOrigin,
   msUntilAudioTime,
   scheduleAtAudioOffset,
 } from "./audioClock";
-import type { MappedAbcEvent } from "../tools/abcPlayerTools";
-import type { BassPatternPlaybackEvent } from "../tools/bassPatternPlayerTools";
+import type { MappedAbcEvent } from "../features/abcPlayer/abcPlayerTools";
+import type { BassPatternPlaybackEvent } from "../features/bassPatternPlayer/bassPatternPlayerTools";
 
 type AbcScheduleArgs = {
   abcMappedEvents: MappedAbcEvent[];

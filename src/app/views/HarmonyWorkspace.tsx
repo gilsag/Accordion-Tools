@@ -11,7 +11,7 @@ import {
 } from "../platform/platformContexts";
 
 const HarmonicCircle = lazy(() =>
-  import("../../tools/harmonyExplorer/components/HarmonicCircle").then((module) => ({
+  import("../../features/harmonyExplorer/HarmonicCircle").then((module) => ({
     default: module.HarmonicCircle,
   })),
 );

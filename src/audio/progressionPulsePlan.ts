@@ -1,5 +1,5 @@
 import type { DiagramButton } from "../types";
-import type { ProgressionRhythmPattern } from "../sound";
+import type { ProgressionRhythmPattern } from "./sound";
 
 const isBass = (button: DiagramButton) =>
   button.kind === "bass-root" || button.kind === "bass-counterbass";

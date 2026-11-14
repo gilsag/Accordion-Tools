@@ -1,10 +1,10 @@
-import { ROOT_POSITION_BASS } from "../tools/stradellaChordFinder/harmonicIdentity";
+import { ROOT_POSITION_BASS } from "../features/stradellaChordFinder/engine/harmonicIdentity";
 import {
   DEFAULT_STRADELLA_NOTE_LEVELS,
   type StradellaNoteLevels,
-} from "../tools/stradellaChordFinder/diagramAnnotations";
+} from "../features/stradellaChordFinder/engine/diagramAnnotations";
 import type { FinderChordPattern, StradellaChordFinderMode } from "../types";
-import type { MinimumNominalGap } from "../tools/stradellaChordFinder/voicingDensity";
+import type { MinimumNominalGap } from "../features/stradellaChordFinder/engine/voicingDensity";
 
 /** The Stradella Chord Finder's "Reset tool": its own preferences return to
  * their defaults through narrow ports, in a fixed order. Instrument, sound

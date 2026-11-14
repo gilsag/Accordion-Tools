@@ -22,11 +22,11 @@ import {
   trebleButtonsFor,
   type SideButtonSettings,
 } from "../../../src/app/sideButtons";
-import { validateBassPatternLibrary } from "../../../src/tools/bassPatternPlayerTools";
+import { validateBassPatternLibrary } from "../../../src/features/bassPatternPlayer/bassPatternPlayerTools";
 import type {
   BassPatternLibrary,
   ChordProgressionDefinition,
-} from "../../../src/tools/bassPatternPlayerTools";
+} from "../../../src/features/bassPatternPlayer/bassPatternPlayerTools";
 import { test } from "vitest";
 
 const settings: SideButtonSettings = {

@@ -12,7 +12,7 @@ const loadTs = (path, imports, extras = {}) =>
 // Exports retain filename selection, dispatch, raster ordering and dimensions.
 const exportCalls = [];
 const svgExport = loadTs("src/diagram/diagramExport.ts", {
-  "../download": {
+  "./download": {
     downloadPng: (_svg, name) => exportCalls.push(["png", name]),
     downloadSvg: (_svg, name) => exportCalls.push(["svg", name]),
     downloadZip: (entries, name) => exportCalls.push(["zip", entries, name]),
@@ -100,7 +100,9 @@ test("Notation keeps identical options, DOM replacement, failure UI and SVG down
     "src/notation/notationService.ts",
     {
       abcjs: { renderAbc: (...args) => renderCalls.push(args) },
-      "../download": { downloadSvg: (_svg, filename) => renderCalls.push(["download", filename]) },
+      "../diagram/download": {
+        downloadSvg: (_svg, filename) => renderCalls.push(["download", filename]),
+      },
       "./nativeNoteNames": {
         addNativeNoteNames: (source, imported) => {
           namesCalls.push(imported);
@@ -210,7 +212,7 @@ test("Timer cancellation remains per-feature", () => {
     "src/audio/playbackScheduling.ts",
     {
       "./audioClock": audioClock,
-      "../sound": {
+      "./sound": {
         playButtonSound: (button, options, timing) =>
           soundCalls.push([button.id, options.volume, timing]),
         audioClockNow: () => audioNow,

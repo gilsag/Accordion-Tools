@@ -13,7 +13,7 @@ import {
 import {
   useSequenceResults,
   useSequenceState,
-} from "../../../src/features/sequences/useSequenceState";
+} from "../../../src/features/annotateDiagram/useSequenceState";
 
 const fixtures = vi.hoisted(() => {
   const calls = [];
@@ -38,11 +38,11 @@ const fixtures = vi.hoisted(() => {
   return { calls, engine };
 });
 const { calls } = fixtures;
-vi.mock("../../../src/tools/bassPatternPlayerTools", async (original) => ({
+vi.mock("../../../src/features/bassPatternPlayer/bassPatternPlayerTools", async (original) => ({
   ...(await original()),
   ...fixtures.engine,
 }));
-vi.mock("../../../src/tools/sequenceTools", async (original) => ({
+vi.mock("../../../src/diagram/sequenceTools", async (original) => ({
   ...(await original()),
   getSequenceStepsWithButtons(steps, buttons) {
     return steps

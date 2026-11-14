@@ -5,10 +5,7 @@ import type {
   FinderChordOctave,
   FinderChordPattern,
 } from "../../types";
-import {
-  getChordFinderTrebleButtons,
-  type TrebleChordVoicingMode,
-} from "../../tools/chordFinderTools";
+import { getChordFinderTrebleButtons, type TrebleChordVoicingMode } from "./chordFinderTools";
 
 /** Owns the Treble Chord Finder request and its local presentation preferences.
  * Instrument layout and nominal Stradella registers are owned elsewhere;

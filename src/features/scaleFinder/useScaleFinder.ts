@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { DiagramButton, FinderScalePattern, SequenceDisplayMode, Side } from "../../types";
-import { getScaleFinderTrebleButtons } from "../../tools/scaleFinderTools";
-import { getStradellaScaleFinderResult } from "../../tools/stradellaScaleFinderTools";
+import { getScaleFinderTrebleButtons } from "./scaleFinderTools";
+import { getStradellaScaleFinderResult } from "./stradellaScaleFinderTools";
 
 /** Local preferences and request state for the Scale Finder on both manuals.
  * The app shell may activate or deactivate the tool without discarding the
