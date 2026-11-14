@@ -17,6 +17,9 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: [["list"]],
   timeout: 30_000,
+  // Text snapshots (export-snapshots.spec.ts) are the same on every system,
+  // so their files carry no platform or project suffix.
+  snapshotPathTemplate: "{testDir}/__snapshots__/{testFileName}/{arg}{ext}",
   use: {
     baseURL: `http://localhost:${PORT}/Accordion-Tools/`,
     trace: "retain-on-failure",
@@ -30,7 +33,8 @@ export default defineConfig({
     },
     {
       name: "phone",
-      testIgnore: /performance\.spec\.ts/,
+      // Exported files do not depend on the screen; desktop checks them.
+      testIgnore: /(performance|export-snapshots)\.spec\.ts/,
       use: { ...devices["Pixel 7"], viewport: { width: 390, height: 844 } },
     },
     // Runs alone once the other projects are done, so timings are not inflated

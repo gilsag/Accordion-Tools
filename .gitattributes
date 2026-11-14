@@ -5,6 +5,8 @@
 *.bat text eol=crlf
 *.ps1 text eol=crlf
 *.sh  text eol=lf
+# Export snapshots are compared byte for byte (e2e/export-snapshots.spec.ts).
+e2e/__snapshots__/** text eol=lf
 
 *.wav binary
 *.png binary

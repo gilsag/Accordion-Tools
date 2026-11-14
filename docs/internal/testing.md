@@ -59,7 +59,12 @@ Tests use `node:assert/strict` or Vitest's `expect`; both report a diff on failu
 | `interaction.spec.ts` | Annotate Diagram click modes; keyboard navigation of the diagram; the phone Tools sheet; readable button size on phones; the one-row toolbar at 1280 px; resizing and resetting the panels |
 | `translation.spec.ts` | The Spanish interface shows no English labels in any tool or settings section |
 
-`e2e/fixtures.ts` holds the shared helpers: opening tools and settings in any language, closing the phone sheet, and counting notes started on the Web Audio clock (`recordAudioStarts`), which is how the tests know a player really made sound.
+`e2e/fixtures.ts` holds the shared helpers: opening tools and settings in any language, closing the phone sheet, and counting notes started on the Web Audio clock (`recordAudioStarts`), which is how the tests know a player really made sound; downloading a file (`downloadFrom`, `chooseDownload`); and `expectAccessible`, which runs axe.
+
+Two browser checks guard against regressions nobody would notice by eye:
+
+- **Accessibility.** `smoke.spec.ts` runs axe in each workspace with nothing open, with each tool open and with each settings section open (light theme on both sizes, dark theme on desktop), and in the documentation viewer. Fix the markup rather than disabling a rule.
+- **Export snapshots.** `export-snapshots.spec.ts` downloads reference diagrams as SVG (Stradella 48, 96 and 120 basses, Em7 in the Chord Finder, the C-system, B-system and piano trebles) and compares one line per button: its shapes' positions and sizes, its classes and its label, against `e2e/__snapshots__/`. Styles and fonts are left out. When a layout change is intended, review the diff and run `npx playwright test export-snapshots --update-snapshots`. The files are stored with LF endings on every system (`.gitattributes`).
 
 Vitest finds test files by name (`*.test.{ts,tsx,js}` under `src/` and `tests/unit/`) and Playwright by folder, so there is no list of tests to keep in step.
 
