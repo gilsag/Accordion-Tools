@@ -2,42 +2,46 @@
 
 ## Two suites
 
-**Unit and component tests** live in `tests/unit/` and run with [Vitest](https://vitest.dev), which uses the application's own Vite configuration. They need no browser.
+**Unit and component tests** run with [Vitest](https://vitest.dev), which uses the application's own Vite configuration. They need no browser. A tool's tests sit in its folder next to its code (`src/features/<tool>/`, the Stradella Chord Finder's search suites under `engine/`); tests of shared code and of the composed application live in `tests/unit/`.
 
 | Command | What it runs |
 | --- | --- |
-| `npm test` | Everything in `tests/unit/`, once |
+| `npm test` | Every test, once |
 | `npm run test:watch` | The same, rerunning the tests affected by each saved change |
 | `npm run test:coverage` | Everything, with a coverage report in `coverage/` |
-| `npm run test:<area>` | One folder of `tests/unit/`, listed below |
+| `npm run test:tools` | Every tool's own tests (`src/features/`) |
+| `npm run test:<area>` | One group, listed below |
 | `npx vitest run -t "requested bass"` | Only the cases whose name matches |
 
-| Folder | Coverage |
-| --- | --- |
-| `chords/` | Chord formulas, Stradella ranking, registers, omissions, configurations, inversions, diagram notes, treble chords, search-time budget |
-| `patterns/` | The built-in bass patterns: meter spans, complete multi-bar cycles and reference onsets |
-| `notation/` | Notation export, the shared score presenter, symbolic Stradella writing, note names below notes, tempo marks |
-| `abc/` | ABC parsing, ties, repeats, two-hand playback, the bundled example tunes and their catalog |
-| `rhythm/` | Rhythm Trainer meters, templates, treble pitch patterns, generated notation and score highlighting |
-| `harmony/` | Harmony Explorer engine and integration, the progression optimizer, and the Progression Assistant panel |
-| `audio/` | Sample and register pitch mapping |
-| `display/` | Chord symbols, voicing chart layout, row label fitting, PNG export conversion |
-| `i18n/` | Six catalogs, language detection, translated options, explanations and diagram labels |
-| `modules/` | Settings I/O, migrations, import traces and the saved session; feature hooks; cross-tool command order; audio scheduling and export services; inspector rows; progression selection and rhythms |
-| `app/` | The whole state composition rendered in jsdom: what opening a tool does to the others, one visible score, what clears the diagram and what each Reset scope resets, the commands between tools, startup order and when the session is saved |
-| `release/` | Version files agree with each other, with `VERSION_HISTORY.md` and with the newest git tag; documentation links resolve; bundle-audit logic |
+| Group | Folders | Coverage |
+| --- | --- | --- |
+| `chords` | `src/features/stradellaChordFinder`, `src/features/trebleChordFinder`, `tests/unit/chords` | Chord formulas, Stradella ranking, registers, omissions, configurations, inversions, diagram notes, treble chords, search-time budget; the Finders' hooks and inspector rows; the bass policy and contextual titles shared with other tools |
+| `patterns` | `src/features/bassPatternPlayer` | The built-in bass patterns (meter spans, complete multi-bar cycles, reference onsets), tempo marks and the player's hooks |
+| `notation` | `tests/unit/notation` | Notation export, the shared score presenter, symbolic Stradella writing, note names below notes |
+| `abc` | `src/features/abcPlayer` | ABC parsing, ties, repeats, two-hand playback, the bundled example tunes and their catalog, the player's hooks |
+| `rhythm` | `src/features/rhythmTrainer` | Rhythm Trainer meters, templates, treble pitch patterns, generated notation and score highlighting |
+| `harmony` | `src/features/harmonyExplorer`, `src/features/progressionAssistant`, `tests/unit/harmony` | Harmony Explorer engine, integration, recording and hooks; the progression optimizer, its realization selection, note selection, hooks and panel; the progression checks that span both |
+| `audio` | `tests/unit/audio` | Sample and register pitch mapping |
+| `display` | `tests/unit/display` | Chord symbols, voicing chart layout, row label fitting, PNG export conversion |
+| `i18n` | `tests/unit/i18n` | Six catalogs, language detection, translated options, explanations and diagram labels |
+| `modules` | `tests/unit/modules` | Settings I/O, migrations, import traces and the saved session; navigation and the tool registry; the diagram's appearance, overlay and annotation hooks; command and capture order; audio scheduling and export services; progression chord types, ranking weights and rhythms |
+| `app` | `tests/unit/app` | The whole state composition rendered in jsdom: what opening a tool does to the others, one visible score, what the diagram presents and what a click does, what clears the diagram and what each Reset scope resets, the commands between tools, startup order and when the session is saved |
+| `release` | `tests/unit/release` | Version files agree with each other, with `VERSION_HISTORY.md` and with the newest git tag; documentation links resolve; bundle-audit logic |
+
+Annotate Diagram's sequence hook test is in `src/features/annotateDiagram/` and runs with `test:tools`.
 
 `tests/fixtures/` holds the frozen reference data and `tests/support/` the shared helpers. `scripts/` now contains only build tooling.
 
 The `app/` tests reach the application only through `renderApp()` in `tests/support/appHarness.ts`, which serves the files in `public/` to `fetch`, waits for startup and switches sound off. They describe behaviour the player relies on, not the code that produces it, so they passed unchanged throughout [the controller split](archive/controller-split-plan.md); only the support files follow the code. The `model` a test drives is assembled from the platform and tool contexts in `tests/support/testModel.ts`, and `app.diagram` shows what the diagram presents (title, footer, Finder highlights, status line, downloaded file name).
 
-### Three kinds of unit test
+### Four kinds of unit test
 
 1. **Plain imports** for pure logic, which is most of the suite: import the function from `src/` and assert on what it returns.
-2. **Component tests** for what the player sees: render the real component with Testing Library in the `jsdom` environment and query it by role and name, as `harmony/ProgressionAssistantPanel.test.tsx` does. Start the file with `// @vitest-environment jsdom`.
-3. **Isolated modules** for code whose contract is what it calls and in which order (transport lifecycles, capture sequences, feature hooks): `loadIsolated()` from `tests/support/isolatedModule.js` loads the real source file with every import replaced by a test double, and fails on an import that was not listed. These files are `.test.js`. Prefer kinds 1 and 2 for new tests; write a hook test with Testing Library's `renderHook` instead of a hand-made React double.
+2. **Component tests** for what the player sees: render the real component with Testing Library in the `jsdom` environment and query it by role and name, as `src/features/progressionAssistant/ProgressionAssistantPanel.test.tsx` does. Start the file with `// @vitest-environment jsdom`.
+3. **Hooks** render with Testing Library's `renderHook`, with real React; replace an engine a hook calls with `vi.mock` to see what the hook passes it, as `src/features/scaleFinder/useScaleFinder.test.js` does.
+4. **Isolated modules** for code without React whose contract is what it calls and in which order (transport lifecycles, capture sequences, settings compatibility): `loadIsolated()` from `tests/support/isolatedModule.js` loads the real source file with every import replaced by a test double, and fails on an import that was not listed. Its doubles are keyed by the import as the module writes it, so they follow a moved file. These files are `.test.js`. Prefer kinds 1 to 3 for new tests.
 
-Tests use `node:assert/strict` or Vitest's `expect`; both report a diff on failure. TypeScript tests are type-checked by `tsc -b` together with the application.
+Tests use `node:assert/strict` or Vitest's `expect`; both report a diff on failure. TypeScript tests are type-checked by `tsc -b` with the test configuration; the application's type-check leaves them out.
 
 **Browser tests** live in `e2e/` and run with Playwright against the production build served by `vite preview`, at 1440 × 900 and at a 390 px phone size. Run `npx playwright install chromium` once, then `npm run test:e2e`. Every test fails on a console error or uncaught exception.
 
@@ -57,7 +61,7 @@ Tests use `node:assert/strict` or Vitest's `expect`; both report a diff on failu
 
 `e2e/fixtures.ts` holds the shared helpers: opening tools and settings in any language, closing the phone sheet, and counting notes started on the Web Audio clock (`recordAudioStarts`), which is how the tests know a player really made sound.
 
-Vitest finds test files by name (`tests/unit/**/*.test.{ts,tsx,js}`) and Playwright by folder, so there is no list of tests to keep in step.
+Vitest finds test files by name (`*.test.{ts,tsx,js}` under `src/` and `tests/unit/`) and Playwright by folder, so there is no list of tests to keep in step.
 
 ## Policy
 

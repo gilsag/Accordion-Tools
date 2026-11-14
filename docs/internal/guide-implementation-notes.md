@@ -89,7 +89,7 @@ For mixed realizations such as **E counterbass + G major** for Em7, E counterbas
 
 ## Harmony Explorer
 
-Harmony Explorer lives in `src/tools/harmonyExplorer/`. Its harmonic engine returns pitch-class relationships only; the Accordion Tools integration layer handles audio, translation to the Stradella Chord Finder and progression optimization. This keeps harmonic relationships independent of physical keyboard coordinates.
+Harmony Explorer lives in `src/features/harmonyExplorer/` (its engine in `engine/`). Its harmonic engine returns pitch-class relationships only; the Accordion Tools integration layer handles audio, translation to the Stradella Chord Finder and progression optimization. This keeps harmonic relationships independent of physical keyboard coordinates.
 
 ## ABC Player
 
