@@ -922,6 +922,10 @@ export const PT: Record<TranslationKey, string> = {
   "ui.manySemitones": "semitons",
   "ui.invalidSettingsFile":
     "Não foi possível ler este arquivo de configurações. Escolha um arquivo JSON válido de configurações do Accordion Tools.",
+  "ui.dismissMessage": "Fechar mensagem",
+  "ui.pngExportFailed": "Não foi possível criar o PNG. Tente baixar o SVG.",
+  "ui.batchExportFailed": "Não foi possível exportar os diagramas.",
+  "ui.diagramExportFailed": "Não foi possível exportar o diagrama.",
   "ui.onlyChordsTransferred":
     "Notas individuais não podem ser enviadas ao Assistente de Progressões. Somente acordes serão transferidos.",
   "ui.cannotSave": "Não é possível salvar: {reason}",

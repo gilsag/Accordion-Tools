@@ -932,6 +932,10 @@ export const FR: Record<TranslationKey, string> = {
   "ui.manySemitones": "demi-tons",
   "ui.invalidSettingsFile":
     "Impossible de lire ce fichier de paramètres. Choisissez un fichier JSON Accordion Tools valide.",
+  "ui.dismissMessage": "Fermer le message",
+  "ui.pngExportFailed": "Impossible de créer le PNG. Essayez de télécharger le SVG.",
+  "ui.batchExportFailed": "Les diagrammes n’ont pas pu être exportés.",
+  "ui.diagramExportFailed": "Le diagramme n’a pas pu être exporté.",
   "ui.onlyChordsTransferred":
     "Les notes individuelles ne peuvent pas être envoyées à l’assistant de progression. Seuls les accords seront transférés.",
   "ui.cannotSave": "Enregistrement impossible : {reason}",

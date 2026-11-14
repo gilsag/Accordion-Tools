@@ -37,6 +37,7 @@ import {
   pitchClassNameFromNumber,
   pitchClassNumberFromName,
 } from "../../features/harmonyExplorer/engine/integration";
+import type { PlatformNotices } from "../platform/platformContexts";
 
 export type UseProgressionActionsDeps = Pick<
   ReturnType<typeof useBassPatternState>,
@@ -97,7 +98,8 @@ export type UseProgressionActionsDeps = Pick<
     | "stradellaChordFinderPattern"
     | "stradellaChordFinderRoot"
   > &
-  Pick<ReturnType<typeof useLanguageSettings>, "t">;
+  Pick<ReturnType<typeof useLanguageSettings>, "t"> &
+  Pick<PlatformNotices, "notify">;
 
 /** Progression Assistant editing, and the commands that move chords between Harmony Explorer, the Progression Assistant and the Stradella Chord Finder. */
 export function useProgressionActions(deps: UseProgressionActionsDeps) {
@@ -142,6 +144,7 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     stradellaChordFinderPattern,
     stradellaChordFinderRoot,
     t,
+    notify,
   } = deps;
 
   /** Ports make cross-tool side-effect order testable without coupling a tool to
@@ -174,7 +177,7 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     const recordedChords = harmonyRecordedProgression.filter(isHarmonyProgressionChord);
     if (recordedChords.length === 0) return;
     if (recordedChords.length < harmonyRecordedProgression.length) {
-      window.alert(t("ui.onlyChordsTransferred"));
+      notify(t("ui.onlyChordsTransferred"), "info");
     }
     stopHarmonyRecordedProgressionPlayback();
     setHarmonyProgression(

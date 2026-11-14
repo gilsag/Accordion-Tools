@@ -15,7 +15,9 @@ import {
 
 vi.mock("../../../src/diagram/diagramExport", async (original) => ({
   ...(await original<object>()),
-  downloadDiagram: (_svg: unknown, name: string) => downloads.push(name),
+  downloadDiagram: async (_svg: unknown, name: string) => {
+    downloads.push(name);
+  },
 }));
 
 beforeEach(() => {

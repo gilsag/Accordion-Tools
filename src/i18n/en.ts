@@ -911,6 +911,10 @@ export const EN = {
   "ui.manySemitones": "semitones",
   "ui.invalidSettingsFile":
     "Could not read this settings file. Please choose a valid Accordion-Tools settings JSON file.",
+  "ui.dismissMessage": "Dismiss message",
+  "ui.pngExportFailed": "The PNG could not be created. Try downloading SVG instead.",
+  "ui.batchExportFailed": "The diagrams could not be exported.",
+  "ui.diagramExportFailed": "The diagram could not be exported.",
   "ui.onlyChordsTransferred":
     "Individual notes cannot be sent to the Progression Assistant. Only chords will be transferred.",
   "ui.cannotSave": "Cannot save: {reason}",

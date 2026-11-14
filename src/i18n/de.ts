@@ -924,6 +924,11 @@ export const DE: Record<TranslationKey, string> = {
   "ui.manySemitones": "Halbtöne",
   "ui.invalidSettingsFile":
     "Diese Einstellungsdatei konnte nicht gelesen werden. Bitte wählen Sie eine gültige Accordion-Tools-JSON-Einstellungsdatei.",
+  "ui.dismissMessage": "Meldung schließen",
+  "ui.pngExportFailed":
+    "Das PNG konnte nicht erstellt werden. Laden Sie stattdessen das SVG herunter.",
+  "ui.batchExportFailed": "Die Diagramme konnten nicht exportiert werden.",
+  "ui.diagramExportFailed": "Das Diagramm konnte nicht exportiert werden.",
   "ui.onlyChordsTransferred":
     "Einzeltöne können nicht an den Akkordfolgen-Assistenten übertragen werden. Nur Akkorde werden übertragen.",
   "ui.cannotSave": "Speichern nicht möglich: {reason}",

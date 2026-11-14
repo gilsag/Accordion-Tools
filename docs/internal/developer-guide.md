@@ -211,6 +211,7 @@ The diagram's x axis is the instrument's circle-of-fifths direction; `utils.ts` 
 - Stradella row labels share one font size at which each fits the strip left of its row (`src/diagram/rowLabelFit.ts`), and the Stradella diagram is always wide enough for its last button (`calculateDiagramGeometry`). Button coordinates are never moved to make room.
 - `src/styles/01-layout.css` defines `--ui-control-font`, `--ui-support-font`, `--ui-section-font`, `--ui-heading-font`, `--ui-dense-font` and `--ui-control-leading` on `.app`, adjusted by the density modes. Do not apply them to diagram SVG text, the explanation footer or the voicing chart, which follow their own settings and measured export geometry.
 - `HelpTip` is a keyboard-operable portaled tooltip; keep it in the same `.label-line` as its text.
+- Never use `window.alert`, `confirm` or `prompt`. Report a failure or a side effect with `usePlatformNotices().notify(message, kind)`: `NoticeRegion` shows it under the toolbar without taking focus, errors in a `role="alert"` region until dismissed and information in a `role="status"` region for eight seconds. A service outside React rejects or throws, and the hook that called it notifies (see `useDiagramDownload`).
 - Every visible string goes through `t()`, whose key type rejects unknown keys at compile time. See [`adding-interface-languages.md`](adding-interface-languages.md).
 
 ## Styles and themes

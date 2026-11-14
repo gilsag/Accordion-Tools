@@ -1,7 +1,7 @@
 /** Shared state that many tools read and that is not any one tool's: the
  * settings registry, the interface language, the instrument, the diagram's appearance and spelling,
  * sound and notation preferences, navigation, shared playback state, the
- * application shell's state and the tool coordinator. Each part is owned by its
+ * application shell's state, in-page notices and the tool coordinator. Each part is owned by its
  * existing hook; `PlatformProviders` calls the hooks once and these contexts
  * hand the results to whoever reads them. See
  * docs/internal/developer-guide.md. */
@@ -16,6 +16,7 @@ import type { useWorkspaceNavigation } from "../useWorkspaceNavigation";
 import type { SettingsRegistry } from "../../settings/settingsRegistry";
 import type { usePlaybackState } from "./usePlaybackState";
 import type { useShellState } from "./useShellState";
+import type { useNotices } from "./useNotices";
 import type { ToolCoordinator } from "../toolCoordinator";
 import type { ToolId, WorkspaceMode } from "../toolRegistry";
 
@@ -28,6 +29,7 @@ export type PlatformNotation = ReturnType<typeof useNotationSettings>;
 export type PlatformNavigation = ReturnType<typeof useWorkspaceNavigation>;
 export type PlatformPlayback = ReturnType<typeof usePlaybackState>;
 export type PlatformShell = ReturnType<typeof useShellState>;
+export type PlatformNotices = ReturnType<typeof useNotices>;
 export interface PlatformTools {
   coordinator: ToolCoordinator;
   /** Opens or closes a tool's section, with its effects on the other tools. */
@@ -52,6 +54,7 @@ export const PlatformNavigationContext = createContext<PlatformNavigation | null
 export const PlatformPlaybackContext = createContext<PlatformPlayback | null>(null);
 export const PlatformToolsContext = createContext<PlatformTools | null>(null);
 export const PlatformShellContext = createContext<PlatformShell | null>(null);
+export const PlatformNoticesContext = createContext<PlatformNotices | null>(null);
 
 function usePlatformContext<T>(context: Context<T | null>, name: string): T {
   const value = useContext(context);
@@ -86,6 +89,9 @@ export const usePlatformNavigation = () =>
 /** The tool coordinator and the commands built on it. */
 /** Interface density, download format, the phone's diagram view and the drawn diagrams. */
 export const usePlatformShell = () => usePlatformContext(PlatformShellContext, "usePlatformShell");
+/** In-page messages that replace browser alerts (`useNotices.ts`). */
+export const usePlatformNotices = () =>
+  usePlatformContext(PlatformNoticesContext, "usePlatformNotices");
 export const usePlatformTools = () => usePlatformContext(PlatformToolsContext, "usePlatformTools");
 /** Sample loading, the sound-engine player and starting once samples are ready. */
 export const usePlatformPlayback = () =>

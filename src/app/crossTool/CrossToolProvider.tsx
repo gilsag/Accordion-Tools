@@ -15,6 +15,7 @@ import { useStradellaChordFinder } from "../../features/stradellaChordFinder/str
 import { useTrebleChordFinder } from "../../features/trebleChordFinder/trebleChordFinderContext";
 import {
   usePlatformLanguage,
+  usePlatformNotices,
   usePlatformNavigation,
   usePlatformTools,
 } from "../platform/platformContexts";
@@ -25,6 +26,7 @@ import { useProgressionActions } from "./useProgressionActions";
  * so this provider sits below the tool output providers. */
 export function CrossToolProvider({ children }: { children: ReactNode }) {
   const { t } = usePlatformLanguage();
+  const { notify } = usePlatformNotices();
   const { navigateToTool } = usePlatformNavigation();
   const { stopAllPlayback } = usePlatformTools();
   const { chordProgressionDefinitions } = useBassPatternPlayer();
@@ -79,6 +81,7 @@ export function CrossToolProvider({ children }: { children: ReactNode }) {
     stopBassPatternPlayback,
     stopSoundPlayback: stopAllPlayback,
     t,
+    notify,
   });
   return <CrossToolContext.Provider value={value}>{children}</CrossToolContext.Provider>;
 }

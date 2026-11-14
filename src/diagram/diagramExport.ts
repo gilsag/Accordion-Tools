@@ -4,8 +4,13 @@ import { downloadPng, downloadSvg, downloadZip, svgStringToPngBytes } from "./do
 /** Centralize SVG/PNG download dispatch without changing serialization,
  * CSS embedding, raster dimensions or the existing filename conventions.
  */
-export function downloadDiagram(svg: SVGSVGElement, filename: string, format: DownloadFormat) {
-  if (format === "png") downloadPng(svg, `${filename}.png`);
+/** Downloads the diagram; the promise rejects if a PNG cannot be made. */
+export async function downloadDiagram(
+  svg: SVGSVGElement,
+  filename: string,
+  format: DownloadFormat,
+): Promise<void> {
+  if (format === "png") await downloadPng(svg, `${filename}.png`);
   else downloadSvg(svg, `${filename}.svg`);
 }
 

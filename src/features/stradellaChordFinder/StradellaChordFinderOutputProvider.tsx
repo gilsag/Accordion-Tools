@@ -10,6 +10,7 @@ import { useFinderDiagramContribution } from "./useFinderDiagramContribution";
 import {
   usePlatformInstrument,
   usePlatformLanguage,
+  usePlatformNotices,
   usePlatformShell,
   usePlatformSound,
   usePlatformSpelling,
@@ -82,7 +83,8 @@ export function StradellaChordFinderOutputProvider({ children }: { children: Rea
       />
     ) : null;
   const { svgRef, downloadFormat } = usePlatformShell();
-  const { language } = usePlatformLanguage();
+  const { language, t } = usePlatformLanguage();
+  const { notify } = usePlatformNotices();
   const [batchExporting, setBatchExporting] = useState(false);
 
   /** Download every eligible realization with the current filter, labels,
@@ -121,7 +123,8 @@ export function StradellaChordFinderOutputProvider({ children }: { children: Rea
         `stradella-${root}-${pattern}-${downloadFormat}-${snapshots.length}-realizations.zip`,
       );
     } catch (error) {
-      window.alert(error instanceof Error ? error.message : "Could not export all diagrams.");
+      console.warn("Batch export failed", error);
+      notify(t("ui.batchExportFailed"));
     } finally {
       setBatchExporting(false);
     }

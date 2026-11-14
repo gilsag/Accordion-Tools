@@ -8,7 +8,9 @@ import type { DownloadFormat } from "../../types";
 import {
   usePlatformAppearance,
   usePlatformInstrument,
+  usePlatformLanguage,
   usePlatformNavigation,
+  usePlatformNotices,
   usePlatformShell,
 } from "../platform/platformContexts";
 import { useDiagramLabels } from "../useDiagramLabels";
@@ -28,6 +30,13 @@ export function useDiagramDownload(
   const { side, trebleLayout } = usePlatformInstrument();
   const { titleMode } = usePlatformAppearance();
   const { svgRef, harmonySvgRef, downloadFormat } = usePlatformShell();
+  const { t } = usePlatformLanguage();
+  const { notify } = usePlatformNotices();
+  const save = (svg: SVGSVGElement, name: string, format: DownloadFormat) =>
+    downloadDiagram(svg, name, format).catch((error: unknown) => {
+      console.warn("Diagram export failed", error);
+      notify(t(format === "png" ? "ui.pngExportFailed" : "ui.diagramExportFailed"));
+    });
   const { autoTitle } = useDiagramLabels();
   const { harmonyReferenceFamily, harmonyRelatedName, harmonyScale } = useHarmonyExplorerOutput();
 
@@ -39,7 +48,7 @@ export function useDiagramDownload(
         harmonyRelatedName,
         harmonyScale.name,
       );
-      downloadDiagram(harmonySvgRef.current, name, format);
+      void save(harmonySvgRef.current, name, format);
       return;
     }
     if (!svgRef.current) return;
@@ -63,7 +72,7 @@ export function useDiagramDownload(
         : titleMode === "contextual"
           ? contextualName
           : displayedTitle);
-    downloadDiagram(svgRef.current, accordionDiagramFilename(rawName, layoutName), format);
+    void save(svgRef.current, accordionDiagramFilename(rawName, layoutName), format);
   }
 
   return downloadCurrentDiagram;

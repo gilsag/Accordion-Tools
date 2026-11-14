@@ -7,6 +7,8 @@ import { createSettingsRegistry } from "../../settings/settingsRegistry";
 import { useOwnedSettings } from "./useOwnedSettings";
 import { usePlaybackState } from "./usePlaybackState";
 import { useShellState } from "./useShellState";
+import { useNotices } from "./useNotices";
+import { NoticeRegion } from "../../components/ui/NoticeRegion";
 import { useLanguageSettings } from "../../settings/useLanguageSettings";
 import { useInstrumentState } from "../../instrument/useInstrumentState";
 import { useDiagramAppearanceState } from "../../diagram/useDiagramAppearanceState";
@@ -18,6 +20,7 @@ import {
   PlatformAppearanceContext,
   PlatformInstrumentContext,
   PlatformLanguageContext,
+  PlatformNoticesContext,
   PlatformNavigationContext,
   PlatformNotationContext,
   PlatformPlaybackContext,
@@ -27,6 +30,7 @@ import {
   PlatformSpellingContext,
   PlatformToolsContext,
   usePlatformAppearance,
+  usePlatformLanguage,
   usePlatformNavigation,
   usePlatformInstrument,
   usePlatformSound,
@@ -43,28 +47,31 @@ type ProviderProps = { children: ReactNode };
  * Sound needs the instrument's register model and navigation needs the
  * instrument's side, so both sit inside the instrument provider. The tool
  * coordinator reads navigation, instrument and appearance, so it is last;
- * shared playback state sits just above it. Everything in the application renders inside these
+ * shared playback state sits just above it. Notices need the language for
+ * their labels, so they sit just inside it. Everything in the application renders inside these
  * providers, and they stay mounted for the whole session.
  */
 export function PlatformProviders({ children }: ProviderProps) {
   return (
     <SettingsProvider>
       <LanguageSettingsProvider>
-        <InstrumentProvider>
-          <AppearanceProvider>
-            <SoundProvider>
-              <NotationProvider>
-                <NavigationProvider>
-                  <ShellProvider>
-                    <PlaybackProvider>
-                      <ToolCoordinatorProvider>{children}</ToolCoordinatorProvider>
-                    </PlaybackProvider>
-                  </ShellProvider>
-                </NavigationProvider>
-              </NotationProvider>
-            </SoundProvider>
-          </AppearanceProvider>
-        </InstrumentProvider>
+        <NoticesProvider>
+          <InstrumentProvider>
+            <AppearanceProvider>
+              <SoundProvider>
+                <NotationProvider>
+                  <NavigationProvider>
+                    <ShellProvider>
+                      <PlaybackProvider>
+                        <ToolCoordinatorProvider>{children}</ToolCoordinatorProvider>
+                      </PlaybackProvider>
+                    </ShellProvider>
+                  </NavigationProvider>
+                </NotationProvider>
+              </SoundProvider>
+            </AppearanceProvider>
+          </InstrumentProvider>
+        </NoticesProvider>
       </LanguageSettingsProvider>
     </SettingsProvider>
   );
@@ -83,6 +90,23 @@ function LanguageSettingsProvider({ children }: ProviderProps) {
   useOwnedSettings("language", value);
   return (
     <PlatformLanguageContext.Provider value={value}>{children}</PlatformLanguageContext.Provider>
+  );
+}
+
+/** Messages shown in the page in place of browser alerts; the region is
+ * rendered here so it exists whatever view is open. */
+function NoticesProvider({ children }: ProviderProps) {
+  const { t } = usePlatformLanguage();
+  const value = useNotices();
+  return (
+    <PlatformNoticesContext.Provider value={value}>
+      {children}
+      <NoticeRegion
+        notices={value.notices}
+        onDismiss={value.dismiss}
+        dismissLabel={t("ui.dismissMessage")}
+      />
+    </PlatformNoticesContext.Provider>
   );
 }
 

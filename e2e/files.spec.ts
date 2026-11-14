@@ -108,3 +108,48 @@ test("settings survive a reload, and Reset returns to the bundled defaults", asy
   await openTool(page, "Sound");
   await expect(noteLength).toHaveValue(bundledDefault);
 });
+
+test("a file that is not a settings file is reported in the page, which stays usable", async ({
+  page,
+}) => {
+  page.on("dialog", (dialog) => {
+    throw new Error(`unexpected browser dialog: ${dialog.message()}`);
+  });
+  await openApp(page);
+  await openSettings(page);
+  await openTool(page, "About");
+  await page.locator('input[type="file"][accept*="json"]').setInputFiles({
+    name: "notes.json",
+    mimeType: "application/json",
+    buffer: Buffer.from("this is not JSON"),
+  });
+  const alert = page.getByRole("alert").filter({ hasText: "Could not read this settings file" });
+  await expect(alert).toBeVisible();
+  // Nothing is blocked while the message is shown.
+  await openTool(page, "Sound");
+  await expect(page.getByLabel(/Note length in players/)).toBeVisible();
+  await page.getByRole("button", { name: "Dismiss message" }).click();
+  await expect(alert).toHaveCount(0);
+});
+
+test("a PNG the browser cannot draw is reported in the page", async ({ page }) => {
+  page.on("dialog", (dialog) => {
+    throw new Error(`unexpected browser dialog: ${dialog.message()}`);
+  });
+  await openApp(page);
+  // Every image fails to load, as when a browser cannot render the SVG.
+  await page.evaluate(() => {
+    const RealImage = window.Image;
+    window.Image = function () {
+      const image = new RealImage();
+      Object.defineProperty(image, "src", {
+        set() {
+          setTimeout(() => image.onerror?.(new Event("error")));
+        },
+      });
+      return image;
+    } as unknown as typeof Image;
+  });
+  await chooseDownload(page, "PNG");
+  await expect(page.getByRole("alert")).toContainText("The PNG could not be created");
+});

@@ -71,18 +71,15 @@ export function downloadSvg(svgElement: SVGSVGElement, filename: string) {
   downloadBlob(blob, filename);
 }
 
-/** Downloads a PNG without drawing XHTML foreignObject elements into canvas. */
+/** Downloads a PNG without drawing XHTML foreignObject elements into canvas.
+ * Rejects if the browser cannot render it; the caller tells the person. */
 export async function downloadPng(svgElement: SVGSVGElement, filename: string): Promise<void> {
-  try {
-    const svgString = serializeSvg(svgElement, true);
-    const viewBox = svgElement.viewBox.baseVal;
-    const width = Math.max(1, Math.ceil(viewBox.width || svgElement.clientWidth || 1200));
-    const height = Math.max(1, Math.ceil(viewBox.height || svgElement.clientHeight || 800));
-    const png = await svgStringToPngBytes(svgString, width, height);
-    downloadBlob(new Blob([new Uint8Array(png)], { type: "image/png" }), filename);
-  } catch (error) {
-    window.alert(error instanceof Error ? error.message : "Could not export PNG diagram.");
-  }
+  const svgString = serializeSvg(svgElement, true);
+  const viewBox = svgElement.viewBox.baseVal;
+  const width = Math.max(1, Math.ceil(viewBox.width || svgElement.clientWidth || 1200));
+  const height = Math.max(1, Math.ceil(viewBox.height || svgElement.clientHeight || 800));
+  const png = await svgStringToPngBytes(svgString, width, height);
+  downloadBlob(new Blob([new Uint8Array(png)], { type: "image/png" }), filename);
 }
 
 /** Render an already-serialized diagram independently of the current React
