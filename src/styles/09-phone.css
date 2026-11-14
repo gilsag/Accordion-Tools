@@ -39,11 +39,11 @@
     height: min(82dvh, 740px);
     max-height: min(82dvh, 740px);
     min-height: 0;
-    border: 1px solid #ccd5e5;
+    border: 1px solid var(--ui-border-strong);
     border-radius: 20px 20px 0 0;
-    box-shadow: 0 -12px 35px rgba(15, 23, 42, 0.25);
-    padding: 0 12px max(16px, env(safe-area-inset-bottom));
-    background: white;
+    box-shadow: 0 -12px 35px var(--ui-shadow-sheet);
+    padding: 0 var(--space-6) max(var(--space-8), env(safe-area-inset-bottom));
+    background: var(--ui-surface);
     overflow: auto;
     overscroll-behavior: contain;
   }
@@ -60,7 +60,7 @@
     inset: 0;
     width: 100%;
     border: 0;
-    background: rgba(19, 30, 49, 0.48);
+    background: var(--ui-backdrop);
     cursor: default;
   }
   .phone-sheet-header {
@@ -70,28 +70,28 @@
     z-index: 2;
     justify-content: space-between;
     align-items: center;
-    background: white;
-    border-bottom: 1px solid #d9deea;
-    padding: 12px 0;
-    margin-bottom: 10px;
+    background: var(--ui-surface);
+    border-bottom: 1px solid var(--ui-border);
+    padding: var(--space-6) 0;
+    margin-bottom: var(--space-5);
     font-size: var(--ui-heading-font);
   }
   .phone-sheet-close {
     font: inherit;
-    font-size: 13px;
+    font-size: var(--text-md);
     font-weight: 700;
     min-height: 44px;
-    border: 1px solid #c9d1e3;
+    border: 1px solid var(--ui-border-strong);
     border-radius: 9px;
-    padding: 7px 12px;
-    background: white;
-    color: #172033;
+    padding: 7px var(--space-6);
+    background: var(--ui-surface);
+    color: var(--ui-text);
     cursor: pointer;
   }
   .phone-sheet-close:focus-visible,
   .mobile-diagram-toggle:focus-visible,
   .phone-overflow-toggle:focus-visible {
-    outline: 3px solid #1746d0;
+    outline: 3px solid var(--ui-accent);
     outline-offset: 2px;
   }
   .app > .workspace {
@@ -103,14 +103,14 @@
   .topbar {
     flex-wrap: nowrap;
     gap: 5px;
-    padding: 6px 7px;
+    padding: var(--space-3) 7px;
     min-height: 56px;
   }
   .topbar-primary {
     min-width: 0;
     flex: 1 1 0;
-    font-size: 11px;
-    padding: 8px 2px;
+    font-size: var(--text-xs);
+    padding: var(--space-4) var(--space-1);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -121,8 +121,8 @@
   .phone-tools-button {
     display: block;
     flex: 0 0 auto;
-    padding: 8px 7px;
-    font-size: 12px;
+    padding: var(--space-4) 7px;
+    font-size: var(--text-sm);
   }
   .phone-overflow {
     display: block;
@@ -141,8 +141,8 @@
     justify-content: center;
     min-width: 44px;
     min-height: 44px;
-    font-size: 24px;
-    padding: 0 6px;
+    font-size: var(--text-xl);
+    padding: 0 var(--space-3);
   }
   .phone-overflow-menu {
     position: absolute;
@@ -153,32 +153,32 @@
     overflow: auto;
     z-index: 30;
     display: grid;
-    gap: 6px;
-    padding: 12px;
-    background: white;
-    border: 1px solid #c9d1e3;
-    border-radius: 12px;
-    box-shadow: 0 12px 28px rgba(20, 30, 50, 0.22);
+    gap: var(--space-3);
+    padding: var(--space-6);
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 12px 28px var(--ui-shadow-popover);
   }
   .phone-overflow-menu button:not(.segmented-choice-button) {
     min-height: 44px;
-    padding: 8px 12px;
-    background: #f7f9fc;
-    border: 1px solid #c9d1e3;
-    border-radius: 8px;
-    color: #172033;
+    padding: var(--space-4) var(--space-6);
+    background: var(--ui-surface-hover);
+    border: 1px solid var(--ui-border-strong);
+    border-radius: var(--radius-md);
+    color: var(--ui-text);
     text-align: left;
     font: inherit;
     cursor: pointer;
   }
   .phone-overflow-menu button:focus-visible {
-    outline: 2px solid #1746d0;
+    outline: 2px solid var(--ui-accent);
     outline-offset: 1px;
   }
   .phone-overflow-group {
     display: grid;
-    gap: 6px;
-    border-top: 1px solid #e1e6f0;
+    gap: var(--space-3);
+    border-top: 1px solid var(--ui-border);
     padding-top: 9px;
   }
   .phone-overflow-group > span {

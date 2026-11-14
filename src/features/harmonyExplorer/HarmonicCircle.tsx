@@ -26,6 +26,7 @@ import {
   romanNumeralForChord,
   scaleDefinition,
 } from "./engine/music";
+import { DIAGRAM_COLORS } from "../../diagram/diagramColors";
 
 type HarmonicCircleProps = {
   sectors: SectorRelationships[];
@@ -540,7 +541,7 @@ export function HarmonicCircle({
         onSelectionChange?.(null);
       }}
     >
-      <rect x="0" y="0" width={canvasWidth} height={canvasHeight} fill="#ffffff" />
+      <rect x="0" y="0" width={canvasWidth} height={canvasHeight} fill={DIAGRAM_COLORS.paper} />
 
       <g className="circle-geometry">
         {ringBoundaries.map((radius, index) => (
@@ -549,8 +550,8 @@ export function HarmonicCircle({
             cx={cx}
             cy={cy}
             r={radius}
-            fill={index === 0 ? "#ffffff" : "none"}
-            stroke="#16191f"
+            fill={index === 0 ? DIAGRAM_COLORS.paper : "none"}
+            stroke={DIAGRAM_COLORS["circle-ink"]}
             strokeWidth={strokeWidth}
           />
         ))}
@@ -560,7 +561,7 @@ export function HarmonicCircle({
             cy={cy}
             r={centerHoleRadius}
             fill="none"
-            stroke="#16191f"
+            stroke={DIAGRAM_COLORS["circle-ink"]}
             strokeWidth={strokeWidth}
           />
         )}
@@ -577,7 +578,7 @@ export function HarmonicCircle({
                 y1={inner.y}
                 x2={outer.x}
                 y2={outer.y}
-                stroke="#16191f"
+                stroke={DIAGRAM_COLORS["circle-ink"]}
                 strokeWidth={strokeWidth * 0.82}
               />
             );
@@ -928,8 +929,8 @@ export function HarmonicCircle({
             y="0"
             width={rightColumnWidth}
             height={legendBoxHeight}
-            fill="#ffffff"
-            stroke="#16191f"
+            fill={DIAGRAM_COLORS.paper}
+            stroke={DIAGRAM_COLORS["circle-ink"]}
             strokeWidth={strokeWidth}
           />
 
@@ -1014,8 +1015,8 @@ export function HarmonicCircle({
             y="0"
             width={rightColumnWidth}
             height={explanationBoxHeight}
-            fill="#ffffff"
-            stroke="#16191f"
+            fill={DIAGRAM_COLORS.paper}
+            stroke={DIAGRAM_COLORS["circle-ink"]}
             strokeWidth={strokeWidth}
           />
           <text x="24" y="35" className="explanation-heading" fontSize={fontSize} fontWeight="800">

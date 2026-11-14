@@ -1,0 +1,104 @@
+/*
+  Design tokens. Every colour in the interface and the diagram comes from a
+  token defined here or in diagram-tokens.css; style rules use var().
+
+  The interface tokens (--ui-*) change with the theme. The scales below
+  (type, spacing, radius) do not.
+*/
+:root {
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  /* Fixed type sizes; the density-dependent sizes are the --ui-*-font
+     properties on .app (01-layout.css). */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-md: 13px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+
+  /* Spacing on a 2px step. */
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-5: 10px;
+  --space-6: 12px;
+  --space-8: 16px;
+  --space-10: 20px;
+  --space-12: 24px;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-pill: 999px;
+}
+
+/* Interface colours, light theme. */
+:root {
+  color-scheme: light;
+
+  /* Surfaces */
+  --ui-bg: #f6f7fb;
+  --ui-surface: #ffffff;
+  --ui-surface-subtle: #f8faff;
+  --ui-surface-hover: #f5f7fb;
+  --ui-surface-sunken: #eef2f7;
+  --ui-surface-translucent: rgba(255, 255, 255, 0.95);
+  --ui-fill-faint: rgba(100, 110, 125, 0.14);
+  --ui-track: #e9edf6;
+
+  /* Text */
+  --ui-text-strong: #08060d;
+  --ui-text: #172033;
+  --ui-text-secondary: #526078;
+  --ui-text-muted: #5f6b7a;
+  --ui-on-accent: #ffffff;
+  --ui-inverse-bg: #172033;
+  --ui-inverse-text: #ffffff;
+
+  /* Borders and lines */
+  --ui-border: #d9deea;
+  --ui-border-strong: #c9d1e3;
+  --ui-border-subtle: #edf0f6;
+  --ui-control-border-dark: #71839d;
+  --ui-line-faint: rgba(95, 107, 122, 0.18);
+  --ui-line: rgba(95, 107, 122, 0.28);
+  --ui-line-strong: rgba(30, 45, 65, 0.43);
+
+  /* Accent */
+  --ui-accent: #1746d0;
+  --ui-accent-strong: #173fa6;
+  --ui-accent-muted: #3654ac;
+  --ui-accent-subtle: #eef3ff;
+  --ui-accent-subtle-strong: #e9efff;
+  --ui-resize-handle: #8aa4e8;
+
+  /* States */
+  --ui-danger: #a72e1d;
+  --ui-danger-bright: #d4553f;
+  --ui-danger-subtle: #fff0ed;
+  --ui-danger-border-subtle: #d9a3a3;
+  --ui-warning: #7a4a06;
+  --ui-warning-subtle: #fff8df;
+  --ui-warning-border: #e7c983;
+  --ui-success: #1d5e2a;
+  --ui-success-subtle: #e3f3e5;
+
+  /* Rhythm Trainer timeline */
+  --ui-rhythm-bass: #7c889a;
+  --ui-rhythm-treble: #16878c;
+  --ui-rhythm-sounding: #c97912;
+  --ui-rhythm-sounding-glow: #fff4c9;
+
+  /* Overlays and shadows */
+  --ui-backdrop: rgba(19, 30, 49, 0.48);
+  --ui-backdrop-strong: rgba(0, 0, 0, 0.65);
+  --ui-shadow-faint: rgba(15, 23, 42, 0.08);
+  --ui-shadow-popover: rgba(25, 35, 60, 0.18);
+  --ui-shadow-sheet: rgba(15, 23, 42, 0.25);
+  --ui-shadow-dialog: rgba(0, 0, 0, 0.35);
+  --ui-text-shadow: rgba(0, 0, 0, 0.2);
+}

@@ -7,8 +7,8 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: #172033;
-  background: #f6f7fb;
+  color: var(--ui-text);
+  background: var(--ui-bg);
 }
 
 body {
@@ -50,15 +50,15 @@ body {
 
 .left-panel {
   width: 100%;
-  background: white;
-  padding: 10px;
+  background: var(--ui-surface);
+  padding: var(--space-5);
   overflow-y: auto;
   overflow-x: hidden;
   max-height: 100vh;
   max-height: 100dvh;
   scrollbar-gutter: stable;
   box-sizing: border-box;
-  border-right: 1px solid #d9deea;
+  border-right: 1px solid var(--ui-border);
 }
 
 .left-panel * {
@@ -78,7 +78,7 @@ body {
   font-size: var(--ui-heading-font);
   line-height: 1.25;
   font-weight: 750;
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-5);
 }
 
 .workspace {
@@ -119,7 +119,7 @@ body {
 }
 .panel-resize-handle:hover::after,
 .panel-resize-handle:focus-visible::after {
-  background: #8aa4e8;
+  background: var(--ui-resize-handle);
 }
 .panel-resize-handle:focus-visible {
   outline: none;
@@ -139,46 +139,46 @@ body.panel-resizing svg {
   row-gap: 5px;
   padding-top: 5px;
   padding-bottom: 5px;
-  border-bottom: 1px solid #d9deea;
-  background: #ffffff;
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-surface);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-5);
   padding: 0 18px;
 }
 
 .topbar-button {
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-md);
   font-weight: 800;
-  border: 1px solid #c9d1e3;
-  border-radius: 999px;
-  padding: 7px 12px;
-  background: #ffffff;
-  color: #172033;
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-pill);
+  padding: 7px var(--space-6);
+  background: var(--ui-surface);
+  color: var(--ui-text);
   cursor: pointer;
 }
 
 .topbar-button:hover,
 .topbar-button.active {
-  background: #eef3ff;
-  border-color: #1746d0;
-  color: #1746d0;
+  background: var(--ui-accent-subtle);
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
 }
 
 .download-button {
-  border-color: #1746d0;
+  border-color: var(--ui-accent);
 }
 
 .reset-button {
-  border-color: #d4553f;
-  color: #a72e1d;
+  border-color: var(--ui-danger-bright);
+  color: var(--ui-danger);
 }
 
 .reset-button:hover {
-  background: #fff0ed;
-  border-color: #d4553f;
-  color: #a72e1d;
+  background: var(--ui-danger-subtle);
+  border-color: var(--ui-danger-bright);
+  color: var(--ui-danger);
 }
 
 .topbar-separator {
@@ -190,23 +190,23 @@ body.panel-resizing svg {
 }
 
 .control-section {
-  border: 1px solid #d9deea;
+  border: 1px solid var(--ui-border);
   border-radius: 14px;
-  margin-bottom: 10px;
+  margin-bottom: var(--space-5);
   overflow: hidden;
-  background: #ffffff;
+  background: var(--ui-surface);
 }
 
 .section-title {
   width: 100%;
   border: 0;
-  background: #f5f7fb;
-  padding: 9px 10px;
+  background: var(--ui-surface-hover);
+  padding: 9px var(--space-5);
   font: inherit;
   font-size: var(--ui-section-font);
   font-weight: 750;
   line-height: 1.35;
-  color: #172033;
+  color: var(--ui-text);
   cursor: pointer;
   display: flex;
   justify-content: space-between;
@@ -215,24 +215,24 @@ body.panel-resizing svg {
 }
 
 .section-title > span:last-child {
-  font-size: 18px;
+  font-size: var(--text-lg);
   line-height: 1;
   flex: 0 0 auto;
-  margin-left: 8px;
+  margin-left: var(--space-4);
 }
 
 .section-title[aria-expanded="true"] {
-  background: #eef3ff;
-  color: #173fa6;
+  background: var(--ui-accent-subtle);
+  color: var(--ui-accent-strong);
 }
 
 .section-title:focus-visible {
-  outline: 2px solid #1746d0;
+  outline: 2px solid var(--ui-accent);
   outline-offset: -3px;
 }
 
 .section-content {
-  padding: 10px;
+  padding: var(--space-5);
   display: flex;
   flex-direction: column;
   gap: 9px;

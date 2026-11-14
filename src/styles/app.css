@@ -2,6 +2,9 @@
   Application styles. The files are imported in this order and the cascade
   depends on it: a later file may override an earlier one.
 */
+@import "./tokens.css";
+@import "./diagram-tokens.css";
+@import "./00-base.css";
 @import "./01-layout.css";
 @import "./02-controls.css";
 @import "./03-diagram.css";

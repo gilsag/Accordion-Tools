@@ -1,5 +1,6 @@
 import { createZip } from "./zipExport";
 import { makeSvgCanvasSafe } from "./svgRasterExport";
+import { DIAGRAM_COLORS } from "./diagramColors";
 /**
  * Downloads the current SVG, including readable CSS rules.
  */
@@ -102,7 +103,7 @@ export async function svgStringToPngBytes(
     canvas.height = Math.ceil(height);
     const context = canvas.getContext("2d");
     if (!context) throw new Error("PNG canvas is not available.");
-    context.fillStyle = "#ffffff";
+    context.fillStyle = DIAGRAM_COLORS.paper;
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
     const png = await new Promise<Blob>((resolve, reject) =>

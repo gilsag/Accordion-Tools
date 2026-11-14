@@ -3,11 +3,11 @@
 /* Use tighter control-group rhythm without shrinking controls or touch targets. */
 .section-content label:has(> input[type="range"]),
 .tool-fieldset label:has(> input[type="range"]) {
-  gap: 4px;
+  gap: var(--space-2);
 }
 .section-content input[type="range"],
 .tool-fieldset input[type="range"] {
-  margin-block: 1px 2px;
+  margin-block: 1px var(--space-1);
 }
 
 label {
@@ -32,10 +32,10 @@ input,
 textarea {
   font: inherit;
   font-size: var(--ui-control-font);
-  padding: 7px 8px;
-  border: 1px solid #c9d1e3;
-  border-radius: 10px;
-  background: white;
+  padding: 7px var(--space-4);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--ui-surface);
 }
 
 textarea {
@@ -50,12 +50,12 @@ input[type="range"] {
 .hint {
   font-size: var(--ui-support-font);
   line-height: 1.45;
-  color: #526078;
+  color: var(--ui-text-secondary);
   margin: 0;
 }
 
 .canvas-wrap {
-  padding: 6px 6px 0 6px;
+  padding: var(--space-3) var(--space-3) 0 var(--space-3);
   overflow: auto;
   flex: 1;
   min-height: 0;
@@ -69,32 +69,32 @@ input[type="range"] {
 .abc-hand-caption {
   font-size: 17px;
   font-weight: 800;
-  fill: #33405a;
+  fill: var(--diagram-caption);
 }
 .abc-hand-divider {
-  stroke: #d9deea;
+  stroke: var(--diagram-frame);
   stroke-width: 1.5;
 }
 .abc-hand-switch {
-  padding: 4px 6px 0;
+  padding: var(--space-2) var(--space-3) 0;
 }
 .abc-hand-switch .segmented-choice-control {
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-4);
 }
 .abc-hand-switch .label-line {
   flex: none;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 700;
-  color: #526078;
+  color: var(--ui-text-secondary);
 }
 /* Three short names in a narrow sidebar: keep each word whole. */
 .segmented-choice.whole-words .segmented-choice-button {
   overflow-wrap: normal;
-  padding-left: 2px;
-  padding-right: 2px;
+  padding-left: var(--space-1);
+  padding-right: var(--space-1);
 }
 
 .diagram {
@@ -104,16 +104,16 @@ input[type="range"] {
   min-height: 0;
   min-width: 0;
   display: block;
-  background: white;
-  border: 1px solid #d9deea;
+  background: var(--diagram-paper);
+  border: 1px solid var(--diagram-frame);
   border-radius: 18px;
-  box-shadow: 0 12px 30px rgba(25, 35, 60, 0.08);
+  box-shadow: 0 12px 30px var(--diagram-shadow);
   --button-stroke-width: 3;
   --reference-stroke-width: 6;
   --chord-fill-strength: 1;
-  --sequence-color: #d4553f;
+  --sequence-color: var(--diagram-sequence);
   --sequence-thickness: 3.2;
-  --sequence-number-color: #d4553f;
+  --sequence-number-color: var(--diagram-sequence);
   --sequence-number-size: 10px;
 }
 

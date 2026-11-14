@@ -29,6 +29,7 @@ import {
   usePlatformSound,
 } from "../platform/platformContexts";
 import { useAccordionStatusText } from "./useAccordionStatusText";
+import { DIAGRAM_COLORS } from "../../diagram/diagramColors";
 
 /** The status line under the toolbar, when shown: the diagram's in the accordion workspace, the circle's in the Harmony workspace. */
 export function WorkspaceStatusBar() {
@@ -167,7 +168,7 @@ export function DiagramFooter({ diagram }: { diagram: DiagramModel }) {
             textAlign: finderFooterEnabled ? "left" : "center",
             lineHeight: finderFooterEnabled ? 1.3 : 1.15,
             overflowWrap: "anywhere",
-            color: "#20252a",
+            color: DIAGRAM_COLORS["footer-ink"],
           }}
         >
           {stradellaFooter ? (

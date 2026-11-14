@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { DiagramAnnotationAnchor, DiagramButton, FontFamily, TextNote } from "../../types";
 import { makeTextNote } from "./textNoteTools";
+import { DIAGRAM_COLORS } from "../../diagram/diagramColors";
 
 /** Owns annotation drafts and stored text notes. The existing SVG renderer is
  * responsible for screen-to-viewBox conversion; these positions remain in the
@@ -9,7 +10,7 @@ import { makeTextNote } from "./textNoteTools";
 export function useDiagramAnnotations(buttonSize: number) {
   const [textNotes, setTextNotes] = useState<TextNote[]>([]);
   const [textNoteFontSize, setTextNoteFontSize] = useState(15);
-  const [textNoteColor, setTextNoteColor] = useState("#172033");
+  const [textNoteColor, setTextNoteColor] = useState<string>(DIAGRAM_COLORS.ink);
   const [textNoteFont, setTextNoteFont] = useState<FontFamily>("system");
   const [annotationBold, setAnnotationBold] = useState(false);
   const [annotationItalic, setAnnotationItalic] = useState(false);

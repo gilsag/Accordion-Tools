@@ -7,17 +7,17 @@
   box-sizing: border-box;
   width: min(calc(100% - 16px), 880px);
   margin: 5px auto;
-  padding: 8px 10px;
-  border: 1px solid var(--border-color, #b9c3ce);
-  border-radius: 10px;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border-color, var(--ui-border-strong));
+  border-radius: var(--radius-lg);
 }
 .rhythm-timeline-title {
   display: flex;
-  gap: 12px;
+  gap: var(--space-6);
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-4);
 }
 .rhythm-timeline-title span,
 .rhythm-timeline-note {
@@ -30,15 +30,15 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-3);
   max-height: 235px;
   overflow-y: auto;
 }
 .rhythm-timeline-bar {
   box-sizing: border-box;
   flex: 0 0 calc((100% - 18px) / 4);
-  border: 1px solid var(--border-color, #c8cdd3);
-  border-radius: 6px;
+  border: 1px solid var(--border-color, var(--ui-border-strong));
+  border-radius: var(--radius-sm);
   padding: 5px;
   min-width: 0;
 }
@@ -48,7 +48,7 @@
   }
 }
 .rhythm-timeline-bar.active {
-  outline: 2px solid #188a90;
+  outline: 2px solid var(--ui-rhythm-treble);
   outline-offset: 0;
 }
 .rhythm-bar-header {
@@ -70,7 +70,7 @@
 }
 .rhythm-lane {
   display: flex;
-  gap: 4px;
+  gap: var(--space-2);
   align-items: center;
   margin-top: 5px;
 }
@@ -83,16 +83,16 @@
   position: relative;
   min-width: 0;
   flex: 1;
-  background: rgba(100, 110, 125, 0.14);
-  border: 1px solid rgba(80, 90, 105, 0.3);
-  border-radius: 4px;
+  background: var(--ui-fill-faint);
+  border: 1px solid var(--ui-line);
+  border-radius: var(--radius-xs);
   overflow: hidden;
 }
 .rhythm-lane-grid i {
   position: absolute;
   top: 0;
   bottom: 0;
-  border-left: 1px solid rgba(30, 45, 65, 0.43);
+  border-left: 1px solid var(--ui-line-strong);
   z-index: 3;
   pointer-events: none;
 }
@@ -103,11 +103,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 2px;
+  gap: var(--space-1);
   border-radius: 3px;
-  box-shadow: inset -3px 0 0 rgba(250, 250, 255, 0.92);
+  box-shadow: inset -3px 0 0 var(--ui-surface-translucent);
   min-width: 2px;
-  color: #fff;
+  color: var(--ui-on-accent);
   font-size: 10px;
   padding: 0 5px 0 3px;
   overflow: hidden;
@@ -115,16 +115,16 @@
   z-index: 1;
 }
 .rhythm-event-bass {
-  background: #7c889a;
+  background: var(--ui-rhythm-bass);
 }
 .rhythm-event-treble {
-  background: #16878c;
+  background: var(--ui-rhythm-treble);
 }
 /* Active attacks light up for their scheduled audible duration, including
    overlapping left/right events and repeated notes on the same button. */
 .rhythm-event.is-sounding {
-  background: #c97912;
-  box-shadow: inset 0 0 0 2px #fff4c9;
+  background: var(--ui-rhythm-sounding);
+  box-shadow: inset 0 0 0 2px var(--ui-rhythm-sounding-glow);
   z-index: 2;
   overflow: visible;
 }
@@ -133,19 +133,19 @@
   font-weight: 700;
   line-height: 1;
   opacity: 0.95;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 1px var(--ui-text-shadow);
 }
 /* Notation notes follow the same timed events as the diagram and timeline. */
 .rhythm-score-active {
-  color: #c97912 !important;
-  filter: drop-shadow(0 0 2px rgba(201, 121, 18, 0.4));
+  color: var(--diagram-sounding) !important;
+  filter: drop-shadow(0 0 2px var(--diagram-sounding-glow));
 }
 .rhythm-score-active .abcjs-notehead,
 .rhythm-score-active .abcjs-stem,
 .rhythm-score-active .abcjs-beam,
 .rhythm-score-active .abcjs-flag {
-  fill: #c97912 !important;
-  stroke: #c97912 !important;
+  fill: var(--diagram-sounding) !important;
+  stroke: var(--diagram-sounding) !important;
 }
 .rhythm-event .rhythm-attack-dot {
   display: inline-flex;
@@ -157,8 +157,8 @@
   transform-origin: center;
 }
 .rhythm-event.is-sounding .rhythm-attack-dot {
-  color: #fff;
-  text-shadow: 0 0 5px #fff;
+  color: var(--ui-on-accent);
+  text-shadow: 0 0 5px var(--ui-surface);
   transform: scale(1.35);
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -175,21 +175,21 @@
   }
 }
 .rhythm-timeline-note {
-  margin: 4px 0 0;
+  margin: var(--space-2) 0 0;
 }
 .rhythm-trainer-controls .playback-bar-buttons {
-  margin-top: 10px;
+  margin-top: var(--space-5);
 }
 
 /* Rhythm Trainer: readable two-hand view without modifying SVG button
    geometry, click targets, or export behavior. */
 .canvas-wrap.rhythm-compact-diagrams {
   justify-content: center;
-  padding-top: 4px;
+  padding-top: var(--space-2);
 }
 .canvas-wrap.rhythm-compact-diagrams .abc-hands-diagram {
   max-width: min(100%, 880px);
-  box-shadow: 0 5px 14px rgba(25, 35, 60, 0.08);
+  box-shadow: 0 5px 14px var(--diagram-shadow);
 }
 @media (max-width: 860px) {
   .canvas-wrap.rhythm-compact-diagrams.diagram-readable > .diagram {

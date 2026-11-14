@@ -20,10 +20,10 @@
   height: 24px;
   padding: 0;
   border-radius: 50%;
-  border: 1px solid #c9d1e3;
-  color: #42526e;
-  background: #f8faff;
-  font-size: 12px;
+  border: 1px solid var(--ui-border-strong);
+  color: var(--ui-text-secondary);
+  background: var(--ui-surface-subtle);
+  font-size: var(--text-sm);
   font-weight: 700;
   cursor: help;
 }
@@ -54,19 +54,19 @@
   --ui-control-font: 13px;
   max-width: 560px;
   margin: 12vh auto 0;
-  padding: 0 20px;
+  padding: 0 var(--space-10);
   line-height: 1.5;
 }
 
 .app-error h1 {
   font-size: 22px;
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-4);
 }
 
 .app-error details {
-  margin-top: 16px;
-  color: #55607a;
-  font-size: 13px;
+  margin-top: var(--space-8);
+  color: var(--ui-text-secondary);
+  font-size: var(--text-md);
 }
 
 .app-error pre {
@@ -76,12 +76,12 @@
 
 /* Destructive confirmation (Settings → About → Reset to defaults). */
 .small-button.danger-button {
-  border-color: #b42318;
-  color: #b42318;
+  border-color: var(--ui-danger);
+  color: var(--ui-danger);
 }
 
 .small-button.danger-button:hover:not(:disabled) {
-  background: #fef3f2;
+  background: var(--ui-danger-subtle);
 }
 
 /* View switch (Stradella / Treble / Harmony): one choice of three, drawn as a
@@ -95,26 +95,26 @@
 @media (min-width: 621px) {
   .topbar-workspace-switch {
     display: inline-flex;
-    gap: 2px;
+    gap: var(--space-1);
     padding: 3px;
-    border-radius: 999px;
-    background: #e9edf6;
+    border-radius: var(--radius-pill);
+    background: var(--ui-track);
   }
   .topbar-workspace-switch .topbar-primary {
     border-color: transparent;
     background: transparent;
-    padding: 5px 12px;
+    padding: 5px var(--space-6);
   }
   .topbar-workspace-switch .topbar-primary:hover {
-    background: #ffffff;
+    background: var(--ui-surface);
     border-color: transparent;
-    color: #172033;
+    color: var(--ui-text);
   }
   .topbar-workspace-switch .topbar-primary.active,
   .topbar-workspace-switch .topbar-primary.active:hover {
-    background: #1746d0;
-    border-color: #1746d0;
-    color: #ffffff;
+    background: var(--ui-accent);
+    border-color: var(--ui-accent);
+    color: var(--ui-on-accent);
   }
 }
 

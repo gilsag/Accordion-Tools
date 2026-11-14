@@ -43,42 +43,42 @@
 }
 
 .voicing-interval-leader {
-  stroke: #a8b3c3;
+  stroke: var(--diagram-voicing-leader);
   stroke-width: 1;
   stroke-dasharray: 2 2;
 }
 .voicing-interval-track {
-  stroke: #bdc6d4;
+  stroke: var(--diagram-voicing-track);
   stroke-width: 2.4;
 }
 .voicing-interval-gap-tight {
-  stroke: #c43f35;
+  stroke: var(--diagram-voicing-tight);
   stroke-width: 4.5;
 }
 .voicing-interval-close {
-  stroke: #c77736;
+  stroke: var(--diagram-voicing-close);
   stroke-width: 4;
 }
 .voicing-interval-open {
-  stroke: #509c8a;
+  stroke: var(--diagram-voicing-open);
   stroke-width: 3.5;
 }
 .voicing-interval-bass {
-  fill: #3266aa;
-  stroke: #fff;
+  fill: var(--diagram-voicing-bass);
+  stroke: var(--diagram-paper);
   stroke-width: 1.8;
 }
 .voicing-interval-chord {
-  fill: #426c5d;
-  stroke: #fff;
+  fill: var(--diagram-voicing-chord);
+  stroke: var(--diagram-paper);
   stroke-width: 1.8;
 }
 .voicing-interval-distance {
-  fill: #495567;
+  fill: var(--diagram-voicing-distance);
   font-weight: 800;
 }
 .voicing-interval-note {
-  fill: #172033;
+  fill: var(--diagram-ink);
   font-weight: 800;
 }
 
@@ -107,10 +107,10 @@
   min-width: min(245px, calc(100vw - 24px));
   max-width: calc(100vw - 24px);
   padding: 5px;
-  border: 1px solid #c9d1e3;
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 8px 22px rgba(25, 35, 60, 0.18);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-lg);
+  background: var(--ui-surface);
+  box-shadow: 0 8px 22px var(--ui-shadow-popover);
 }
 .reset-menu-options button {
   display: block;
@@ -119,21 +119,21 @@
   border: none;
   border-radius: 7px;
   background: transparent;
-  color: #172033;
+  color: var(--ui-text);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--text-md);
   text-align: left;
   cursor: pointer;
 }
 .reset-menu-options button:hover,
 .reset-menu-options button:focus-visible {
-  background: #eef3ff;
+  background: var(--ui-accent-subtle);
 }
 
 /* Batch export is related to the realization list, not to playback controls. */
 .finder-download-all {
   width: 100%;
-  margin: 6px 0 10px;
+  margin: var(--space-3) 0 var(--space-5);
   text-align: center;
 }
 
@@ -141,7 +141,7 @@
 .stradella-register-settings {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-5);
   min-width: 0;
 }
 .stradella-register-intro-help {
@@ -149,8 +149,8 @@
   align-items: center;
   justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 6px;
-  color: #526078;
+  gap: var(--space-3);
+  color: var(--ui-text-secondary);
   font-size: var(--ui-support-font);
   line-height: var(--ui-control-leading);
 }
@@ -164,12 +164,12 @@
   min-width: 0;
 }
 .stradella-register-group + .stradella-register-group {
-  border-top: 1px solid #d9deea;
+  border-top: 1px solid var(--ui-border);
   padding-top: 13px;
 }
 .stradella-register-group h3 {
-  margin: 0 0 2px;
-  font-size: 13px;
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-md);
   font-weight: 750;
   line-height: 1.3;
   overflow-wrap: anywhere;
@@ -179,29 +179,29 @@
   gap: 5px;
 }
 .stradella-register-group > .segmented-choice-control > .label-line {
-  font-size: 12px;
+  font-size: var(--text-sm);
   font-weight: 700;
   line-height: 1.35;
 }
 .density-compact .stradella-register-group > .segmented-choice-control > .label-line {
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 .density-comfortable .stradella-register-group > .segmented-choice-control > .label-line {
   font-size: 12.5px;
 }
 .stradella-register-range {
   margin: 0;
-  color: #526078;
-  font-size: 12px;
+  color: var(--ui-text-secondary);
+  font-size: var(--text-sm);
   font-weight: 400;
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
 .density-compact .stradella-register-group {
-  gap: 6px;
+  gap: var(--space-3);
 }
 .density-compact .stradella-register-group + .stradella-register-group {
-  padding-top: 10px;
+  padding-top: var(--space-5);
 }
 .density-comfortable .stradella-register-group {
   gap: 9px;
@@ -210,7 +210,7 @@
   padding-top: 15px;
 }
 .density-compact .stradella-register-range {
-  font-size: 11px;
+  font-size: var(--text-xs);
 }
 .density-comfortable .stradella-register-range {
   font-size: 12.5px;
@@ -219,14 +219,14 @@
 /* Instrument section: independently configured nominal Stradella registers. */
 .instrument-stradella-details {
   display: grid;
-  gap: 12px;
+  gap: var(--space-6);
   min-width: 0;
-  margin-top: 12px;
+  margin-top: var(--space-6);
 }
 .instrument-chord-construction {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-3);
   font-weight: 600;
   font-size: var(--ui-control-font);
   line-height: var(--ui-control-leading);
@@ -241,31 +241,31 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  padding: 12px;
+  padding: var(--space-6);
   box-sizing: border-box;
-  background: #fff;
-  border-left: 1px solid #d9deea;
+  background: var(--ui-surface);
+  border-left: 1px solid var(--ui-border);
   scrollbar-gutter: stable;
 }
 .workspace-inspector h2 {
   font-size: var(--ui-heading-font);
   line-height: 1.3;
-  margin: 0 0 12px;
+  margin: 0 0 var(--space-6);
 }
 .workspace-inspector h3 {
   font-size: var(--ui-section-font);
   line-height: 1.35;
-  margin: 12px 0 8px;
+  margin: var(--space-6) 0 var(--space-4);
 }
 .inspector-filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
+  gap: var(--space-3) var(--space-6);
 }
 .inspector-filter-option {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: var(--space-1);
 }
 .inspector-filters label {
   display: inline-flex;
@@ -278,7 +278,7 @@
   flex-shrink: 0;
 }
 .inspector-filters input {
-  accent-color: #1746d0;
+  accent-color: var(--ui-accent);
 }
 .inspector-meta,
 .inspector-selection-note,
@@ -287,15 +287,15 @@
   line-height: 1.45;
 }
 .inspector-meta {
-  color: #526078;
+  color: var(--ui-text-secondary);
 }
 .inspector-selection-note {
-  color: #744608;
+  color: var(--ui-warning);
 }
 .inspector-table-scroll {
   overflow: auto;
   max-height: min(44dvh, 425px);
-  border: 1px solid #d9deea;
+  border: 1px solid var(--ui-border);
   border-radius: 9px;
 }
 .inspector-table {
@@ -307,15 +307,15 @@
 .inspector-table th {
   position: sticky;
   top: 0;
-  background: #eef2fa;
-  color: #27334d;
+  background: var(--ui-surface-sunken);
+  color: var(--ui-text);
   text-align: left;
   z-index: 1;
 }
 .inspector-table td,
 .inspector-table th {
-  padding: 7px 6px;
-  border-bottom: 1px solid #e4e8f0;
+  padding: 7px var(--space-3);
+  border-bottom: 1px solid var(--ui-border-subtle);
   vertical-align: top;
 }
 .inspector-table td {
@@ -325,37 +325,37 @@
   cursor: pointer;
 }
 .inspector-table tbody tr:hover {
-  background: #f2f6ff;
+  background: var(--ui-accent-subtle);
 }
 .inspector-table .inspector-row-selected {
-  background: #e3edff;
-  box-shadow: inset 3px 0 #1746d0;
+  background: var(--ui-accent-subtle-strong);
+  box-shadow: inset 3px 0 var(--ui-accent);
 }
 .inspector-select {
   background: transparent;
   border: 0;
   font: inherit;
-  color: #1746d0;
+  color: var(--ui-accent);
   font-weight: 800;
   cursor: pointer;
   min-width: 32px;
   min-height: 28px;
 }
 .inspector-select:focus-visible {
-  outline: 2px solid #1746d0;
-  border-radius: 4px;
+  outline: 2px solid var(--ui-accent);
+  border-radius: var(--radius-xs);
   outline-offset: 2px;
 }
 .inspector-details {
-  border-top: 1px solid #d9deea;
-  margin-top: 12px;
-  padding-top: 4px;
+  border-top: 1px solid var(--ui-border);
+  margin-top: var(--space-6);
+  padding-top: var(--space-2);
 }
 .inspector-details p {
   font-size: var(--ui-support-font);
-  color: #526078;
+  color: var(--ui-text-secondary);
   line-height: 1.5;
-  margin: 8px 0;
+  margin: var(--space-4) 0;
   overflow-wrap: anywhere;
 }
 @media (max-width: 1120px) {
@@ -374,7 +374,7 @@
   }
   .workspace-inspector {
     border-left: 0;
-    border-top: 1px solid #d9deea;
+    border-top: 1px solid var(--ui-border);
     overflow: visible;
   }
   .inspector-table-scroll {

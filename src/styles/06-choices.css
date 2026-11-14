@@ -25,7 +25,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
+  gap: var(--space-3);
   min-width: 0;
 }
 .binary-choice-control .small-button {
@@ -63,7 +63,7 @@
 .finder-voicing-spacing-option {
   margin-left: 1.45rem;
   padding-left: 0.48rem;
-  border-left: 2px solid #d4dced;
+  border-left: 2px solid var(--ui-border);
   font-size: 0.92em;
 }
 
@@ -72,40 +72,40 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
+  gap: var(--space-3);
   min-width: 0;
 }
 .segmented-choice {
   display: flex;
   width: 100%;
-  border: 1px solid #c9d1e3;
+  border: 1px solid var(--ui-border-strong);
   border-radius: 9px;
   overflow: hidden;
 }
 .segmented-choice-button {
   flex: 1 1 0;
   min-width: 0;
-  padding: 7px 6px;
+  padding: 7px var(--space-3);
   font: inherit;
-  font-size: 12px;
-  background: #fff;
-  color: #172033;
+  font-size: var(--text-sm);
+  background: var(--ui-surface);
+  color: var(--ui-text);
   border: 0;
   cursor: pointer;
   overflow-wrap: anywhere;
 }
 .segmented-choice-button + .segmented-choice-button {
-  border-left: 1px solid #c9d1e3;
+  border-left: 1px solid var(--ui-border-strong);
 }
 .segmented-choice-button.selected {
-  background: #e9efff;
-  color: #173fa6;
+  background: var(--ui-accent-subtle-strong);
+  color: var(--ui-accent-strong);
   font-weight: 800;
 }
 .segmented-choice-button:focus-visible {
   position: relative;
   z-index: 1;
-  outline: 2px solid #1746d0;
+  outline: 2px solid var(--ui-accent);
   outline-offset: -2px;
 }
 /* Four choices in a narrow sidebar: two rows of two keep every label whole. */
@@ -117,7 +117,7 @@
   border-left: 0;
 }
 .segmented-choice.two-columns .segmented-choice-button:nth-child(n + 3) {
-  border-top: 1px solid #c9d1e3;
+  border-top: 1px solid var(--ui-border-strong);
 }
 
 /* The toolbar format selector is deliberately compact beside Download. */
@@ -126,7 +126,7 @@
   width: 126px;
 }
 .topbar-format-choice .segmented-choice-control {
-  gap: 2px;
+  gap: var(--space-1);
 }
 .topbar-format-choice .label-line {
   position: absolute;

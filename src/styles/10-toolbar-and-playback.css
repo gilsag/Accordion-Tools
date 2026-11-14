@@ -33,17 +33,17 @@
 }
 .inspector-status-badge {
   display: inline-block;
-  padding: 1px 6px;
-  border-radius: 999px;
+  padding: 1px var(--space-3);
+  border-radius: var(--radius-pill);
   font-weight: 800;
 }
 .inspector-status-badge.exact {
-  background: #e3f3e5;
-  color: #1d5e2a;
+  background: var(--ui-success-subtle);
+  color: var(--ui-success);
 }
 .inspector-status-badge.approx {
-  background: #fbefd9;
-  color: #7a4a06;
+  background: var(--ui-warning-subtle);
+  color: var(--ui-warning);
 }
 
 /* Toolbar: one Download menu (SVG / PNG) and an icon-only sound toggle. */
@@ -54,15 +54,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-inline: 10px;
+  padding-inline: var(--space-5);
 }
 
 /* One-line tool descriptions under collapsed tool titles. */
 .section-summary {
   margin: 0;
-  padding: 0 10px 8px;
-  background: #f5f7fb;
-  color: #5b6880;
+  padding: 0 var(--space-5) var(--space-4);
+  background: var(--ui-surface-hover);
+  color: var(--ui-text-muted);
   font-size: var(--ui-support-font);
   line-height: 1.35;
 }
@@ -72,62 +72,62 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 12px;
-  margin: 8px 0 0;
-  padding: 8px 12px;
-  border: 1px solid #d9deea;
-  border-radius: 12px;
-  background: #f8faff;
+  gap: var(--space-4) var(--space-6);
+  margin: var(--space-4) 0 0;
+  padding: var(--space-4) var(--space-6);
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-xl);
+  background: var(--ui-surface-subtle);
 }
 .playback-bar-label {
   font-size: var(--ui-section-font);
   font-weight: 800;
-  color: #172033;
+  color: var(--ui-text);
 }
 .playback-bar-status {
   font-size: var(--ui-support-font);
-  color: #7a4a06;
+  color: var(--ui-warning);
   font-weight: 700;
 }
 .playback-bar-buttons {
   display: flex;
-  gap: 6px;
+  gap: var(--space-3);
   margin-left: auto;
 }
 .playback-bar-button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-3);
   min-height: 34px;
-  padding: 6px 12px;
-  border: 1px solid #c9d1e3;
-  border-radius: 999px;
-  background: #fff;
-  color: #172033;
+  padding: var(--space-3) var(--space-6);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-pill);
+  background: var(--ui-surface);
+  color: var(--ui-text);
   font: inherit;
   font-size: var(--ui-control-font);
   font-weight: 800;
   cursor: pointer;
 }
 .playback-bar-button:hover:not(:disabled) {
-  background: #eef3ff;
+  background: var(--ui-accent-subtle);
 }
 .playback-bar-button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 .playback-bar-play {
-  border-color: #1746d0;
-  color: #1746d0;
+  border-color: var(--ui-accent);
+  color: var(--ui-accent);
 }
 .playback-bar-play.active {
-  background: #1746d0;
-  color: #fff;
+  background: var(--ui-accent);
+  color: var(--ui-on-accent);
   opacity: 1;
 }
 @media (max-width: 620px) {
   .playback-bar {
-    margin: 6px 6px 0;
+    margin: var(--space-3) var(--space-3) 0;
   }
   .playback-bar-buttons {
     margin-left: 0;
@@ -143,7 +143,7 @@
 /* Progression Assistant path: numbered steps and arrows on the diagram. */
 .progression-path-arrow {
   fill: none;
-  stroke: #c2410c;
+  stroke: var(--diagram-path);
   stroke-width: 2.4;
   stroke-linecap: round;
   stroke-dasharray: 6 4;
@@ -151,25 +151,25 @@
   pointer-events: none;
 }
 .progression-path-arrowhead {
-  fill: #c2410c;
+  fill: var(--diagram-path);
 }
 .progression-path-badge {
   pointer-events: none;
 }
 .progression-path-badge rect {
-  fill: #c2410c;
-  stroke: #fff;
+  fill: var(--diagram-path);
+  stroke: var(--diagram-paper);
   stroke-width: 1.5;
 }
 .progression-path-badge text {
-  fill: #fff;
+  fill: var(--diagram-paper);
   font-weight: 900;
   font-family: system-ui, sans-serif;
 }
 
 /* Tighter toolbar so it fits on one row beside the results panel at 1440 px. */
 .topbar {
-  gap: 6px;
+  gap: var(--space-3);
 }
 .topbar-separator {
   width: 4px;
@@ -194,7 +194,7 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-3);
 }
 .topbar-labelled-icon-button svg {
   flex: none;
@@ -212,7 +212,7 @@
   }
 }
 .topbar-compact {
-  gap: 4px;
+  gap: var(--space-2);
 }
 .topbar-compact .topbar-compact-icon {
   display: block;
@@ -222,8 +222,8 @@
 }
 .topbar-compact .topbar-icon-button,
 .topbar-compact .topbar-labelled-icon-button {
-  padding-inline: 8px;
-  gap: 2px;
+  padding-inline: var(--space-4);
+  gap: var(--space-1);
 }
 .topbar-compact .topbar-labelled-icon-button .topbar-label {
   position: absolute;

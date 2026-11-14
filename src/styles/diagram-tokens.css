@@ -1,0 +1,98 @@
+/*
+  Diagram colours: the accordion diagram and its themes, the harmonic circle,
+  the score paper and the Finder footer. They are the same in every interface
+  theme, because the drawn diagram is also the downloaded file: the export
+  embeds these rules, and a dark interface must not change what is exported.
+*/
+:root {
+  --diagram-paper: #ffffff;
+  --diagram-accent: #1746d0;
+  --diagram-black: #000000;
+  --diagram-finder: #2f8f46;
+  --diagram-finder-dark: #1f7a38;
+  --diagram-selected-fill: #ffd1c7;
+  --diagram-finder-chord-fill: #fff0a8;
+  --diagram-classic-ink: #222222;
+  --diagram-warm-ink: #9b4d1f;
+  --diagram-finder-fill: #fff7c2;
+  --diagram-selected-finder-fill: #ffd9a8;
+  --diagram-ink: #172033;
+  --diagram-circle-ink: #16191f;
+  --diagram-footer-ink: #20252a;
+  --diagram-frame: #d9deea;
+  --diagram-shadow: rgba(25, 35, 60, 0.08);
+  --diagram-sequence: #d4553f;
+  --diagram-accidental-dark: #1b1f2a;
+  --diagram-pastel-ink: #2f6f73;
+  --diagram-path: #c2410c;
+  --diagram-sounding: #c97912;
+  --diagram-chord-fill: #e6eef8;
+  --diagram-chord-stroke: #d7e2f0;
+  --diagram-accidental: #5f6672;
+  --diagram-accidental-grey: #707784;
+  --diagram-accidental-selected: #7f2d24;
+  --diagram-label-ink: #111111;
+  --diagram-grey-chord-fill: #eeeeee;
+  --diagram-pastel-accidental: #355070;
+  --diagram-print-accidental: #707070;
+  --diagram-black-key: #242936;
+  --diagram-finder-primary: #a72e1d;
+  --diagram-finder-root-bass: #2454bf;
+  --diagram-harmony-comparison: #596477;
+  --diagram-caption: #33405a;
+  --diagram-focus: #f59e0b;
+  --diagram-accidental-label-outline: rgba(0, 0, 0, 0.62);
+  --diagram-bellows-fill: #f0f2f7;
+  --diagram-bellows-stroke: #d7deec;
+  --diagram-bellows-label: #8a94aa;
+  --diagram-row-label: #0034c7;
+  --diagram-classic-chord-stroke: #c9c9c9;
+  --diagram-classic-selected-fill: #f4c7c3;
+  --diagram-pastel-chord-fill: #e5f2ef;
+  --diagram-pastel-chord-stroke: #c7dfda;
+  --diagram-pastel-selected-fill: #ffd6a5;
+  --diagram-warm-paper: #fffaf0;
+  --diagram-warm-chord-fill: #f8e8c8;
+  --diagram-warm-chord-stroke: #eed2a1;
+  --diagram-warm-selected-fill: #ffd7b8;
+  --diagram-contrast-chord-fill: #ffff88;
+  --diagram-contrast-selected-fill: #ff6b6b;
+  --diagram-print-chord-stroke: #bdbdbd;
+  --diagram-print-selected-fill: #cccccc;
+  --diagram-finder-root-bass-fill: #d8e8ff;
+  --diagram-abc-fill: #fff8d7;
+  --diagram-abc-stroke: #c47f00;
+  --diagram-abc-ring: #f0a000;
+  --diagram-notation-shadow: rgba(15, 23, 42, 0.05);
+  --diagram-annotation-anchor: rgba(23, 70, 208, 0.12);
+  --diagram-annotation-editor-bg: rgba(255, 255, 255, 0.96);
+  --diagram-annotation-editor-shadow: rgba(15, 23, 42, 0.18);
+  --diagram-harmony-label: #151820;
+  --diagram-harmony-heading: #181b22;
+  --diagram-harmony-note: #4d5668;
+  --diagram-harmony-text: #3f485a;
+  --diagram-tooltip-border: #20242d;
+  --diagram-tooltip-bg: rgba(255, 255, 255, 0.98);
+  --diagram-tooltip-shadow: rgba(22, 28, 43, 0.18);
+  --diagram-tooltip-text: #171b24;
+  --diagram-tooltip-muted: #667187;
+  --diagram-voicing-leader: #a8b3c3;
+  --diagram-voicing-track: #bdc6d4;
+  --diagram-voicing-tight: #c43f35;
+  --diagram-voicing-close: #c77736;
+  --diagram-voicing-open: #509c8a;
+  --diagram-voicing-bass: #3266aa;
+  --diagram-voicing-chord: #426c5d;
+  --diagram-voicing-distance: #495567;
+  --diagram-sounding-glow: rgba(201, 121, 18, 0.4);
+  --diagram-note-ring: #4b5563;
+  --diagram-note-ring-hover: #111827;
+}
+
+/* Everything drawn inherits the diagram's ink, never the interface's text colour. */
+.diagram,
+.harmonic-diagram,
+.abc-hands-diagram,
+.rendered-notation-panel {
+  color: var(--diagram-ink);
+}

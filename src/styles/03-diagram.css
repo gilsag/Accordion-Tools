@@ -6,31 +6,31 @@
 }
 
 .button-group:focus-visible .button {
-  stroke: #f59e0b;
+  stroke: var(--diagram-focus);
   stroke-width: calc(var(--button-stroke-width) + 3px);
 }
 
 .button {
-  fill: #ffffff;
-  stroke: #1746d0;
+  fill: var(--diagram-paper);
+  stroke: var(--diagram-accent);
   stroke-width: var(--button-stroke-width);
 }
 
 .button.chord {
-  fill: #e6eef8;
+  fill: var(--diagram-chord-fill);
   fill-opacity: var(--chord-fill-strength);
-  stroke: #d7e2f0;
+  stroke: var(--diagram-chord-stroke);
 }
 
 .button.selected {
-  fill: #ffd1c7;
-  stroke: #1746d0;
+  fill: var(--diagram-selected-fill);
+  stroke: var(--diagram-accent);
 }
 
 .button.finder-match {
-  fill: #fff7c2;
+  fill: var(--diagram-finder-fill);
   fill-opacity: 1;
-  stroke: #1f7a38;
+  stroke: var(--diagram-finder-dark);
   stroke-width: calc(var(--button-stroke-width) + 1.5);
 }
 
@@ -39,26 +39,26 @@
 .accidental-style-grey .treble-accidental.finder-match,
 .accidental-style-theme .treble-accidental.finder-match,
 .accidental-style-outline .treble-accidental.finder-match {
-  fill: #fff7c2;
+  fill: var(--diagram-finder-fill);
   fill-opacity: 1;
-  stroke: #1f7a38;
+  stroke: var(--diagram-finder-dark);
 }
 
 .button.chord.finder-match {
-  fill: #fff0a8;
+  fill: var(--diagram-finder-chord-fill);
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
 }
 
 .finder-ring {
   fill: none;
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
   stroke-width: 3.2;
   pointer-events: none;
 }
 
 .button.selected.finder-match {
-  fill: #ffd9a8;
+  fill: var(--diagram-selected-finder-fill);
 }
 
 .treble-accidental.selected.finder-match,
@@ -66,8 +66,8 @@
 .accidental-style-grey .treble-accidental.selected.finder-match,
 .accidental-style-theme .treble-accidental.selected.finder-match,
 .accidental-style-outline .treble-accidental.selected.finder-match {
-  fill: #ffd9a8;
-  stroke: #1f7a38;
+  fill: var(--diagram-selected-finder-fill);
+  stroke: var(--diagram-finder-dark);
 }
 
 .button.in-sequence {
@@ -79,42 +79,42 @@
 }
 
 .treble-button {
-  fill: #ffffff;
-  stroke: #1746d0;
+  fill: var(--ui-on-accent);
+  stroke: var(--ui-accent);
 }
 
 .treble-accidental {
-  fill: #5f6672;
-  stroke: #5f6672;
+  fill: var(--diagram-accidental);
+  stroke: var(--diagram-accidental);
 }
 
 .accidental-style-dark .treble-accidental {
-  fill: #1b1f2a;
-  stroke: #1b1f2a;
+  fill: var(--diagram-accidental-dark);
+  stroke: var(--diagram-accidental-dark);
 }
 
 .accidental-style-grey .treble-accidental {
-  fill: #707784;
-  stroke: #707784;
+  fill: var(--diagram-accidental-grey);
+  stroke: var(--diagram-accidental-grey);
 }
 
 .accidental-style-outline .treble-accidental {
-  fill: #ffffff;
-  stroke: #1b1f2a;
+  fill: var(--diagram-paper);
+  stroke: var(--diagram-accidental-dark);
 }
 
 .accidental-style-theme .treble-accidental {
-  fill: #1746d0;
-  stroke: #1746d0;
+  fill: var(--diagram-accent);
+  stroke: var(--diagram-accent);
 }
 
 .treble-accidental.selected {
-  fill: #7f2d24;
-  stroke: #1746d0;
+  fill: var(--diagram-accidental-selected);
+  stroke: var(--diagram-accent);
 }
 
 .accidental-style-outline .treble-accidental.selected {
-  fill: #ffd1c7;
+  fill: var(--diagram-selected-fill);
 }
 
 .main-label {
@@ -143,26 +143,26 @@
 }
 
 .treble-label {
-  fill: #111111;
+  fill: var(--diagram-label-ink);
 }
 
 .treble-accidental-label {
-  fill: #ffffff;
+  fill: var(--diagram-paper);
 }
 
 .accidental-style-outline .treble-accidental-label {
-  fill: #111111;
+  fill: var(--diagram-label-ink);
 }
 
 .highlighted-accidental-label {
   paint-order: stroke;
-  stroke: rgba(0, 0, 0, 0.62);
+  stroke: var(--diagram-accidental-label-outline);
   stroke-width: 2.4px;
   stroke-linejoin: round;
 }
 
 .accidental-style-outline .highlighted-accidental-label {
-  stroke: #ffffff;
+  stroke: var(--diagram-paper);
 }
 
 .finger-label {
@@ -191,47 +191,47 @@
   font-weight: 900;
   pointer-events: none;
   paint-order: stroke;
-  stroke: #ffffff;
+  stroke: var(--diagram-paper);
   stroke-width: 3px;
   stroke-linejoin: round;
 }
 
 .finder-number {
-  fill: #1f7a38;
+  fill: var(--diagram-finder-dark);
   font-size: var(--sequence-number-size);
   font-weight: 900;
   pointer-events: none;
   paint-order: stroke;
-  stroke: #ffffff;
+  stroke: var(--diagram-paper);
   stroke-width: 3px;
   stroke-linejoin: round;
 }
 
 .free-text-note {
-  fill: #172033;
+  fill: var(--ui-text);
   font-size: 15px;
   font-weight: 800;
   pointer-events: none;
   paint-order: stroke;
-  stroke: #ffffff;
+  stroke: var(--ui-surface);
   stroke-width: 4px;
   stroke-linejoin: round;
 }
 
 .active-tool {
-  border-color: #d4553f;
-  color: #a72e1d;
-  background: #fff0ed;
+  border-color: var(--ui-danger-bright);
+  color: var(--ui-danger);
+  background: var(--ui-danger-subtle);
 }
 
 .bellows-strip {
-  fill: #f0f2f7;
-  stroke: #d7deec;
+  fill: var(--diagram-bellows-fill);
+  stroke: var(--diagram-bellows-stroke);
 }
 
 .bellows-label,
 .bellows-end-label {
-  fill: #8a94aa;
+  fill: var(--diagram-bellows-label);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -239,34 +239,34 @@
 }
 
 .bellows-end-label {
-  fill: #172033;
+  fill: var(--diagram-ink);
 }
 
 .stradella-row-label {
-  fill: #0034c7;
+  fill: var(--diagram-row-label);
   font-size: 12px;
   font-weight: 900;
 }
 
 .button-row {
   display: flex;
-  gap: 8px;
+  gap: var(--space-4);
 }
 
 .small-button {
   font: inherit;
   font-size: 12.5px;
   font-weight: 800;
-  border: 1px solid #c9d1e3;
-  border-radius: 10px;
-  padding: 8px 10px;
-  background: #ffffff;
-  color: #172033;
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  background: var(--ui-surface);
+  color: var(--ui-text);
   cursor: pointer;
 }
 
 .small-button:hover:not(:disabled) {
-  background: #f5f7fb;
+  background: var(--ui-surface-hover);
 }
 
 .small-button:disabled {
@@ -277,22 +277,22 @@
 .selected-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--space-4);
 }
 
 .selected-item {
-  border: 1px solid #d9deea;
-  border-radius: 10px;
-  padding: 8px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
   display: flex;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--space-4);
   font-size: 12.5px;
   font-weight: 800;
 }
 
 .selected-meta {
-  color: #6b7488;
+  color: var(--ui-text-muted);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -321,134 +321,134 @@
 /* Color themes */
 
 .diagram-theme-default .button {
-  stroke: #1746d0;
+  stroke: var(--diagram-accent);
 }
 
 .diagram-theme-default .button.chord {
-  fill: #e6eef8;
-  stroke: #d7e2f0;
+  fill: var(--diagram-chord-fill);
+  stroke: var(--diagram-chord-stroke);
 }
 
 .diagram-theme-default .button.selected {
-  fill: #ffd1c7;
-  stroke: #1746d0;
+  fill: var(--diagram-selected-fill);
+  stroke: var(--diagram-accent);
 }
 
 .diagram-theme-classic .button {
-  stroke: #222222;
+  stroke: var(--diagram-classic-ink);
 }
 
 .diagram-theme-classic .button.chord {
-  fill: #eeeeee;
-  stroke: #c9c9c9;
+  fill: var(--diagram-grey-chord-fill);
+  stroke: var(--diagram-classic-chord-stroke);
 }
 
 .diagram-theme-classic .button.selected {
-  fill: #f4c7c3;
-  stroke: #222222;
+  fill: var(--diagram-classic-selected-fill);
+  stroke: var(--diagram-classic-ink);
 }
 
 .diagram-theme-classic .accidental-style-theme .treble-accidental,
 .diagram-theme-classic.accidental-style-theme .treble-accidental {
-  fill: #222222;
-  stroke: #222222;
+  fill: var(--diagram-classic-ink);
+  stroke: var(--diagram-classic-ink);
 }
 
 .diagram-theme-classic .stradella-row-label {
-  fill: #222222;
+  fill: var(--diagram-classic-ink);
 }
 
 .diagram-theme-pastel .button {
-  stroke: #2f6f73;
+  stroke: var(--diagram-pastel-ink);
 }
 
 .diagram-theme-pastel .button.chord {
-  fill: #e5f2ef;
-  stroke: #c7dfda;
+  fill: var(--diagram-pastel-chord-fill);
+  stroke: var(--diagram-pastel-chord-stroke);
 }
 
 .diagram-theme-pastel .button.selected {
-  fill: #ffd6a5;
-  stroke: #2f6f73;
+  fill: var(--diagram-pastel-selected-fill);
+  stroke: var(--diagram-pastel-ink);
 }
 
 .diagram-theme-pastel.accidental-style-theme .treble-accidental {
-  fill: #355070;
-  stroke: #355070;
+  fill: var(--diagram-pastel-accidental);
+  stroke: var(--diagram-pastel-accidental);
 }
 
 .diagram-theme-pastel .stradella-row-label {
-  fill: #2f6f73;
+  fill: var(--diagram-pastel-ink);
 }
 
 .diagram-theme-warm {
-  background: #fffaf0;
+  background: var(--diagram-warm-paper);
 }
 
 .diagram-theme-warm .button {
-  stroke: #9b4d1f;
+  stroke: var(--diagram-warm-ink);
 }
 
 .diagram-theme-warm .button.chord {
-  fill: #f8e8c8;
-  stroke: #eed2a1;
+  fill: var(--diagram-warm-chord-fill);
+  stroke: var(--diagram-warm-chord-stroke);
 }
 
 .diagram-theme-warm .button.selected {
-  fill: #ffd7b8;
-  stroke: #9b4d1f;
+  fill: var(--diagram-warm-selected-fill);
+  stroke: var(--diagram-warm-ink);
 }
 
 .diagram-theme-warm.accidental-style-theme .treble-accidental {
-  fill: #9b4d1f;
-  stroke: #9b4d1f;
+  fill: var(--diagram-warm-ink);
+  stroke: var(--diagram-warm-ink);
 }
 
 .diagram-theme-warm .stradella-row-label {
-  fill: #9b4d1f;
+  fill: var(--diagram-warm-ink);
 }
 
 .diagram-theme-contrast {
-  background: #ffffff;
+  background: var(--diagram-paper);
 }
 
 .diagram-theme-contrast .button {
-  stroke: #000000;
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-contrast .button.chord {
-  fill: #ffff88;
-  stroke: #000000;
+  fill: var(--diagram-contrast-chord-fill);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-contrast .button.selected {
-  fill: #ff6b6b;
-  stroke: #000000;
+  fill: var(--diagram-contrast-selected-fill);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-contrast.accidental-style-theme .treble-accidental,
 .diagram-theme-contrast .treble-accidental {
-  fill: #000000;
-  stroke: #000000;
+  fill: var(--diagram-black);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-contrast .stradella-row-label {
-  fill: #000000;
+  fill: var(--diagram-black);
 }
 
 .diagram-theme-print .button {
-  fill: #ffffff;
-  stroke: #000000;
+  fill: var(--diagram-paper);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-print .button.chord {
-  fill: #eeeeee;
-  stroke: #bdbdbd;
+  fill: var(--diagram-grey-chord-fill);
+  stroke: var(--diagram-print-chord-stroke);
 }
 
 .diagram-theme-print .button.selected {
-  fill: #cccccc;
-  stroke: #000000;
+  fill: var(--diagram-print-selected-fill);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-print .button.reference {
@@ -456,22 +456,22 @@
 }
 
 .diagram-theme-print .treble-accidental {
-  fill: #000000;
-  stroke: #000000;
+  fill: var(--diagram-black);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-print.accidental-style-grey .treble-accidental {
-  fill: #707070;
-  stroke: #707070;
+  fill: var(--diagram-print-accidental);
+  stroke: var(--diagram-print-accidental);
 }
 
 .diagram-theme-print.accidental-style-outline .treble-accidental {
-  fill: #ffffff;
-  stroke: #000000;
+  fill: var(--diagram-paper);
+  stroke: var(--diagram-black);
 }
 
 .diagram-theme-print .stradella-row-label {
-  fill: #000000;
+  fill: var(--diagram-black);
 }
 
 @media (min-width: 861px) and (orientation: landscape) {
@@ -480,12 +480,12 @@
   }
 
   .topbar {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: var(--space-5);
+    padding-right: var(--space-5);
   }
 
   .canvas-wrap {
-    padding: 4px 4px 0 4px;
+    padding: var(--space-2) var(--space-2) 0 var(--space-2);
   }
 }
 
@@ -497,14 +497,14 @@
 
   .left-panel {
     border: 0;
-    border-bottom: 1px solid #d9deea;
+    border-bottom: 1px solid var(--ui-border);
     max-height: none;
   }
 
   .topbar {
     flex-wrap: wrap;
     height: auto;
-    padding: 10px 18px;
+    padding: var(--space-5) 18px;
   }
 
   .canvas-wrap {
@@ -517,24 +517,24 @@
 .selected-remove-button {
   border: 0;
   background: transparent;
-  color: #a72e1d;
+  color: var(--ui-danger);
   font-size: 16px;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
-  padding: 2px 4px;
+  padding: var(--space-1) var(--space-2);
   margin-left: auto;
 }
 
 .selected-remove-button:hover {
-  color: #d4553f;
+  color: var(--ui-danger-bright);
 }
 
 /* Finder highlights are appended after themes so they remain visible in every theme. */
 .button.finder-match {
-  fill: #fff7c2;
+  fill: var(--diagram-finder-fill);
   fill-opacity: 1;
-  stroke: #1f7a38;
+  stroke: var(--diagram-finder-dark);
   stroke-width: calc(var(--button-stroke-width) + 1.5);
 }
 
@@ -545,26 +545,26 @@
 .accidental-style-grey .treble-accidental.finder-match,
 .accidental-style-theme .treble-accidental.finder-match,
 .accidental-style-outline .treble-accidental.finder-match {
-  fill: #fff7c2;
+  fill: var(--diagram-finder-fill);
   fill-opacity: 1;
-  stroke: #1f7a38;
+  stroke: var(--diagram-finder-dark);
 }
 
 .button.chord.finder-match {
-  fill: #fff0a8;
+  fill: var(--diagram-finder-chord-fill);
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
 }
 
 .finder-ring {
   fill: none;
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
   stroke-width: 3.2;
   pointer-events: none;
 }
 
 .button.selected.finder-match {
-  fill: #ffd9a8;
+  fill: var(--diagram-selected-finder-fill);
 }
 
 .treble-accidental.selected.finder-match,
@@ -572,13 +572,13 @@
 .accidental-style-grey .treble-accidental.selected.finder-match,
 .accidental-style-theme .treble-accidental.selected.finder-match,
 .accidental-style-outline .treble-accidental.selected.finder-match {
-  fill: #ffd9a8;
-  stroke: #1f7a38;
+  fill: var(--diagram-selected-finder-fill);
+  stroke: var(--diagram-finder-dark);
 }
 
 /* Finder arrows connect the single-octave scale/chord path selected by the Finder tool. */
 .finder-arrow {
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
   stroke-width: 2.7;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -587,7 +587,7 @@
 }
 
 .finder-arrowhead {
-  fill: #2f8f46;
+  fill: var(--diagram-finder);
 }
 
 .tool-fieldset {
@@ -596,7 +596,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--space-5);
 }
 
 .tool-fieldset:disabled {
@@ -605,38 +605,38 @@
 
 /* Piano treble keyboard */
 .piano-key {
-  stroke: #1746d0;
+  stroke: var(--diagram-accent);
   stroke-width: var(--button-stroke-width);
 }
 
 .piano-white-key {
-  fill: #ffffff;
+  fill: var(--diagram-paper);
 }
 
 .piano-black-key {
-  fill: #242936;
-  stroke: #242936;
+  fill: var(--diagram-black-key);
+  stroke: var(--diagram-black-key);
 }
 
 .piano-key.selected {
-  fill: #ffd1c7;
-  stroke: #1746d0;
+  fill: var(--diagram-selected-fill);
+  stroke: var(--diagram-accent);
 }
 
 .piano-black-key.selected {
-  fill: #7f2d24;
-  stroke: #1746d0;
+  fill: var(--diagram-accidental-selected);
+  stroke: var(--diagram-accent);
 }
 
 .piano-key.finder-match {
-  fill: #fff0a8;
-  stroke: #2f8f46;
+  fill: var(--diagram-finder-chord-fill);
+  stroke: var(--diagram-finder);
   stroke-width: calc(var(--button-stroke-width) + 1.5);
 }
 
 .piano-black-key.finder-match {
-  fill: #fff0a8;
-  stroke: #2f8f46;
+  fill: var(--diagram-finder-chord-fill);
+  stroke: var(--diagram-finder);
 }
 
 .piano-key.in-sequence {
@@ -646,57 +646,57 @@
 .topbar-select {
   width: auto;
   min-width: 82px;
-  border-radius: 999px;
-  padding: 7px 10px;
+  border-radius: var(--radius-pill);
+  padding: 7px var(--space-5);
   font-weight: 800;
 }
 
 /* Chord finder buttons need full-opacity highlights; chord rows normally use adjustable fill opacity. */
 .button.chord.finder-match {
-  fill: #fff0a8;
+  fill: var(--diagram-finder-chord-fill);
   fill-opacity: 1;
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
 }
 
 .finder-ring {
   fill: none;
-  stroke: #2f8f46;
+  stroke: var(--diagram-finder);
   stroke-width: 3.2;
   pointer-events: none;
 }
 
 /* Primary Stradella chord-button in a finder recipe, usually the button that carries the named root/function. */
 .button.finder-primary {
-  fill: #ffd1c7;
-  stroke: #a72e1d;
+  fill: var(--diagram-selected-fill);
+  stroke: var(--diagram-finder-primary);
 }
 
 .finder-primary-ring {
-  stroke: #a72e1d;
+  stroke: var(--diagram-finder-primary);
   stroke-width: 4.2;
 }
 
 .tool-details {
-  border: 1px solid #d7deec;
-  border-radius: 10px;
-  padding: 8px 10px;
-  background: #ffffff;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  background: var(--ui-surface);
 }
 
 .tool-details summary {
   cursor: pointer;
   font-weight: 800;
-  color: #1746d0;
+  color: var(--ui-accent);
 }
 
 /* Root-bass marker used by the Stradella Chord Finder when chord-button recipes also show the named root bass note. */
 .button.finder-root-bass {
-  fill: #d8e8ff;
+  fill: var(--diagram-finder-root-bass-fill);
   fill-opacity: 1;
-  stroke: #2454bf;
+  stroke: var(--diagram-finder-root-bass);
 }
 
 .finder-root-bass-ring {
-  stroke: #2454bf;
+  stroke: var(--diagram-finder-root-bass);
   stroke-width: 4.2;
 }
