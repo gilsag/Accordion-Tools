@@ -7,7 +7,9 @@ export default mergeConfig(
   viteConfig,
   defineConfig({
     test: {
-      include: ["tests/unit/**/*.test.{ts,tsx,js}"],
+      // A tool's tests sit in its folder; tests of shared code and of the
+      // composed app are under tests/unit.
+      include: ["src/**/*.test.{ts,tsx,js}", "tests/unit/**/*.test.{ts,tsx,js}"],
       environment: "node",
       // The Stradella search suites are CPU-bound; a failing case should not be
       // retried or left running.
@@ -15,7 +17,7 @@ export default mergeConfig(
       coverage: {
         provider: "v8",
         include: ["src/**/*.{ts,tsx}"],
-        exclude: ["src/i18n/{es,fr,pt,it,de}.ts", "src/**/*.d.ts"],
+        exclude: ["src/i18n/{es,fr,pt,it,de}.ts", "src/**/*.d.ts", "src/**/*.test.{ts,tsx}"],
         reporter: ["text-summary", "html"],
         reportsDirectory: "coverage",
       },
