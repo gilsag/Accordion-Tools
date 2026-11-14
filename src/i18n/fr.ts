@@ -204,6 +204,10 @@ export const FR: Record<TranslationKey, string> = {
   "ui.includeSummaryNote": "Inclure la note récapitulative",
   "ui.limitBarsPerLine": "Limiter les mesures par ligne",
   "ui.interfaceDensity": "Densité de l’interface",
+  "ui.interfaceTheme": "Thème de l’interface",
+  "ui.themeSystem": "Système",
+  "ui.themeLight": "Clair",
+  "ui.themeDark": "Sombre",
   "ui.colorTheme": "Thème de couleurs",
   "ui.defaultBlue": "Bleu par défaut",
   "ui.classicInk": "Encre classique",
@@ -471,6 +475,8 @@ export const FR: Record<TranslationKey, string> = {
     "Auto affiche un accord exact si cinq boutons suffisent ; Accord complet affiche toutes les notes disponibles, même les positions théoriques à six ou sept boutons ; Pratique utilise une disposition réduite.",
   "ui.interfaceDensityHelp":
     "Compact économise de la place dans le panneau latéral ; Confortable espace davantage les commandes.",
+  "ui.interfaceThemeHelp":
+    "Couleurs claires ou sombres pour les panneaux et les menus. Système suit le réglage de l’appareil. Les diagrammes et les téléchargements gardent toujours leurs propres couleurs.",
   "ui.statusBarHelp":
     "Affiche un résumé sur une ligne au-dessus du diagramme. Désactivez-le pour disposer de plus d’espace.",
   "ui.diagramScaleHelp":

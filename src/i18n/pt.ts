@@ -203,6 +203,10 @@ export const PT: Record<TranslationKey, string> = {
   "ui.includeSummaryNote": "Incluir nota de resumo",
   "ui.limitBarsPerLine": "Limitar compassos por linha",
   "ui.interfaceDensity": "Densidade da interface",
+  "ui.interfaceTheme": "Tema da interface",
+  "ui.themeSystem": "Sistema",
+  "ui.themeLight": "Claro",
+  "ui.themeDark": "Escuro",
   "ui.colorTheme": "Tema de cores",
   "ui.defaultBlue": "Azul padrão",
   "ui.classicInk": "Tinta clássica",
@@ -468,6 +472,8 @@ export const PT: Record<TranslationKey, string> = {
     "Automático exibe acordes exatos quando possível em até cinco botões; Acorde completo mostra todas as notas disponíveis, inclusive posições maiores.",
   "ui.interfaceDensityHelp":
     "Compacto economiza espaço na barra lateral; Confortável dá mais espaço aos controles.",
+  "ui.interfaceThemeHelp":
+    "Cores claras ou escuras para painéis e menus. Sistema segue a configuração do dispositivo. Os diagramas e os downloads mantêm sempre as suas próprias cores.",
   "ui.statusBarHelp":
     "Mostra um resumo de uma linha acima do diagrama. Desative para liberar mais espaço.",
   "ui.diagramScaleHelp":

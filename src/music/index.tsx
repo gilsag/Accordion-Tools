@@ -361,7 +361,7 @@ export function chordTones(
   return intervals.map((i) => formatPitch(transpose(root, i), notation, accidental)).join("-");
 }
 
-/** Converts a named font option into the CSS class used by App.css. */
+/** Converts a named font option into the CSS class used by the stylesheets. */
 export function fontClass(font: FontFamily): string {
   return `font-${font}`;
 }

@@ -202,6 +202,10 @@ export const DE: Record<TranslationKey, string> = {
   "ui.includeSummaryNote": "Zusammenfassung einschließen",
   "ui.limitBarsPerLine": "Takte pro Zeile begrenzen",
   "ui.interfaceDensity": "Oberflächendichte",
+  "ui.interfaceTheme": "Oberflächendesign",
+  "ui.themeSystem": "System",
+  "ui.themeLight": "Hell",
+  "ui.themeDark": "Dunkel",
   "ui.colorTheme": "Farbschema",
   "ui.defaultBlue": "Standardblau",
   "ui.classicInk": "Klassische Tinte",
@@ -468,6 +472,8 @@ export const DE: Record<TranslationKey, string> = {
     "Automatisch zeigt möglichst exakte Akkorde mit bis zu fünf Knöpfen; Vollständiger Akkord zeigt alle verfügbaren Töne, auch in größeren Griffen.",
   "ui.interfaceDensityHelp":
     "Kompakt spart Platz in der Seitenleiste; Bequem bietet den Bedienelementen mehr Raum.",
+  "ui.interfaceThemeHelp":
+    "Helle oder dunkle Farben für Bedienfelder und Menüs. System folgt der Einstellung des Geräts. Diagramme und Downloads behalten immer ihre eigenen Farben.",
   "ui.statusBarHelp":
     "Zeigt eine einzeilige Zusammenfassung über dem Diagramm. Zum Platzsparen deaktivieren.",
   "ui.diagramScaleHelp":

@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { test as base, expect, type Page } from "@playwright/test";
 
 /** Every test fails if the page logs an error or throws. */
@@ -112,4 +113,28 @@ export async function recordAudioStarts(page: Page) {
     page.evaluate(
       () => (window as unknown as { audioStarts: { starts: number } }).audioStarts.starts,
     );
+}
+
+/** Runs `trigger` and returns the file it downloads. */
+export async function downloadFrom(page: Page, trigger: () => Promise<void>) {
+  const [download] = await Promise.all([page.waitForEvent("download"), trigger()]);
+  const path = await download.path();
+  return { name: download.suggestedFilename(), bytes: await readFile(path) };
+}
+
+/** Picks a format from the Download menu (the overflow menu on phones). */
+export async function chooseDownload(page: Page, format: "SVG" | "PNG") {
+  if (isPhone(page)) {
+    await page.locator(".phone-overflow-toggle").click();
+    await page
+      .locator(".phone-overflow-menu")
+      .getByRole("button", { name: `Download ${format}` })
+      .click();
+  } else {
+    await page.locator(".export-menu > summary").click();
+    await page
+      .locator(".export-menu")
+      .getByRole("button", { name: `Download ${format}` })
+      .click();
+  }
 }

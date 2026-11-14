@@ -21,6 +21,7 @@ import type {
   FinderScalePattern,
   FontFamily,
   InterfaceDensity,
+  InterfaceTheme,
   NotationMode,
   NumberPosition,
   PianoTrebleRange,
@@ -73,6 +74,7 @@ export type DefaultSettingsFile = Partial<{
   pianoBlackKeyHeightScale: number;
   diagramScale: number;
   interfaceDensity: InterfaceDensity;
+  interfaceTheme: InterfaceTheme;
   showStatusBar: boolean;
   scaleFinderDisplayMode: SequenceDisplayMode;
   colorTheme: ColorTheme;

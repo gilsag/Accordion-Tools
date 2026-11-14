@@ -79,8 +79,8 @@
 }
 
 .treble-button {
-  fill: var(--ui-on-accent);
-  stroke: var(--ui-accent);
+  fill: var(--diagram-paper);
+  stroke: var(--diagram-accent);
 }
 
 .treble-accidental {
@@ -208,12 +208,12 @@
 }
 
 .free-text-note {
-  fill: var(--ui-text);
+  fill: var(--diagram-ink);
   font-size: 15px;
   font-weight: 800;
   pointer-events: none;
   paint-order: stroke;
-  stroke: var(--ui-surface);
+  stroke: var(--diagram-paper);
   stroke-width: 4px;
   stroke-linejoin: round;
 }

@@ -33,6 +33,7 @@
   "pianoBlackKeyHeightScale": 1,
   "diagramScale": 100,
   "interfaceDensity": "compact",
+  "interfaceTheme": "system",
   "showStatusBar": true,
   "scaleFinderDisplayMode": "numbers-and-straight-arrows",
   "abcStradellaMode": "bass-notes-and-chord-symbols",

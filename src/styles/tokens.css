@@ -3,7 +3,7 @@
   token defined here or in diagram-tokens.css; style rules use var().
 
   The interface tokens (--ui-*) change with the theme. The scales below
-  (type, spacing, radius) do not.
+  (type, spacing, radius) and the diagram tokens do not.
 */
 :root {
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -36,69 +36,82 @@
   --radius-pill: 999px;
 }
 
-/* Interface colours, light theme. */
+/*
+  Interface colours: each token gives its light value, then its dark one.
+  The page follows the system's light or dark setting unless the person picks
+  a theme in Settings, which sets data-theme on the root element. Diagram
+  colours are not here: they stay the same in both themes (diagram-tokens.css).
+*/
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
   /* Surfaces */
-  --ui-bg: #f6f7fb;
-  --ui-surface: #ffffff;
-  --ui-surface-subtle: #f8faff;
-  --ui-surface-hover: #f5f7fb;
-  --ui-surface-sunken: #eef2f7;
-  --ui-surface-translucent: rgba(255, 255, 255, 0.95);
-  --ui-fill-faint: rgba(100, 110, 125, 0.14);
-  --ui-track: #e9edf6;
+  --ui-bg: light-dark(#f6f7fb, #10141c);
+  --ui-surface: light-dark(#ffffff, #191e29);
+  --ui-surface-subtle: light-dark(#f8faff, #1c2230);
+  --ui-surface-hover: light-dark(#f5f7fb, #232a39);
+  --ui-surface-sunken: light-dark(#eef2f7, #141924);
+  --ui-surface-translucent: light-dark(rgba(255, 255, 255, 0.95), rgba(25, 30, 41, 0.95));
+  --ui-fill-faint: light-dark(rgba(100, 110, 125, 0.14), rgba(160, 172, 195, 0.16));
+  --ui-track: light-dark(#e9edf6, #252c3b);
 
   /* Text */
-  --ui-text-strong: #08060d;
-  --ui-text: #172033;
-  --ui-text-secondary: #526078;
-  --ui-text-muted: #5f6b7a;
-  --ui-on-accent: #ffffff;
-  --ui-inverse-bg: #172033;
-  --ui-inverse-text: #ffffff;
+  --ui-text-strong: light-dark(#08060d, #f4f6fb);
+  --ui-text: light-dark(#172033, #e2e6ee);
+  --ui-text-secondary: light-dark(#526078, #adb6c6);
+  --ui-text-muted: light-dark(#5f6b7a, #99a3b3);
+  --ui-on-accent: light-dark(#ffffff, #0c1430);
+  --ui-inverse-bg: light-dark(#172033, #e2e6ee);
+  --ui-inverse-text: light-dark(#ffffff, #10141c);
 
   /* Borders and lines */
-  --ui-border: #d9deea;
-  --ui-border-strong: #c9d1e3;
-  --ui-border-subtle: #edf0f6;
-  --ui-control-border-dark: #71839d;
-  --ui-line-faint: rgba(95, 107, 122, 0.18);
-  --ui-line: rgba(95, 107, 122, 0.28);
-  --ui-line-strong: rgba(30, 45, 65, 0.43);
+  --ui-border: light-dark(#d9deea, #343c4e);
+  --ui-border-strong: light-dark(#c9d1e3, #465068);
+  --ui-border-subtle: light-dark(#edf0f6, #262d3b);
+  --ui-control-border-dark: light-dark(#71839d, #8090a8);
+  --ui-line-faint: light-dark(rgba(95, 107, 122, 0.18), rgba(170, 182, 205, 0.16));
+  --ui-line: light-dark(rgba(95, 107, 122, 0.28), rgba(170, 182, 205, 0.26));
+  --ui-line-strong: light-dark(rgba(30, 45, 65, 0.43), rgba(205, 215, 235, 0.45));
 
   /* Accent */
-  --ui-accent: #1746d0;
-  --ui-accent-strong: #173fa6;
-  --ui-accent-muted: #3654ac;
-  --ui-accent-subtle: #eef3ff;
-  --ui-accent-subtle-strong: #e9efff;
-  --ui-resize-handle: #8aa4e8;
+  --ui-accent: light-dark(#1746d0, #86a2ff);
+  --ui-accent-strong: light-dark(#173fa6, #a9bdff);
+  --ui-accent-muted: light-dark(#3654ac, #93a8e6);
+  --ui-accent-subtle: light-dark(#eef3ff, #1c2848);
+  --ui-accent-subtle-strong: light-dark(#e9efff, #223058);
+  --ui-resize-handle: light-dark(#8aa4e8, #5470c4);
 
   /* States */
-  --ui-danger: #a72e1d;
-  --ui-danger-bright: #d4553f;
-  --ui-danger-subtle: #fff0ed;
-  --ui-danger-border-subtle: #d9a3a3;
-  --ui-warning: #7a4a06;
-  --ui-warning-subtle: #fff8df;
-  --ui-warning-border: #e7c983;
-  --ui-success: #1d5e2a;
-  --ui-success-subtle: #e3f3e5;
+  --ui-danger: light-dark(#a72e1d, #ff8f7d);
+  --ui-danger-bright: light-dark(#d4553f, #e8664f);
+  --ui-danger-subtle: light-dark(#fff0ed, #3a201c);
+  --ui-danger-border-subtle: light-dark(#d9a3a3, #74403a);
+  --ui-warning: light-dark(#7a4a06, #f2c46a);
+  --ui-warning-subtle: light-dark(#fff8df, #322914);
+  --ui-warning-border: light-dark(#e7c983, #6e5824);
+  --ui-success: light-dark(#1d5e2a, #82d391);
+  --ui-success-subtle: light-dark(#e3f3e5, #1a3221);
 
   /* Rhythm Trainer timeline */
-  --ui-rhythm-bass: #7c889a;
-  --ui-rhythm-treble: #16878c;
-  --ui-rhythm-sounding: #c97912;
-  --ui-rhythm-sounding-glow: #fff4c9;
+  --ui-rhythm-bass: light-dark(#7c889a, #8e9aad);
+  --ui-rhythm-treble: light-dark(#16878c, #35b9be);
+  --ui-rhythm-sounding: light-dark(#c97912, #e8a040);
+  --ui-rhythm-sounding-glow: light-dark(#fff4c9, #4b3b14);
 
   /* Overlays and shadows */
-  --ui-backdrop: rgba(19, 30, 49, 0.48);
-  --ui-backdrop-strong: rgba(0, 0, 0, 0.65);
-  --ui-shadow-faint: rgba(15, 23, 42, 0.08);
-  --ui-shadow-popover: rgba(25, 35, 60, 0.18);
-  --ui-shadow-sheet: rgba(15, 23, 42, 0.25);
-  --ui-shadow-dialog: rgba(0, 0, 0, 0.35);
-  --ui-text-shadow: rgba(0, 0, 0, 0.2);
+  --ui-backdrop: light-dark(rgba(19, 30, 49, 0.48), rgba(0, 0, 0, 0.6));
+  --ui-backdrop-strong: light-dark(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75));
+  --ui-shadow-faint: light-dark(rgba(15, 23, 42, 0.08), rgba(0, 0, 0, 0.3));
+  --ui-shadow-popover: light-dark(rgba(25, 35, 60, 0.18), rgba(0, 0, 0, 0.45));
+  --ui-shadow-sheet: light-dark(rgba(15, 23, 42, 0.25), rgba(0, 0, 0, 0.5));
+  --ui-shadow-dialog: light-dark(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.6));
+  --ui-text-shadow: light-dark(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.45));
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }

@@ -57,7 +57,7 @@ export function SpeakerIcon({ on }: { on: boolean }) {
 }
 
 /* Settings, Tools and Reset show their icons only when the toolbar is narrow
-   and their labels are hidden (see .topbar-compact-icon in App.css). */
+   and their labels are hidden (see .topbar-compact-icon in src/styles/10-toolbar-and-playback.css). */
 export function SettingsIcon() {
   return (
     <svg

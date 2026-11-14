@@ -74,6 +74,7 @@ Controls the staff notation shown under the diagram by the ABC Player, Bass Patt
 ## Appearance
 
 - **Interface density:** **Compact** or **Comfortable** spacing for the control panels.
+- **Interface theme:** **System** follows your device's light or dark setting; **Light** and **Dark** keep one. Diagrams, scores and downloaded files look the same in every theme, so a diagram stays on white paper in the dark theme.
 - **Show status bar:** the summary line under the toolbar.
 - **Diagram scale:** enlarges or reduces the diagram on screen. Above 100% the diagram may scroll.
 - **Color theme:** Default blue, Classic ink, Pastel, Warm cream, High contrast or Print / grayscale. **Accidental buttons** chooses how sharps and flats look on chromatic keyboards.

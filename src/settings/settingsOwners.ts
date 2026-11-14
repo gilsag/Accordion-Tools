@@ -109,6 +109,7 @@ export const SETTINGS_OWNERS = {
   // shell
   downloadFormat: "shell",
   interfaceDensity: "shell",
+  interfaceTheme: "shell",
   // scaleFinder
   scaleFinderDisplayMode: "scaleFinder",
   scaleFinderPattern: "scaleFinder",

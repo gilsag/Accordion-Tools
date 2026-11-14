@@ -1,27 +1,13 @@
-import { readFile } from "node:fs/promises";
-import { test, expect, openApp, openTool, openSettings, isPhone, type Page } from "./fixtures";
-
-async function downloadFrom(page: Page, trigger: () => Promise<void>) {
-  const [download] = await Promise.all([page.waitForEvent("download"), trigger()]);
-  const path = await download.path();
-  return { name: download.suggestedFilename(), bytes: await readFile(path) };
-}
-
-async function chooseDownload(page: Page, format: "SVG" | "PNG") {
-  if (isPhone(page)) {
-    await page.locator(".phone-overflow-toggle").click();
-    await page
-      .locator(".phone-overflow-menu")
-      .getByRole("button", { name: `Download ${format}` })
-      .click();
-  } else {
-    await page.locator(".export-menu > summary").click();
-    await page
-      .locator(".export-menu")
-      .getByRole("button", { name: `Download ${format}` })
-      .click();
-  }
-}
+import {
+  test,
+  expect,
+  openApp,
+  openTool,
+  openSettings,
+  downloadFrom,
+  chooseDownload,
+  type Page,
+} from "./fixtures";
 
 test("the diagram downloads as SVG and PNG", async ({ page }) => {
   await openApp(page);

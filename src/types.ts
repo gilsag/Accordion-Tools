@@ -27,7 +27,7 @@ export type FontFamily = "system" | "serif" | "mono" | "rounded";
 /** Controls which left-side panel is visible. */
 export type LeftPanelMode = "settings" | "tools" | "hidden";
 
-/** Visual themes implemented in App.css. */
+/** Diagram colour themes (the .diagram-theme-* rules in src/styles/03-diagram.css). */
 export type ColorTheme = "default" | "classic" | "pastel" | "print" | "warm" | "contrast";
 
 /** Visual styles for treble accidental buttons. */
@@ -182,6 +182,10 @@ export type DownloadFormat = "svg" | "png";
 
 /** Controls the density of sidebar controls. */
 export type InterfaceDensity = "compact" | "comfortable";
+
+/** Interface colours: follow the system setting, or always light or dark.
+ * Diagrams and their exports look the same in every theme. */
+export type InterfaceTheme = "system" | "light" | "dark";
 
 /** Shared Finder pattern union retained for older integrations. */
 export type FinderPattern = FinderScalePattern | FinderChordPattern;

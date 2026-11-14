@@ -1,6 +1,6 @@
 import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import type { ColorTheme } from "../../types";
+import type { ColorTheme, InterfaceTheme } from "../../types";
 import {
   usePlatformAppearance,
   usePlatformLanguage,
@@ -11,7 +11,8 @@ import {
 export default function HarmonyAppearanceSection() {
   const { t } = usePlatformLanguage();
   const { colorTheme, setColorTheme, setShowStatusBar, showStatusBar } = usePlatformAppearance();
-  const { interfaceDensity, setInterfaceDensity } = usePlatformShell();
+  const { interfaceDensity, interfaceTheme, setInterfaceDensity, setInterfaceTheme } =
+    usePlatformShell();
   return (
     <>
       <SegmentedChoice
@@ -20,6 +21,7 @@ export default function HarmonyAppearanceSection() {
             {t("ui.interfaceDensity")} <HelpTip text={t("ui.interfaceDensityHelp")} />
           </>
         }
+        ariaLabel={t("ui.interfaceDensity")}
         value={interfaceDensity}
         onChange={setInterfaceDensity}
         options={[
@@ -27,6 +29,19 @@ export default function HarmonyAppearanceSection() {
           { value: "comfortable", label: t("ui.comfortable") },
         ]}
       />
+      <label>
+        <span className="label-line">
+          {t("ui.interfaceTheme")} <HelpTip text={t("ui.interfaceThemeHelp")} />
+        </span>
+        <select
+          value={interfaceTheme}
+          onChange={(event) => setInterfaceTheme(event.target.value as InterfaceTheme)}
+        >
+          <option value="system">{t("ui.themeSystem")}</option>
+          <option value="light">{t("ui.themeLight")}</option>
+          <option value="dark">{t("ui.themeDark")}</option>
+        </select>
+      </label>
       <label className="checkbox-label">
         <input
           type="checkbox"

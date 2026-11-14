@@ -93,6 +93,7 @@
 .diagram,
 .harmonic-diagram,
 .abc-hands-diagram,
-.rendered-notation-panel {
+.rendered-notation-panel,
+.shared-notation-score {
   color: var(--diagram-ink);
 }

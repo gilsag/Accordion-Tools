@@ -35,6 +35,9 @@ function cloneSvgWithEmbeddedStyles(svgElement: SVGSVGElement, pngSafe = false) 
     }
   });
 
+  // The page's theme rules come along with the rest; a diagram file is always light.
+  cssText += ":root { color-scheme: light; }\n";
+
   const styleElement = document.createElementNS("http://www.w3.org/2000/svg", "style");
   styleElement.textContent = cssText;
   clone.insertBefore(styleElement, clone.firstChild);

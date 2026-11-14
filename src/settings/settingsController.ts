@@ -5,6 +5,8 @@ import { normalizeStradellaNoteLevels } from "../features/stradellaChordFinder/e
 import type { MinimumNominalGap } from "../features/stradellaChordFinder/engine/voicingDensity";
 import { DEFAULT_RING_VISIBILITY } from "../features/harmonyExplorer/engine/music";
 
+const INTERFACE_THEME_VALUES = ["system", "light", "dark"] as const;
+
 /** Callbacks supplied by feature owners; the settings controller never owns
  * instrument, sound or tool state. Typed per exported JSON field so future
  * changes cannot silently widen the accepted setter values.
@@ -93,6 +95,7 @@ export interface SettingsSetters {
   ) => void;
   setHarmonyVoicingStyle: (value: NonNullable<DefaultSettingsFile["harmonyVoicingStyle"]>) => void;
   setInterfaceDensity: (value: NonNullable<DefaultSettingsFile["interfaceDensity"]>) => void;
+  setInterfaceTheme: (value: NonNullable<DefaultSettingsFile["interfaceTheme"]>) => void;
   setLaMelodiosaBassRegister: (
     value: NonNullable<DefaultSettingsFile["laMelodiosaBassRegister"]>,
   ) => void;
@@ -281,6 +284,7 @@ export function applyStartupSettings(
     setDiagramVerticalSpacing,
     setDownloadFormat,
     setInterfaceDensity,
+    setInterfaceTheme,
     setLaMelodiosaBassRegister,
     setLaMelodiosaFollowStradellaRegisters,
     setLaMelodiosaTrebleRegister,
@@ -425,6 +429,9 @@ export function applyStartupSettings(
   }
   if (isOneOf(defaults.interfaceDensity, ["compact", "comfortable"] as const)) {
     setInterfaceDensity(defaults.interfaceDensity);
+  }
+  if (isOneOf(defaults.interfaceTheme, INTERFACE_THEME_VALUES)) {
+    setInterfaceTheme(defaults.interfaceTheme);
   }
   if (typeof defaults.showStatusBar === "boolean") {
     setShowStatusBar(defaults.showStatusBar);
@@ -915,6 +922,7 @@ export function applyImportedSettings(
     setDiagramVerticalSpacing,
     setDownloadFormat,
     setInterfaceDensity,
+    setInterfaceTheme,
     setMusicNotationBarsPerLine,
     setMusicNotationChordFontSize,
     setMusicNotationIncludeDescription,
@@ -1027,6 +1035,8 @@ export function applyImportedSettings(
     setDiagramScale(Math.max(70, Math.min(140, settings.diagramScale)));
   if (isOneOf(settings.interfaceDensity, ["compact", "comfortable"] as const))
     setInterfaceDensity(settings.interfaceDensity);
+  if (isOneOf(settings.interfaceTheme, INTERFACE_THEME_VALUES))
+    setInterfaceTheme(settings.interfaceTheme);
   if (typeof settings.showStatusBar === "boolean") setShowStatusBar(settings.showStatusBar);
   if (isOneOf(settings.scaleFinderDisplayMode, SEQUENCE_DISPLAY_MODE_VALUES))
     setScaleFinderDisplayMode(settings.scaleFinderDisplayMode);
@@ -1198,6 +1208,7 @@ export type SettingsExportSnapshot = Required<
     | "pianoBlackKeyHeightScale"
     | "diagramScale"
     | "interfaceDensity"
+    | "interfaceTheme"
     | "showStatusBar"
     | "scaleFinderDisplayMode"
     | "abcStradellaMode"
@@ -1346,6 +1357,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     harmonyShowToneTooltips,
     harmonyVoicingStyle,
     interfaceDensity,
+    interfaceTheme,
     laMelodiosaBassRegister,
     laMelodiosaFollowStradellaRegisters,
     laMelodiosaTrebleRegister,
@@ -1464,6 +1476,7 @@ export function collectCurrentSettings(snapshot: SettingsExportSnapshot): Defaul
     pianoBlackKeyHeightScale,
     diagramScale,
     interfaceDensity,
+    interfaceTheme,
     showStatusBar,
     scaleFinderDisplayMode,
     abcStradellaMode,

@@ -38,6 +38,7 @@
   "pianoBlackKeyHeightScale",
   "diagramScale",
   "interfaceDensity",
+  "interfaceTheme",
   "showStatusBar",
   "scaleFinderDisplayMode",
   "abcStradellaMode",

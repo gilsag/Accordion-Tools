@@ -87,6 +87,7 @@ These settings control rendered staff-notation panels in the accordion workspace
 | `titleSize` | Default title size. |
 | `labelFont` | Default button-label font. |
 | `interfaceDensity` | Control-panel density. |
+| `interfaceTheme` | Interface colours: `system` (follow the device's light or dark setting, the default), `light` or `dark`. Diagrams and exports never change with it. |
 | `showStatusBar` | Shows or hides the status bar. |
 
 ### Piano appearance settings

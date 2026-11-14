@@ -199,6 +199,10 @@ export const EN = {
   "ui.includeSummaryNote": "Include summary note",
   "ui.limitBarsPerLine": "Limit bars per line",
   "ui.interfaceDensity": "Interface density",
+  "ui.interfaceTheme": "Interface theme",
+  "ui.themeSystem": "System",
+  "ui.themeLight": "Light",
+  "ui.themeDark": "Dark",
   "ui.colorTheme": "Color theme",
   "ui.defaultBlue": "Default blue",
   "ui.classicInk": "Classic ink",
@@ -463,6 +467,8 @@ export const EN = {
     "Auto shows an exact chord when possible within five buttons; Full chord shows all available tones, including theoretical six- and seven-button shapes; Practical uses conventional omissions.",
   "ui.interfaceDensityHelp":
     "Compact saves sidebar space; Comfortable gives controls more breathing room.",
+  "ui.interfaceThemeHelp":
+    "Light or dark colours for panels and menus. System follows your device. Diagrams and downloads always keep their own colours.",
   "ui.statusBarHelp":
     "Shows a one-line summary above the diagram. Turn it off if you want maximum space.",
   "ui.diagramScaleHelp": "Scales the visible diagram. Values above 100% may add scroll bars.",

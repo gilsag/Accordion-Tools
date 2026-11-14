@@ -22,7 +22,7 @@
 | `rhythm` | `src/features/rhythmTrainer` | Rhythm Trainer meters, templates, treble pitch patterns, generated notation and score highlighting |
 | `harmony` | `src/features/harmonyExplorer`, `src/features/progressionAssistant`, `tests/unit/harmony` | Harmony Explorer engine, integration, recording and hooks; the progression optimizer, its realization selection, note selection, hooks and panel; the progression checks that span both |
 | `audio` | `tests/unit/audio` | Sample and register pitch mapping |
-| `display` | `tests/unit/display` | Chord symbols, voicing chart layout, row label fitting, PNG export conversion |
+| `display` | `tests/unit/display` | Chord symbols, voicing chart layout, row label fitting, PNG export conversion, the design tokens (no colour outside the token files, every token defined, TypeScript drawing colours equal to their tokens) |
 | `i18n` | `tests/unit/i18n` | Six catalogs, language detection, translated options, explanations and diagram labels |
 | `modules` | `tests/unit/modules` | Settings I/O, migrations, import traces and the saved session; navigation and the tool registry; the diagram's appearance, overlay and annotation hooks; command and capture order; audio scheduling and export services; progression chord types, ranking weights and rhythms |
 | `app` | `tests/unit/app` | The whole state composition rendered in jsdom: what opening a tool does to the others, one visible score, what the diagram presents and what a click does, what clears the diagram and what each Reset scope resets, the commands between tools, startup order and when the session is saved |

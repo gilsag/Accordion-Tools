@@ -204,6 +204,10 @@ export const IT: Record<TranslationKey, string> = {
   "ui.includeSummaryNote": "Includi nota riassuntiva",
   "ui.limitBarsPerLine": "Limita battute per riga",
   "ui.interfaceDensity": "Densità dell’interfaccia",
+  "ui.interfaceTheme": "Tema dell’interfaccia",
+  "ui.themeSystem": "Sistema",
+  "ui.themeLight": "Chiaro",
+  "ui.themeDark": "Scuro",
   "ui.colorTheme": "Tema di colori",
   "ui.defaultBlue": "Blu predefinito",
   "ui.classicInk": "Inchiostro classico",
@@ -472,6 +476,8 @@ export const IT: Record<TranslationKey, string> = {
     "Automatico mostra un accordo esatto quando possibile con un massimo di cinque pulsanti; Accordo completo mostra tutte le note disponibili, anche nelle posizioni più estese.",
   "ui.interfaceDensityHelp":
     "Compatto risparmia spazio nella barra laterale; Comodo distanzia maggiormente i comandi.",
+  "ui.interfaceThemeHelp":
+    "Colori chiari o scuri per pannelli e menu. Sistema segue l’impostazione del dispositivo. I diagrammi e i download mantengono sempre i propri colori.",
   "ui.statusBarHelp":
     "Mostra un riepilogo su una riga sopra il diagramma. Disattivalo per liberare spazio.",
   "ui.diagramScaleHelp":

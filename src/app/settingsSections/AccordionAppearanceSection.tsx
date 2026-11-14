@@ -1,6 +1,6 @@
 import { HelpTip } from "../../components/ui/HelpTip";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
-import type { AccidentalStyle, ColorTheme, FontFamily } from "../../types";
+import type { AccidentalStyle, ColorTheme, FontFamily, InterfaceTheme } from "../../types";
 import {
   usePlatformAppearance,
   usePlatformInstrument,
@@ -56,7 +56,8 @@ export default function AccordionAppearanceSection() {
     trebleAngle,
   } = usePlatformAppearance();
   const { setShowTrebleOctaves, showTrebleOctaves, side, trebleLayout } = usePlatformInstrument();
-  const { interfaceDensity, setInterfaceDensity } = usePlatformShell();
+  const { interfaceDensity, interfaceTheme, setInterfaceDensity, setInterfaceTheme } =
+    usePlatformShell();
   return (
     <>
       <SegmentedChoice
@@ -65,6 +66,7 @@ export default function AccordionAppearanceSection() {
             {t("ui.interfaceDensity")} <HelpTip text={t("ui.interfaceDensityHelp")} />
           </>
         }
+        ariaLabel={t("ui.interfaceDensity")}
         value={interfaceDensity}
         onChange={setInterfaceDensity}
         options={[
@@ -72,6 +74,19 @@ export default function AccordionAppearanceSection() {
           { value: "comfortable", label: t("ui.comfortable") },
         ]}
       />
+      <label>
+        <span className="label-line">
+          {t("ui.interfaceTheme")} <HelpTip text={t("ui.interfaceThemeHelp")} />
+        </span>
+        <select
+          value={interfaceTheme}
+          onChange={(event) => setInterfaceTheme(event.target.value as InterfaceTheme)}
+        >
+          <option value="system">{t("ui.themeSystem")}</option>
+          <option value="light">{t("ui.themeLight")}</option>
+          <option value="dark">{t("ui.themeDark")}</option>
+        </select>
+      </label>
 
       <label className="checkbox-label">
         <input
