@@ -29,7 +29,7 @@
 
 `tests/fixtures/` holds the frozen reference data and `tests/support/` the shared helpers. `scripts/` now contains only build tooling.
 
-The `app/` tests reach the application only through `renderApp()` in `tests/support/appHarness.ts`, which serves the files in `public/` to `fetch`, waits for startup and switches sound off. They describe behaviour the player relies on, not the code that produces it, so they must pass unchanged while [`useAppController` is split](controller-split-plan.md); only the harness follows the code.
+The `app/` tests reach the application only through `renderApp()` in `tests/support/appHarness.ts`, which serves the files in `public/` to `fetch`, waits for startup and switches sound off. They describe behaviour the player relies on, not the code that produces it, so they passed unchanged throughout [the controller split](archive/controller-split-plan.md); only the support files follow the code. The `model` a test drives is assembled from the platform and tool contexts in `tests/support/testModel.ts`, and `app.diagram` shows what the diagram presents (title, footer, Finder highlights, status line, downloaded file name).
 
 ### Three kinds of unit test
 

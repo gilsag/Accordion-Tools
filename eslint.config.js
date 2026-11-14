@@ -21,7 +21,7 @@ export default defineConfig([
   },
   {
     // The application layer stays in files that can be read whole: split a
-    // file that grows past this (docs/internal/controller-split-plan.md).
+    // file that grows past this (docs/internal/developer-guide.md).
     files: ["src/app/**/*.{ts,tsx}"],
     rules: { "max-lines": ["error", { max: 500 }] },
   },

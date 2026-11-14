@@ -4,7 +4,7 @@
  * application shell's state and the tool coordinator. Each part is owned by its
  * existing hook; `PlatformProviders` calls the hooks once and these contexts
  * hand the results to whoever reads them. See
- * docs/internal/controller-split-plan.md. */
+ * docs/internal/developer-guide.md. */
 import { createContext, useContext, type Context } from "react";
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 import type { useInstrumentState } from "../../instrument/useInstrumentState";

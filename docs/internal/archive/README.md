@@ -4,6 +4,7 @@ Records of finished work, kept for reference only. Nothing here describes the cu
 
 | File | What it records |
 | --- | --- |
+| [`controller-split-plan.md`](controller-split-plan.md) | How `useAppController` was replaced by platform and tool providers (2026) |
 | [`modularization-roadmap.md`](modularization-roadmap.md) | The phase-by-phase split of the original single-file application (v0.16.0) |
 | [`release-v0.16.0-validation.md`](release-v0.16.0-validation.md) | Sign-off worksheet for the v0.16.0 release |
 | [`validation.md`](validation.md) | Stradella configuration validation for v0.15.0 to v0.15.5 |
