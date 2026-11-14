@@ -14,7 +14,8 @@ export interface ToolHandle {
   activate?(): void;
   /** Finders: hide the result, keeping the request and the selection. */
   deactivate?(): void;
-  /** Players: stop playing. */
+  /** Players: stop playing, cancelling the tool's own timers and clearing
+   * the buttons it lit. Sound itself is stopped by the caller. */
   stop?(): void;
   /** "Reset work" in the given workspace: clear marks, results on the
    * diagram and playback, keeping preferences. Sound is stopped afterwards
@@ -26,9 +27,7 @@ export interface ToolHandle {
   onLayoutChange?(): void;
 }
 
-/** "playback" stops every player at once; it goes away when playback gets
- * its own provider (docs/internal/controller-split-plan.md, step 6). */
-export type ToolHandleId = ToolId | "playback";
+export type ToolHandleId = ToolId;
 
 export interface ToolCoordinator {
   register(id: ToolHandleId, read: () => ToolHandle): () => void;
@@ -38,6 +37,8 @@ export interface ToolCoordinator {
   resetWork(workspace: WorkspaceMode): void;
   resetTool(target: ToolId | null): void;
   layoutChanged(): void;
+  /** Stop: every tool stops its own playback, then all sound stops. */
+  stopAllPlayback(): void;
 }
 
 const TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];
@@ -56,6 +57,11 @@ const CHORD_FINDERS = TOOL_IDS.filter((id) => definition(id).highlights === "on-
 export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoordinator {
   const readers = new Map<ToolHandleId, () => ToolHandle>();
   const handle = (id: ToolHandleId) => readers.get(id)?.();
+
+  function stopAllPlayback() {
+    for (const id of TOOL_IDS) handle(id)?.stop?.();
+    ports.stopAllSound();
+  }
 
   return {
     register(id, read) {
@@ -81,7 +87,7 @@ export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoor
       const onToggle = definition(section).onToggle;
       if (onToggle?.hideFinders) for (const id of FINDERS) handle(id)?.deactivate?.();
       for (const id of onToggle?.stopPlayers ?? []) handle(id)?.stop?.();
-      if (onToggle?.stopAllPlayback) handle("playback")?.stop?.();
+      if (onToggle?.stopAllPlayback) stopAllPlayback();
     },
 
     resetWork(workspace) {
@@ -97,5 +103,7 @@ export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoor
     layoutChanged() {
       for (const id of TOOL_IDS) handle(id)?.onLayoutChange?.();
     },
+
+    stopAllPlayback,
   };
 }

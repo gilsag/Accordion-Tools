@@ -25,13 +25,15 @@ import {
   usePlatformSound,
   usePlatformSpelling,
   usePlatformTools,
+  usePlatformPlayback,
 } from "./platform/platformContexts";
+import { useSideButtonSettings } from "./platform/useSideButtonSettings";
+import { useRhythmTrainer } from "../features/rhythmTrainer/rhythmTrainerContext";
 import {
   TREBLE_PRESET_BUTTON_SIZE,
   PIANO_TREBLE_PRESET_BUTTON_SIZE,
 } from "../instrument/sizePresets";
 import { useBassPatternResults } from "../features/bassPatternPlayer/useBassPatternPlayer";
-import { useRhythmTrainer } from "../features/rhythmTrainer/useRhythmTrainer";
 import { useSequenceResults } from "../features/sequences/useSequenceState";
 import { useAbcPlayerResults } from "../features/abcPlayer/useAbcPlayer";
 import { useHarmonyExplorerResults } from "../features/harmonyExplorer/useHarmonyExplorer";
@@ -52,7 +54,7 @@ import type {
   TrebleSizePreset,
 } from "../types";
 import { stradellaVisibleRoots, stradellaVisibleRows } from "../stradella";
-import { stradellaButtonsFor, trebleButtonsFor, type SideButtonSettings } from "./sideButtons";
+import { stradellaButtonsFor, trebleButtonsFor } from "./sideButtons";
 
 import {
   accordionDiagramFilename,
@@ -239,6 +241,7 @@ export function useAppController() {
     toggleTool: toggleToolSection,
     resetWork,
     resetTool: resetCurrentToolDefaults,
+    stopAllPlayback: stopSoundPlayback,
   } = usePlatformTools();
 
   /* Physical-button overlays/fingerings are independent of musical selection. */
@@ -713,42 +716,7 @@ export function useAppController() {
   const stradellaAccidental = accidental === "enharmonic" ? "natural" : accidental;
 
   /* Layout settings shared by the current side and the ABC Player's second diagram. */
-  const sideButtonSettings = useMemo<SideButtonSettings>(
-    () => ({
-      basses,
-      stradellaAccidental,
-      trebleLayout,
-      trebleRows,
-      trebleSize,
-      pianoTrebleRange,
-      buttonSize,
-      spacing,
-      diagramVerticalSpacing,
-      pianoKeyWidthScale,
-      pianoKeyHeightScale,
-      pianoBlackKeyWidthScale,
-      pianoBlackKeyHeightScale,
-      trebleAngle,
-      showTrebleOctaves,
-    }),
-    [
-      basses,
-      stradellaAccidental,
-      trebleLayout,
-      trebleRows,
-      trebleSize,
-      pianoTrebleRange,
-      buttonSize,
-      spacing,
-      diagramVerticalSpacing,
-      pianoKeyWidthScale,
-      pianoKeyHeightScale,
-      pianoBlackKeyWidthScale,
-      pianoBlackKeyHeightScale,
-      trebleAngle,
-      showTrebleOctaves,
-    ],
-  );
+  const sideButtonSettings = useSideButtonSettings();
 
   /* Generated button list for the current side and layout settings. */
   const buttons = useMemo(() => {
@@ -1123,10 +1091,9 @@ export function useAppController() {
     playButtonSound(button, soundOptions);
   }
 
+  const { samplesLoading, soundEnginePlayer, setSoundEnginePlayer, startWhenSamplesReady } =
+    usePlatformPlayback();
   const {
-    samplesLoading,
-    soundEnginePlayer,
-    setSoundEnginePlayer,
     playStradellaChordFinder,
     playScaleFinder,
     playChordFinder,
@@ -1134,12 +1101,10 @@ export function useAppController() {
     playRecordedSequence,
     stopAbcPlayback,
     pauseAbcPlayback,
-    startWhenSamplesReady,
     scheduleAbcPlayback,
     stopBassPatternPlayback,
     exportSelectedBassPattern,
     scheduleBassPatternPlayback,
-    stopSoundPlayback,
   } = useAccordionPlayback({
     bassPatternRenderedNotationAbc,
     abcMappedEvents,
@@ -1161,8 +1126,6 @@ export function useAppController() {
     bassPatternTimeoutsRef,
     bassPatternTotalBeats,
     chordFinderButtons,
-    laMelodiosaBassRegister,
-    laMelodiosaTrebleRegister,
     scaleFinderButtons,
     selectedBassPattern,
     selectedButtons,
@@ -1175,31 +1138,14 @@ export function useAppController() {
     setBassPatternPlaybackState,
     setChordFinderActive,
     setHarmonyProgressionActiveButtonIds,
-    setHarmonyProgressionPulseSilent,
     setScaleFinderActive,
     setStradellaChordFinderActive,
-    side,
-    soundEnabled,
     soundOptions,
-    soundSource,
     stradellaChordFinderMode,
     stradellaChordFinderPlaybackButtons,
-    workspaceMode,
   });
 
-  const rhythmTrainer = useRhythmTrainer({
-    notationPreferences: {
-      mode: stradellaNotationMode,
-      chordQualityLabels: stradellaChordQualityLabels,
-      markCounterbass: stradellaMarkCounterbass,
-    },
-    sideButtonSettings,
-    bassPatterns: bassPatternDefinitions,
-    chordProgressions: chordProgressionDefinitions,
-    soundOptions,
-    activeToolSection,
-    stopOtherPlayback: stopSoundPlayback,
-  });
+  const rhythmTrainer = useRhythmTrainer();
 
   const {
     sendHarmonyRecordedProgressionToAssistant,
@@ -1639,7 +1585,6 @@ export function useAppController() {
   const resetDiagramWork = () => resetWork("accordion");
   useToolHandle("abcPlayer", playerHandle(stopAbcPlayback));
   useToolHandle("bassPatternPlayer", playerHandle(stopBassPatternPlayback));
-  useToolHandle("playback", { stop: stopSoundPlayback });
 
   return {
     language,

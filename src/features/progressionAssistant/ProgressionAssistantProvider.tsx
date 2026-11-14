@@ -13,6 +13,11 @@ export function ProgressionAssistantProvider({ children }: { children: ReactNode
   const { activeToolSection } = usePlatformNavigation();
   useOwnedSettings("progressionAssistant", state);
   useToolHandle("progressionAssistant", {
+    // Its players run in the sound engine; stopping clears the buttons it lit.
+    stop() {
+      state.setHarmonyProgressionActiveButtonIds([]);
+      state.setHarmonyProgressionPulseSilent(false);
+    },
     resetWork(workspace) {
       state.setHarmonyProgressionPreviewIndex(null);
       state.setHarmonyProgressionNoteStepId(null);

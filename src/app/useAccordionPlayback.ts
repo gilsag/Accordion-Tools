@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import type { useWorkspaceNavigation } from "../app/useWorkspaceNavigation";
-import type { useInstrumentState } from "../instrument/useInstrumentState";
+import { useEffect } from "react";
 import type {
   useBassPatternState,
   useBassPatternResults,
@@ -37,14 +35,9 @@ import {
   playButtonCombination,
   playButtonSequence,
   stopAllSound,
-  preloadLaMelodiosa,
-  unlockAudio,
-  samplesReadyFor,
-  prepareSamplesFor,
-  currentPlaybackGeneration,
-  onStopAllSound,
 } from "../sound";
 import type { RefObject } from "react";
+import { usePlatformPlayback } from "./platform/platformContexts";
 import type { SequenceStepWithButton } from "../tools/sequenceTools";
 
 export type UseAccordionPlaybackDeps = Pick<
@@ -80,28 +73,16 @@ export type UseAccordionPlaybackDeps = Pick<
     | "selectedBassPattern"
     | "selectedChordProgression"
   > &
-  Pick<
-    ReturnType<typeof useSoundSettings>,
-    | "laMelodiosaBassRegister"
-    | "laMelodiosaTrebleRegister"
-    | "soundEnabled"
-    | "soundOptions"
-    | "soundSource"
-  > &
+  Pick<ReturnType<typeof useSoundSettings>, "soundOptions"> &
   Pick<ReturnType<typeof useScaleFinderResults>, "scaleFinderButtons"> &
   Pick<ReturnType<typeof useTrebleChordFinderState>, "setChordFinderActive"> &
-  Pick<
-    ReturnType<typeof useHarmonyProgressionState>,
-    "setHarmonyProgressionActiveButtonIds" | "setHarmonyProgressionPulseSilent"
-  > &
+  Pick<ReturnType<typeof useHarmonyProgressionState>, "setHarmonyProgressionActiveButtonIds"> &
   Pick<ReturnType<typeof useScaleFinderState>, "setScaleFinderActive"> &
   Pick<
     ReturnType<typeof useStradellaChordFinderState>,
     "setStradellaChordFinderActive" | "stradellaChordFinderMode"
   > &
-  Pick<ReturnType<typeof useInstrumentState>, "side"> &
-  Pick<ReturnType<typeof useStradellaChordFinderResults>, "stradellaChordFinderPlaybackButtons"> &
-  Pick<ReturnType<typeof useWorkspaceNavigation>, "workspaceMode"> & {
+  Pick<ReturnType<typeof useStradellaChordFinderResults>, "stradellaChordFinderPlaybackButtons"> & {
     abcPlaybackStartBeatRef: RefObject<number>;
     abcPlaybackStartedAtRef: RefObject<number | null>;
     abcPlaybackTimeoutsRef: RefObject<number[]>;
@@ -134,8 +115,6 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
     bassPatternTotalBeats,
     bassPatternRenderedNotationAbc,
     chordFinderButtons,
-    laMelodiosaBassRegister,
-    laMelodiosaTrebleRegister,
     scaleFinderButtons,
     selectedBassPattern,
     selectedButtons,
@@ -148,61 +127,14 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
     setBassPatternPlaybackState,
     setChordFinderActive,
     setHarmonyProgressionActiveButtonIds,
-    setHarmonyProgressionPulseSilent,
     setScaleFinderActive,
     setStradellaChordFinderActive,
-    side,
-    soundEnabled,
     soundOptions,
-    soundSource,
     stradellaChordFinderMode,
     stradellaChordFinderPlaybackButtons,
-    workspaceMode,
   } = deps;
-
-  // Sample preloading waits for the first user gesture, so a visit that never
-  // plays anything downloads no audio and no AudioContext starts before
-  // interaction. It also fetches only the side the workspace plays: Stradella
-  // and Harmony use bass samples, Treble uses treble samples.
-  const [audioGestureSeen, setAudioGestureSeen] = useState(false);
-  // True while a transport waits for its samples; the playback bar says so.
-  const [samplesLoading, setSamplesLoading] = useState(false);
-  // The Progression Assistant and Sequence players run entirely inside the
-  // sound engine, so their playing state ends when they finish or when any
-  // stopAllSound() runs (Stop, Reset, or another player starting).
-  const [soundEnginePlayer, setSoundEnginePlayer] = useState<"progression" | "sequence" | null>(
-    null,
-  );
-  useEffect(() => onStopAllSound(() => setSoundEnginePlayer(null)), []);
-  useEffect(() => {
-    if (audioGestureSeen) return;
-    const onFirstGesture = () => {
-      unlockAudio();
-      setAudioGestureSeen(true);
-    };
-    const options = { capture: true } as const;
-    window.addEventListener("pointerdown", onFirstGesture, options);
-    window.addEventListener("keydown", onFirstGesture, options);
-    return () => {
-      window.removeEventListener("pointerdown", onFirstGesture, options);
-      window.removeEventListener("keydown", onFirstGesture, options);
-    };
-  }, [audioGestureSeen]);
-  const sampleSide = workspaceMode === "harmony" || side === "stradella" ? "bass" : "treble";
-  useEffect(() => {
-    if (!audioGestureSeen || !soundEnabled || soundSource !== "la-melodiosa") return;
-    void preloadLaMelodiosa(
-      sampleSide === "treble" ? laMelodiosaTrebleRegister : null,
-      sampleSide === "bass" ? laMelodiosaBassRegister : null,
-    );
-  }, [
-    audioGestureSeen,
-    sampleSide,
-    soundEnabled,
-    soundSource,
-    laMelodiosaTrebleRegister,
-    laMelodiosaBassRegister,
-  ]);
+  // Shared with every player: see src/app/platform/usePlaybackState.ts.
+  const { setSoundEnginePlayer, startWhenSamplesReady } = usePlatformPlayback();
 
   /** Plays the currently highlighted Stradella Chord Finder result. */
   function playStradellaChordFinder() {
@@ -276,24 +208,6 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
       stopSound: stopAllSound,
       clearProgressionButtons: () => setHarmonyProgressionActiveButtonIds([]),
       buttonsAtPosition: (beat) => lastPlayedAbcButtonIds(abcMappedEvents, beat),
-    });
-  }
-
-  /**
-   * Starts a transport once the samples it needs are decoded, so the first
-   * notes are not late. Usually they already are (see the preload effect). A
-   * Stop, or any other playback start, while they load cancels this start.
-   */
-  function startWhenSamplesReady(buttonsToPlay: DiagramButton[], start: () => void) {
-    if (samplesReadyFor(buttonsToPlay, soundOptions)) {
-      start();
-      return;
-    }
-    const generation = currentPlaybackGeneration();
-    setSamplesLoading(true);
-    void prepareSamplesFor(buttonsToPlay, soundOptions).then(() => {
-      setSamplesLoading(false);
-      if (currentPlaybackGeneration() === generation) start();
     });
   }
 
@@ -449,18 +363,8 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
   }
 
   /** Stops currently playing notes and any scheduled sequence playback. */
-  function stopSoundPlayback() {
-    stopAbcPlayback();
-    stopBassPatternPlayback();
-    stopAllSound();
-    setHarmonyProgressionActiveButtonIds([]);
-    setHarmonyProgressionPulseSilent(false);
-  }
 
   return {
-    samplesLoading,
-    soundEnginePlayer,
-    setSoundEnginePlayer,
     playStradellaChordFinder,
     playScaleFinder,
     playChordFinder,
@@ -468,11 +372,9 @@ export function useAccordionPlayback(deps: UseAccordionPlaybackDeps) {
     playRecordedSequence,
     stopAbcPlayback,
     pauseAbcPlayback,
-    startWhenSamplesReady,
     scheduleAbcPlayback,
     stopBassPatternPlayback,
     exportSelectedBassPattern,
     scheduleBassPatternPlayback,
-    stopSoundPlayback,
   };
 }

@@ -4,6 +4,7 @@ import { AnnotateDiagramProvider } from "../../features/annotateDiagram/Annotate
 import { HarmonyExplorerProvider } from "../../features/harmonyExplorer/HarmonyExplorerProvider";
 import { ProgressionAssistantProvider } from "../../features/progressionAssistant/ProgressionAssistantProvider";
 import { BassPatternPlayerProvider } from "../../features/bassPatternPlayer/BassPatternPlayerProvider";
+import { RhythmTrainerProvider } from "../../features/rhythmTrainer/RhythmTrainerProvider";
 import { ScaleFinderProvider } from "../../features/scaleFinder/ScaleFinderProvider";
 import { StradellaChordFinderProvider } from "../../features/stradellaChordFinder/StradellaChordFinderProvider";
 import { TrebleChordFinderProvider } from "../../features/trebleChordFinder/TrebleChordFinderProvider";
@@ -12,12 +13,12 @@ import { TOOL_REGISTRY, type ToolId } from "../toolRegistry";
 type Provider = ComponentType<{ children: ReactNode }>;
 
 /** Each tool's provider, which owns its state, registers its settings and
- * its handle. Tools without one are still composed by the application
- * controller (docs/internal/controller-split-plan.md). */
-const TOOL_PROVIDERS: Partial<Record<ToolId, Provider>> = {
+ * its handle. Every registered tool must have one. */
+const TOOL_PROVIDERS: Record<ToolId, Provider> = {
   scaleFinder: ScaleFinderProvider,
   chordFinder: TrebleChordFinderProvider,
   bassPatternPlayer: BassPatternPlayerProvider,
+  rhythmTrainer: RhythmTrainerProvider,
   abcPlayer: AbcPlayerProvider,
   stradellaChordFinder: StradellaChordFinderProvider,
   harmonyExplorer: HarmonyExplorerProvider,
@@ -30,6 +31,6 @@ const TOOL_PROVIDERS: Partial<Record<ToolId, Provider>> = {
 export function ToolProviders({ children }: { children: ReactNode }) {
   return (Object.keys(TOOL_REGISTRY) as ToolId[]).reduceRight<ReactNode>((inner, id) => {
     const ToolProvider = TOOL_PROVIDERS[id];
-    return ToolProvider ? <ToolProvider>{inner}</ToolProvider> : inner;
+    return <ToolProvider>{inner}</ToolProvider>;
   }, children);
 }

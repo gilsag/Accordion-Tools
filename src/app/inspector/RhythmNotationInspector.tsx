@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { rhythmExerciseToAbc } from "../../features/rhythmTrainer/rhythmNotation";
-import type { useRhythmTrainer } from "../../features/rhythmTrainer/useRhythmTrainer";
+import type { useRhythmTrainerState } from "../../features/rhythmTrainer/useRhythmTrainer";
 import {
   mapRhythmScoreNotes,
   highlightRhythmScoreNotes,
@@ -15,7 +15,7 @@ export function RhythmNotationPanel({
   renderNotationInto,
   showTitle = true,
 }: {
-  trainer: ReturnType<typeof useRhythmTrainer>;
+  trainer: ReturnType<typeof useRhythmTrainerState>;
   renderNotationInto: NotationRenderer;
   showTitle?: boolean;
 }) {

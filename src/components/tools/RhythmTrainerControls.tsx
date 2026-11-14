@@ -1,4 +1,4 @@
-import type { useRhythmTrainer } from "../../features/rhythmTrainer/useRhythmTrainer";
+import type { useRhythmTrainerState } from "../../features/rhythmTrainer/useRhythmTrainer";
 import type { InterfaceLanguage, TranslationKey } from "../../i18n/catalog";
 import { bassPatternName } from "../../i18n/optionLabels";
 import { RHYTHM_METERS, type RhythmMeter } from "../../features/rhythmTrainer/rhythmModel";
@@ -52,7 +52,7 @@ export function RhythmTrainerControls({
   t,
   language,
 }: {
-  trainer: ReturnType<typeof useRhythmTrainer>;
+  trainer: ReturnType<typeof useRhythmTrainerState>;
   t: (key: TranslationKey) => string;
   language: InterfaceLanguage;
 }) {

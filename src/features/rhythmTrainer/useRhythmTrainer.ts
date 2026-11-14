@@ -35,7 +35,7 @@ import {
   type RhythmMeter,
 } from "./rhythmModel";
 
-export function useRhythmTrainer({
+export function useRhythmTrainerState({
   sideButtonSettings,
   bassPatterns,
   chordProgressions,

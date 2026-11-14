@@ -5,6 +5,7 @@ import { toolOfferedOn, type ToolId } from "../toolRegistry";
 import { physicalLayoutSignature } from "../physicalLayoutSignature";
 import { createSettingsRegistry } from "../../settings/settingsRegistry";
 import { useOwnedSettings } from "./useOwnedSettings";
+import { usePlaybackState } from "./usePlaybackState";
 import { useLanguageSettings } from "../../settings/useLanguageSettings";
 import { useInstrumentState } from "../../instrument/useInstrumentState";
 import { useDiagramAppearanceState } from "../../diagram/useDiagramAppearanceState";
@@ -18,6 +19,7 @@ import {
   PlatformLanguageContext,
   PlatformNavigationContext,
   PlatformNotationContext,
+  PlatformPlaybackContext,
   PlatformSettingsContext,
   PlatformSoundContext,
   PlatformSpellingContext,
@@ -25,6 +27,7 @@ import {
   usePlatformAppearance,
   usePlatformNavigation,
   usePlatformInstrument,
+  usePlatformSound,
 } from "./platformContexts";
 
 type ProviderProps = { children: ReactNode };
@@ -37,7 +40,8 @@ type ProviderProps = { children: ReactNode };
  * startup effect runs after its children's, when all owners are registered.
  * Sound needs the instrument's register model and navigation needs the
  * instrument's side, so both sit inside the instrument provider. The tool
- * coordinator reads navigation, instrument and appearance, so it is last. Everything in the application renders inside these
+ * coordinator reads navigation, instrument and appearance, so it is last;
+ * shared playback state sits just above it. Everything in the application renders inside these
  * providers, and they stay mounted for the whole session.
  */
 export function PlatformProviders({ children }: ProviderProps) {
@@ -49,7 +53,9 @@ export function PlatformProviders({ children }: ProviderProps) {
             <SoundProvider>
               <NotationProvider>
                 <NavigationProvider>
-                  <ToolCoordinatorProvider>{children}</ToolCoordinatorProvider>
+                  <PlaybackProvider>
+                    <ToolCoordinatorProvider>{children}</ToolCoordinatorProvider>
+                  </PlaybackProvider>
                 </NavigationProvider>
               </NotationProvider>
             </SoundProvider>
@@ -152,6 +158,7 @@ function ToolCoordinatorProvider({ children }: ProviderProps) {
       coordinator.toolToggled(section, opening);
     },
     resetWork: coordinator.resetWork,
+    stopAllPlayback: coordinator.stopAllPlayback,
     resetTool() {
       const { workspaceMode, activeToolSection } = navigation;
       const target =
@@ -164,4 +171,14 @@ function ToolCoordinatorProvider({ children }: ProviderProps) {
     },
   };
   return <PlatformToolsContext.Provider value={value}>{children}</PlatformToolsContext.Provider>;
+}
+
+function PlaybackProvider({ children }: ProviderProps) {
+  const sound = usePlatformSound();
+  const { side } = usePlatformInstrument();
+  const { workspaceMode } = usePlatformNavigation();
+  const value = usePlaybackState(sound, side, workspaceMode);
+  return (
+    <PlatformPlaybackContext.Provider value={value}>{children}</PlatformPlaybackContext.Provider>
+  );
 }

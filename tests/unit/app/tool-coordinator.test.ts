@@ -18,7 +18,7 @@ function recordingCoordinator() {
     resetPreferences: () => trace.push(`${id}.resetPreferences`),
     onLayoutChange: () => trace.push(`${id}.onLayoutChange`),
   });
-  for (const id of [...Object.keys(TOOL_REGISTRY), "playback"] as (ToolId | "playback")[])
+  for (const id of Object.keys(TOOL_REGISTRY) as ToolId[])
     coordinator.register(id, () => record(id));
   return { coordinator, trace };
 }
@@ -66,10 +66,18 @@ test("toggling the Progression Assistant hides every Finder and stops the ABC an
   ]);
 });
 
+const STOP_ALL = [...Object.keys(TOOL_REGISTRY).map((id) => `${id}.stop`), "stopAllSound"];
+
+test("Stop reaches every tool before sound stops", () => {
+  const { coordinator, trace } = recordingCoordinator();
+  coordinator.stopAllPlayback();
+  expect(trace).toEqual(STOP_ALL);
+});
+
 test("toggling the Rhythm Trainer stops all playback", () => {
   const { coordinator, trace } = recordingCoordinator();
   coordinator.toolToggled("rhythmTrainer", false);
-  expect(trace).toEqual(["playback.stop"]);
+  expect(trace).toEqual(STOP_ALL);
 });
 
 test("Reset tool restores only the target tool's preferences", () => {
