@@ -100,3 +100,23 @@ test("root position plays the root on a bass button, with the usual C7 fingering
   await showResults(page);
   await expect(realizations(page).first()).toHaveText(/C (counter)?bass \+ A minor/);
 });
+
+test("at 1280 × 800, Play is visible without scrolling and the Results panel does not repeat the row", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === "phone", "desktop layout");
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await findChord(page, "C", "major-triad");
+  const play = page.getByRole("button", { name: "Play combination" });
+  await expect(play).toBeInViewport({ ratio: 1 });
+  const scrolled = await page.evaluate(() =>
+    [...document.querySelectorAll(".left-panel, .left-panel *")].some((el) => el.scrollTop > 0),
+  );
+  expect(scrolled, "the left panel was not scrolled").toBe(false);
+
+  // Status and button count live in the selected row; the details add pitches.
+  const details = page.locator(".workspace-inspector .inspector-details");
+  await expect(details).toContainText("Covered");
+  await expect(details).not.toContainText("Status");
+  await expect(details).not.toContainText("Buttons");
+});

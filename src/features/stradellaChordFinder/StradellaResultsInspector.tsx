@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "../../i18n/useI18n";
-import { displayRealizedChord, type ChordDisplayStyle } from "../../music/chordDisplay";
-import { chordToneName, displayRoot, realizedChordName } from "./engine/chordSpelling";
-import { finderChordSymbol } from "./engine/chordSymbol";
+import type { ChordDisplayStyle } from "../../music/chordDisplay";
+import { chordToneName } from "./engine/chordSpelling";
 import {
   analyzeConfiguredStradellaVoicing,
   formatModeledStradellaNotes,
@@ -73,7 +72,6 @@ export function StradellaResultsInspector({
     root,
     registerModel,
   );
-  const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
   return (
     <WorkspaceInspectorFrame title={t("inspector.title")}>
       <div className="inspector-filters" role="group" aria-label={t("inspector.filters")}>
@@ -173,37 +171,10 @@ export function StradellaResultsInspector({
       )}
       <section className="inspector-details" aria-label={t("tools.stradellaResult")}>
         <h3>{t("tools.stradellaResult")}</h3>
-        <p>
-          {t("tools.requestedChord")}:{" "}
-          <strong>
-            {displayRealizedChord(
-              root,
-              pattern,
-              realizedChordName(root, pattern, requestedBass, requestedBass, requestedSymbol),
-              chordDisplayStyle,
-            )}
-          </strong>
-        </p>
-        <p>
-          {t("tools.status")}:{" "}
-          <strong>
-            {!result.playable
-              ? t("common.notFound")
-              : result.exact
-                ? t("common.exactReady")
-                : t("common.approxReady")}
-          </strong>
-        </p>
         {!result.playable ? (
           <p>{t("common.notFound")}</p>
         ) : (
           <>
-            <p>
-              {t("tools.buttons")}: <strong>{result.playbackButtons.length}</strong>
-            </p>
-            <p>
-              <strong>{formatText(result.shortDescription)}</strong>
-            </p>
             <p>
               {t("tools.target")}: {formatPitches(result.targetPitches)}
             </p>

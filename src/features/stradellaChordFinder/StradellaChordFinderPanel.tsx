@@ -208,6 +208,70 @@ export function StradellaChordFinderPanel({
           </p>
         )}
 
+        <div className="button-row">
+          <button
+            type="button"
+            className={`small-button ${isActive ? "active-tool" : ""}`}
+            onClick={onToggleActive}
+          >
+            {isActive ? t("tools.hideChord") : t("tools.showChord")}
+          </button>
+          <button
+            className="small-button"
+            onClick={onPlay}
+            disabled={!result.playable || playbackButtonCount === 0}
+          >
+            {mode === "bass-only" ? t("tools.playBassChord") : t("tools.playCombination")}
+          </button>
+          <button className="small-button" onClick={onExploreHarmony} disabled={!canExploreHarmony}>
+            {t("tools.exploreHarmony")}
+          </button>
+        </div>
+
+        {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
+          <div
+            className="realization-navigation"
+            role="group"
+            aria-label={t("ui.browseChordRealizations")}
+          >
+            <button
+              type="button"
+              className="small-button"
+              title={t("tools.previous")}
+              aria-label={t("tools.previous")}
+              disabled={realizationIndex <= 0}
+              onClick={() => onRealizationChange(Math.max(0, realizationIndex - 1))}
+            >
+              ←
+            </button>
+            <span className="hint" aria-live="polite">
+              {realizationIndex + 1} / {realizations.length}
+            </span>
+            <button
+              type="button"
+              className="small-button"
+              title={t("tools.next")}
+              aria-label={t("tools.next")}
+              disabled={realizationIndex >= realizations.length - 1}
+              onClick={() =>
+                onRealizationChange(Math.min(realizations.length - 1, realizationIndex + 1))
+              }
+            >
+              →
+            </button>
+          </div>
+        )}
+
+        {mode === "bass-and-chords" && isActive && (
+          <p className="hint">
+            {t("ui.recFirst")}{" "}
+            {t("ui.approxCount", {
+              exact: realizations.filter((item) => item.playable && item.exact).length,
+              approx: realizations.filter((item) => item.playable && !item.exact).length,
+            })}
+          </p>
+        )}
+
         <label>
           <span className="label-line">
             {t("tools.searchMode")} <HelpTip text={t("ui.stradellaSearchHelp")} />
@@ -274,15 +338,6 @@ export function StradellaChordFinderPanel({
                 <option value={5.5}>{t("tools.extended")}</option>
               </select>
             </label>
-            {isActive && (
-              <p className="hint">
-                {t("ui.recFirst")}{" "}
-                {t("ui.approxCount", {
-                  exact: realizations.filter((item) => item.playable && item.exact).length,
-                  approx: realizations.filter((item) => item.playable && !item.exact).length,
-                })}
-              </p>
-            )}
           </>
         )}
 
@@ -302,40 +357,6 @@ export function StradellaChordFinderPanel({
           </select>
         </label>
 
-        {mode === "bass-and-chords" && isActive && realizations.length > 1 && (
-          <div
-            className="realization-navigation"
-            role="group"
-            aria-label={t("ui.browseChordRealizations")}
-          >
-            <button
-              type="button"
-              className="small-button"
-              title={t("tools.previous")}
-              aria-label={t("tools.previous")}
-              disabled={realizationIndex <= 0}
-              onClick={() => onRealizationChange(Math.max(0, realizationIndex - 1))}
-            >
-              ←
-            </button>
-            <span className="hint" aria-live="polite">
-              {realizationIndex + 1} / {realizations.length}
-            </span>
-            <button
-              type="button"
-              className="small-button"
-              title={t("tools.next")}
-              aria-label={t("tools.next")}
-              disabled={realizationIndex >= realizations.length - 1}
-              onClick={() =>
-                onRealizationChange(Math.min(realizations.length - 1, realizationIndex + 1))
-              }
-            >
-              →
-            </button>
-          </div>
-        )}
-
         {isActive && realizations.some((candidate) => candidate.playable) && (
           <button
             type="button"
@@ -347,25 +368,6 @@ export function StradellaChordFinderPanel({
           </button>
         )}
 
-        <div className="button-row">
-          <button
-            type="button"
-            className={`small-button ${isActive ? "active-tool" : ""}`}
-            onClick={onToggleActive}
-          >
-            {isActive ? t("tools.hideChord") : t("tools.showChord")}
-          </button>
-          <button
-            className="small-button"
-            onClick={onPlay}
-            disabled={!result.playable || playbackButtonCount === 0}
-          >
-            {mode === "bass-only" ? t("tools.playBassChord") : t("tools.playCombination")}
-          </button>
-          <button className="small-button" onClick={onExploreHarmony} disabled={!canExploreHarmony}>
-            {t("tools.exploreHarmony")}
-          </button>
-        </div>
         <div className="finder-annotation-options">
           <label className="checkbox-line">
             <input
