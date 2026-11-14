@@ -56,6 +56,15 @@ test("The package version must never fall behind a published tag (v0.20.0 was ta
     read("VERSION_HISTORY.md").startsWith(`## v${pkg.version} `),
     "VERSION_HISTORY.md does not start with the current version",
   );
+  // Players read docs/whats-new.md in the app; its newest section is this version.
+  assert.equal(
+    read("docs/whats-new.md")
+      .split(/\r?\n/)
+      .find((line) => line.startsWith("## "))
+      ?.split(" (")[0],
+    `## Version ${pkg.version}`,
+    "docs/whats-new.md does not start with the current version",
+  );
   const docs = ["README.md", "VERSION_HISTORY.md"];
   function scan(dir) {
     for (const item of readdirSync(dir, { withFileTypes: true })) {

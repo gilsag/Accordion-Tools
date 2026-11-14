@@ -4,7 +4,7 @@ The rules to follow when changing the code: who owns what, which contracts other
 
 ## Documentation map
 
-- `docs/*.md` are the **user guides**. The app bundles them into its documentation viewer, so write them for players: on-screen names, plain language, no file paths, function names, settings keys or version notes. Links between guides work in the viewer; links to `docs/internal/` should use full GitHub URLs.
+- `docs/*.md` are the **user guides**. The app bundles them into its documentation viewer, so write them for players: on-screen names, plain language, no file paths, function names, settings keys or version notes. The exception is `docs/whats-new.md`, the players' summary of the last few versions; the viewer shows it in place of `VERSION_HISTORY.md`, which stays in the repository for maintainers. Links between guides work in the viewer; links to `docs/internal/` should use full GitHub URLs.
 - `docs/internal/` is for maintainers and is not bundled:
   - this guide;
   - [`guide-implementation-notes.md`](guide-implementation-notes.md): engine rules and data flow behind each user guide;
@@ -239,7 +239,7 @@ See [`testing.md`](testing.md) for the layout, the three kinds of unit test and 
 
 ## Before a release
 
-1. Set the new version in `package.json`, `package-lock.json`, `src/config/appInfo.ts` and the README, and start `VERSION_HISTORY.md` with a `## v<version>` heading. `npm run test:release` fails if these disagree or if the version is behind the newest git tag. Tag only after this is committed.
+1. Set the new version in `package.json`, `package-lock.json`, `src/config/appInfo.ts` and the README, start `VERSION_HISTORY.md` with a `## v<version>` heading, and add a `## Version <version> (<day> <Month> <year>)` section at the top of `docs/whats-new.md` describing what players will notice, in the user guides' language; keep the last three versions there. `npm run test:release` fails if these disagree or if the version is behind the newest git tag. Tag only after this is committed.
 2. `npm ci`
 3. `npm run verify:release` (lint, `npm test`, `build:analyze`)
 4. `npm run test:e2e`

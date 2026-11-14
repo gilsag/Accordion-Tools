@@ -48,6 +48,11 @@ test("the guides open in the documentation viewer", async ({ page }) => {
   await expect(
     dialog.locator(".documentation-article h1, .documentation-article h2").first(),
   ).toBeVisible();
+  // Players get the short summary, not the full development history.
+  const topics = dialog.locator(".documentation-sidebar");
+  await expect(topics.getByRole("button", { name: "Version history" })).toHaveCount(0);
+  await topics.getByRole("button", { name: "What's new" }).click();
+  await expect(dialog.locator(".documentation-article h1")).toHaveText("What's new");
   await dialog.locator(".documentation-header button").click();
   await expect(dialog).toBeHidden();
 });

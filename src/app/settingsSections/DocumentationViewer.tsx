@@ -10,7 +10,8 @@ const guideFiles = import.meta.glob("../../../docs/*.md", {
   query: "?raw",
   import: "default",
 }) as Record<string, string>;
-const rootFiles = import.meta.glob("../../../{README,VERSION_HISTORY}.md", {
+// The full VERSION_HISTORY.md stays in the repository; players get docs/whats-new.md.
+const rootFiles = import.meta.glob("../../../README.md", {
   eager: true,
   query: "?raw",
   import: "default",
@@ -18,7 +19,7 @@ const rootFiles = import.meta.glob("../../../{README,VERSION_HISTORY}.md", {
 
 const labels: Record<string, string> = {
   "README.md": "Overview (README)",
-  "VERSION_HISTORY.md": "Version history",
+  "whats-new.md": "What's new",
   "chord-finder.md": "Chord Finder",
   "scale-finder.md": "Scale Finder",
   "harmony-explorer.md": "Harmony Explorer",
@@ -40,7 +41,7 @@ const preferredOrder = [
   "annotate-diagram-tool.md",
   "abc-player.md",
   "settings.md",
-  "VERSION_HISTORY.md",
+  "whats-new.md",
 ];
 const documents = Object.entries({ ...guideFiles, ...rootFiles })
   .map(([path, content]) => {
