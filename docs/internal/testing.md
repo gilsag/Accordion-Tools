@@ -8,10 +8,12 @@
 | --- | --- |
 | `npm test` | Every test, once |
 | `npm run test:watch` | The same, rerunning the tests affected by each saved change |
-| `npm run test:coverage` | Everything, with a coverage report in `coverage/` |
+| `npm run test:coverage` | Everything, with a coverage report in `coverage/`; fails below the thresholds in `vitest.config.ts` |
 | `npm run test:tools` | Every tool's own tests (`src/features/`) |
 | `npm run test:<area>` | One group, listed below |
 | `npx vitest run -t "requested bass"` | Only the cases whose name matches |
+
+Coverage counts statements run by the unit tests only; the browser tests are not measured. The thresholds in `vitest.config.ts` sit just under the measured values (statements 60%, branches 51%, functions 55%, lines 61%), so a change that removes tests or adds untested code fails the release check. Raise them when coverage grows; never lower them to make a change pass.
 
 | Group | Folders | Coverage |
 | --- | --- | --- |
@@ -85,4 +87,4 @@ Vitest finds test files by name (`*.test.{ts,tsx,js}` under `src/` and `tests/un
 
 ## Before a release
 
-Run `npm run verify:release` (lint, `npm test`, `build:analyze`) and `npm run test:e2e`. The browser suite does not judge how things sound; listen to the players in a real browser before publishing.
+Run `npm run verify:release` (lint, `npm run test:coverage`, `build:analyze`) and `npm run test:e2e`. The browser suite does not judge how things sound; listen to the players in a real browser before publishing.

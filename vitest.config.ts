@@ -20,6 +20,10 @@ export default mergeConfig(
         exclude: ["src/i18n/{es,fr,pt,it,de}.ts", "src/**/*.d.ts", "src/**/*.test.{ts,tsx}"],
         reporter: ["text-summary", "html"],
         reportsDirectory: "coverage",
+        // Just under the measured coverage (November 2026: statements 61.2%,
+        // branches 52.0%, functions 56.7%, lines 62.7%), so a change that drops
+        // tests fails `npm run test:coverage`. Raise them as coverage grows.
+        thresholds: { statements: 60, branches: 51, functions: 55, lines: 61 },
       },
     },
   }),

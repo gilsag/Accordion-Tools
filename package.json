@@ -29,7 +29,7 @@
     "test:release": "vitest run tests/unit/release",
     "test:all": "vitest run",
     "test:e2e": "playwright test",
-    "verify:release": "npm run lint && npm run test && npm run build:analyze"
+    "verify:release": "npm run lint && npm run test:coverage && npm run build:analyze"
   },
   "dependencies": {
     "abcjs": "^6.6.3",

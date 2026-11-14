@@ -241,7 +241,7 @@ See [`testing.md`](testing.md) for the layout, the three kinds of unit test and 
 
 1. Set the new version in `package.json`, `package-lock.json`, `src/config/appInfo.ts` and the README, start `VERSION_HISTORY.md` with a `## v<version>` heading, and add a `## Version <version> (<day> <Month> <year>)` section at the top of `docs/whats-new.md` describing what players will notice, in the user guides' language; keep the last three versions there. `npm run test:release` fails if these disagree or if the version is behind the newest git tag. Tag only after this is committed.
 2. `npm ci`
-3. `npm run verify:release` (lint, `npm test`, `build:analyze`)
+3. `npm run verify:release` (lint, `npm run test:coverage`, `build:analyze`)
 4. `npm run test:e2e`
 5. Listen in a real browser: La Melodiosa and the synthesizer, the four Progression rhythms, ABC playback with Pause/Continue, and a Bass Pattern loop.
 6. Check representative chords: Em7 (E bass + G major), Cmaj7 (C bass + E minor), C11, Cm11, C13 and the Cmaj13 alternatives, with Requested bass on the root and on Any.
