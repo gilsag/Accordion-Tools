@@ -1,0 +1,109 @@
+/* Narrow screens and touch input. */
+
+/* Responsive UI: presentation-only. No standalone exported SVG can match
+   rules requiring the .canvas-wrap ancestor. */
+.mobile-diagram-view-control {
+  display: none;
+}
+
+@media (max-width: 860px) {
+  .mobile-diagram-view-control {
+    display: block;
+    position: absolute;
+    /* Bottom corner: the top edge belongs to the diagram title. */
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    right: 14px;
+    z-index: 4;
+  }
+  .mobile-diagram-toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid #71839d;
+    border-radius: 12px;
+    font: inherit;
+    font-size: 24px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #173fa6;
+    box-shadow: 0 2px 10px rgba(20, 30, 50, 0.16);
+    cursor: pointer;
+  }
+  .canvas-wrap.diagram-readable > .diagram {
+    width: 100%;
+    min-width: max(100%, var(--mobile-diagram-readable-width, 960px));
+  }
+  .canvas-wrap.diagram-fit > .diagram {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .app {
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-width: 0;
+  }
+  .workspace {
+    min-height: 60dvh;
+  }
+  .canvas-wrap {
+    min-height: 38dvh;
+  }
+  .topbar {
+    gap: 6px;
+    padding: 7px 9px;
+  }
+  .topbar-spacer,
+  .topbar-separator {
+    display: none;
+  }
+  .topbar-button {
+    min-height: 40px;
+    padding: 7px 10px;
+  }
+  .small-button,
+  .tiny-button,
+  .style-toggle,
+  .realization-navigation .small-button,
+  .segmented-choice-button {
+    min-height: 40px;
+  }
+  .tiny-button {
+    min-width: 40px;
+  }
+  .style-toggle {
+    min-width: 40px;
+  }
+  .realization-navigation .small-button {
+    min-width: 44px;
+  }
+  .help-tip {
+    min-width: 40px;
+    min-height: 40px;
+    width: 40px;
+    height: 40px;
+  }
+  .label-line {
+    white-space: normal;
+    align-items: center;
+  }
+  .help-tip::after {
+    max-width: min(220px, 65vw);
+  }
+}
+@media (max-width: 860px) and (pointer: coarse) {
+  .small-button,
+  .topbar-button,
+  .segmented-choice-button,
+  .tiny-button,
+  .style-toggle {
+    min-height: 40px;
+  }
+  .help-tip {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}

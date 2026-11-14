@@ -1,0 +1,126 @@
+/* Shared control rhythm, choices and the two-hand diagram caption. */
+
+/* Use tighter control-group rhythm without shrinking controls or touch targets. */
+.section-content label:has(> input[type="range"]),
+.tool-fieldset label:has(> input[type="range"]) {
+  gap: 4px;
+}
+.section-content input[type="range"],
+.tool-fieldset input[type="range"] {
+  margin-block: 1px 2px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
+  font-weight: 700;
+  font-size: var(--ui-control-font);
+  line-height: var(--ui-control-leading);
+}
+
+label > select,
+label > input,
+label > textarea {
+  width: 100%;
+}
+
+select,
+input,
+textarea {
+  font: inherit;
+  font-size: var(--ui-control-font);
+  padding: 7px 8px;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  background: white;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 74px;
+}
+
+input[type="range"] {
+  padding: 0;
+}
+
+.hint {
+  font-size: var(--ui-support-font);
+  line-height: 1.45;
+  color: #526078;
+  margin: 0;
+}
+
+.canvas-wrap {
+  padding: 6px 6px 0 6px;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* ABC Player, Both hands: treble and Stradella manuals in one diagram. */
+.abc-hand-caption {
+  font-size: 17px;
+  font-weight: 800;
+  fill: #33405a;
+}
+.abc-hand-divider {
+  stroke: #d9deea;
+  stroke-width: 1.5;
+}
+.abc-hand-switch {
+  padding: 4px 6px 0;
+}
+.abc-hand-switch .segmented-choice-control {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.abc-hand-switch .label-line {
+  flex: none;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  color: #526078;
+}
+/* Three short names in a narrow sidebar: keep each word whole. */
+.segmented-choice.whole-words .segmented-choice-button {
+  overflow-wrap: normal;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+.diagram {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  min-height: 0;
+  min-width: 0;
+  display: block;
+  background: white;
+  border: 1px solid #d9deea;
+  border-radius: 18px;
+  box-shadow: 0 12px 30px rgba(25, 35, 60, 0.08);
+  --button-stroke-width: 3;
+  --reference-stroke-width: 6;
+  --chord-fill-strength: 1;
+  --sequence-color: #d4553f;
+  --sequence-thickness: 3.2;
+  --sequence-number-color: #d4553f;
+  --sequence-number-size: 10px;
+}
+
+.title {
+  font-weight: 850;
+}
+
+.button-group {
+  cursor: pointer;
+}

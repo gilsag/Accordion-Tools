@@ -1,0 +1,239 @@
+/* The application grid, density, side panel, resize handles and toolbar. */
+
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: #172033;
+  background: #f6f7fb;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  overflow: hidden;
+  /* Shared UI hierarchy; stored density preference changes these values. */
+  --ui-control-font: 12px;
+  --ui-support-font: 12px;
+  --ui-section-font: 13px;
+  --ui-heading-font: 18px;
+  --ui-control-leading: 1.4;
+  --ui-dense-font: 11px;
+}
+
+.density-compact {
+  --ui-control-font: 11px;
+  --ui-support-font: 11px;
+  --ui-section-font: 12px;
+  --ui-heading-font: 17px;
+  --ui-dense-font: 10.5px;
+}
+
+.density-comfortable {
+  --ui-control-font: 12.5px;
+  --ui-support-font: 12.5px;
+  --ui-section-font: 14px;
+  --ui-heading-font: 19px;
+  --ui-dense-font: 11.5px;
+}
+
+.left-panel {
+  width: 100%;
+  background: white;
+  padding: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 100vh;
+  max-height: 100dvh;
+  scrollbar-gutter: stable;
+  box-sizing: border-box;
+  border-right: 1px solid #d9deea;
+}
+
+.left-panel * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.button-row {
+  flex-wrap: wrap;
+}
+
+.section-content {
+  min-width: 0;
+}
+
+.left-panel h1 {
+  font-size: var(--ui-heading-font);
+  line-height: 1.25;
+  font-weight: 750;
+  margin: 0 0 10px;
+}
+
+.workspace {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Width handles on the workspace's edges, over the panel borders. */
+.panel-resize-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 9px;
+  z-index: 30;
+  cursor: col-resize;
+  touch-action: none;
+  background: transparent;
+}
+.panel-resize-left {
+  left: -5px;
+}
+.panel-resize-inspector {
+  right: -5px;
+}
+.panel-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 3px;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 120ms;
+}
+.panel-resize-handle:hover::after,
+.panel-resize-handle:focus-visible::after {
+  background: #8aa4e8;
+}
+.panel-resize-handle:focus-visible {
+  outline: none;
+}
+body.panel-resizing {
+  cursor: col-resize;
+  user-select: none;
+}
+body.panel-resizing iframe,
+body.panel-resizing svg {
+  pointer-events: none;
+}
+
+.topbar {
+  min-height: 48px;
+  flex-wrap: wrap;
+  row-gap: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #d9deea;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px;
+}
+
+.topbar-button {
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid #c9d1e3;
+  border-radius: 999px;
+  padding: 7px 12px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+}
+
+.topbar-button:hover,
+.topbar-button.active {
+  background: #eef3ff;
+  border-color: #1746d0;
+  color: #1746d0;
+}
+
+.download-button {
+  border-color: #1746d0;
+}
+
+.reset-button {
+  border-color: #d4553f;
+  color: #a72e1d;
+}
+
+.reset-button:hover {
+  background: #fff0ed;
+  border-color: #d4553f;
+  color: #a72e1d;
+}
+
+.topbar-separator {
+  width: 12px;
+}
+
+.topbar-spacer {
+  flex: 1;
+}
+
+.control-section {
+  border: 1px solid #d9deea;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.section-title {
+  width: 100%;
+  border: 0;
+  background: #f5f7fb;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: var(--ui-section-font);
+  font-weight: 750;
+  line-height: 1.35;
+  color: #172033;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.section-title > span:last-child {
+  font-size: 18px;
+  line-height: 1;
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+.section-title[aria-expanded="true"] {
+  background: #eef3ff;
+  color: #173fa6;
+}
+
+.section-title:focus-visible {
+  outline: 2px solid #1746d0;
+  outline-offset: -3px;
+}
+
+.section-content {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}

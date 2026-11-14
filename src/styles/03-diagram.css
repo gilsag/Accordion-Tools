@@ -1,0 +1,702 @@
+/* The diagram: buttons, their themes and accidental styles, Finder highlights, the piano keyboard. */
+
+/* Keyboard focus on a diagram button (arrow keys move it, Enter plays it). */
+.button-group:focus {
+  outline: none;
+}
+
+.button-group:focus-visible .button {
+  stroke: #f59e0b;
+  stroke-width: calc(var(--button-stroke-width) + 3px);
+}
+
+.button {
+  fill: #ffffff;
+  stroke: #1746d0;
+  stroke-width: var(--button-stroke-width);
+}
+
+.button.chord {
+  fill: #e6eef8;
+  fill-opacity: var(--chord-fill-strength);
+  stroke: #d7e2f0;
+}
+
+.button.selected {
+  fill: #ffd1c7;
+  stroke: #1746d0;
+}
+
+.button.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
+  stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.treble-accidental.finder-match,
+.accidental-style-dark .treble-accidental.finder-match,
+.accidental-style-grey .treble-accidental.finder-match,
+.accidental-style-theme .treble-accidental.finder-match,
+.accidental-style-outline .treble-accidental.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
+}
+
+.button.chord.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+}
+
+.finder-ring {
+  fill: none;
+  stroke: #2f8f46;
+  stroke-width: 3.2;
+  pointer-events: none;
+}
+
+.button.selected.finder-match {
+  fill: #ffd9a8;
+}
+
+.treble-accidental.selected.finder-match,
+.accidental-style-dark .treble-accidental.selected.finder-match,
+.accidental-style-grey .treble-accidental.selected.finder-match,
+.accidental-style-theme .treble-accidental.selected.finder-match,
+.accidental-style-outline .treble-accidental.selected.finder-match {
+  fill: #ffd9a8;
+  stroke: #1f7a38;
+}
+
+.button.in-sequence {
+  stroke-width: calc(var(--button-stroke-width) + 1);
+}
+
+.button.reference {
+  stroke-width: var(--reference-stroke-width);
+}
+
+.treble-button {
+  fill: #ffffff;
+  stroke: #1746d0;
+}
+
+.treble-accidental {
+  fill: #5f6672;
+  stroke: #5f6672;
+}
+
+.accidental-style-dark .treble-accidental {
+  fill: #1b1f2a;
+  stroke: #1b1f2a;
+}
+
+.accidental-style-grey .treble-accidental {
+  fill: #707784;
+  stroke: #707784;
+}
+
+.accidental-style-outline .treble-accidental {
+  fill: #ffffff;
+  stroke: #1b1f2a;
+}
+
+.accidental-style-theme .treble-accidental {
+  fill: #1746d0;
+  stroke: #1746d0;
+}
+
+.treble-accidental.selected {
+  fill: #7f2d24;
+  stroke: #1746d0;
+}
+
+.accidental-style-outline .treble-accidental.selected {
+  fill: #ffd1c7;
+}
+
+.main-label {
+  font-weight: 800;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+/* System UI fonts draw the flat and sharp glyphs small and thin, and the old
+   downward shift made them read as subscripts ("E♭" looked like "E,"). Prefer
+   a symbol font, enlarge and embolden, and keep them on the letter baseline.
+   CSS overrides the baselineShift attribute set in renderMusicLabel(). */
+.accidental-symbol {
+  font-family:
+    "Segoe UI Symbol", "Apple Symbols", "Noto Sans Symbols 2", "Noto Music", "DejaVu Sans",
+    sans-serif;
+  font-size: 128%;
+  font-weight: 900;
+  baseline-shift: 2%;
+}
+
+.double-sharp-symbol {
+  font-family: "Times New Roman", "DejaVu Serif", serif;
+  font-size: 122%;
+  font-weight: 700;
+}
+
+.treble-label {
+  fill: #111111;
+}
+
+.treble-accidental-label {
+  fill: #ffffff;
+}
+
+.accidental-style-outline .treble-accidental-label {
+  fill: #111111;
+}
+
+.highlighted-accidental-label {
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.62);
+  stroke-width: 2.4px;
+  stroke-linejoin: round;
+}
+
+.accidental-style-outline .highlighted-accidental-label {
+  stroke: #ffffff;
+}
+
+.finger-label {
+  font-weight: 900;
+  pointer-events: none;
+  dominant-baseline: middle;
+}
+
+.sequence-arrow {
+  stroke: var(--sequence-color);
+  stroke-width: var(--sequence-thickness);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.sequence-arrowhead {
+  fill: var(--sequence-color);
+}
+
+.sequence-number {
+  fill: var(--sequence-number-color);
+  font-size: var(--sequence-number-size);
+  font-weight: 900;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.finder-number {
+  fill: #1f7a38;
+  font-size: var(--sequence-number-size);
+  font-weight: 900;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+
+.free-text-note {
+  fill: #172033;
+  font-size: 15px;
+  font-weight: 800;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: #ffffff;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.active-tool {
+  border-color: #d4553f;
+  color: #a72e1d;
+  background: #fff0ed;
+}
+
+.bellows-strip {
+  fill: #f0f2f7;
+  stroke: #d7deec;
+}
+
+.bellows-label,
+.bellows-end-label {
+  fill: #8a94aa;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bellows-end-label {
+  fill: #172033;
+}
+
+.stradella-row-label {
+  fill: #0034c7;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.button-row {
+  display: flex;
+  gap: 8px;
+}
+
+.small-button {
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+  color: #172033;
+  cursor: pointer;
+}
+
+.small-button:hover:not(:disabled) {
+  background: #f5f7fb;
+}
+
+.small-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.selected-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.selected-item {
+  border: 1px solid #d9deea;
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 800;
+}
+
+.selected-meta {
+  color: #6b7488;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.font-system {
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.font-serif {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.font-mono {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+.font-rounded {
+  font-family: "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+}
+
+/* Color themes */
+
+.diagram-theme-default .button {
+  stroke: #1746d0;
+}
+
+.diagram-theme-default .button.chord {
+  fill: #e6eef8;
+  stroke: #d7e2f0;
+}
+
+.diagram-theme-default .button.selected {
+  fill: #ffd1c7;
+  stroke: #1746d0;
+}
+
+.diagram-theme-classic .button {
+  stroke: #222222;
+}
+
+.diagram-theme-classic .button.chord {
+  fill: #eeeeee;
+  stroke: #c9c9c9;
+}
+
+.diagram-theme-classic .button.selected {
+  fill: #f4c7c3;
+  stroke: #222222;
+}
+
+.diagram-theme-classic .accidental-style-theme .treble-accidental,
+.diagram-theme-classic.accidental-style-theme .treble-accidental {
+  fill: #222222;
+  stroke: #222222;
+}
+
+.diagram-theme-classic .stradella-row-label {
+  fill: #222222;
+}
+
+.diagram-theme-pastel .button {
+  stroke: #2f6f73;
+}
+
+.diagram-theme-pastel .button.chord {
+  fill: #e5f2ef;
+  stroke: #c7dfda;
+}
+
+.diagram-theme-pastel .button.selected {
+  fill: #ffd6a5;
+  stroke: #2f6f73;
+}
+
+.diagram-theme-pastel.accidental-style-theme .treble-accidental {
+  fill: #355070;
+  stroke: #355070;
+}
+
+.diagram-theme-pastel .stradella-row-label {
+  fill: #2f6f73;
+}
+
+.diagram-theme-warm {
+  background: #fffaf0;
+}
+
+.diagram-theme-warm .button {
+  stroke: #9b4d1f;
+}
+
+.diagram-theme-warm .button.chord {
+  fill: #f8e8c8;
+  stroke: #eed2a1;
+}
+
+.diagram-theme-warm .button.selected {
+  fill: #ffd7b8;
+  stroke: #9b4d1f;
+}
+
+.diagram-theme-warm.accidental-style-theme .treble-accidental {
+  fill: #9b4d1f;
+  stroke: #9b4d1f;
+}
+
+.diagram-theme-warm .stradella-row-label {
+  fill: #9b4d1f;
+}
+
+.diagram-theme-contrast {
+  background: #ffffff;
+}
+
+.diagram-theme-contrast .button {
+  stroke: #000000;
+}
+
+.diagram-theme-contrast .button.chord {
+  fill: #ffff88;
+  stroke: #000000;
+}
+
+.diagram-theme-contrast .button.selected {
+  fill: #ff6b6b;
+  stroke: #000000;
+}
+
+.diagram-theme-contrast.accidental-style-theme .treble-accidental,
+.diagram-theme-contrast .treble-accidental {
+  fill: #000000;
+  stroke: #000000;
+}
+
+.diagram-theme-contrast .stradella-row-label {
+  fill: #000000;
+}
+
+.diagram-theme-print .button {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+.diagram-theme-print .button.chord {
+  fill: #eeeeee;
+  stroke: #bdbdbd;
+}
+
+.diagram-theme-print .button.selected {
+  fill: #cccccc;
+  stroke: #000000;
+}
+
+.diagram-theme-print .button.reference {
+  stroke-width: var(--reference-stroke-width);
+}
+
+.diagram-theme-print .treble-accidental {
+  fill: #000000;
+  stroke: #000000;
+}
+
+.diagram-theme-print.accidental-style-grey .treble-accidental {
+  fill: #707070;
+  stroke: #707070;
+}
+
+.diagram-theme-print.accidental-style-outline .treble-accidental {
+  fill: #ffffff;
+  stroke: #000000;
+}
+
+.diagram-theme-print .stradella-row-label {
+  fill: #000000;
+}
+
+@media (min-width: 861px) and (orientation: landscape) {
+  .left-panel {
+    width: 100%;
+  }
+
+  .topbar {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .canvas-wrap {
+    padding: 4px 4px 0 4px;
+  }
+}
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr !important;
+    overflow: auto;
+  }
+
+  .left-panel {
+    border: 0;
+    border-bottom: 1px solid #d9deea;
+    max-height: none;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px 18px;
+  }
+
+  .canvas-wrap {
+    min-height: 0;
+  }
+}
+
+/* Canvas flex sizing accounts for toolbars that wrap to multiple lines. */
+
+.selected-remove-button {
+  border: 0;
+  background: transparent;
+  color: #a72e1d;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-left: auto;
+}
+
+.selected-remove-button:hover {
+  color: #d4553f;
+}
+
+/* Finder highlights are appended after themes so they remain visible in every theme. */
+.button.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
+  stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+/* Use the same highlight fill on natural and accidental treble buttons.
+   Extra label contrast is applied only to highlighted accidentals. */
+.treble-accidental.finder-match,
+.accidental-style-dark .treble-accidental.finder-match,
+.accidental-style-grey .treble-accidental.finder-match,
+.accidental-style-theme .treble-accidental.finder-match,
+.accidental-style-outline .treble-accidental.finder-match {
+  fill: #fff7c2;
+  fill-opacity: 1;
+  stroke: #1f7a38;
+}
+
+.button.chord.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+}
+
+.finder-ring {
+  fill: none;
+  stroke: #2f8f46;
+  stroke-width: 3.2;
+  pointer-events: none;
+}
+
+.button.selected.finder-match {
+  fill: #ffd9a8;
+}
+
+.treble-accidental.selected.finder-match,
+.accidental-style-dark .treble-accidental.selected.finder-match,
+.accidental-style-grey .treble-accidental.selected.finder-match,
+.accidental-style-theme .treble-accidental.selected.finder-match,
+.accidental-style-outline .treble-accidental.selected.finder-match {
+  fill: #ffd9a8;
+  stroke: #1f7a38;
+}
+
+/* Finder arrows connect the single-octave scale/chord path selected by the Finder tool. */
+.finder-arrow {
+  stroke: #2f8f46;
+  stroke-width: 2.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  pointer-events: none;
+}
+
+.finder-arrowhead {
+  fill: #2f8f46;
+}
+
+.tool-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tool-fieldset:disabled {
+  opacity: 0.58;
+}
+
+/* Piano treble keyboard */
+.piano-key {
+  stroke: #1746d0;
+  stroke-width: var(--button-stroke-width);
+}
+
+.piano-white-key {
+  fill: #ffffff;
+}
+
+.piano-black-key {
+  fill: #242936;
+  stroke: #242936;
+}
+
+.piano-key.selected {
+  fill: #ffd1c7;
+  stroke: #1746d0;
+}
+
+.piano-black-key.selected {
+  fill: #7f2d24;
+  stroke: #1746d0;
+}
+
+.piano-key.finder-match {
+  fill: #fff0a8;
+  stroke: #2f8f46;
+  stroke-width: calc(var(--button-stroke-width) + 1.5);
+}
+
+.piano-black-key.finder-match {
+  fill: #fff0a8;
+  stroke: #2f8f46;
+}
+
+.piano-key.in-sequence {
+  stroke-width: calc(var(--button-stroke-width) + 1);
+}
+
+.topbar-select {
+  width: auto;
+  min-width: 82px;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-weight: 800;
+}
+
+/* Chord finder buttons need full-opacity highlights; chord rows normally use adjustable fill opacity. */
+.button.chord.finder-match {
+  fill: #fff0a8;
+  fill-opacity: 1;
+  stroke: #2f8f46;
+}
+
+.finder-ring {
+  fill: none;
+  stroke: #2f8f46;
+  stroke-width: 3.2;
+  pointer-events: none;
+}
+
+/* Primary Stradella chord-button in a finder recipe, usually the button that carries the named root/function. */
+.button.finder-primary {
+  fill: #ffd1c7;
+  stroke: #a72e1d;
+}
+
+.finder-primary-ring {
+  stroke: #a72e1d;
+  stroke-width: 4.2;
+}
+
+.tool-details {
+  border: 1px solid #d7deec;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: #ffffff;
+}
+
+.tool-details summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #1746d0;
+}
+
+/* Root-bass marker used by the Stradella Chord Finder when chord-button recipes also show the named root bass note. */
+.button.finder-root-bass {
+  fill: #d8e8ff;
+  fill-opacity: 1;
+  stroke: #2454bf;
+}
+
+.finder-root-bass-ring {
+  stroke: #2454bf;
+  stroke-width: 4.2;
+}

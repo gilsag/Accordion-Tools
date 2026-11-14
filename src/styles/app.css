@@ -1,0 +1,16 @@
+/*
+  Application styles. The files are imported in this order and the cascade
+  depends on it: a later file may override an earlier one.
+*/
+@import "./01-layout.css";
+@import "./02-controls.css";
+@import "./03-diagram.css";
+@import "./04-panels.css";
+@import "./05-harmony.css";
+@import "./06-choices.css";
+@import "./07-responsive.css";
+@import "./08-inspector.css";
+@import "./09-phone.css";
+@import "./10-toolbar-and-playback.css";
+@import "./11-rhythm.css";
+@import "./12-notation.css";

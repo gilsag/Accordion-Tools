@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { useInspectorVisibility } from "./app/inspector/useInspectorVisibility";
-import "./App.css";
+import "./styles/app.css";
 import { useActiveResults } from "./app/inspector/resultsEntries";
 import { WorkspaceInspectorSlot } from "./app/inspector/WorkspaceInspectorSlot";
 import { LanguageProvider } from "./i18n/context";

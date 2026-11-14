@@ -1,0 +1,202 @@
+/* The phone layout: bottom sheet and overflow menu. */
+
+/* Phone workspace: controls are a modal bottom sheet rather than an inline
+   panel. The controller and mounted tool forms retain their existing state. */
+.phone-sheet-backdrop,
+.phone-sheet-header,
+.phone-tools-button,
+.phone-overflow {
+  display: none;
+}
+.topbar-secondary {
+  display: contents;
+}
+.diagram-mobile-frame {
+  display: flex;
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+.diagram-mobile-frame > .canvas-wrap {
+  width: 100%;
+}
+
+@media (max-width: 620px) {
+  .app {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  .app > .left-panel {
+    display: none;
+    position: fixed;
+    z-index: 101;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: min(82dvh, 740px);
+    max-height: min(82dvh, 740px);
+    min-height: 0;
+    border: 1px solid #ccd5e5;
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -12px 35px rgba(15, 23, 42, 0.25);
+    padding: 0 12px max(16px, env(safe-area-inset-bottom));
+    background: white;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .app > .left-panel.phone-sheet-open {
+    display: block;
+  }
+  .app > .left-panel h1 {
+    display: none;
+  }
+  .phone-sheet-backdrop {
+    display: block;
+    position: fixed;
+    z-index: 100;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    background: rgba(19, 30, 49, 0.48);
+    cursor: default;
+  }
+  .phone-sheet-header {
+    display: flex;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    border-bottom: 1px solid #d9deea;
+    padding: 12px 0;
+    margin-bottom: 10px;
+    font-size: var(--ui-heading-font);
+  }
+  .phone-sheet-close {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    min-height: 44px;
+    border: 1px solid #c9d1e3;
+    border-radius: 9px;
+    padding: 7px 12px;
+    background: white;
+    color: #172033;
+    cursor: pointer;
+  }
+  .phone-sheet-close:focus-visible,
+  .mobile-diagram-toggle:focus-visible,
+  .phone-overflow-toggle:focus-visible {
+    outline: 3px solid #1746d0;
+    outline-offset: 2px;
+  }
+  .app > .workspace {
+    min-height: 56dvh;
+  }
+  .app > .workspace-inspector {
+    min-height: 0;
+  }
+  .topbar {
+    flex-wrap: nowrap;
+    gap: 5px;
+    padding: 6px 7px;
+    min-height: 56px;
+  }
+  .topbar-primary {
+    min-width: 0;
+    flex: 1 1 0;
+    font-size: 11px;
+    padding: 8px 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .topbar-secondary {
+    display: none;
+  }
+  .phone-tools-button {
+    display: block;
+    flex: 0 0 auto;
+    padding: 8px 7px;
+    font-size: 12px;
+  }
+  .phone-overflow {
+    display: block;
+    flex: 0 0 auto;
+    position: relative;
+  }
+  .phone-overflow > summary {
+    list-style: none;
+  }
+  .phone-overflow > summary::-webkit-details-marker {
+    display: none;
+  }
+  .phone-overflow-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 24px;
+    padding: 0 6px;
+  }
+  .phone-overflow-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: min(305px, calc(100vw - 20px));
+    max-height: 73dvh;
+    overflow: auto;
+    z-index: 30;
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    background: white;
+    border: 1px solid #c9d1e3;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(20, 30, 50, 0.22);
+  }
+  .phone-overflow-menu button:not(.segmented-choice-button) {
+    min-height: 44px;
+    padding: 8px 12px;
+    background: #f7f9fc;
+    border: 1px solid #c9d1e3;
+    border-radius: 8px;
+    color: #172033;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+  }
+  .phone-overflow-menu button:focus-visible {
+    outline: 2px solid #1746d0;
+    outline-offset: 1px;
+  }
+  .phone-overflow-group {
+    display: grid;
+    gap: 6px;
+    border-top: 1px solid #e1e6f0;
+    padding-top: 9px;
+  }
+  .phone-overflow-group > span {
+    font-weight: 700;
+    font-size: var(--ui-support-font);
+  }
+  .workspace > .status-bar {
+    max-height: 45px;
+    overflow: hidden;
+  }
+  .diagram-mobile-frame {
+    flex: 1 1 auto;
+    min-height: 42dvh;
+  }
+  .workspace > .canvas-wrap {
+    min-height: 0;
+  }
+  .inspector-table-scroll {
+    max-height: 46dvh;
+  }
+}

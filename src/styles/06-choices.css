@@ -1,0 +1,151 @@
+/* Binary and segmented choices, Finder notes, realization navigation. */
+
+/* Chord Finder export annotations live at the bottom of the tool. */
+.finder-annotation-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+.finder-annotation-options .checkbox-line {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+.finder-annotation-options .checkbox-line input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.12rem;
+}
+
+/* Compact binary controls: the button states the next action. */
+.binary-choice-control {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+.binary-choice-control .small-button {
+  max-width: 100%;
+  text-align: left;
+}
+
+/* Keep realization navigation on one line, including narrow tool sidebars. */
+.realization-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  margin: 0.35rem 0 0.6rem;
+  white-space: nowrap;
+}
+.realization-navigation .small-button {
+  min-width: 2.35rem;
+  padding: 0.3rem 0.55rem;
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+.finder-note-level-options {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.4rem;
+  padding-left: 0;
+}
+.finder-note-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+.finder-voicing-spacing-option {
+  margin-left: 1.45rem;
+  padding-left: 0.48rem;
+  border-left: 2px solid #d4dced;
+  font-size: 0.92em;
+}
+
+/* Persistent two-way settings show the active choice rather than the next action. */
+.segmented-choice-control {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+}
+.segmented-choice {
+  display: flex;
+  width: 100%;
+  border: 1px solid #c9d1e3;
+  border-radius: 9px;
+  overflow: hidden;
+}
+.segmented-choice-button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 6px;
+  font: inherit;
+  font-size: 12px;
+  background: #fff;
+  color: #172033;
+  border: 0;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.segmented-choice-button + .segmented-choice-button {
+  border-left: 1px solid #c9d1e3;
+}
+.segmented-choice-button.selected {
+  background: #e9efff;
+  color: #173fa6;
+  font-weight: 800;
+}
+.segmented-choice-button:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid #1746d0;
+  outline-offset: -2px;
+}
+/* Four choices in a narrow sidebar: two rows of two keep every label whole. */
+.segmented-choice.two-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.segmented-choice.two-columns .segmented-choice-button:nth-child(odd) {
+  border-left: 0;
+}
+.segmented-choice.two-columns .segmented-choice-button:nth-child(n + 3) {
+  border-top: 1px solid #c9d1e3;
+}
+
+/* The toolbar format selector is deliberately compact beside Download. */
+.topbar-format-choice {
+  flex: 0 0 auto;
+  width: 126px;
+}
+.topbar-format-choice .segmented-choice-control {
+  gap: 2px;
+}
+.topbar-format-choice .label-line {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.topbar-after-reset-space {
+  flex: 0 0 20px;
+}
+@media (max-width: 860px) {
+  .topbar-after-reset-space {
+    display: none;
+  }
+}
+.topbar-format-choice .segmented-choice-button {
+  padding: 5px 3px;
+}

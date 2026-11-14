@@ -1,0 +1,383 @@
+/* Finder footers and the voicing chart, the register model, the results inspector, the Reset menu. */
+
+/* Finder footers: use a consistent label/value grid so wrapped explanatory text
+   remains readable, and let the Stradella nominal-spacing guide live inside
+   the exported diagram beside Registral voicing. */
+/* One shared label column for every explanation level. Per-row grids gave
+   each label a different width, making shorter labels' values start too early. */
+.finder-annotation-block {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: 10px;
+  row-gap: 0.2em;
+}
+
+.finder-annotation-line {
+  display: contents;
+}
+
+.finder-annotation-label {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.finder-annotation-value {
+  min-width: 0;
+}
+
+.finder-annotation-line-voicing .finder-annotation-label,
+.finder-annotation-line-voicing .finder-annotation-value {
+  align-self: center;
+}
+
+.voicing-interval-chart {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.voicing-interval-svg {
+  display: block;
+  /* An intrinsic chart width prevents SVG viewBox magnification. */
+  max-width: 100%;
+  overflow: visible;
+}
+
+.voicing-interval-leader {
+  stroke: #a8b3c3;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+.voicing-interval-track {
+  stroke: #bdc6d4;
+  stroke-width: 2.4;
+}
+.voicing-interval-gap-tight {
+  stroke: #c43f35;
+  stroke-width: 4.5;
+}
+.voicing-interval-close {
+  stroke: #c77736;
+  stroke-width: 4;
+}
+.voicing-interval-open {
+  stroke: #509c8a;
+  stroke-width: 3.5;
+}
+.voicing-interval-bass {
+  fill: #3266aa;
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+.voicing-interval-chord {
+  fill: #426c5d;
+  stroke: #fff;
+  stroke-width: 1.8;
+}
+.voicing-interval-distance {
+  fill: #495567;
+  font-weight: 800;
+}
+.voicing-interval-note {
+  fill: #172033;
+  font-weight: 800;
+}
+
+/* Keep exported SVG footer geometry independent of the browser viewport.
+   Narrow screens can scroll the diagram; changing columns via a media query
+   would otherwise invalidate the viewBox's reserved footer height. */
+
+/* One Reset control with two explicit scopes; do not conflate clearing work
+   with changing the current tool's options. */
+.reset-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+.reset-menu > summary {
+  list-style: none;
+  user-select: none;
+}
+.reset-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.reset-menu-options {
+  position: absolute;
+  z-index: 400;
+  top: calc(100% + 5px);
+  right: 0;
+  min-width: min(245px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  padding: 5px;
+  border: 1px solid #c9d1e3;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(25, 35, 60, 0.18);
+}
+.reset-menu-options button {
+  display: block;
+  width: 100%;
+  padding: 9px 11px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: #172033;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.reset-menu-options button:hover,
+.reset-menu-options button:focus-visible {
+  background: #eef3ff;
+}
+
+/* Batch export is related to the realization list, not to playback controls. */
+.finder-download-all {
+  width: 100%;
+  margin: 6px 0 10px;
+  text-align: center;
+}
+
+/* Stradella register model: mirrored groups, without changing nominal pitch semantics. */
+.stradella-register-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+.stradella-register-intro-help {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #526078;
+  font-size: var(--ui-support-font);
+  line-height: var(--ui-control-leading);
+}
+.stradella-register-intro-help .help-tip {
+  flex-shrink: 0;
+}
+.stradella-register-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.stradella-register-group + .stradella-register-group {
+  border-top: 1px solid #d9deea;
+  padding-top: 13px;
+}
+.stradella-register-group h3 {
+  margin: 0 0 2px;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.stradella-register-group label,
+.stradella-register-group .segmented-choice-control {
+  gap: 5px;
+}
+.stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.density-compact .stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 11px;
+}
+.density-comfortable .stradella-register-group > .segmented-choice-control > .label-line {
+  font-size: 12.5px;
+}
+.stradella-register-range {
+  margin: 0;
+  color: #526078;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.density-compact .stradella-register-group {
+  gap: 6px;
+}
+.density-compact .stradella-register-group + .stradella-register-group {
+  padding-top: 10px;
+}
+.density-comfortable .stradella-register-group {
+  gap: 9px;
+}
+.density-comfortable .stradella-register-group + .stradella-register-group {
+  padding-top: 15px;
+}
+.density-compact .stradella-register-range {
+  font-size: 11px;
+}
+.density-comfortable .stradella-register-range {
+  font-size: 12.5px;
+}
+
+/* Instrument section: independently configured nominal Stradella registers. */
+.instrument-stradella-details {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin-top: 12px;
+}
+.instrument-chord-construction {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: var(--ui-control-font);
+  line-height: var(--ui-control-leading);
+  flex-wrap: wrap;
+}
+.notation-stradella-chord-labels {
+  min-width: 0;
+}
+
+/* Shared workspace inspector frame: independent scroll, no SVG geometry changes. */
+.workspace-inspector {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  box-sizing: border-box;
+  background: #fff;
+  border-left: 1px solid #d9deea;
+  scrollbar-gutter: stable;
+}
+.workspace-inspector h2 {
+  font-size: var(--ui-heading-font);
+  line-height: 1.3;
+  margin: 0 0 12px;
+}
+.workspace-inspector h3 {
+  font-size: var(--ui-section-font);
+  line-height: 1.35;
+  margin: 12px 0 8px;
+}
+.inspector-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+}
+.inspector-filter-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.inspector-filters label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  font-size: var(--ui-control-font);
+  cursor: pointer;
+}
+.inspector-filter-option .help-tip {
+  flex-shrink: 0;
+}
+.inspector-filters input {
+  accent-color: #1746d0;
+}
+.inspector-meta,
+.inspector-selection-note,
+.inspector-empty {
+  font-size: var(--ui-support-font);
+  line-height: 1.45;
+}
+.inspector-meta {
+  color: #526078;
+}
+.inspector-selection-note {
+  color: #744608;
+}
+.inspector-table-scroll {
+  overflow: auto;
+  max-height: min(44dvh, 425px);
+  border: 1px solid #d9deea;
+  border-radius: 9px;
+}
+.inspector-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ui-dense-font);
+  line-height: 1.4;
+}
+.inspector-table th {
+  position: sticky;
+  top: 0;
+  background: #eef2fa;
+  color: #27334d;
+  text-align: left;
+  z-index: 1;
+}
+.inspector-table td,
+.inspector-table th {
+  padding: 7px 6px;
+  border-bottom: 1px solid #e4e8f0;
+  vertical-align: top;
+}
+.inspector-table td {
+  overflow-wrap: anywhere;
+}
+.inspector-table tbody tr {
+  cursor: pointer;
+}
+.inspector-table tbody tr:hover {
+  background: #f2f6ff;
+}
+.inspector-table .inspector-row-selected {
+  background: #e3edff;
+  box-shadow: inset 3px 0 #1746d0;
+}
+.inspector-select {
+  background: transparent;
+  border: 0;
+  font: inherit;
+  color: #1746d0;
+  font-weight: 800;
+  cursor: pointer;
+  min-width: 32px;
+  min-height: 28px;
+}
+.inspector-select:focus-visible {
+  outline: 2px solid #1746d0;
+  border-radius: 4px;
+  outline-offset: 2px;
+}
+.inspector-details {
+  border-top: 1px solid #d9deea;
+  margin-top: 12px;
+  padding-top: 4px;
+}
+.inspector-details p {
+  font-size: var(--ui-support-font);
+  color: #526078;
+  line-height: 1.5;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 1120px) {
+  .app:has(> .workspace-inspector) {
+    grid-template-columns: 1fr !important;
+    overflow: auto;
+  }
+  .app:has(> .workspace-inspector) .panel-resize-handle {
+    display: none;
+  }
+  .app:has(> .workspace-inspector) > .left-panel {
+    max-height: 40dvh;
+  }
+  .app:has(> .workspace-inspector) > .workspace {
+    min-height: 45dvh;
+  }
+  .workspace-inspector {
+    border-left: 0;
+    border-top: 1px solid #d9deea;
+    overflow: visible;
+  }
+  .inspector-table-scroll {
+    max-height: 48dvh;
+  }
+}
