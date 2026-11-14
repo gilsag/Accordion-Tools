@@ -260,6 +260,11 @@ export function WorkspaceView({
                   viewWidth={diagram.viewWidth}
                   viewHeight={diagram.viewHeight}
                   onClick={diagram.handleSvgClick}
+                  label={
+                    diagram.finalTitle
+                      ? `${t("ui.accordionDiagram")}: ${diagram.finalTitle}`
+                      : t("ui.accordionDiagram")
+                  }
                   style={diagram.svgStyle}
                 >
                   <DiagramMarkers />

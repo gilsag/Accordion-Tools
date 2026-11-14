@@ -897,6 +897,7 @@ export const ES: Record<TranslationKey, string> = {
     "El buscador de la mano derecha selecciona botones o teclas cercanas para la octava y la inversión elegidas. Automático muestra todas las notas cuando existe una disposición completa de hasta cinco botones. Para acordes más grandes, Práctica usa una disposición reducida; Acorde completo muestra todas las notas disponibles, incluso disposiciones de seis o siete notas que no pueden tocarse simultáneamente con cinco dedos.",
   "ui.handMovementEmphasis": "Énfasis en desplazamiento de la mano",
   "ui.harmonicCircleAria": "Círculo de relaciones armónicas",
+  "ui.accordionDiagram": "Diagrama del acordeón",
   "ui.noteRingLegendTitle": "Anillo de notas",
   "ui.noteRingLegendDetail": "12 clases de altura · pulsa para tocar una nota",
   "ui.referenceChordRing": "Anillo de acordes",

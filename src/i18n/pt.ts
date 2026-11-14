@@ -888,6 +888,7 @@ export const PT: Record<TranslationKey, string> = {
     "O Localizador de Acordes da mão direita seleciona botões ou teclas próximos na oitava e inversão escolhidas. Automático mostra todas as notas quando há posição completa com até cinco botões. Para acordes maiores, Prático usa disposição reduzida; Acorde completo mostra todas as notas disponíveis, inclusive posições de seis ou sete notas que não cabem simultaneamente em cinco dedos.",
   "ui.handMovementEmphasis": "Ênfase no movimento da mão",
   "ui.harmonicCircleAria": "Círculo de relações harmônicas",
+  "ui.accordionDiagram": "Diagrama do acordeão",
   "ui.noteRingLegendTitle": "Anel de notas",
   "ui.noteRingLegendDetail": "12 classes de altura · clique para tocar uma nota",
   "ui.referenceChordRing": "Anel de acordes",

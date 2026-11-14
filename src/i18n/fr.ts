@@ -896,6 +896,7 @@ export const FR: Record<TranslationKey, string> = {
     "La recherche main droite sélectionne les boutons ou touches proches pour l’octave et le renversement choisis. Auto affiche toutes les notes si cinq boutons suffisent. Pratique utilise une disposition réduite pour les accords étendus ; Accord complet montre toutes les notes, même les positions théoriques à six ou sept notes.",
   "ui.handMovementEmphasis": "Importance du déplacement de la main",
   "ui.harmonicCircleAria": "Cercle des relations harmoniques",
+  "ui.accordionDiagram": "Schéma de l’accordéon",
   "ui.noteRingLegendTitle": "Anneau des notes",
   "ui.noteRingLegendDetail": "12 classes de hauteur · cliquer pour jouer une note",
   "ui.referenceChordRing": "Anneau des accords",

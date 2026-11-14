@@ -138,3 +138,18 @@ export async function chooseDownload(page: Page, format: "SVG" | "PNG") {
       .click();
   }
 }
+
+/** Runs axe on the page and fails with one line per problem: the rule, the
+ * view it was found in and the elements involved. */
+export async function expectAccessible(page: Page, view: string) {
+  const { default: AxeBuilder } = await import("@axe-core/playwright");
+  const { violations } = await new AxeBuilder({ page }).analyze();
+  const problems = violations.map(
+    (violation) =>
+      `${view}: ${violation.id} (${violation.impact}) ${violation.help} — ${violation.nodes
+        .slice(0, 3)
+        .map((node) => node.target.join(" "))
+        .join(", ")}`,
+  );
+  expect(problems, `accessibility problems in ${view}`).toEqual([]);
+}

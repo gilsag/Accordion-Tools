@@ -878,6 +878,7 @@ export const EN = {
     "The treble finder selects nearby buttons or piano keys at the chosen root octave and inversion. Auto shows all chord tones when a complete shape requiring at most five buttons is available. For larger chords, Practical uses a reduced voicing; Full chord displays all available tones, including six- or seven-note shapes that cannot be played simultaneously with five fingers.",
   "ui.handMovementEmphasis": "Hand-movement emphasis",
   "ui.harmonicCircleAria": "Harmonic relationship circle",
+  "ui.accordionDiagram": "Accordion diagram",
   "ui.noteRingLegendTitle": "Note ring",
   "ui.noteRingLegendDetail": "12 pitch classes · click to play a single note",
   "ui.referenceChordRing": "Chord ring",

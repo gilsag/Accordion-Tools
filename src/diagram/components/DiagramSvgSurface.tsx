@@ -10,6 +10,8 @@ type DiagramSvgSurfaceProps = {
   viewHeight: number;
   style: CSSProperties;
   onClick: (event: MouseEvent<SVGSVGElement>) => void;
+  /** Accessible name of the drawing, such as its title. */
+  label: string;
   children: ReactNode;
 };
 
@@ -26,6 +28,7 @@ export const DiagramSvgSurface = forwardRef<SVGSVGElement, DiagramSvgSurfaceProp
       viewHeight,
       style,
       onClick,
+      label,
       children,
     },
     ref,
@@ -36,7 +39,10 @@ export const DiagramSvgSurface = forwardRef<SVGSVGElement, DiagramSvgSurfaceProp
         preserveAspectRatio="xMinYMin meet"
         className={`diagram diagram-theme-${colorTheme} accidental-style-${accidentalStyle} ${annotationActive ? "annotating-diagram" : ""}`}
         viewBox={`0 0 ${viewWidth} ${viewHeight}`}
-        role="img"
+        // A group, not an image: the buttons inside are interactive. Exports
+        // become role="img" again (download.ts).
+        role="group"
+        aria-label={label}
         onClick={onClick}
         style={style}
       >

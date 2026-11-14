@@ -890,6 +890,7 @@ export const DE: Record<TranslationKey, string> = {
     "Die Diskant-Akkordsuche wählt nahe Knöpfe bzw. Tasten in der gewählten Grundtonoktave und Umkehrung. Automatisch zeigt alle Akkordtöne, wenn ein vollständiger Griff mit höchstens fünf Knöpfen möglich ist. Bei größeren Akkorden verwendet Praktisch ein reduziertes Voicing; Vollständiger Akkord zeigt alle verfügbaren Töne, auch sechs oder sieben, die nicht gleichzeitig mit fünf Fingern spielbar sind.",
   "ui.handMovementEmphasis": "Gewichtung der Handbewegung",
   "ui.harmonicCircleAria": "Kreis harmonischer Beziehungen",
+  "ui.accordionDiagram": "Akkordeon-Diagramm",
   "ui.noteRingLegendTitle": "Notenring",
   "ui.noteRingLegendDetail": "12 Tonklassen · klicken, um einen Einzelton zu spielen",
   "ui.referenceChordRing": "Akkordring",

@@ -268,13 +268,13 @@ export function DocumentationViewer({ onClose }: { onClose: () => void }) {
             ))}
             {shownDocs.length === 0 && <p>{t("ui.noMatchingTopics")}</p>}
           </nav>
-          <main className="documentation-content" key={selectedDoc?.filename}>
+          <div className="documentation-content" key={selectedDoc?.filename}>
             {selectedDoc ? (
               <MarkdownArticle source={selectedDoc.content} navigate={setSelected} />
             ) : (
               <p>{t("ui.noDocumentationFound")}</p>
             )}
-          </main>
+          </div>
         </div>
       </section>
     </div>,

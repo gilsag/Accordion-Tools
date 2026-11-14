@@ -894,6 +894,7 @@ export const IT: Record<TranslationKey, string> = {
     "La Ricerca accordi della mano destra seleziona pulsanti o tasti vicini all’ottava e al rivolto scelti. Automatico mostra tutte le note quando esiste una posizione completa con al massimo cinque pulsanti. Per accordi più estesi, Pratico usa una disposizione ridotta; Accordo completo mostra tutte le note disponibili, incluse posizioni a sei o sette note non suonabili simultaneamente con cinque dita.",
   "ui.handMovementEmphasis": "Priorità al movimento della mano",
   "ui.harmonicCircleAria": "Cerchio delle relazioni armoniche",
+  "ui.accordionDiagram": "Diagramma della fisarmonica",
   "ui.noteRingLegendTitle": "Anello delle note",
   "ui.noteRingLegendDetail": "12 classi di altezza · fai clic per suonare una nota",
   "ui.referenceChordRing": "Anello degli accordi",

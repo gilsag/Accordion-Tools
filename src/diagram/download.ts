@@ -9,6 +9,8 @@ import { DIAGRAM_COLORS } from "./diagramColors";
 function cloneSvgWithEmbeddedStyles(svgElement: SVGSVGElement, pngSafe = false) {
   const clone = svgElement.cloneNode(true) as SVGSVGElement;
   clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+  // On the page the diagram is a group of buttons; the file is a picture.
+  clone.setAttribute("role", "img");
   clone
     .querySelectorAll("[data-export-ignore='true'], .annotation-editor-object")
     .forEach((element) => element.remove());

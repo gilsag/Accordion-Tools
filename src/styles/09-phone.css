@@ -50,8 +50,15 @@
   .app > .left-panel.phone-sheet-open {
     display: block;
   }
-  .app > .left-panel h1 {
-    display: none;
+  /* The sheet header shows the name; the heading stays for assistive technology. */
+  .app > .left-panel .panel-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .phone-sheet-backdrop {
     display: block;

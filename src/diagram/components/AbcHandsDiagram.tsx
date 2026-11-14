@@ -90,7 +90,7 @@ export const AbcHandsDiagram = forwardRef<SVGSVGElement, AbcHandsDiagramProps>(
         className={`diagram abc-hands-diagram diagram-theme-${colorTheme} accidental-style-${accidentalStyle}`}
         viewBox={`0 0 ${viewWidth} ${viewHeight}`}
         preserveAspectRatio="xMinYMin meet"
-        role="img"
+        role="group"
         aria-label={hands.map((hand) => hand.caption).join(" · ")}
         style={style}
       >

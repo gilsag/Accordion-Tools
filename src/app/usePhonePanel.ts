@@ -12,7 +12,7 @@ export function usePhonePanel(activeTool: string | null, workspaceMode: string) 
   const openerRef = useRef<HTMLElement | null>(null);
   const shouldRestoreFocus = useRef(false);
   const closeRef = useRef<HTMLButtonElement | null>(null);
-  const panelRef = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const query = window.matchMedia(PHONE_QUERY);

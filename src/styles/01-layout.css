@@ -74,7 +74,7 @@ body {
   min-width: 0;
 }
 
-.left-panel h1 {
+.left-panel .panel-title {
   font-size: var(--ui-heading-font);
   line-height: 1.25;
   font-weight: 750;

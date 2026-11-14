@@ -110,6 +110,8 @@ function AppLayout() {
         density={interfaceDensity}
         gridTemplateColumns={inspector ? `${appGridColumns} ${inspectorTrack}` : appGridColumns}
       >
+        {/* The page's heading for assistive technology; the toolbar names the views. */}
+        <h1 className="visually-hidden">Accordion Tools</h1>
         {isPhone && sheetOpen && (
           <button
             type="button"
@@ -120,18 +122,12 @@ function AppLayout() {
           />
         )}
         {leftPanelMode !== "hidden" && (
-          <aside
+          <div
             ref={panelRef}
             className={`left-panel ${isPhone && sheetOpen ? "phone-sheet-open" : ""}`}
-            role={isPhone ? "dialog" : undefined}
+            role={isPhone ? "dialog" : "complementary"}
             aria-modal={isPhone && sheetOpen ? true : undefined}
-            aria-label={
-              isPhone
-                ? leftPanelMode === "settings"
-                  ? t("nav.settings")
-                  : t("nav.tools")
-                : undefined
-            }
+            aria-label={leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}
             aria-hidden={isPhone && !sheetOpen ? true : undefined}
             inert={isPhone && !sheetOpen}
             onKeyDown={onPanelKeyDown}
@@ -147,14 +143,16 @@ function AppLayout() {
                 {t("ui.close")}
               </button>
             </div>
-            <h1>{leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}</h1>
+            <h2 className="panel-title">
+              {leftPanelMode === "settings" ? t("nav.settings") : t("nav.tools")}
+            </h2>
             {leftPanelMode === "settings" && (
               <Suspense fallback={<div className="section-content" aria-busy="true" />}>
                 <SettingsView />
               </Suspense>
             )}
             {leftPanelMode === "tools" && <ToolsView />}
-          </aside>
+          </div>
         )}
         <WorkspaceView
           score={score}
