@@ -31,7 +31,19 @@ type ToolDefinition = {
     stopPlayers?: readonly ("abcPlayer" | "bassPatternPlayer")[];
     stopAllPlayback?: true;
   };
+  /** Tools with a score of their own: showing or hiding it hides the scores
+   * of the tools listed here. At most one score is shown at a time; the
+   * Harmony recording's score also hides the Progression Assistant's, but not
+   * the other way round. */
+  score?: { hides: readonly ScoreToolId[] };
 };
+
+type ScoreToolId =
+  | "abcPlayer"
+  | "bassPatternPlayer"
+  | "annotateDiagram"
+  | "progressionAssistant"
+  | "harmonyExplorer";
 
 export const TOOL_REGISTRY = {
   scaleFinder: {
@@ -56,6 +68,7 @@ export const TOOL_REGISTRY = {
     titleKey: "ui.bassPatternPlayer",
     summaryKey: "tools.summary.bassPatternPlayer",
     sides: "stradella",
+    score: { hides: ["abcPlayer", "annotateDiagram"] },
   },
   rhythmTrainer: {
     workspace: "accordion",
@@ -71,6 +84,7 @@ export const TOOL_REGISTRY = {
     titleKey: "ui.abcDefault",
     summaryKey: "tools.summary.abcPlayer",
     sides: "both",
+    score: { hides: ["bassPatternPlayer", "annotateDiagram"] },
   },
   stradellaChordFinder: {
     workspace: "accordion",
@@ -87,6 +101,10 @@ export const TOOL_REGISTRY = {
     titleKey: "tools.harmonyExplorer",
     summaryKey: "tools.summary.harmonyExplorer",
     sides: "both",
+    // The score of the recording made on the circle.
+    score: {
+      hides: ["bassPatternPlayer", "abcPlayer", "annotateDiagram", "progressionAssistant"],
+    },
   },
   progressionAssistant: {
     workspace: "accordion",
@@ -97,6 +115,7 @@ export const TOOL_REGISTRY = {
     defaultSide: "stradella",
     keepMounted: true,
     onToggle: { hideFinders: true, stopPlayers: ["abcPlayer", "bassPatternPlayer"] },
+    score: { hides: ["bassPatternPlayer", "abcPlayer", "annotateDiagram"] },
   },
   annotateDiagram: {
     workspace: "accordion",
@@ -104,6 +123,8 @@ export const TOOL_REGISTRY = {
     titleKey: "ui.annotateDiagram",
     summaryKey: "tools.summary.annotateDiagram",
     sides: "both",
+    // The score of the recorded sequence.
+    score: { hides: ["bassPatternPlayer", "abcPlayer"] },
   },
 } as const satisfies Record<string, ToolDefinition>;
 

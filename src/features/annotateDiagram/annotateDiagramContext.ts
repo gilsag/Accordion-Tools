@@ -9,6 +9,8 @@ export interface AnnotateDiagramState {
   overlays: ReturnType<typeof useDiagramOverlays>;
   sequence: ReturnType<typeof useSequenceState>;
   annotations: ReturnType<typeof useDiagramAnnotations>;
+  /** Shows or hides the sequence's score, hiding the players' scores. */
+  toggleSequenceNotation(): void;
 }
 export const [AnnotateDiagramContext, useAnnotateDiagram] =
   createToolContext<AnnotateDiagramState>("useAnnotateDiagram");

@@ -104,3 +104,45 @@ test("unregistering an old handle keeps the one registered after it", () => {
   coordinator.toolToggled("progressionAssistant", true);
   expect(trace).toEqual(["second"]);
 });
+
+test("showing or hiding a score hides the scores its tool's registry entry lists", () => {
+  // Each player hides the other players' scores; the recording hides them all.
+  expect(recordedScores("abcPlayer")).toEqual(["bassPatternPlayer", "annotateDiagram"]);
+  expect(recordedScores("bassPatternPlayer")).toEqual(["abcPlayer", "annotateDiagram"]);
+  expect(recordedScores("annotateDiagram")).toEqual(["bassPatternPlayer", "abcPlayer"]);
+  expect(recordedScores("progressionAssistant")).toEqual([
+    "bassPatternPlayer",
+    "abcPlayer",
+    "annotateDiagram",
+  ]);
+  expect(recordedScores("harmonyExplorer")).toEqual([
+    "bassPatternPlayer",
+    "abcPlayer",
+    "annotateDiagram",
+    "progressionAssistant",
+  ]);
+});
+
+/** The tools whose `hideScore` runs when `id`'s score is toggled. */
+function recordedScores(id: ToolId) {
+  const hidden: string[] = [];
+  const coordinator = createToolCoordinator({ stopAllSound: () => {} });
+  for (const tool of Object.keys(TOOL_REGISTRY) as ToolId[])
+    coordinator.register(tool, () => ({ hideScore: () => hidden.push(tool) }));
+  coordinator.scoreToggled(id);
+  return hidden;
+}
+
+test("a tool's handle is the union of the parts registered for it", () => {
+  const trace: string[] = [];
+  const coordinator = createToolCoordinator({ stopAllSound: () => trace.push("stopAllSound") });
+  coordinator.register("abcPlayer", () => ({ stop: () => trace.push("stop") }));
+  const unregisterScore = coordinator.register("abcPlayer", () => ({
+    hideScore: () => trace.push("hideScore"),
+  }));
+  coordinator.scoreToggled("bassPatternPlayer");
+  coordinator.stopAllPlayback();
+  unregisterScore();
+  coordinator.scoreToggled("bassPatternPlayer");
+  expect(trace).toEqual(["hideScore", "stop", "stopAllSound"]);
+});

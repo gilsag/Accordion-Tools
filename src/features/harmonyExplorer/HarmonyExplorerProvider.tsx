@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { usePlatformTools } from "../../app/platform/platformContexts";
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { DEFAULT_RING_VISIBILITY } from "../../tools/harmonyExplorer/music";
@@ -44,14 +45,22 @@ export function HarmonyExplorerProvider({ children }: { children: ReactNode }) {
     clearSelectionAndRecording();
   }
 
+  const { coordinator } = usePlatformTools();
+  function toggleHarmonyRecordedNotation() {
+    recording.setHarmonyRecordedNotationVisible((current) => !current);
+    coordinator.scoreToggled("harmonyExplorer");
+  }
   useToolHandle("harmonyExplorer", {
+    hideScore: () => recording.setHarmonyRecordedNotationVisible(false),
     resetWork(workspace) {
       if (workspace === "harmony") clearSelectionAndRecording();
     },
     resetPreferences: resetHarmonyExplorer,
   });
   return (
-    <HarmonyExplorerContext.Provider value={{ ...explorer, ...recording, resetHarmonyExplorer }}>
+    <HarmonyExplorerContext.Provider
+      value={{ ...explorer, ...recording, resetHarmonyExplorer, toggleHarmonyRecordedNotation }}
+    >
       {children}
     </HarmonyExplorerContext.Provider>
   );

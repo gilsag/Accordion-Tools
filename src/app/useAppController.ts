@@ -7,7 +7,7 @@ import {
   displayRoot,
   realizedChordName,
 } from "../tools/stradellaChordFinder/chordSpelling";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   BASS_OPTIONS,
   TREBLE_SIZE_OPTIONS,
@@ -267,6 +267,7 @@ export function useAppController() {
 
   /* Sequence steps and path-display state is independent of the physical manual and sound. */
   const sequenceState = annotateDiagram.sequence;
+  const { toggleSequenceNotation } = annotateDiagram;
   const {
     sequenceSteps,
     sequenceDisplayMode,
@@ -286,7 +287,6 @@ export function useAppController() {
     appendRecordedButton,
     clearSequence,
     sequenceRenderedNotationVisible,
-    setSequenceRenderedNotationVisible,
     sequenceNotationRef,
   } = sequenceState;
 
@@ -350,9 +350,9 @@ export function useAppController() {
     abcHands,
     setAbcHands,
     abcRenderedNotationVisible,
-    setAbcRenderedNotationVisible,
     abcNotationRef,
     loadAbcExample,
+    toggleAbcNotation,
   } = abcPlayerState;
 
   /* Bass-pattern preferences, editor, library and pattern selection are feature-owned. */
@@ -382,7 +382,6 @@ export function useAppController() {
     bassPatternEditorExpanded,
     setBassPatternEditorExpanded,
     bassPatternRenderedNotationVisible,
-    setBassPatternRenderedNotationVisible,
     bassPatternValidationErrors,
     bassPatternEditorText,
     setBassPatternEditorText,
@@ -398,6 +397,7 @@ export function useAppController() {
     saveCustomBassPattern,
     removeSelectedCustomBassPattern,
     loadSelectedPatternIntoEditor,
+    toggleBassPatternNotation,
   } = bassPatternState;
   const {
     musicNotationIncludeTitle,
@@ -429,42 +429,6 @@ export function useAppController() {
     musicNotationPlacement,
     setMusicNotationPlacement,
   } = usePlatformNotation();
-
-  function toggleBassPatternNotation() {
-    setBassPatternRenderedNotationVisible((current) => !current);
-    setAbcRenderedNotationVisible(false);
-    setSequenceRenderedNotationVisible(false);
-  }
-
-  function toggleAbcNotation() {
-    setAbcRenderedNotationVisible((current) => !current);
-    setBassPatternRenderedNotationVisible(false);
-    setSequenceRenderedNotationVisible(false);
-  }
-
-  function toggleSequenceNotation() {
-    setSequenceRenderedNotationVisible((current) => !current);
-    setBassPatternRenderedNotationVisible(false);
-    setAbcRenderedNotationVisible(false);
-  }
-
-  useEffect(() => {
-    if (activeToolSection !== "bassPatternPlayer") {
-      setBassPatternRenderedNotationVisible(false);
-    }
-    if (activeToolSection !== "abcPlayer") {
-      setAbcRenderedNotationVisible(false);
-    }
-    if (activeToolSection !== "annotateDiagram" || annotateMode !== "sequence") {
-      setSequenceRenderedNotationVisible(false);
-    }
-  }, [
-    activeToolSection,
-    annotateMode,
-    setAbcRenderedNotationVisible,
-    setBassPatternRenderedNotationVisible,
-    setSequenceRenderedNotationVisible,
-  ]);
 
   /* Finder request, presentation, and cross-tool handoff state live in the feature.
      Shared batch-export and mobile diagram state remain in the application shell. */
@@ -561,6 +525,7 @@ export function useAppController() {
     harmonyRecordedNotationRef,
     harmonyProgressionIdRef,
     resetHarmonyExplorer,
+    toggleHarmonyRecordedNotation,
   } = harmonyExplorerState;
   /* Progression state is separate from both the instrument and sound. */
   const progressionState = useProgressionAssistant();
@@ -590,24 +555,9 @@ export function useAppController() {
     harmonyProgressionPulseSilent,
     setHarmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible,
-    setHarmonyProgressionNotationVisible,
     harmonyProgressionNotationRef,
+    toggleHarmonyProgressionNotation,
   } = progressionState;
-
-  function toggleHarmonyProgressionNotation() {
-    setHarmonyProgressionNotationVisible((current) => !current);
-    setBassPatternRenderedNotationVisible(false);
-    setAbcRenderedNotationVisible(false);
-    setSequenceRenderedNotationVisible(false);
-  }
-
-  function toggleHarmonyRecordedNotation() {
-    setHarmonyRecordedNotationVisible((current) => !current);
-    setBassPatternRenderedNotationVisible(false);
-    setAbcRenderedNotationVisible(false);
-    setSequenceRenderedNotationVisible(false);
-    setHarmonyProgressionNotationVisible(false);
-  }
 
   /* Annotation editor and saved note state live outside the renderer. */
   const annotationState = annotateDiagram.annotations;

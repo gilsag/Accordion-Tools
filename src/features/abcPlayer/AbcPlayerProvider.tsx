@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { usePlatformNavigation } from "../../app/platform/platformContexts";
+import { usePlatformNavigation, usePlatformTools } from "../../app/platform/platformContexts";
+import { useToolHandle } from "../../app/platform/useToolHandle";
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { AbcPlayerContext } from "./abcPlayerContext";
 import { useAbcPlayerState } from "./useAbcPlayer";
@@ -8,12 +9,23 @@ import { useAbcPlayerState } from "./useAbcPlayer";
 const DEFAULT_ABC_EXAMPLE = "happy-birthday";
 
 /** Owns the ABC Player's editor, example choice, tempo, transport position
- * and mapping preferences. Its playback still runs in the application
- * controller, which also registers its handle. */
+ * mapping preferences and score visibility. Its playback still runs in the
+ * application controller, which registers the player's stop command. */
 export function AbcPlayerProvider({ children }: { children: ReactNode }) {
   const state = useAbcPlayerState();
   const { activeToolSection } = usePlatformNavigation();
+  const { coordinator } = usePlatformTools();
   useOwnedSettings("abcPlayer", state);
+  const { setAbcRenderedNotationVisible } = state;
+  useToolHandle("abcPlayer", { hideScore: () => setAbcRenderedNotationVisible(false) });
+  function toggleAbcNotation() {
+    setAbcRenderedNotationVisible((current) => !current);
+    coordinator.scoreToggled("abcPlayer");
+  }
+  // Closing the player hides its score.
+  useEffect(() => {
+    if (activeToolSection !== "abcPlayer") setAbcRenderedNotationVisible(false);
+  }, [activeToolSection, setAbcRenderedNotationVisible]);
 
   /* The first time the ABC Player opens with nothing loaded, it loads Happy
    * Birthday, a two-voice tune, so both hands are shown and heard right away.
@@ -31,5 +43,9 @@ export function AbcPlayerProvider({ children }: { children: ReactNode }) {
     void loadAbcExample(DEFAULT_ABC_EXAMPLE);
   }, [activeToolSection, abcText, abcExampleOptions, loadAbcExample]);
 
-  return <AbcPlayerContext.Provider value={state}>{children}</AbcPlayerContext.Provider>;
+  return (
+    <AbcPlayerContext.Provider value={{ ...state, toggleAbcNotation }}>
+      {children}
+    </AbcPlayerContext.Provider>
+  );
 }

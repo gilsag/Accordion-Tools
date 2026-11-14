@@ -25,11 +25,16 @@ export interface ToolHandle {
   resetPreferences?(): void;
   /** The physical layout changed, so marks tied to button identities are stale. */
   onLayoutChange?(): void;
+  /** Hide this tool's score. */
+  hideScore?(): void;
 }
 
 export type ToolHandleId = ToolId;
 
 export interface ToolCoordinator {
+  /** Registers part of a tool's handle; a tool's parts are merged, so its
+   * provider and, during the transition, the controller can each register
+   * the commands they own. Returns the function that unregisters this part. */
   register(id: ToolHandleId, read: () => ToolHandle): () => void;
   /** Called after navigation has toggled `section`; `opening` is true when
    * it was not the open tool before. */
@@ -39,6 +44,8 @@ export interface ToolCoordinator {
   layoutChanged(): void;
   /** Stop: every tool stops its own playback, then all sound stops. */
   stopAllPlayback(): void;
+  /** A tool's score was shown or hidden: hide the scores it hides. */
+  scoreToggled(id: ToolId): void;
 }
 
 const TOOL_IDS = Object.keys(TOOL_REGISTRY) as ToolId[];
@@ -50,13 +57,17 @@ const definition = (id: ToolId) =>
       stopPlayers?: readonly ToolId[];
       stopAllPlayback?: true;
     };
+    score?: { hides: readonly ToolId[] };
   };
 const FINDERS = TOOL_IDS.filter((id) => definition(id).highlights);
 const CHORD_FINDERS = TOOL_IDS.filter((id) => definition(id).highlights === "on-open");
 
 export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoordinator {
-  const readers = new Map<ToolHandleId, () => ToolHandle>();
-  const handle = (id: ToolHandleId) => readers.get(id)?.();
+  const readers = new Map<ToolHandleId, Set<() => ToolHandle>>();
+  const handle = (id: ToolHandleId): ToolHandle | undefined => {
+    const parts = readers.get(id);
+    return parts && Object.assign({}, ...[...parts].map((read) => read()));
+  };
 
   function stopAllPlayback() {
     for (const id of TOOL_IDS) handle(id)?.stop?.();
@@ -65,9 +76,11 @@ export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoor
 
   return {
     register(id, read) {
-      readers.set(id, read);
+      const parts = readers.get(id) ?? new Set();
+      parts.add(read);
+      readers.set(id, parts);
       return () => {
-        if (readers.get(id) === read) readers.delete(id);
+        parts.delete(read);
       };
     },
 
@@ -105,5 +118,9 @@ export function createToolCoordinator(ports: { stopAllSound(): void }): ToolCoor
     },
 
     stopAllPlayback,
+
+    scoreToggled(id) {
+      for (const hidden of definition(id).score?.hides ?? []) handle(hidden)?.hideScore?.();
+    },
   };
 }

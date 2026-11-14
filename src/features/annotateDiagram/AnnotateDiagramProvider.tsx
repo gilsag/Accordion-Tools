@@ -1,5 +1,9 @@
-import type { ReactNode } from "react";
-import { usePlatformAppearance } from "../../app/platform/platformContexts";
+import { useEffect, type ReactNode } from "react";
+import {
+  usePlatformAppearance,
+  usePlatformNavigation,
+  usePlatformTools,
+} from "../../app/platform/platformContexts";
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { useDiagramOverlays } from "../../diagram/useDiagramOverlays";
@@ -21,14 +25,31 @@ export function AnnotateDiagramProvider({ children }: { children: ReactNode }) {
     sequence.setSequenceSteps([]);
     annotations.setTextNotes([]);
   }
+  const { activeToolSection } = usePlatformNavigation();
+  const { coordinator } = usePlatformTools();
+  const { setSequenceRenderedNotationVisible } = sequence;
   useToolHandle("annotateDiagram", {
     resetWork: (workspace) => {
       if (workspace === "accordion") clearMarks();
     },
     onLayoutChange: clearMarks,
+    hideScore: () => setSequenceRenderedNotationVisible(false),
   });
+  function toggleSequenceNotation() {
+    setSequenceRenderedNotationVisible((current) => !current);
+    coordinator.scoreToggled("annotateDiagram");
+  }
+  // The sequence's score belongs to Sequence mode: leaving the mode or
+  // closing the tool hides it.
+  const { annotateMode } = overlays;
+  useEffect(() => {
+    if (activeToolSection !== "annotateDiagram" || annotateMode !== "sequence")
+      setSequenceRenderedNotationVisible(false);
+  }, [activeToolSection, annotateMode, setSequenceRenderedNotationVisible]);
   return (
-    <AnnotateDiagramContext.Provider value={{ overlays, sequence, annotations }}>
+    <AnnotateDiagramContext.Provider
+      value={{ overlays, sequence, annotations, toggleSequenceNotation }}
+    >
       {children}
     </AnnotateDiagramContext.Provider>
   );

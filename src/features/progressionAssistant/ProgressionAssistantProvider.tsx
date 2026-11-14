@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { usePlatformNavigation } from "../../app/platform/platformContexts";
+import { usePlatformNavigation, usePlatformTools } from "../../app/platform/platformContexts";
 import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { ProgressionAssistantContext } from "./progressionAssistantContext";
@@ -12,7 +12,13 @@ export function ProgressionAssistantProvider({ children }: { children: ReactNode
   const state = useHarmonyProgressionState();
   const { activeToolSection } = usePlatformNavigation();
   useOwnedSettings("progressionAssistant", state);
+  const { coordinator } = usePlatformTools();
+  function toggleHarmonyProgressionNotation() {
+    state.setHarmonyProgressionNotationVisible((current) => !current);
+    coordinator.scoreToggled("progressionAssistant");
+  }
   useToolHandle("progressionAssistant", {
+    hideScore: () => state.setHarmonyProgressionNotationVisible(false),
     // Its players run in the sound engine; stopping clears the buttons it lit.
     stop() {
       state.setHarmonyProgressionActiveButtonIds([]);
@@ -46,7 +52,7 @@ export function ProgressionAssistantProvider({ children }: { children: ReactNode
   ]);
 
   return (
-    <ProgressionAssistantContext.Provider value={state}>
+    <ProgressionAssistantContext.Provider value={{ ...state, toggleHarmonyProgressionNotation }}>
       {children}
     </ProgressionAssistantContext.Provider>
   );
