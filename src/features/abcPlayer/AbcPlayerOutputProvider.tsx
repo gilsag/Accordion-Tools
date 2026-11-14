@@ -10,6 +10,7 @@ import { useSideButtonSettings } from "../../app/platform/useSideButtonSettings"
 import { stradellaButtonsFor, trebleButtonsFor } from "../../app/sideButtons";
 import { AbcPlayerOutputContext, useAbcPlayer } from "./abcPlayerContext";
 import { useAbcPlayerResults } from "./useAbcPlayer";
+import type { AbcHands } from "../../types";
 import { useAbcTransport } from "./useAbcTransport";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { playerHandle } from "../../app/tools/toolHandles";
@@ -19,7 +20,7 @@ import { playerHandle } from "../../app/tools/toolHandles";
 export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
   const { buttons } = useDiagramButtons();
   const { side } = usePlatformInstrument();
-  const { workspaceMode } = usePlatformNavigation();
+  const { workspaceMode, selectAccordionSide } = usePlatformNavigation();
   const sideButtonSettings = useSideButtonSettings();
   const state = useAbcPlayer();
   const { abcHands, abcText } = state;
@@ -42,7 +43,12 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
   });
   const transport = useAbcTransport(state, results);
   useToolHandle("abcPlayer", playerHandle(transport.stopAbcPlayback));
-  const value = { ...results, ...transport, abcCompanionButtons };
+  function chooseAbcHands(next: AbcHands) {
+    transport.stopAbcPlayback();
+    state.setAbcHands(next);
+    if (next !== "both" && next !== side) selectAccordionSide(next);
+  }
+  const value = { ...results, ...transport, abcCompanionButtons, chooseAbcHands };
   const { t } = usePlatformLanguage();
   const playbackEntry: PlaybackTransport = {
     label: t("ui.abcDefault"),

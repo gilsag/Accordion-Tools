@@ -1,40 +1,19 @@
 import { HarmonyExplorerPanel } from "../../components/tools/HarmonyExplorerPanel";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type HarmonyExplorerSectionModel = Pick<
-  AppControllerModel["tools"],
-  | "addSelectedHarmonyRelationshipToProgression"
-  | "chordDisplayStyle"
-  | "clearHarmonyRecordedProgression"
-  | "harmonyDiatonicOnly"
-  | "harmonyHighlightDiatonic"
-  | "harmonyProgressionRecording"
-  | "harmonyRecordedProgression"
-  | "harmonyReferenceFamilyId"
-  | "harmonyRelatedFamilyId"
-  | "harmonyScaleId"
-  | "harmonySelection"
-  | "harmonyShowEnharmonics"
-  | "harmonyShowNoteRing"
-  | "resetHarmonyExplorer"
-  | "sendHarmonyRecordedProgressionToAssistant"
-  | "setHarmonyDiatonicOnly"
-  | "setHarmonyHighlightDiatonic"
-  | "setHarmonyReferenceFamilyId"
-  | "setHarmonyRelatedFamilyId"
-  | "setHarmonyScaleId"
-  | "setHarmonyShowNoteRing"
-  | "showHarmonySelectionOnStradella"
-  | "toggleHarmonyProgressionRecording"
->;
+import {
+  useHarmonyExplorer,
+  useHarmonyExplorerOutput,
+} from "../../features/harmonyExplorer/harmonyExplorerContext";
+import { useCrossToolActions } from "../crossTool/crossToolContext";
+import { usePlatformSpelling } from "../platform/platformContexts";
 
 /** Harmony Explorer: connects the panel to the explorer state. */
-export default function HarmonyExplorerSection({ model }: { model: HarmonyExplorerSectionModel }) {
+export default function HarmonyExplorerSection() {
   const {
     addSelectedHarmonyRelationshipToProgression,
-    chordDisplayStyle,
-    clearHarmonyRecordedProgression,
+    sendHarmonyRecordedProgressionToAssistant,
+    showHarmonySelectionOnStradella,
+  } = useCrossToolActions();
+  const {
     harmonyDiatonicOnly,
     harmonyHighlightDiatonic,
     harmonyProgressionRecording,
@@ -46,16 +25,16 @@ export default function HarmonyExplorerSection({ model }: { model: HarmonyExplor
     harmonyShowEnharmonics,
     harmonyShowNoteRing,
     resetHarmonyExplorer,
-    sendHarmonyRecordedProgressionToAssistant,
     setHarmonyDiatonicOnly,
     setHarmonyHighlightDiatonic,
     setHarmonyReferenceFamilyId,
     setHarmonyRelatedFamilyId,
     setHarmonyScaleId,
     setHarmonyShowNoteRing,
-    showHarmonySelectionOnStradella,
-    toggleHarmonyProgressionRecording,
-  } = model;
+  } = useHarmonyExplorer();
+  const { clearHarmonyRecordedProgression, toggleHarmonyProgressionRecording } =
+    useHarmonyExplorerOutput();
+  const { chordDisplayStyle } = usePlatformSpelling();
   return (
     <HarmonyExplorerPanel
       chordDisplayStyle={chordDisplayStyle}

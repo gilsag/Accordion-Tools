@@ -1,5 +1,5 @@
 import { createToolContext } from "../../app/tools/createToolContext";
-import type { DiagramButton } from "../../types";
+import type { AbcHands, DiagramButton } from "../../types";
 import type { useAbcPlayerResults, useAbcPlayerState } from "./useAbcPlayer";
 import type { useAbcTransport } from "./useAbcTransport";
 
@@ -13,6 +13,9 @@ export const [AbcPlayerContext, useAbcPlayer] = createToolContext<AbcPlayerState
 export type AbcPlayerOutput = ReturnType<typeof useAbcPlayerResults> &
   ReturnType<typeof useAbcTransport> & {
     abcCompanionButtons: DiagramButton[] | null;
+    /** Hands: Stradella or Treble also shows that side; any change stops
+     * playback, since the mapping changes. */
+    chooseAbcHands(next: AbcHands): void;
   };
 export const [AbcPlayerOutputContext, useAbcPlayerOutput] =
   createToolContext<AbcPlayerOutput>("useAbcPlayerOutput");

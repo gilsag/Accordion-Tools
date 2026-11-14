@@ -3,71 +3,24 @@ import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { translateKnownLabel } from "../../i18n/catalog";
 import { abcExampleName } from "../../i18n/optionLabels";
 import type { AbcStradellaMode } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type AbcPlayerSectionModel = Pick<
-  AppControllerModel["tools"],
-  | "abcBothHands"
-  | "abcEditorExpanded"
-  | "abcExampleOptions"
-  | "abcExampleValue"
-  | "abcFileName"
-  | "abcHands"
-  | "abcMappedEvents"
-  | "abcMissingPitchText"
-  | "abcParseResult"
-  | "abcPositionBeat"
-  | "abcStradellaMode"
-  | "abcTempoBpm"
-  | "abcText"
-  | "abcTotalBeats"
-  | "abcTrebleChordSymbolsMode"
-  | "abcVoiceCount"
-  | "chooseAbcHands"
-  | "isTrebleLikeSide"
-  | "language"
-  | "loadAbcExample"
-  | "pauseAbcPlayback"
-  | "setAbcActiveButtonIds"
-  | "setAbcEditorExpanded"
-  | "setAbcExampleValue"
-  | "setAbcFileName"
-  | "setAbcPlaybackState"
-  | "setAbcPositionBeat"
-  | "setAbcStradellaMode"
-  | "setAbcTempoBpm"
-  | "setAbcText"
-  | "setAbcTrebleChordSymbolsMode"
-  | "side"
-  | "stopAbcPlayback"
-  | "t"
->;
+import { useAbcPlayer, useAbcPlayerOutput } from "../../features/abcPlayer/abcPlayerContext";
+import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
 
 /** ABC Player: tune source, hands, tempo and mapping options. */
-export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionModel }) {
+export default function AbcPlayerSection() {
+  const { language, t } = usePlatformLanguage();
   const {
-    abcBothHands,
     abcEditorExpanded,
     abcExampleOptions,
     abcExampleValue,
     abcFileName,
     abcHands,
-    abcMappedEvents,
-    abcMissingPitchText,
-    abcParseResult,
     abcPositionBeat,
     abcStradellaMode,
     abcTempoBpm,
     abcText,
-    abcTotalBeats,
     abcTrebleChordSymbolsMode,
-    abcVoiceCount,
-    chooseAbcHands,
-    isTrebleLikeSide,
-    language,
     loadAbcExample,
-    pauseAbcPlayback,
     setAbcActiveButtonIds,
     setAbcEditorExpanded,
     setAbcExampleValue,
@@ -78,10 +31,20 @@ export default function AbcPlayerSection({ model }: { model: AbcPlayerSectionMod
     setAbcTempoBpm,
     setAbcText,
     setAbcTrebleChordSymbolsMode,
-    side,
+  } = useAbcPlayer();
+  const {
+    abcBothHands,
+    abcMappedEvents,
+    abcMissingPitchText,
+    abcParseResult,
+    abcTotalBeats,
+    abcVoiceCount,
+    chooseAbcHands,
+    pauseAbcPlayback,
     stopAbcPlayback,
-    t,
-  } = model;
+  } = useAbcPlayerOutput();
+  const { side } = usePlatformInstrument();
+  const isTrebleLikeSide = side === "treble";
   return (
     <>
       <p className="hint">

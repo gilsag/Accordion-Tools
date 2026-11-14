@@ -8,7 +8,12 @@ import {
   type BassPatternBeatName,
 } from "../../tools/bassPatternPlayerTools";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
-import type { AppControllerModel } from "../useAppController";
+import {
+  useBassPatternPlayer,
+  useBassPatternPlayerOutput,
+} from "../../features/bassPatternPlayer/bassPatternPlayerContext";
+import { formatProgressionOptionLabel } from "../controllerOptions";
+import { usePlatformLanguage } from "../platform/platformContexts";
 
 const BEAT_LABEL_KEYS: Record<BassPatternBeatName, TranslationKey> = {
   half: "ui.beatHalf",
@@ -19,56 +24,9 @@ const BEAT_LABEL_KEYS: Record<BassPatternBeatName, TranslationKey> = {
   sixteenth: "ui.beatSixteenth",
 };
 
-/** The slice of the controller model this section reads. */
-type BassPatternPlayerSectionModel = Pick<
-  AppControllerModel["tools"],
-  | "bassPatternBarsPerChord"
-  | "bassPatternChordVoicing"
-  | "bassPatternDefinitions"
-  | "bassPatternEditorErrors"
-  | "bassPatternEditorExpanded"
-  | "bassPatternEditorMessage"
-  | "bassPatternEditorText"
-  | "bassPatternEvents"
-  | "bassPatternExportFormat"
-  | "bassPatternId"
-  | "bassPatternMissingText"
-  | "bassPatternRepeatSelection"
-  | "bassPatternRoot"
-  | "bassPatternTempoBpm"
-  | "bassPatternTotalBeats"
-  | "bassPatternValidationErrors"
-  | "chordProgressionDefinitions"
-  | "chordProgressionId"
-  | "customBassPatternDefinitions"
-  | "exportSelectedBassPattern"
-  | "formatProgressionOptionLabel"
-  | "language"
-  | "loadSelectedPatternIntoEditor"
-  | "removeSelectedCustomBassPattern"
-  | "saveCustomBassPattern"
-  | "selectedBassPattern"
-  | "selectedChordProgression"
-  | "setBassPatternBarsPerChord"
-  | "setBassPatternChordVoicing"
-  | "setBassPatternEditorExpanded"
-  | "setBassPatternEditorText"
-  | "setBassPatternExportFormat"
-  | "setBassPatternId"
-  | "setBassPatternRepeatSelection"
-  | "setBassPatternRoot"
-  | "setBassPatternTempoBpm"
-  | "setChordProgressionId"
-  | "stopBassPatternPlayback"
-  | "t"
->;
-
 /** Bass Pattern Player: pattern, progression, tempo, editor and export. */
-export default function BassPatternPlayerSection({
-  model,
-}: {
-  model: BassPatternPlayerSectionModel;
-}) {
+export default function BassPatternPlayerSection() {
+  const { language, t } = usePlatformLanguage();
   const {
     bassPatternBarsPerChord,
     bassPatternChordVoicing,
@@ -77,39 +35,38 @@ export default function BassPatternPlayerSection({
     bassPatternEditorExpanded,
     bassPatternEditorMessage,
     bassPatternEditorText,
-    bassPatternEvents,
     bassPatternExportFormat,
     bassPatternId,
-    bassPatternMissingText,
-    bassPatternRepeatSelection,
     bassPatternRoot,
     bassPatternTempoBpm,
-    bassPatternTotalBeats,
     bassPatternValidationErrors,
     chordProgressionDefinitions,
     chordProgressionId,
     customBassPatternDefinitions,
-    exportSelectedBassPattern,
-    formatProgressionOptionLabel,
-    language,
     loadSelectedPatternIntoEditor,
     removeSelectedCustomBassPattern,
     saveCustomBassPattern,
-    selectedBassPattern,
-    selectedChordProgression,
     setBassPatternBarsPerChord,
     setBassPatternChordVoicing,
     setBassPatternEditorExpanded,
     setBassPatternEditorText,
     setBassPatternExportFormat,
     setBassPatternId,
-    setBassPatternRepeatSelection,
     setBassPatternRoot,
     setBassPatternTempoBpm,
     setChordProgressionId,
+  } = useBassPatternPlayer();
+  const {
+    bassPatternEvents,
+    bassPatternMissingText,
+    bassPatternRepeatSelection,
+    bassPatternTotalBeats,
+    exportSelectedBassPattern,
+    selectedBassPattern,
+    selectedChordProgression,
+    setBassPatternRepeatSelection,
     stopBassPatternPlayback,
-    t,
-  } = model;
+  } = useBassPatternPlayerOutput();
   return (
     <>
       <p className="hint">{t("ui.playsStradellaBassPatternsOverAChordProgression")}</p>

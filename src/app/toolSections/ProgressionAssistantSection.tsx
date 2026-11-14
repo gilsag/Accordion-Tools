@@ -1,69 +1,39 @@
 import { ProgressionAssistantPanel } from "../../components/tools/ProgressionAssistantPanel";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type ProgressionAssistantSectionModel = Pick<
-  AppControllerModel["tools"],
-  | "addManualHarmonyProgressionChord"
-  | "chordDisplayStyle"
-  | "chordProgressionDefinitions"
-  | "cycleHarmonyProgressionRealization"
-  | "harmonyProgression"
-  | "harmonyProgressionHandMovementWeight"
-  | "harmonyProgressionManualPattern"
-  | "harmonyProgressionManualRoot"
-  | "harmonyProgressionNoteStepId"
-  | "harmonyProgressionPlan"
-  | "harmonyProgressionRealizationKeys"
-  | "harmonyProgressionRealizationOptions"
-  | "harmonyProgressionRhythmPattern"
-  | "harmonyProgressionRootPosition"
-  | "harmonyProgressionVoiceLeadingWeight"
-  | "moveHarmonyProgressionChord"
-  | "progressionPathVisible"
-  | "removeHarmonyProgressionChord"
-  | "setHarmonyProgression"
-  | "setHarmonyProgressionHandMovementWeight"
-  | "setHarmonyProgressionManualPattern"
-  | "setHarmonyProgressionManualRoot"
-  | "setHarmonyProgressionNoteStepId"
-  | "setHarmonyProgressionPreviewIndex"
-  | "setHarmonyProgressionRhythmPattern"
-  | "setHarmonyProgressionRootPosition"
-  | "setHarmonyProgressionVoiceLeadingWeight"
-  | "setProgressionPathVisible"
-  | "setSoundSequenceTempoBpm"
-  | "soundSequenceTempoBpm"
-  | "stopSoundPlayback"
-  | "toggleHarmonyProgressionStepNotes"
-  | "useHarmonyProgressionPreset"
->;
+import { useBassPatternPlayer } from "../../features/bassPatternPlayer/bassPatternPlayerContext";
+import {
+  useProgressionAssistant,
+  useProgressionAssistantOutput,
+} from "../../features/progressionAssistant/progressionAssistantContext";
+import { useCrossToolActions } from "../crossTool/crossToolContext";
+import {
+  usePlatformSound,
+  usePlatformSpelling,
+  usePlatformTools,
+} from "../platform/platformContexts";
 
 /** Progression Assistant: connects the panel to the progression state. */
-export default function ProgressionAssistantSection({
-  model,
-}: {
-  model: ProgressionAssistantSectionModel;
-}) {
+export default function ProgressionAssistantSection() {
   const {
     addManualHarmonyProgressionChord,
-    chordDisplayStyle,
-    chordProgressionDefinitions,
     cycleHarmonyProgressionRealization,
+    moveHarmonyProgressionChord,
+    progressionPathVisible,
+    removeHarmonyProgressionChord,
+    setProgressionPathVisible,
+    toggleHarmonyProgressionStepNotes,
+    useHarmonyProgressionPreset,
+  } = useCrossToolActions();
+  const { chordProgressionDefinitions } = useBassPatternPlayer();
+  const {
     harmonyProgression,
     harmonyProgressionHandMovementWeight,
     harmonyProgressionManualPattern,
     harmonyProgressionManualRoot,
     harmonyProgressionNoteStepId,
-    harmonyProgressionPlan,
     harmonyProgressionRealizationKeys,
-    harmonyProgressionRealizationOptions,
     harmonyProgressionRhythmPattern,
     harmonyProgressionRootPosition,
     harmonyProgressionVoiceLeadingWeight,
-    moveHarmonyProgressionChord,
-    progressionPathVisible,
-    removeHarmonyProgressionChord,
     setHarmonyProgression,
     setHarmonyProgressionHandMovementWeight,
     setHarmonyProgressionManualPattern,
@@ -73,13 +43,12 @@ export default function ProgressionAssistantSection({
     setHarmonyProgressionRhythmPattern,
     setHarmonyProgressionRootPosition,
     setHarmonyProgressionVoiceLeadingWeight,
-    setProgressionPathVisible,
-    setSoundSequenceTempoBpm,
-    soundSequenceTempoBpm,
-    stopSoundPlayback,
-    toggleHarmonyProgressionStepNotes,
-    useHarmonyProgressionPreset,
-  } = model;
+  } = useProgressionAssistant();
+  const { setSoundSequenceTempoBpm, soundSequenceTempoBpm } = usePlatformSound();
+  const { chordDisplayStyle } = usePlatformSpelling();
+  const { stopAllPlayback: stopSoundPlayback } = usePlatformTools();
+  const { harmonyProgressionPlan, harmonyProgressionRealizationOptions } =
+    useProgressionAssistantOutput();
   return (
     <ProgressionAssistantPanel
       chordDisplayStyle={chordDisplayStyle}

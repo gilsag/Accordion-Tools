@@ -7,7 +7,7 @@ import {
   displayRoot,
   realizedChordName,
 } from "../tools/stradellaChordFinder/chordSpelling";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   BASS_OPTIONS,
   TREBLE_SIZE_OPTIONS,
@@ -33,11 +33,9 @@ import {
   TREBLE_PRESET_BUTTON_SIZE,
   PIANO_TREBLE_PRESET_BUTTON_SIZE,
 } from "../instrument/sizePresets";
-import { flushSync } from "react-dom";
 import type { CSSProperties, MouseEvent as ReactMouseEvent } from "react";
 import { translateKnownLabel } from "../i18n/catalog";
 import type {
-  AbcHands,
   DiagramButton,
   DownloadFormat,
   PianoTrebleRange,
@@ -50,10 +48,8 @@ import {
   accordionDiagramFilename,
   harmonyDiagramFilename,
   downloadDiagram,
-  downloadDiagramBatch,
   svgPointFromClient,
 } from "../diagram/diagramExport";
-import { captureStradellaBatch } from "../diagram/stradellaBatchCapture";
 import { calculateDiagramGeometry } from "../diagram/diagramGeometry";
 import { useDiagramButtons } from "./diagram/diagramButtonsContext";
 import { useScaleFinderOutput } from "../features/scaleFinder/scaleFinderContext";
@@ -85,7 +81,6 @@ import {
 } from "../tools/stradellaChordFinder/diagramAnnotations";
 import { analyzeConfiguredStradellaVoicing } from "../tools/stradellaChordFinder/registerModel";
 import { voicingIntervalLayout } from "../tools/stradellaChordFinder/voicingIntervalLayout";
-import { describeTrebleChord } from "../tools/trebleChordExplanation";
 import { playButtonSound } from "../sound";
 import { progressionFinderPattern } from "../tools/harmonyExplorer/progression";
 import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
@@ -95,7 +90,7 @@ import { pitchClassNameFromNumber } from "../tools/harmonyExplorer/integration";
 import { useSettingsTransfer } from "./useSettingsTransfer";
 import { useScoreRendering } from "./platform/useScoreRendering";
 import { useDiagramLabels } from "./useDiagramLabels";
-import { useProgressionActions } from "./useProgressionActions";
+import { useCrossToolActions } from "./crossTool/crossToolContext";
 
 /**
  * Builds the model the views render: owns the order in which the feature hooks
@@ -449,7 +444,6 @@ export function useAppController() {
     stradellaRequestedBassOnBassButton,
     setStradellaRequestedBassOnBassButton,
   } = stradellaChordFinderState;
-  const [batchExporting, setBatchExporting] = useState(false);
   // View-only mode. SVG viewBox, musical geometry and exports remain untouched.
 
   /* Harmony Explorer retains its independent selection/display state. */
@@ -492,15 +486,11 @@ export function useAppController() {
     harmonySelection,
     setHarmonySelection,
     harmonyFocusedReferenceRootPc,
-    setHarmonyFocusedReferenceRootPc,
     harmonyRecordedProgression,
     harmonyProgressionRecording,
-    setHarmonyProgressionRecording,
     harmonyRecordedNotationVisible,
-    setHarmonyRecordedNotationVisible,
     harmonyRecordedProgressionPlaying,
     harmonyRecordedNotationRef,
-    harmonyProgressionIdRef,
     resetHarmonyExplorer,
     toggleHarmonyRecordedNotation,
   } = harmonyExplorerState;
@@ -522,13 +512,11 @@ export function useAppController() {
     harmonyProgressionRhythmPattern,
     setHarmonyProgressionRhythmPattern,
     harmonyProgressionRealizationKeys,
-    setHarmonyProgressionRealizationKeys,
     harmonyProgressionPreviewIndex,
     setHarmonyProgressionPreviewIndex,
     harmonyProgressionNoteStepId,
     setHarmonyProgressionNoteStepId,
     harmonyProgressionActiveButtonIds,
-    setHarmonyProgressionActiveButtonIds,
     harmonyProgressionPulseSilent,
     harmonyProgressionNotationVisible,
     harmonyProgressionNotationRef,
@@ -632,7 +620,6 @@ export function useAppController() {
 
   const isTrebleLikeSide = side === "treble";
   const isPianoTreble = side === "treble" && trebleLayout === "piano";
-  const stradellaAccidental = accidental === "enharmonic" ? "natural" : accidental;
 
   /* Generated button list for the current side and layout settings. */
   const { buttons } = useDiagramButtons();
@@ -660,7 +647,8 @@ export function useAppController() {
    * button identity, ordering, octave/row choices, and playback/export semantics. */
   const { stradellaScaleFinderResult, scaleFinderButtons, playScaleFinder } =
     useScaleFinderOutput();
-  const { chordFinderButtons, playChordFinder } = useTrebleChordFinderOutput();
+  const { chordFinderButtons, playChordFinder, trebleChordExplanation } =
+    useTrebleChordFinderOutput();
 
   const {
     abcParseResult,
@@ -671,6 +659,7 @@ export function useAppController() {
     abcVoiceCount,
     abcBothHands,
     abcCompanionButtons,
+    chooseAbcHands,
     stopAbcPlayback,
     pauseAbcPlayback,
     scheduleAbcPlayback,
@@ -705,6 +694,8 @@ export function useAppController() {
     stradellaChordFinderReachExtendedTo,
     stradellaChordFinderEffectiveRequestedBass,
     playStradellaChordFinder,
+    batchExporting,
+    downloadAllStradellaRealizations,
   } = useStradellaChordFinderOutput();
 
   const finderButtons = stradellaChordFinderActive
@@ -731,8 +722,6 @@ export function useAppController() {
     harmonyExplanation,
     playHarmonyChord,
     playHarmonyChordRelationship,
-    harmonyProgressionSectorIndex,
-    makeHarmonyProgressionChord,
     playHarmonyNote,
     handleHarmonyChordActivated,
     toggleHarmonyProgressionRecording,
@@ -741,14 +730,6 @@ export function useAppController() {
     clearHarmonyRecordedProgression,
     harmonyRecordedProgressionNotationAbc,
   } = useHarmonyExplorerOutput();
-
-  /** ABC Player Hands choice. Stradella or Treble also switches the workspace
-   * to that side; any change stops playback, since the mapping changes. */
-  function chooseAbcHands(next: AbcHands) {
-    stopAbcPlayback();
-    setAbcHands(next);
-    if (next !== "both" && next !== side) selectAccordionSide(next);
-  }
 
   /**
    * Handles button clicks.
@@ -789,48 +770,7 @@ export function useAppController() {
     exploreCurrentStradellaChordInHarmony,
     progressionPathVisible,
     setProgressionPathVisible,
-  } = useProgressionActions({
-    chordProgressionDefinitions,
-    previewHarmonyProgressionStepOnStradella,
-    harmonyProgression,
-    harmonyProgressionIdRef,
-    harmonyProgressionManualPattern,
-    harmonyProgressionManualRoot,
-    harmonyProgressionNoteStepId,
-    harmonyProgressionPlan,
-    harmonyProgressionRealizationKeys,
-    harmonyProgressionRealizationOptions,
-    harmonyProgressionSectorIndex,
-    harmonyRecordedProgression,
-    harmonySelection,
-    makeHarmonyProgressionChord,
-    navigateToTool,
-    setChordFinderActive,
-    setHarmonyFocusedReferenceRootPc,
-    setHarmonyProgression,
-    setHarmonyProgressionActiveButtonIds,
-    setHarmonyProgressionNoteStepId,
-    setHarmonyProgressionPreviewIndex,
-    setHarmonyProgressionRealizationKeys,
-    setHarmonyProgressionRecording,
-    setHarmonyRecordedNotationVisible,
-    setHarmonyRelatedFamilyId,
-    setHarmonySelection,
-    setScaleFinderActive,
-    setStradellaChordFinderActive,
-    setStradellaChordFinderMode,
-    setStradellaChordFinderPattern,
-    setStradellaChordFinderRealizationIndex,
-    setStradellaChordFinderRequestedBass,
-    setStradellaChordFinderRoot,
-    stopAbcPlayback,
-    stopBassPatternPlayback,
-    stopHarmonyRecordedProgressionPlayback,
-    stopSoundPlayback,
-    stradellaChordFinderPattern,
-    stradellaChordFinderRoot,
-    t,
-  });
+  } = useCrossToolActions();
 
   const {
     getMainLabel,
@@ -838,62 +778,7 @@ export function useAppController() {
     formatTrebleChordFinderPitches,
     autoTitle,
     localizedAutoTitle,
-  } = useDiagramLabels({
-    accidental,
-    basses,
-    chordDisplayStyle,
-    chordFinderOctave,
-    chordFinderPattern,
-    chordFinderRoot,
-    chordLabelMode,
-    isPianoTreble,
-    language,
-    notation,
-    side,
-    stradellaAccidental,
-    trebleLayout,
-  });
-
-  /** Download every eligible realization with the current filter, labels,
-   * layout, register model, footer and SVG/PNG settings. Capture each live SVG
-   * synchronously, then restore selection before asynchronous PNG encoding. */
-  async function downloadAllStradellaRealizations() {
-    if (batchExporting || side !== "stradella" || !stradellaChordFinderActive) return;
-    const candidates = stradellaChordFinderRealizations
-      .map((candidate, index) => ({ candidate, index }))
-      .filter(({ candidate }) => candidate.playable);
-    if (!candidates.length || !svgRef.current) return;
-    setBatchExporting(true);
-    try {
-      const snapshots = captureStradellaBatch({
-        candidates,
-        originalIndex: stradellaChordFinderRealizationIndex,
-        selectIndex: (index) => flushSync(() => setStradellaChordFinderRealizationIndex(index)),
-        currentSvg: () => svgRef.current,
-        filenameKey: (candidate) =>
-          realizationAnnotation(
-            stradellaChordFinderRoot,
-            stradellaChordFinderPattern,
-            candidate,
-            stradellaRegisterModel,
-            stradellaChordFinderEffectiveRequestedBass,
-            stradellaNoteLevels,
-            chordDisplayStyle,
-            language,
-          )?.filenameKey,
-        format: downloadFormat,
-      });
-      await downloadDiagramBatch(
-        snapshots,
-        downloadFormat,
-        `stradella-${stradellaChordFinderRoot}-${stradellaChordFinderPattern}-${downloadFormat}-${snapshots.length}-realizations.zip`,
-      );
-    } catch (error) {
-      window.alert(error instanceof Error ? error.message : "Could not export all diagrams.");
-    } finally {
-      setBatchExporting(false);
-    }
-  }
+  } = useDiagramLabels();
 
   /** The application determines musical titles; the diagram export service
    * owns filename normalization, format dispatch and viewBox coordinate mapping. */
@@ -1037,14 +922,6 @@ export function useAppController() {
   );
   // The note generator owns the stable ordering, independently of the chart toggle.
   const finderAnnotationDisplayLines = diagramNoteAnnotation?.lines ?? [];
-  // Report the actual highlighted buttons for every chord family.
-  const trebleChordExplanation = describeTrebleChord(
-    chordFinderButtons,
-    chordFinderRoot,
-    chordFinderPattern,
-    trebleChordVoicingMode,
-    language,
-  );
   const trebleVoicingNote =
     side === "treble" && chordFinderActive ? trebleChordExplanation.note : "";
   const trebleFooterEnabled = Boolean(showTrebleVoicingNote && trebleVoicingNote);

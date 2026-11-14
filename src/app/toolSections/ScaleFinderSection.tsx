@@ -6,59 +6,38 @@ import {
   SCALE_FINDER_ROW_LIMIT_OPTIONS,
 } from "../../tools/scaleFinderTools";
 import type { FinderScalePattern, SequenceDisplayMode } from "../../types";
-import type { AppControllerModel } from "../useAppController";
-
-/** The slice of the controller model this section reads. */
-type ScaleFinderSectionModel = Pick<
-  AppControllerModel["tools"],
-  | "formatStradellaScaleFinderNames"
-  | "isTrebleLikeSide"
-  | "language"
-  | "playScaleFinder"
-  | "scaleFinderActive"
-  | "scaleFinderButtons"
-  | "scaleFinderDisplayMode"
-  | "scaleFinderPattern"
-  | "scaleFinderRoot"
-  | "scaleFinderRowLimit"
-  | "SEQUENCE_DISPLAY_MODE_OPTIONS"
-  | "setChordFinderActive"
-  | "setScaleFinderActive"
-  | "setScaleFinderDisplayMode"
-  | "setScaleFinderPattern"
-  | "setScaleFinderRoot"
-  | "setScaleFinderRowLimit"
-  | "setStradellaChordFinderActive"
-  | "side"
-  | "stradellaScaleFinderResult"
-  | "t"
->;
+import {
+  useScaleFinder,
+  useScaleFinderOutput,
+} from "../../features/scaleFinder/scaleFinderContext";
+import { useStradellaChordFinder } from "../../features/stradellaChordFinder/stradellaChordFinderContext";
+import { useTrebleChordFinder } from "../../features/trebleChordFinder/trebleChordFinderContext";
+import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../controllerOptions";
+import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
+import { useDiagramLabels } from "../useDiagramLabels";
 
 /** Scale Finder: scale, root, display mode and row limit. */
-export default function ScaleFinderSection({ model }: { model: ScaleFinderSectionModel }) {
+export default function ScaleFinderSection() {
+  const { language, t } = usePlatformLanguage();
+  const { formatStradellaScaleFinderNames } = useDiagramLabels();
   const {
-    formatStradellaScaleFinderNames,
-    isTrebleLikeSide,
-    language,
-    playScaleFinder,
     scaleFinderActive,
-    scaleFinderButtons,
     scaleFinderDisplayMode,
     scaleFinderPattern,
     scaleFinderRoot,
     scaleFinderRowLimit,
-    SEQUENCE_DISPLAY_MODE_OPTIONS,
-    setChordFinderActive,
     setScaleFinderActive,
     setScaleFinderDisplayMode,
     setScaleFinderPattern,
     setScaleFinderRoot,
     setScaleFinderRowLimit,
-    setStradellaChordFinderActive,
-    side,
-    stradellaScaleFinderResult,
-    t,
-  } = model;
+  } = useScaleFinder();
+  const { setStradellaChordFinderActive } = useStradellaChordFinder();
+  const { setChordFinderActive } = useTrebleChordFinder();
+  const { side } = usePlatformInstrument();
+  const { playScaleFinder, scaleFinderButtons, stradellaScaleFinderResult } =
+    useScaleFinderOutput();
+  const isTrebleLikeSide = side === "treble";
   return (
     <>
       <p className="hint">

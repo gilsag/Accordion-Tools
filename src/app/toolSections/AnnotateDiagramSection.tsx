@@ -9,7 +9,13 @@ import type {
   SequenceColorPreset,
   SequenceDisplayMode,
 } from "../../types";
-import type { AppControllerModel } from "../useAppController";
+import {
+  useAnnotateDiagram,
+  useAnnotateDiagramOutput,
+} from "../../features/annotateDiagram/annotateDiagramContext";
+import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../controllerOptions";
+import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
+import { useDiagramLabels } from "../useDiagramLabels";
 
 const FINGER_NUMBERS = ["1", "2", "3", "4", "5"] as const;
 
@@ -20,89 +26,46 @@ const ANNOTATE_MODE_LABELS: Record<AnnotateMode, TranslationKey> = {
   notes: "ui.annotateModeNotes",
 };
 
-/** The slice of the controller model this section reads. */
-type AnnotateDiagramSectionModel = Pick<
-  AppControllerModel["tools"],
-  | "annotateMode"
-  | "annotationBold"
-  | "annotationButtonAnchor"
-  | "annotationItalic"
-  | "annotationLocationLabel"
-  | "annotationOffsetPercent"
-  | "annotationPreview"
-  | "applyFingerToSelected"
-  | "clearAllFingerings"
-  | "clearFingerForSelected"
-  | "clearSelection"
-  | "clearSequence"
-  | "clearTextNotes"
-  | "deleteTextNote"
-  | "deselectButton"
-  | "fingeringDraft"
-  | "fingeringPosition"
-  | "getMainLabel"
-  | "language"
-  | "playSelectedButtons"
-  | "selectedButtons"
-  | "SEQUENCE_DISPLAY_MODE_OPTIONS"
-  | "sequenceArrowheadSize"
-  | "sequenceColorPreset"
-  | "sequenceDisplayMode"
-  | "sequenceNumberColorPreset"
-  | "sequenceNumberFontSize"
-  | "sequenceNumberPosition"
-  | "sequenceSteps"
-  | "sequenceThickness"
-  | "setAnnotateMode"
-  | "setAnnotationBold"
-  | "setAnnotationButtonAnchor"
-  | "setAnnotationItalic"
-  | "setAnnotationOffsetPercent"
-  | "setFingeringDraft"
-  | "setFingeringPosition"
-  | "setSequenceArrowheadSize"
-  | "setSequenceColorPreset"
-  | "setSequenceDisplayMode"
-  | "setSequenceNumberColorPreset"
-  | "setSequenceNumberFontSize"
-  | "setSequenceNumberPosition"
-  | "setSequenceThickness"
-  | "setTextNoteColor"
-  | "setTextNoteFont"
-  | "setTextNoteFontSize"
-  | "side"
-  | "t"
-  | "textNoteColor"
-  | "textNoteFont"
-  | "textNoteFontSize"
-  | "textNotes"
->;
-
 /** Annotate Diagram: selection, fingering, sequences and text notes. */
-export default function AnnotateDiagramSection({ model }: { model: AnnotateDiagramSectionModel }) {
+export default function AnnotateDiagramSection() {
+  const { language, t } = usePlatformLanguage();
+  const { getMainLabel } = useDiagramLabels();
   const {
-    annotateMode,
     annotationBold,
     annotationButtonAnchor,
     annotationItalic,
     annotationLocationLabel,
     annotationOffsetPercent,
     annotationPreview,
+    clearTextNotes,
+    deleteTextNote,
+    setAnnotationBold,
+    setAnnotationButtonAnchor,
+    setAnnotationItalic,
+    setAnnotationOffsetPercent,
+    setTextNoteColor,
+    setTextNoteFont,
+    setTextNoteFontSize,
+    textNoteColor,
+    textNoteFont,
+    textNoteFontSize,
+    textNotes,
+  } = useAnnotateDiagram().annotations;
+  const {
+    annotateMode,
     applyFingerToSelected,
     clearAllFingerings,
     clearFingerForSelected,
     clearSelection,
-    clearSequence,
-    clearTextNotes,
-    deleteTextNote,
     deselectButton,
     fingeringDraft,
     fingeringPosition,
-    getMainLabel,
-    language,
-    playSelectedButtons,
-    selectedButtons,
-    SEQUENCE_DISPLAY_MODE_OPTIONS,
+    setAnnotateMode,
+    setFingeringDraft,
+    setFingeringPosition,
+  } = useAnnotateDiagram().overlays;
+  const {
+    clearSequence,
     sequenceArrowheadSize,
     sequenceColorPreset,
     sequenceDisplayMode,
@@ -111,13 +74,6 @@ export default function AnnotateDiagramSection({ model }: { model: AnnotateDiagr
     sequenceNumberPosition,
     sequenceSteps,
     sequenceThickness,
-    setAnnotateMode,
-    setAnnotationBold,
-    setAnnotationButtonAnchor,
-    setAnnotationItalic,
-    setAnnotationOffsetPercent,
-    setFingeringDraft,
-    setFingeringPosition,
     setSequenceArrowheadSize,
     setSequenceColorPreset,
     setSequenceDisplayMode,
@@ -125,16 +81,9 @@ export default function AnnotateDiagramSection({ model }: { model: AnnotateDiagr
     setSequenceNumberFontSize,
     setSequenceNumberPosition,
     setSequenceThickness,
-    setTextNoteColor,
-    setTextNoteFont,
-    setTextNoteFontSize,
-    side,
-    t,
-    textNoteColor,
-    textNoteFont,
-    textNoteFontSize,
-    textNotes,
-  } = model;
+  } = useAnnotateDiagram().sequence;
+  const { playSelectedButtons, selectedButtons } = useAnnotateDiagramOutput();
+  const { side } = usePlatformInstrument();
   return (
     <>
       <SegmentedChoice

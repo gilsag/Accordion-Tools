@@ -1,3 +1,4 @@
+import type { describeTrebleChord } from "../../tools/trebleChordExplanation";
 import { createToolContext } from "../../app/tools/createToolContext";
 import type {
   useTrebleChordFinderButtons,
@@ -13,6 +14,8 @@ export type TrebleChordFinderOutput = {
   chordFinderButtons: ReturnType<typeof useTrebleChordFinderButtons>;
   /** Plays the shown chord as an arpeggio, then together. */
   playChordFinder(): void;
+  /** Whether the shown buttons are the exact chord, and the note that says so. */
+  trebleChordExplanation: ReturnType<typeof describeTrebleChord>;
 };
 export const [TrebleChordFinderOutputContext, useTrebleChordFinderOutput] =
   createToolContext<TrebleChordFinderOutput>("useTrebleChordFinderOutput");

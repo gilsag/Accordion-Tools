@@ -146,7 +146,7 @@ function AppLayout() {
                 <SettingsView />
               </Suspense>
             )}
-            {leftPanelMode === "tools" && <ToolsView model={model.tools} />}
+            {leftPanelMode === "tools" && <ToolsView />}
           </aside>
         )}
         <WorkspaceView

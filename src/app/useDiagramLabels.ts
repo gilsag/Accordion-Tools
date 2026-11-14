@@ -1,15 +1,12 @@
 import { diagramAutoTitle } from "../i18n/diagramLabels";
-import { displayStradellaButtonChord, type ChordDisplayStyle } from "../tools/chordDisplay";
-import type { useLanguageSettings } from "../settings/useLanguageSettings";
-import type { useInstrumentState } from "../instrument/useInstrumentState";
-import type { useTrebleChordFinderState } from "../features/trebleChordFinder/useTrebleChordFinder";
-import type {
-  AccidentalMode,
-  ButtonKind,
-  ChordLabelMode,
-  DiagramButton,
-  NotationMode,
-} from "../types";
+import { displayStradellaButtonChord } from "../tools/chordDisplay";
+import { useTrebleChordFinder } from "../features/trebleChordFinder/trebleChordFinderContext";
+import {
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformSpelling,
+} from "./platform/platformContexts";
+import type { ButtonKind, DiagramButton } from "../types";
 import {
   chordTones,
   formatPitch,
@@ -20,40 +17,15 @@ import {
 } from "../music";
 import { intervalsForChordFinder } from "../music/chordDefinitions";
 
-export type UseDiagramLabelsDeps = Pick<
-  ReturnType<typeof useInstrumentState>,
-  "basses" | "side" | "trebleLayout"
-> &
-  Pick<
-    ReturnType<typeof useTrebleChordFinderState>,
-    "chordFinderOctave" | "chordFinderPattern" | "chordFinderRoot"
-  > &
-  Pick<ReturnType<typeof useLanguageSettings>, "language"> & {
-    accidental: AccidentalMode;
-    chordDisplayStyle: ChordDisplayStyle;
-    chordLabelMode: ChordLabelMode;
-    isPianoTreble: boolean;
-    notation: NotationMode;
-    stradellaAccidental: "natural" | "flats" | "sharps";
-  };
-
 /** Text for buttons, the treble Finder's note list and automatic titles, following the notation, accidental and chord-label settings. */
-export function useDiagramLabels(deps: UseDiagramLabelsDeps) {
-  const {
-    accidental,
-    basses,
-    chordDisplayStyle,
-    chordFinderOctave,
-    chordFinderPattern,
-    chordFinderRoot,
-    chordLabelMode,
-    isPianoTreble,
-    language,
-    notation,
-    side,
-    stradellaAccidental,
-    trebleLayout,
-  } = deps;
+export function useDiagramLabels() {
+  const { language } = usePlatformLanguage();
+  const { basses, side, trebleLayout } = usePlatformInstrument();
+  const { accidental, notation, chordDisplayStyle, chordLabelMode } = usePlatformSpelling();
+  const { chordFinderOctave, chordFinderPattern, chordFinderRoot } = useTrebleChordFinder();
+  const isPianoTreble = side === "treble" && trebleLayout === "piano";
+  // Stradella buttons have no enharmonic spelling mode.
+  const stradellaAccidental = accidental === "enharmonic" ? "natural" : accidental;
 
   /** Semitones of a pitch class above C (0–11), used for key-independent functional-reference labels. */
   function semiAboveCRef(pitch: string): number {
