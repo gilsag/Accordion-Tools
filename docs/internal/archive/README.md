@@ -10,3 +10,4 @@ Records of finished work, kept for reference only. Nothing here describes the cu
 | [`responsive-validation.md`](responsive-validation.md) | Responsive layout check for the v0.15.7 release candidate |
 | [`localization-plan.md`](localization-plan.md) | The original interface localization plan (v0.15.14) |
 | [`bass-pattern-rhythm-audit.md`](bass-pattern-rhythm-audit.md) | Audit of the 29 built-in bass patterns before v0.20.0 |
+| [`instrument-profiles-design.md`](instrument-profiles-design.md) | A proposal for named, exportable instrument profiles (v0.15.28), never implemented |
