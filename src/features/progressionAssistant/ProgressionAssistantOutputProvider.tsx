@@ -3,7 +3,9 @@ import type { ScoreEntry } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
-import { useMemo, type ReactNode } from "react";
+import { lazy, useMemo, type ReactNode } from "react";
+import { ResultsEntryProvider } from "../../app/inspector/ResultsEntryProvider";
+import { enterProgressionAssistant } from "../../app/crossToolCommands";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import {
   usePlatformAppearance,
@@ -24,6 +26,12 @@ import {
   useProgressionAssistant,
 } from "./progressionAssistantContext";
 import { useHarmonyProgressionResults } from "./useProgressionAssistant";
+
+const ProgressionResultsInspector = lazy(() =>
+  import("./ProgressionResultsInspector").then((module) => ({
+    default: module.ProgressionResultsInspector,
+  })),
+);
 
 /** The optimized plan for the progression, its realization options, the
  * previewed step, what is lit, its rhythm pulses and score, and Play. */
@@ -126,11 +134,37 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
     });
   }
 
-  const value = { ...results, ...notation, progressionSearch, playOptimizedHarmonyProgression };
+  const { navigateToTool } = usePlatformNavigation();
+  const { coordinator, stopAllPlayback } = usePlatformTools();
+  function previewHarmonyProgressionStepOnStradella(index: number) {
+    const step = harmonyProgressionPlan.steps[index];
+    if (!step) return;
+    state.setHarmonyProgressionPreviewIndex(index);
+    state.setHarmonyProgressionNoteStepId(step.chord.id);
+    enterProgressionAssistant(
+      {
+        navigate: () => navigateToTool("progressionAssistant", { side: "stradella" }),
+        clearPreview: () => state.setHarmonyProgressionPreviewIndex(null),
+        disableStradellaFinder: () => coordinator.deactivateTool("stradellaChordFinder"),
+        disableScaleFinder: () => coordinator.deactivateTool("scaleFinder"),
+        disableTrebleChordFinder: () => coordinator.deactivateTool("chordFinder"),
+        stopAbc: () => coordinator.stopTool("abcPlayer"),
+        stopBassPattern: () => coordinator.stopTool("bassPatternPlayer"),
+      },
+      "preview",
+    );
+  }
+
+  const value = {
+    ...results,
+    ...notation,
+    progressionSearch,
+    playOptimizedHarmonyProgression,
+    previewHarmonyProgressionStepOnStradella,
+  };
   const { t } = usePlatformLanguage();
   const { side } = usePlatformInstrument();
   const { soundEnginePlayer } = usePlatformPlayback();
-  const { stopAllPlayback } = usePlatformTools();
   // The assistant plays the Stradella side only.
   const playbackEntry: PlaybackTransport | null =
     side === "stradella"
@@ -152,11 +186,23 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
           filename: "optimized-stradella-progression-notation",
         }
       : null;
+  // The step table beside the diagram, while the assistant is open on the Stradella side.
+  const resultsPanel =
+    side === "stradella" && activeToolSection === "progressionAssistant" ? (
+      <ProgressionResultsInspector
+        plan={harmonyProgressionPlan}
+        hasProgression={state.harmonyProgression.length > 0}
+        previewIndex={state.harmonyProgressionPreviewIndex}
+        onPreviewStep={previewHarmonyProgressionStepOnStradella}
+      />
+    ) : null;
   return (
     <ProgressionAssistantOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="progressionAssistant" transport={playbackEntry}>
         <ScoreEntryProvider tool="progressionAssistant" score={scoreEntry}>
-          {children}
+          <ResultsEntryProvider tool="progressionAssistant" panel={resultsPanel}>
+            {children}
+          </ResultsEntryProvider>
         </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </ProgressionAssistantOutputContext.Provider>

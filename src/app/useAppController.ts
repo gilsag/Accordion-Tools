@@ -647,6 +647,7 @@ export function useAppController() {
     harmonyProgressionNoteStep,
     harmonyProgressionRenderedNotationAbc,
     playOptimizedHarmonyProgression,
+    previewHarmonyProgressionStepOnStradella,
   } = useProgressionAssistantOutput();
 
   const {
@@ -785,7 +786,6 @@ export function useAppController() {
     removeHarmonyProgressionChord,
     moveHarmonyProgressionChord,
     cycleHarmonyProgressionRealization,
-    previewHarmonyProgressionStepOnStradella,
     toggleHarmonyProgressionStepNotes,
     showHarmonySelectionOnStradella,
     exploreCurrentStradellaChordInHarmony,
@@ -793,6 +793,7 @@ export function useAppController() {
     setProgressionPathVisible,
   } = useProgressionActions({
     chordProgressionDefinitions,
+    previewHarmonyProgressionStepOnStradella,
     harmonyProgression,
     harmonyProgressionIdRef,
     harmonyProgressionManualPattern,
@@ -835,9 +836,7 @@ export function useAppController() {
 
   const {
     getMainLabel,
-    formatStradellaFinderPitches,
     formatStradellaScaleFinderNames,
-    formatStradellaFinderText,
     formatTrebleChordFinderPitches,
     autoTitle,
     localizedAutoTitle,
@@ -854,8 +853,6 @@ export function useAppController() {
     notation,
     side,
     stradellaAccidental,
-    stradellaChordFinderPattern,
-    stradellaChordFinderRoot,
     trebleLayout,
   });
 
@@ -1479,8 +1476,6 @@ export function useAppController() {
       fingeringDraft,
       fingeringPosition,
       formatProgressionOptionLabel,
-      formatStradellaFinderPitches,
-      formatStradellaFinderText,
       formatStradellaScaleFinderNames,
       formatTrebleChordFinderPitches,
       getMainLabel,

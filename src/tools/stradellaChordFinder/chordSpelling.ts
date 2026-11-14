@@ -4,7 +4,7 @@
  * For example Cmin7 = C–E♭–G–B♭, while C♯maj7 uses E♯ rather than F.
  */
 import type { AccidentalMode, FinderChordPattern, NotationMode } from "../../types";
-import { PITCH_INDEX, transpose, formatPitch } from "../../music";
+import { INDEX_TO_PITCH, PITCH_INDEX, transpose, formatPitch } from "../../music";
 import { intervalsForChordFinder } from "../../music/chordDefinitions";
 
 const LETTERS = ["C", "D", "E", "F", "G", "A", "B"] as const;
@@ -161,4 +161,39 @@ export function spellDensityNote(note: string, root: string, pattern: FinderChor
     /\b([A-G](?:#)?)(\d+)\b/g,
     (_, pc: string, oct: string) => `${chordToneName(root, pattern, pc)}${oct}`,
   );
+}
+
+/** The Finder's pitch list, each tone spelled for the requested chord. */
+export function formatChordFinderPitches(
+  root: string,
+  pattern: FinderChordPattern,
+  pitches: string[],
+  notation: NotationMode,
+  accidental: AccidentalMode,
+): string {
+  if (pitches.length === 0) return "none";
+  return pitches
+    .map((pitch) => formatChordFinderTone(root, pattern, pitch, notation, accidental))
+    .join(", ");
+}
+
+/** Rewrites the pitch-class names in technical Finder text with the chord's spelling. */
+export function formatChordFinderText(
+  root: string,
+  pattern: FinderChordPattern,
+  text: string,
+  notation: NotationMode,
+  accidental: AccidentalMode,
+): string {
+  return [...INDEX_TO_PITCH]
+    .sort((a, b) => b.length - a.length)
+    .reduce((current, pitch) => {
+      const escapedPitch = pitch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const namePattern = new RegExp(`(^|[^A-Za-z#])(${escapedPitch})(?![A-Za-z#])`, "g");
+      return current.replace(
+        namePattern,
+        (_match, prefix) =>
+          `${prefix}${formatChordFinderTone(root, pattern, pitch, notation, accidental)}`,
+      );
+    }, text);
 }

@@ -2,7 +2,7 @@ import { useI18n } from "../../i18n/useI18n";
 import { pitchName } from "../../tools/harmonyExplorer/music";
 import type { OptimizedProgressionPlan } from "../../tools/harmonyExplorer/progression";
 import { realizationText } from "../../components/tools/progressionRealizationText";
-import { WorkspaceInspectorFrame } from "./WorkspaceInspectorFrame";
+import { WorkspaceInspectorFrame } from "../../app/inspector/WorkspaceInspectorFrame";
 
 /** Result-only view. Preview state and the optimized plan remain feature-owned;
  * chord editing stays in the left-side tool panel and playback in the shared
@@ -12,17 +12,15 @@ export function ProgressionResultsInspector({
   hasProgression,
   previewIndex,
   onPreviewStep,
-  blocked = false,
 }: {
   plan: OptimizedProgressionPlan;
   hasProgression: boolean;
   previewIndex: number | null;
   onPreviewStep: (index: number) => void;
-  blocked?: boolean;
 }) {
   const { t, language } = useI18n();
   return (
-    <WorkspaceInspectorFrame title={t("ui.progressionStradellaPath")} blocked={blocked}>
+    <WorkspaceInspectorFrame title={t("ui.progressionStradellaPath")}>
       {!plan.playable ? (
         <div className="result-card progression-result-card" role="status">
           <p>

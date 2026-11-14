@@ -1,15 +1,15 @@
-import type { ReactNode } from "react";
+import { useContext, type ReactNode } from "react";
+import { InspectorBlockedContext } from "./resultsEntries";
 
 /** Shared responsive inspector shell. Tool-specific tables and analysis are children. */
 export function WorkspaceInspectorFrame({
   title,
   children,
-  blocked = false,
 }: {
   title: string;
   children: ReactNode;
-  blocked?: boolean;
 }) {
+  const blocked = useContext(InspectorBlockedContext);
   return (
     <aside className="workspace-inspector" aria-label={title} inert={blocked}>
       <h2>{title}</h2>

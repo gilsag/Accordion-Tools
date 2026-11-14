@@ -18,6 +18,8 @@ import {
   type PlaybackTransport,
 } from "../../src/app/playback/playbackTransports";
 import { useActiveScore, type ScoreEntry } from "../../src/app/notation/scoreEntries";
+import { useActiveResults } from "../../src/app/inspector/resultsEntries";
+import type { ReactNode } from "react";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
 
 const PUBLIC_DIR = resolve(import.meta.dirname, "../../public");
@@ -87,6 +89,8 @@ export interface RenderedApp {
   readonly playbackBar: PlaybackTransport | null;
   /** The score the workspace shows, or null. */
   readonly score: ScoreEntry | null;
+  /** The results panel a tool offers beside the diagram, or null. */
+  readonly results: ReactNode | null;
   /** Runs commands and lets React apply the resulting state and effects. */
   run(commands: (model: AppControllerModel) => void): Promise<void>;
 }
@@ -105,6 +109,7 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
       settings: usePlatformSettings(),
       playbackBar: useActivePlaybackTransport(),
       score: useActiveScore(),
+      results: useActiveResults(),
     }),
     { wrapper: AppProviders },
   );
@@ -120,6 +125,9 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
     },
     get score() {
       return result.current.score;
+    },
+    get results() {
+      return result.current.results;
     },
     async run(commands) {
       await act(async () => {

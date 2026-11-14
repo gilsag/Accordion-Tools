@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { filterRealizationRows } from "../../../src/app/inspector/stradellaInspectorRows";
-import { resolveWorkspaceInspector } from "../../../src/app/inspector/inspectorSelection";
+import { filterRealizationRows } from "../../../src/features/stradellaChordFinder/stradellaInspectorRows";
 import { test } from "vitest";
 
 const bass = (pitchClass, id = `bass-${pitchClass}`) => ({ id, kind: "bass-root", pitchClass });
@@ -79,108 +78,5 @@ test("Result filters keep engine order and never treat reference markers as play
   assert.deepEqual(
     filterRealizationRows([], "C", { rootInBass: true, exactOnly: true, atMostTwo: true }),
     [],
-  );
-});
-
-test("Exercise shared, tool-neutral inspector activation (without React or test-only predicates)", () => {
-  const context = {
-    leftPanelMode: "tools",
-    workspaceMode: "accordion",
-    side: "stradella",
-    stradellaChordFinderActive: true,
-  };
-  assert.equal(
-    resolveWorkspaceInspector(context),
-    "stradellaChordFinder",
-    "current tool activates the shared slot",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({ ...context, stradellaChordFinderActive: false }),
-    null,
-    "inactive Finder leaves no inspector",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({ ...context, side: "treble" }),
-    null,
-    "other manuals remain unchanged",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({ ...context, workspaceMode: "harmony" }),
-    null,
-    "other workspaces remain unchanged",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({ ...context, leftPanelMode: "settings" }),
-    null,
-    "settings keep original layout",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({ ...context, leftPanelMode: "hidden" }),
-    null,
-    "focus mode remains inspector-free",
-  );
-  const abc = {
-    leftPanelMode: "tools",
-    workspaceMode: "accordion",
-    side: "treble",
-    stradellaChordFinderActive: false,
-    activeToolSection: "abcPlayer",
-  };
-  assert.equal(
-    resolveWorkspaceInspector({ ...abc, abcNotationVisible: true }),
-    "abcNotation",
-    "ABC notation opens in the results panel",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({ ...abc, abcNotationVisible: false }),
-    null,
-    "no notation, no panel",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({
-      ...abc,
-      activeToolSection: "rhythmTrainer",
-      rhythmNotationVisible: true,
-    }),
-    "rhythmNotation",
-    "Rhythm Trainer notation uses the shared right-side inspector",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({
-      ...abc,
-      activeToolSection: "rhythmTrainer",
-      rhythmNotationVisible: false,
-    }),
-    null,
-    "Rhythm Trainer notation is opt-in",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({
-      ...abc,
-      activeToolSection: "rhythmTrainer",
-      rhythmNotationVisible: true,
-      leftPanelMode: "settings",
-    }),
-    "rhythmNotation",
-    "Rhythm notation stays in the inspector when Settings opens",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({
-      ...abc,
-      activeToolSection: "rhythmTrainer",
-      rhythmNotationVisible: true,
-      leftPanelMode: "hidden",
-    }),
-    "rhythmNotation",
-    "Hiding the controls keeps the Rhythm notation in the inspector",
-  );
-  assert.equal(
-    resolveWorkspaceInspector({
-      ...abc,
-      abcNotationVisible: true,
-      activeToolSection: "scaleFinder",
-    }),
-    null,
-    "only while the ABC Player is open",
   );
 });

@@ -1,5 +1,6 @@
 import type { PlatformTools } from "./platform/platformContexts";
 import type { useHarmonyRecordingState } from "../features/harmonyExplorer/useHarmonyRecording";
+import type { ProgressionAssistantOutput } from "../features/progressionAssistant/progressionAssistantContext";
 import type { AbcPlayerOutput } from "../features/abcPlayer/abcPlayerContext";
 import type { BassPatternPlayerOutput } from "../features/bassPatternPlayer/bassPatternPlayerContext";
 import type { useHarmonyActions } from "../features/harmonyExplorer/useHarmonyActions";
@@ -66,6 +67,7 @@ export type UseProgressionActionsDeps = Pick<
     ReturnType<typeof useHarmonyProgressionResults>,
     "harmonyProgressionPlan" | "harmonyProgressionRealizationOptions"
   > &
+  Pick<ProgressionAssistantOutput, "previewHarmonyProgressionStepOnStradella"> &
   Pick<
     ReturnType<typeof useHarmonyActions>,
     | "harmonyProgressionSectorIndex"
@@ -108,6 +110,7 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     harmonyProgressionManualRoot,
     harmonyProgressionNoteStepId,
     harmonyProgressionPlan,
+    previewHarmonyProgressionStepOnStradella,
     harmonyProgressionRealizationKeys,
     harmonyProgressionRealizationOptions,
     harmonyProgressionSectorIndex,
@@ -291,14 +294,6 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     setHarmonyProgressionPreviewIndex(index);
   }
 
-  function previewHarmonyProgressionStepOnStradella(index: number) {
-    const step = harmonyProgressionPlan.steps[index];
-    if (!step) return;
-    setHarmonyProgressionPreviewIndex(index);
-    setHarmonyProgressionNoteStepId(step.chord.id);
-    enterProgressionAssistant(progressionDestinationPorts(), "preview");
-  }
-
   function toggleHarmonyProgressionStepNotes(id: string) {
     if (!progressionNoteStep(harmonyProgressionPlan, id)) return;
     const index = harmonyProgressionPlan.steps.findIndex((step) => step.chord.id === id);
@@ -367,7 +362,6 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     removeHarmonyProgressionChord,
     moveHarmonyProgressionChord,
     cycleHarmonyProgressionRealization,
-    previewHarmonyProgressionStepOnStradella,
     toggleHarmonyProgressionStepNotes,
     showHarmonySelectionOnStradella,
     exploreCurrentStradellaChordInHarmony,

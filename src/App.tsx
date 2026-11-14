@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import { useInspectorVisibility } from "./app/inspector/useInspectorVisibility";
 import "./App.css";
-import { resolveWorkspaceInspector } from "./app/inspector/inspectorSelection";
+import { useActiveResults } from "./app/inspector/resultsEntries";
 import { WorkspaceInspectorSlot } from "./app/inspector/WorkspaceInspectorSlot";
 import { LanguageProvider } from "./i18n/context";
 import { AppShell } from "./app/components/AppShell";
@@ -57,17 +57,8 @@ function AppLayout() {
   const showNotationRight =
     score !== null &&
     notationLocation(model.tools.musicNotationPlacement, isPhone, inspectorVisible) === "right";
-  const availableInspector = resolveWorkspaceInspector({
-    leftPanelMode,
-    workspaceMode: model.tools.workspaceMode,
-    side: model.tools.side,
-    stradellaChordFinderActive: model.tools.stradellaChordFinderActive,
-    activeToolSection: model.tools.activeToolSection,
-    // Phones keep the notation under the diagram.
-    abcNotationVisible: false,
-    rhythmNotationVisible: false,
-  });
-  const inspector = showNotationRight ? "notation" : inspectorVisible ? availableInspector : null;
+  const results = useActiveResults();
+  const inspector = showNotationRight ? "notation" : inspectorVisible && results ? "results" : null;
   const appGridColumns = workspaceGridColumns(
     interfaceDensity,
     leftPanelMode,
@@ -164,7 +155,7 @@ function AppLayout() {
           isPhone={isPhone}
           phoneSheetOpen={isPhone && sheetOpen}
           onOpenPhonePanel={openPhonePanel}
-          inspectorAvailable={!!availableInspector}
+          inspectorAvailable={results !== null}
           inspectorVisible={!!inspector}
           onToggleInspector={toggleInspector}
           notationInInspector={inspector === "notation"}
@@ -172,9 +163,8 @@ function AppLayout() {
         />
         {inspector && (
           <WorkspaceInspectorSlot
-            inspector={inspector}
-            tools={model.tools}
-            score={score}
+            score={inspector === "notation" ? score : null}
+            results={results}
             blocked={isPhone && sheetOpen}
           />
         )}

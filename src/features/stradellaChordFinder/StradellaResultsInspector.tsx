@@ -17,10 +17,9 @@ import type { StradellaChordFinderResult } from "../../tools/stradellaChordFinde
 import type { FinderChordPattern, StradellaChordFinderMode, DiagramButton } from "../../types";
 import { HelpTip } from "../../components/ui/HelpTip";
 import { filterRealizationRows, type RealizationFilters } from "./stradellaInspectorRows";
-import { WorkspaceInspectorFrame } from "./WorkspaceInspectorFrame";
+import { WorkspaceInspectorFrame } from "../../app/inspector/WorkspaceInspectorFrame";
 
 type Props = {
-  blocked?: boolean;
   root: string;
   pattern: FinderChordPattern;
   requestedBass: string | null;
@@ -50,7 +49,6 @@ export function StradellaResultsInspector({
   chordDisplayStyle,
   formatPitches,
   formatText,
-  blocked,
 }: Props) {
   const { t, language } = useI18n();
   const [filters, setFilters] = useState<RealizationFilters>({
@@ -81,7 +79,7 @@ export function StradellaResultsInspector({
   );
   const requestedSymbol = `${displayRoot(root)}${finderChordSymbol(root, pattern).slice(root.length)}`;
   return (
-    <WorkspaceInspectorFrame title={t("inspector.title")} blocked={blocked}>
+    <WorkspaceInspectorFrame title={t("inspector.title")}>
       <div className="inspector-filters" role="group" aria-label={t("inspector.filters")}>
         {(
           [

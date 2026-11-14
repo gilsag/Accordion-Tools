@@ -1,9 +1,7 @@
 import { diagramAutoTitle } from "../i18n/diagramLabels";
 import { displayStradellaButtonChord, type ChordDisplayStyle } from "../tools/chordDisplay";
-import { formatChordFinderTone } from "../tools/stradellaChordFinder/chordSpelling";
 import type { useLanguageSettings } from "../settings/useLanguageSettings";
 import type { useInstrumentState } from "../instrument/useInstrumentState";
-import type { useStradellaChordFinderState } from "../features/stradellaChordFinder/useStradellaChordFinder";
 import type { useTrebleChordFinderState } from "../features/trebleChordFinder/useTrebleChordFinder";
 import type {
   AccidentalMode,
@@ -30,11 +28,7 @@ export type UseDiagramLabelsDeps = Pick<
     ReturnType<typeof useTrebleChordFinderState>,
     "chordFinderOctave" | "chordFinderPattern" | "chordFinderRoot"
   > &
-  Pick<ReturnType<typeof useLanguageSettings>, "language"> &
-  Pick<
-    ReturnType<typeof useStradellaChordFinderState>,
-    "stradellaChordFinderPattern" | "stradellaChordFinderRoot"
-  > & {
+  Pick<ReturnType<typeof useLanguageSettings>, "language"> & {
     accidental: AccidentalMode;
     chordDisplayStyle: ChordDisplayStyle;
     chordLabelMode: ChordLabelMode;
@@ -43,7 +37,7 @@ export type UseDiagramLabelsDeps = Pick<
     stradellaAccidental: "natural" | "flats" | "sharps";
   };
 
-/** Text for buttons, Finder note lists and automatic titles, following the notation, accidental and chord-label settings. */
+/** Text for buttons, the treble Finder's note list and automatic titles, following the notation, accidental and chord-label settings. */
 export function useDiagramLabels(deps: UseDiagramLabelsDeps) {
   const {
     accidental,
@@ -58,8 +52,6 @@ export function useDiagramLabels(deps: UseDiagramLabelsDeps) {
     notation,
     side,
     stradellaAccidental,
-    stradellaChordFinderPattern,
-    stradellaChordFinderRoot,
     trebleLayout,
   } = deps;
 
@@ -153,23 +145,6 @@ export function useDiagramLabels(deps: UseDiagramLabelsDeps) {
     );
   }
 
-  /** Finder tone spelling follows chord harmony, never the leftmost bass-button label. */
-  function formatStradellaFinderPitch(pitch: string) {
-    return formatChordFinderTone(
-      stradellaChordFinderRoot,
-      stradellaChordFinderPattern,
-      pitch,
-      notation,
-      stradellaAccidental,
-    );
-  }
-
-  /** Formats the Chord Finder pitch list using its requested harmonic context. */
-  function formatStradellaFinderPitches(pitches: string[]) {
-    if (pitches.length === 0) return "none";
-    return pitches.map(formatStradellaFinderPitch).join(", ");
-  }
-
   /** Formats Stradella Scale Finder note names, preserving scale spelling such as E#, B#, and F##. */
   function formatStradellaScaleFinderNames(names: string[], fallbackPitches: string[]) {
     const source =
@@ -178,20 +153,6 @@ export function useDiagramLabels(deps: UseDiagramLabelsDeps) {
         : fallbackPitches.map((pitch) => formatPitch(pitch, notation, stradellaAccidental));
     if (source.length === 0) return "none";
     return source.map((name) => name.replaceAll("##", "𝄪")).join(", ");
-  }
-
-  /** Rewrites pitch-class names in technical finder text using harmonic spelling. */
-  function formatStradellaFinderText(text: string) {
-    return [...INDEX_TO_PITCH]
-      .sort((a, b) => b.length - a.length)
-      .reduce((current, pitch) => {
-        const escapedPitch = pitch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        const pattern = new RegExp(`(^|[^A-Za-z#])(${escapedPitch})(?![A-Za-z#])`, "g");
-        return current.replace(
-          pattern,
-          (_match, prefix) => `${prefix}${formatStradellaFinderPitch(pitch)}`,
-        );
-      }, text);
   }
 
   /** Formats the current treble Chord Finder tones with the selected notation. */
@@ -221,9 +182,7 @@ export function useDiagramLabels(deps: UseDiagramLabelsDeps) {
 
   return {
     getMainLabel,
-    formatStradellaFinderPitches,
     formatStradellaScaleFinderNames,
-    formatStradellaFinderText,
     formatTrebleChordFinderPitches,
     autoTitle,
     localizedAutoTitle,

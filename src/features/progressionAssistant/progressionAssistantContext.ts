@@ -18,6 +18,9 @@ export type ProgressionAssistantOutput = ReturnType<typeof useHarmonyProgression
   ReturnType<typeof useProgressionNotation> & {
     /** Plays the optimized plan with the chosen rhythm. */
     playOptimizedHarmonyProgression(): void;
+    /** Shows a step of the plan on the Stradella side, from its row in the
+     * results panel or its notes button. */
+    previewHarmonyProgressionStepOnStradella(index: number): void;
     progressionSearch: ProgressionSearchSettings;
   };
 export const [ProgressionAssistantOutputContext, useProgressionAssistantOutput] =
