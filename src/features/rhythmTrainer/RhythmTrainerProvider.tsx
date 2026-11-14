@@ -1,6 +1,9 @@
 import { RhythmNotationPanel } from "../../app/inspector/RhythmNotationInspector";
 import { useScoreRendering } from "../../app/platform/useScoreRendering";
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimeline";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import type { DiagramContribution } from "../../app/diagram/diagramContributions";
 import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
@@ -73,11 +76,33 @@ export function RhythmTrainerProvider({ children }: { children: ReactNode }) {
           ),
         }
       : null;
+  // Both manuals, narrower, under the exercise's timeline.
+  const diagram: DiagramContribution = {
+    handsView: {
+      hands: [
+        { key: "stradella", caption: t("nav.stradella"), buttons: value.bassButtons },
+        { key: "treble", caption: t("nav.treble"), buttons: value.trebleButtons },
+      ],
+      activeButtonIds: value.activeButtonIdSet,
+      compact: true,
+      above: (
+        <RhythmTrainerTimeline
+          exercise={value.exercise}
+          positionUnit={value.positionUnit}
+          playing={value.playing}
+          activeRhythmKeys={value.activeRhythmKeys}
+          t={t}
+        />
+      ),
+    },
+  };
   return (
     <RhythmTrainerContext.Provider value={value}>
       <PlaybackTransportEntry tool="rhythmTrainer" transport={playbackEntry}>
         <ScoreEntryProvider tool="rhythmTrainer" score={scoreEntry} toggle={scoreToggle}>
-          {children}
+          <DiagramContributionProvider tool="rhythmTrainer" contribution={diagram}>
+            {children}
+          </DiagramContributionProvider>
         </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </RhythmTrainerContext.Provider>

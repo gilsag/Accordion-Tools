@@ -11,8 +11,8 @@ import { useBassPatternState } from "./useBassPatternPlayer";
 
 /** Owns the bass pattern and chord progression libraries, the pattern editor,
  * custom patterns and the player's preferences. The Rhythm Trainer and the
- * Progression Assistant read the libraries from here. Playback still runs in
- * the application controller, which registers the player's stop command. */
+ * Progression Assistant read the libraries from here. Playback plays the
+ * diagram's buttons, so it runs in the output provider. */
 export function BassPatternPlayerProvider({ children }: { children: ReactNode }) {
   const { t } = usePlatformLanguage();
   const state = useBassPatternState(t);

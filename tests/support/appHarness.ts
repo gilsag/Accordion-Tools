@@ -3,15 +3,15 @@
  * drive the same commands the panels and the toolbar call.
  *
  * Tests reach the composition only through `renderApp()` and the model it
- * returns. When `useAppController` is replaced by tool providers (see
- * docs/internal/controller-split-plan.md), only this file changes. */
+ * returns, assembled from the platform and tool contexts (`testModel.ts`).
+ * When ownership moves between contexts, only the support files change. */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { expect, vi } from "vitest";
-import { useAppController, type AppControllerModel } from "../../src/app/useAppController";
+import { useTestModel, type TestModel } from "./testModel";
 import { AppProviders } from "../../src/app/AppProviders";
-import { usePlatformSettings } from "../../src/app/platform/platformContexts";
+import { usePlatformSettings, usePlatformShell } from "../../src/app/platform/platformContexts";
 import type { SettingsRegistry } from "../../src/settings/settingsRegistry";
 import {
   useActivePlaybackTransport,
@@ -24,6 +24,9 @@ import {
   type ScoreToggle,
 } from "../../src/app/notation/scoreEntries";
 import { useActiveResults } from "../../src/app/inspector/resultsEntries";
+import { useDiagramModel } from "../../src/app/diagram/useDiagramModel";
+import { useDiagramDownload } from "../../src/app/diagram/useDiagramDownload";
+import { useAccordionStatusText } from "../../src/app/views/useAccordionStatusText";
 import type { ReactNode } from "react";
 import { SAVED_SESSION_KEY } from "../../src/settings/settingsSession";
 
@@ -87,7 +90,7 @@ export async function waitForStartup() {
 
 export interface RenderedApp {
   /** The current model; read it again after every command. */
-  readonly model: AppControllerModel;
+  readonly model: TestModel;
   /** The settings registry, as the Settings panel's file commands use it. */
   readonly settings: SettingsRegistry;
   /** The playback bar's entry for what the workspace shows, or null. */
@@ -102,7 +105,7 @@ export interface RenderedApp {
    * Finder lights, the status line, and the name Download gives the file. */
   readonly diagram: PresentedDiagram;
   /** Runs commands and lets React apply the resulting state and effects. */
-  run(commands: (model: AppControllerModel) => void): Promise<void>;
+  run(commands: (model: TestModel) => void): Promise<void>;
 }
 
 export interface PresentedDiagram {
@@ -121,18 +124,30 @@ export interface RenderAppOptions {
 
 /** Renders the composition. Sound is switched off after startup, because
  * jsdom has no Web Audio; playback order is covered by the audio tests. */
+/** What the workspace draws, as the views read it. */
+function useDiagramView() {
+  const diagramModel = useDiagramModel();
+  return {
+    diagramModel,
+    download: useDiagramDownload(diagramModel),
+    status: useAccordionStatusText(),
+    shell: usePlatformShell(),
+  };
+}
+
 /** File names passed to the diagram export while `downloadExports()` is mocked. */
 export const downloads: string[] = [];
 
 export async function renderApp(options: RenderAppOptions = {}): Promise<RenderedApp> {
   const { result } = renderHook(
     () => ({
-      model: useAppController(),
+      model: useTestModel(),
       settings: usePlatformSettings(),
       playbackBar: useActivePlaybackTransport(),
       score: useActiveScore(),
       scoreToggle: useActiveScoreToggle(),
       results: useActiveResults(),
+      ...useDiagramView(),
     }),
     { wrapper: AppProviders },
   );
@@ -153,22 +168,22 @@ export async function renderApp(options: RenderAppOptions = {}): Promise<Rendere
       return result.current.scoreToggle;
     },
     get diagram() {
-      const workspace = result.current.model.workspace;
+      const { diagramModel, status, download, shell } = result.current;
       return {
-        title: workspace.finalTitle,
-        footer: workspace.finderFooterEnabled
-          ? workspace.finderAnnotationDisplayLines
-          : workspace.trebleFooterEnabled
-            ? [workspace.trebleVoicingNote]
+        title: diagramModel.finalTitle,
+        footer: diagramModel.stradellaFooter
+          ? diagramModel.stradellaFooter.lines
+          : diagramModel.trebleFooter
+            ? [diagramModel.trebleFooter.text]
             : [],
-        finderHighlights: workspace.finderButtonIds.size,
-        status: workspace.statusBarText,
+        finderHighlights: diagramModel.layers.finderButtonIds.size,
+        status,
         downloadName() {
           const svg = () => document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          workspace.svgRef.current = svg();
-          workspace.harmonySvgRef.current = svg();
+          shell.svgRef.current = svg();
+          shell.harmonySvgRef.current = svg();
           downloads.length = 0;
-          workspace.downloadCurrentDiagram("svg");
+          download("svg");
           return downloads[0];
         },
       };

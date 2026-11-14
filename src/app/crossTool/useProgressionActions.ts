@@ -6,7 +6,6 @@ import type { BassPatternPlayerOutput } from "../../features/bassPatternPlayer/b
 import type { useHarmonyActions } from "../../features/harmonyExplorer/useHarmonyActions";
 import { ROOT_POSITION_BASS } from "../../tools/stradellaChordFinder/harmonicIdentity";
 import { convertProgressionPreset } from "../../tools/harmonyExplorer/progressionPresets";
-import { useState } from "react";
 import type { useLanguageSettings } from "../../settings/useLanguageSettings";
 import type { useWorkspaceNavigation } from "../useWorkspaceNavigation";
 import {
@@ -100,7 +99,7 @@ export type UseProgressionActionsDeps = Pick<
   > &
   Pick<ReturnType<typeof useLanguageSettings>, "t">;
 
-/** Progression Assistant editing, path display and playback, and the commands that move chords between Harmony Explorer, the Progression Assistant and the Stradella Chord Finder. */
+/** Progression Assistant editing, and the commands that move chords between Harmony Explorer, the Progression Assistant and the Stradella Chord Finder. */
 export function useProgressionActions(deps: UseProgressionActionsDeps) {
   const {
     chordProgressionDefinitions,
@@ -351,9 +350,6 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     });
   }
 
-  // Session-only: draw the Progression Assistant path (numbered steps) on the diagram. Off by default.
-  const [progressionPathVisible, setProgressionPathVisible] = useState(false);
-
   return {
     sendHarmonyRecordedProgressionToAssistant,
     useHarmonyProgressionPreset,
@@ -365,7 +361,5 @@ export function useProgressionActions(deps: UseProgressionActionsDeps) {
     toggleHarmonyProgressionStepNotes,
     showHarmonySelectionOnStradella,
     exploreCurrentStradellaChordInHarmony,
-    progressionPathVisible,
-    setProgressionPathVisible,
   };
 }

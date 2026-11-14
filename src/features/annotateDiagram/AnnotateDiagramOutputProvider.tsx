@@ -16,6 +16,8 @@ import { playButtonArpeggioThenChord, playButtonSequence } from "../../sound";
 import type { DiagramButton } from "../../types";
 import { useSequenceResults } from "../sequences/useSequenceState";
 import { AnnotateDiagramOutputContext, useAnnotateDiagram } from "./annotateDiagramContext";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import { useAnnotateDiagramContribution } from "./useAnnotateDiagramContribution";
 
 /** The selected buttons and the sequence's steps as generated buttons, in
  * selection and step order; the sequence's score; and the two Play commands. */
@@ -88,11 +90,14 @@ export function AnnotateDiagramOutputProvider({ children }: { children: ReactNod
           filename: "sequence-notation",
         }
       : null;
+  const diagram = useAnnotateDiagramContribution(sequenceStepsWithButtons);
   return (
     <AnnotateDiagramOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="annotateDiagram" transport={playbackEntry}>
         <ScoreEntryProvider tool="annotateDiagram" score={scoreEntry} toggle={scoreToggle}>
-          {children}
+          <DiagramContributionProvider tool="annotateDiagram" contribution={diagram}>
+            {children}
+          </DiagramContributionProvider>
         </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </AnnotateDiagramOutputContext.Provider>

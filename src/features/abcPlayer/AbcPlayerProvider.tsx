@@ -9,8 +9,8 @@ import { useAbcPlayerState } from "./useAbcPlayer";
 const DEFAULT_ABC_EXAMPLE = "happy-birthday";
 
 /** Owns the ABC Player's editor, example choice, tempo, transport position
- * mapping preferences and score visibility. Its playback still runs in the
- * application controller, which registers the player's stop command. */
+ * mapping preferences and score visibility. Its playback maps the tune onto
+ * the diagram's buttons, so it runs in its output provider. */
 export function AbcPlayerProvider({ children }: { children: ReactNode }) {
   const state = useAbcPlayerState();
   const { activeToolSection } = usePlatformNavigation();

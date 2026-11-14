@@ -4,11 +4,7 @@ import { translateKnownLabel } from "../../i18n/catalog";
 import { pianoRangeStatusLabel } from "../../i18n/diagramLabels";
 import { formatRegisterRange } from "../../tools/stradellaChordFinder/registerModel";
 import type { BassCount, PianoTrebleRange, TrebleLayout, TrebleSizePreset } from "../../types";
-import {
-  BASS_OPTIONS,
-  PIANO_TREBLE_RANGE_OPTIONS,
-  TREBLE_SIZE_OPTIONS,
-} from "../controllerOptions";
+import { BASS_OPTIONS, PIANO_TREBLE_RANGE_OPTIONS, TREBLE_SIZE_OPTIONS } from "../optionLists";
 import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
 import { useInstrumentPresets } from "../platform/useInstrumentPresets";
 

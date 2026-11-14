@@ -17,9 +17,7 @@ export default function ProgressionAssistantSection() {
     addManualHarmonyProgressionChord,
     cycleHarmonyProgressionRealization,
     moveHarmonyProgressionChord,
-    progressionPathVisible,
     removeHarmonyProgressionChord,
-    setProgressionPathVisible,
     toggleHarmonyProgressionStepNotes,
     useHarmonyProgressionPreset,
   } = useCrossToolActions();
@@ -43,6 +41,8 @@ export default function ProgressionAssistantSection() {
     setHarmonyProgressionRhythmPattern,
     setHarmonyProgressionRootPosition,
     setHarmonyProgressionVoiceLeadingWeight,
+    progressionPathVisible,
+    setProgressionPathVisible,
   } = useProgressionAssistant();
   const { setSoundSequenceTempoBpm, soundSequenceTempoBpm } = usePlatformSound();
   const { chordDisplayStyle } = usePlatformSpelling();

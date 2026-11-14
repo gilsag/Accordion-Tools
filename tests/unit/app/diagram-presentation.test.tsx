@@ -142,3 +142,18 @@ test("the ABC Player's two-hand view names the file after the tune", async () =>
     .poll(() => app.diagram.downloadName(), { timeout: 3000 })
     .toBe("Happy-Birthday-both-hands");
 });
+
+test("the assistant's explanation steps aside while its plan sounds a pulse or a rest", async () => {
+  const app = await renderApp();
+  await app.run((model) => model.tools.toggleToolSection("progressionAssistant"));
+  await app.run((model) => model.workspace.selectAccordionSide("stradella"));
+  await app.run((model) => model.tools.useHarmonyProgressionPreset("i-iv-v-i", "C"));
+  const step = app.model.tools.harmonyProgressionPlan.steps[1].chord.id;
+  await app.run((model) => model.tools.toggleHarmonyProgressionStepNotes(step));
+  expect(app.diagram.title).toBe("FM - Exact - 2 buttons");
+  await app.run((model) => model.tools.setHarmonyProgressionPulseSilent(true));
+  expect(app.diagram).toMatchObject({ title: "96-Bass Stradella", footer: [] });
+  await app.run((model) => model.tools.setHarmonyProgressionPulseSilent(false));
+  await app.run((model) => model.tools.setHarmonyProgressionActiveButtonIds(["x"]));
+  expect(app.diagram.footer).toEqual([]);
+});

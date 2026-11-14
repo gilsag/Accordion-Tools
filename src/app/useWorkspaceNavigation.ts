@@ -14,8 +14,8 @@ export type SettingsSection =
   | null;
 
 /** Workspace/UI navigation; instrument layout stays with the instrument hook.
- * Musical tool state, playback cancellation and selection transfer remain owned
- * by their feature controllers and the App command handlers, respectively.
+ * Musical tool state belongs to the tools, playback cancellation to the tool
+ * coordinator and transfers between tools to src/app/crossTool/.
  */
 export function useWorkspaceNavigation(side: Side, setSide: Dispatch<SetStateAction<Side>>) {
   const [leftPanelMode, setLeftPanelMode] = useState<LeftPanelMode>("tools");

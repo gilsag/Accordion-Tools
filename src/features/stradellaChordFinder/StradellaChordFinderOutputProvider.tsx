@@ -5,6 +5,8 @@ import { captureStradellaBatch } from "../../diagram/stradellaBatchCapture";
 import { realizationAnnotation } from "../../tools/stradellaChordFinder/diagramAnnotations";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import { ResultsEntryProvider } from "../../app/inspector/ResultsEntryProvider";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import { useFinderDiagramContribution } from "./useFinderDiagramContribution";
 import {
   usePlatformInstrument,
   usePlatformLanguage,
@@ -128,12 +130,15 @@ export function StradellaChordFinderOutputProvider({ children }: { children: Rea
     }
   }
 
+  const diagram = useFinderDiagramContribution(state, results, side, stradellaRegisterModel);
   return (
     <StradellaChordFinderOutputContext.Provider
       value={{ ...value, batchExporting, downloadAllStradellaRealizations }}
     >
       <ResultsEntryProvider tool="stradellaChordFinder" panel={resultsPanel}>
-        {children}
+        <DiagramContributionProvider tool="stradellaChordFinder" contribution={diagram}>
+          {children}
+        </DiagramContributionProvider>
       </ResultsEntryProvider>
     </StradellaChordFinderOutputContext.Provider>
   );

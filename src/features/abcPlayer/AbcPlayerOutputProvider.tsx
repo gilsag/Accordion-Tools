@@ -1,4 +1,6 @@
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import type { DiagramContribution } from "../../app/diagram/diagramContributions";
 import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
@@ -72,11 +74,38 @@ export function AbcPlayerOutputProvider({ children }: { children: ReactNode }) {
           imported: true,
         }
       : null;
+  // The tune's sounding buttons are lit as it plays. With Both hands and a
+  // two-voice tune, both manuals are drawn together in place of the diagram.
+  const companion = abcCompanionButtons;
+  const diagram: DiagramContribution = {
+    layers: { abcActiveButtonIdSet: results.abcActiveButtonIdSet },
+    handsView:
+      results.abcBothHands && companion
+        ? {
+            hands: [
+              {
+                key: "treble",
+                caption: t("ui.abcHandCaption", { hand: t("nav.treble"), voice: 1 }),
+                buttons: side === "stradella" ? companion : buttons,
+              },
+              {
+                key: "stradella",
+                caption: t("ui.abcHandCaption", { hand: t("nav.stradella"), voice: 2 }),
+                buttons: side === "stradella" ? buttons : companion,
+              },
+            ],
+            activeButtonIds: results.abcActiveButtonIdSet,
+            filename: `${results.abcParseResult.title} both hands`,
+          }
+        : null,
+  };
   return (
     <AbcPlayerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="abcPlayer" transport={playbackEntry}>
         <ScoreEntryProvider tool="abcPlayer" score={scoreEntry} toggle={scoreToggle}>
-          {children}
+          <DiagramContributionProvider tool="abcPlayer" contribution={diagram}>
+            {children}
+          </DiagramContributionProvider>
         </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </AbcPlayerOutputContext.Provider>

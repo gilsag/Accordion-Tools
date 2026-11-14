@@ -4,7 +4,11 @@ import {
   usePlatformInstrument,
   usePlatformLanguage,
   usePlatformSound,
+  usePlatformSpelling,
 } from "../../app/platform/platformContexts";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import type { DiagramContribution } from "../../app/diagram/diagramContributions";
+import { trebleContextualTitle } from "../../tools/contextualTitles";
 import { describeTrebleChord } from "../../tools/trebleChordExplanation";
 import { playButtonArpeggioThenChord } from "../../sound";
 import { TrebleChordFinderOutputContext, useTrebleChordFinder } from "./trebleChordFinderContext";
@@ -35,9 +39,41 @@ export function TrebleChordFinderOutputProvider({ children }: { children: ReactN
     trebleChordExplanation,
     playChordFinder: () => playButtonArpeggioThenChord(chordFinderButtons, soundOptions),
   };
+  const { chordDisplayStyle } = usePlatformSpelling();
+  const active = side === "treble" && state.chordFinderActive;
+  const title = (displayStyle: typeof chordDisplayStyle) =>
+    trebleContextualTitle({
+      root: state.chordFinderRoot,
+      pattern: state.chordFinderPattern,
+      inversion: state.chordFinderInversion,
+      hasButtons: chordFinderButtons.length > 0,
+      exact: trebleChordExplanation.exact,
+      displayStyle,
+    });
+  // While active on the treble side: the chord titles the diagram, and the
+  // note on its voicing goes below it if shown.
+  const diagram: DiagramContribution = {
+    note: active
+      ? {
+          title: title(chordDisplayStyle),
+          filename: title("words"),
+          footer:
+            state.showTrebleVoicingNote && trebleChordExplanation.note
+              ? { kind: "treble", text: trebleChordExplanation.note }
+              : null,
+        }
+      : null,
+    layers: {
+      finderButtonIds: new Set(chordFinderButtons.map((button) => button.id)),
+      chordFinderActive: state.chordFinderActive,
+      chordFinderButtons,
+    },
+  };
   return (
     <TrebleChordFinderOutputContext.Provider value={value}>
-      {children}
+      <DiagramContributionProvider tool="chordFinder" contribution={diagram}>
+        {children}
+      </DiagramContributionProvider>
     </TrebleChordFinderOutputContext.Provider>
   );
 }

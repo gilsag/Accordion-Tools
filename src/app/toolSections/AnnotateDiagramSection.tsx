@@ -13,7 +13,7 @@ import {
   useAnnotateDiagram,
   useAnnotateDiagramOutput,
 } from "../../features/annotateDiagram/annotateDiagramContext";
-import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../controllerOptions";
+import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../optionLists";
 import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
 import { useDiagramLabels } from "../useDiagramLabels";
 

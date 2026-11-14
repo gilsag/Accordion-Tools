@@ -12,7 +12,7 @@ import {
 } from "../../features/scaleFinder/scaleFinderContext";
 import { useStradellaChordFinder } from "../../features/stradellaChordFinder/stradellaChordFinderContext";
 import { useTrebleChordFinder } from "../../features/trebleChordFinder/trebleChordFinderContext";
-import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../controllerOptions";
+import { SEQUENCE_DISPLAY_MODE_OPTIONS } from "../optionLists";
 import { usePlatformInstrument, usePlatformLanguage } from "../platform/platformContexts";
 import { useDiagramLabels } from "../useDiagramLabels";
 

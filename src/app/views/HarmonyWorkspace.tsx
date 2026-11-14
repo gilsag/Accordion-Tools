@@ -1,8 +1,14 @@
 import { lazy, Suspense } from "react";
 import { harmonyRelatedDisplayName } from "../../i18n/diagramLabels";
-import type { AppControllerModel } from "../useAppController";
-
-type WorkspaceModel = AppControllerModel["workspace"];
+import {
+  useHarmonyExplorer,
+  useHarmonyExplorerOutput,
+} from "../../features/harmonyExplorer/harmonyExplorerContext";
+import {
+  usePlatformLanguage,
+  usePlatformShell,
+  usePlatformSpelling,
+} from "../platform/platformContexts";
 
 const HarmonicCircle = lazy(() =>
   import("../../tools/harmonyExplorer/components/HarmonicCircle").then((module) => ({
@@ -11,41 +17,42 @@ const HarmonicCircle = lazy(() =>
 );
 
 /** The Harmony workspace: the harmonic circle, or why nothing is drawn. */
-export function HarmonyWorkspace({ model }: { model: WorkspaceModel }) {
+export function HarmonyWorkspace() {
+  const { language, t } = usePlatformLanguage();
+  const { chordDisplayStyle } = usePlatformSpelling();
+  const { harmonySvgRef } = usePlatformShell();
   const {
-    chordDisplayStyle,
-    handleHarmonyChordActivated,
-    harmonyAllFamiliesMode,
-    harmonyAvailableCounts,
     harmonyColorByFamily,
-    harmonyCounts,
     harmonyDiameter,
-    harmonyEffectiveDiatonicOnly,
-    harmonyEffectiveHighlightDiatonic,
-    harmonyExplanation,
     harmonyFocusedReferenceRootPc,
     harmonyFontSize,
     harmonyPlaybackStyle,
     harmonyReferenceFamilyId,
     harmonyRelatedFamilyId,
-    harmonyRelatedName,
     harmonyScaleId,
-    harmonySectors,
     harmonyShowEnharmonics,
     harmonyShowExplanation,
     harmonyShowLegend,
     harmonyShowNoteRing,
     harmonyShowSeparators,
     harmonyShowToneTooltips,
-    harmonySvgRef,
     harmonyVoicingStyle,
-    language,
+    setHarmonySelection,
+  } = useHarmonyExplorer();
+  const {
+    handleHarmonyChordActivated,
+    harmonyAllFamiliesMode,
+    harmonyAvailableCounts,
+    harmonyCounts,
+    harmonyEffectiveDiatonicOnly,
+    harmonyEffectiveHighlightDiatonic,
+    harmonyExplanation,
+    harmonyRelatedName,
+    harmonySectors,
     playHarmonyChord,
     playHarmonyChordRelationship,
     playHarmonyNote,
-    setHarmonySelection,
-    t,
-  } = model;
+  } = useHarmonyExplorerOutput();
   return (
     <>
       {harmonyAvailableCounts.length === 0 && (

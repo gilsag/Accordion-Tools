@@ -5,7 +5,7 @@ const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Transient phone-only sheet visibility. Tool, settings and instrument state
- * remain in the existing controller; closing the sheet never resets them. */
+ * stay with their owners; closing the sheet never resets them. */
 export function usePhonePanel(activeTool: string | null, workspaceMode: string) {
   const [isPhone, setIsPhone] = useState(false);
   const [open, setOpen] = useState(false);

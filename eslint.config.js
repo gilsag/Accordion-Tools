@@ -19,4 +19,10 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // The application layer stays in files that can be read whole: split a
+    // file that grows past this (docs/internal/controller-split-plan.md).
+    files: ["src/app/**/*.{ts,tsx}"],
+    rules: { "max-lines": ["error", { max: 500 }] },
+  },
 ]);

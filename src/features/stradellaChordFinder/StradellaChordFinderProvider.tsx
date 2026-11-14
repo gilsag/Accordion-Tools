@@ -9,7 +9,7 @@ import { useStradellaChordFinderState } from "./useStradellaChordFinder";
 
 /** Owns the Stradella Chord Finder's request, limits, explanation display,
  * selected realization and active state. Its results need the diagram's
- * buttons and are still derived by the application controller. */
+ * buttons, so its output provider derives them. */
 export function StradellaChordFinderProvider({ children }: { children: ReactNode }) {
   const state = useStradellaChordFinderState();
   const { resetWork } = usePlatformTools();

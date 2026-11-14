@@ -33,8 +33,8 @@ export type ToolHandleId = ToolId;
 
 export interface ToolCoordinator {
   /** Registers part of a tool's handle; a tool's parts are merged, so its
-   * provider and, during the transition, the controller can each register
-   * the commands they own. Returns the function that unregisters this part. */
+   * state provider and its output provider can each register the commands
+   * they own. Returns the function that unregisters this part. */
   register(id: ToolHandleId, read: () => ToolHandle): () => void;
   /** Called after navigation has toggled `section`; `opening` is true when
    * it was not the open tool before. */

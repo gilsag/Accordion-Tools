@@ -1,5 +1,7 @@
 import { bassPatternName, progressionName } from "../../i18n/optionLabels";
 import { ScoreEntryProvider } from "../../app/notation/ScoreEntryProvider";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import type { DiagramContribution } from "../../app/diagram/diagramContributions";
 import type { ScoreEntry, ScoreToggle } from "../../app/notation/scoreEntries";
 import { PlaybackTransportEntry } from "../../app/playback/PlaybackTransportEntry";
 import type { PlaybackTransport } from "../../app/playback/playbackTransports";
@@ -88,11 +90,17 @@ export function BassPatternPlayerOutputProvider({ children }: { children: ReactN
           filename: `${selectedBassPattern?.id ?? "bass-pattern"}-notation`,
         }
       : null;
+  // The pattern's sounding buttons, lit as they play.
+  const diagram: DiagramContribution = {
+    layers: { bassPatternActiveButtonIdSet: results.bassPatternActiveButtonIdSet },
+  };
   return (
     <BassPatternPlayerOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="bassPatternPlayer" transport={playbackEntry}>
         <ScoreEntryProvider tool="bassPatternPlayer" score={scoreEntry} toggle={scoreToggle}>
-          {children}
+          <DiagramContributionProvider tool="bassPatternPlayer" contribution={diagram}>
+            {children}
+          </DiagramContributionProvider>
         </ScoreEntryProvider>
       </PlaybackTransportEntry>
     </BassPatternPlayerOutputContext.Provider>

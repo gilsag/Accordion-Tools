@@ -1,18 +1,31 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { useAbcPlayer } from "../../features/abcPlayer/abcPlayerContext";
+import { useRhythmTrainer } from "../../features/rhythmTrainer/rhythmTrainerContext";
+import { FINDER_ARROWHEAD_ID, SEQUENCE_ARROWHEAD_ID } from "../diagram/diagramMarkers";
+import { useDiagramDownload } from "../diagram/useDiagramDownload";
+import { useDiagramModel } from "../diagram/useDiagramModel";
+import {
+  usePlatformAppearance,
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformNavigation,
+  usePlatformPlayback,
+  usePlatformShell,
+  usePlatformSound,
+  usePlatformSpelling,
+  usePlatformTools,
+} from "../platform/platformContexts";
 import type { DiagramButton, Side } from "../../types";
 import { AbcHandsDiagram } from "../../diagram/components/AbcHandsDiagram";
-import { RhythmTrainerTimeline } from "../../components/tools/RhythmTrainerTimeline";
 import { NotationWorkspaceContent } from "../inspector/NotationWorkspaceContent";
 import type { ScoreEntry } from "../notation/scoreEntries";
 import { SegmentedChoice } from "../../components/ui/SegmentedChoice";
 import { PlaybackBar } from "../components/PlaybackBar";
 import { useActivePlaybackTransport } from "../playback/playbackTransports";
-import { ProgressionPathLayer } from "../../diagram/components/ProgressionPathLayer";
 import { stradellaDiagramRowLabel } from "../../i18n/musicTerms";
 import { WorkspaceToolbar } from "../components/WorkspaceToolbar";
 import { DiagramButtonLayer } from "../../diagram/components/DiagramButtonLayer";
 import { DiagramConnections } from "../../diagram/components/DiagramConnections";
-import { DiagramAnnotationsLayer } from "../../diagram/components/DiagramAnnotationsLayer";
 import { DiagramSvgSurface } from "../../diagram/components/DiagramSvgSurface";
 import { musicLabelText } from "../../music";
 import { stradellaRowLabel } from "../../stradella";
@@ -52,11 +65,10 @@ function scrollDiagramToFocus(wrap: HTMLElement | null) {
   wrap.scrollTo({ left: Math.max(0, centre - wrap.clientWidth / 2), behavior: "smooth" });
 }
 
-import type { AppControllerModel } from "../useAppController";
-
-/** View-only component: all state and commands originate in the controller. */
+/** The workspace: toolbar, status line, the diagram or the harmonic circle,
+ * the playback bar and the score. It reads the diagram model and the
+ * platform; the tools supply what is drawn for them. */
 export function WorkspaceView({
-  model,
   score,
   isPhone = false,
   phoneSheetOpen = false,
@@ -67,7 +79,6 @@ export function WorkspaceView({
   notationInInspector = false,
   panelHandles,
 }: {
-  model: AppControllerModel["workspace"];
   score: ScoreEntry | null;
   isPhone?: boolean;
   phoneSheetOpen?: boolean;
@@ -75,131 +86,70 @@ export function WorkspaceView({
   inspectorAvailable?: boolean;
   inspectorVisible?: boolean;
   onToggleInspector?: () => void;
-  /** The ABC notation is in the results panel, so it is not drawn below the diagram. */
+  /** The score is in the results panel, so it is not drawn below the diagram. */
   notationInInspector?: boolean;
   /** Width handles on the workspace's left and right edges. */
   panelHandles?: ReactNode;
 }) {
+  const { t, language } = usePlatformLanguage();
+  const { side } = usePlatformInstrument();
   const {
-    abcHandsView,
-    setAbcHands,
-    rhythmTrainer,
-    abcActiveButtonIdSet,
-    accidentalStyle,
-    activeToolSection,
-    annotateMode,
-    annotationButtonAnchor,
-    annotationEditorRef,
-    annotationPointForButton,
-    bassPatternActiveButtonIdSet,
-    buttonSize,
-    buttons,
-    cancelInlineAnnotation,
-    chordFinderActive,
-    chordFinderButtons,
-    chordLabelMode,
-    clearHarmonyWork,
-    colorTheme,
-    commitInlineAnnotation,
-    downloadCurrentDiagram,
-    downloadFormat,
-    finderArrowheadMarkerId,
-    finderButtonIds,
-    fingeringPosition,
-    getMainLabel,
-    handleSvgClick,
-    harmonyProgressionActiveButtonIdSet,
-    harmonyProgressionPlan,
-    inlineAnnotationEditor,
-    labelFont,
-    labelFontSize,
-    language,
-    leftPanelMode,
-    mobileDiagramView,
-    navigateToTool,
-    overlays,
-    progressionPreviewButtonIds,
-    resetCurrentToolDefaults,
-    resetDiagramWork,
-    scaleFinderArrowStyle,
-    scaleFinderButtons,
-    selectAccordionSide,
-    sequenceArrowStyle,
-    sequenceArrowheadMarkerId,
-    sequenceNumberPosition,
-    sequenceSteps,
-    sequenceStepsWithButtons,
-    setDownloadFormat,
-    setInlineAnnotationEditor,
-    setMobileDiagramView,
-    setPanel,
-    setSoundEnabled,
-    showButtonLabels,
-    showScaleFinderArrows,
-    showScaleFinderNumbers,
-    showSequenceArrows,
-    showSequenceNumbers,
-    side,
-    soundEnabled,
-    stopAbcPlayback,
-    stopBassPatternPlayback,
-    stradellaChordFinderActive,
-    stradellaPrimaryFinderButtonIds,
-    stradellaRootBassFinderButtonIds,
-    svgRef,
-    svgStyle,
-    t,
-    textNotes,
-    toggleButton,
-    toggleFocusPanel,
-    viewHeight,
-    viewWidth,
     workspaceMode,
-    samplesLoading,
-    progressionPathVisible,
-  } = model;
+    activeToolSection,
+    leftPanelMode,
+    navigateToTool,
+    selectAccordionSide,
+    setPanel,
+    toggleFocusPanel,
+  } = usePlatformNavigation();
+  const { colorTheme, accidentalStyle, buttonSize, labelFont, labelFontSize, showButtonLabels } =
+    usePlatformAppearance();
+  const { chordLabelMode } = usePlatformSpelling();
+  const { soundEnabled, setSoundEnabled } = usePlatformSound();
+  const { samplesLoading } = usePlatformPlayback();
+  const { coordinator, resetWork, resetTool } = usePlatformTools();
+  const { svgRef, downloadFormat, setDownloadFormat, mobileDiagramView, setMobileDiagramView } =
+    usePlatformShell();
+  const { setAbcHands } = useAbcPlayer();
+  const rhythmTrainer = useRhythmTrainer();
+  const diagram = useDiagramModel();
+  const downloadCurrentDiagram = useDiagramDownload(diagram);
+  const { handsView, layers } = diagram;
   // The one transport under the diagram follows the active player; each
   // player provides its entry (src/app/playback/playbackTransports.ts).
-  // Annotate Diagram's Notes mode owns the note cursor and anchor markers.
-  const notesModeActive = activeToolSection === "annotateDiagram" && annotateMode === "notes";
   const transport = useActivePlaybackTransport();
-  const showProgressionPath =
-    workspaceMode === "accordion" &&
-    side === "stradella" &&
-    activeToolSection === "progressionAssistant" &&
-    progressionPathVisible &&
-    harmonyProgressionPlan.playable;
-  const progressionArrowheadMarkerId = `${finderArrowheadMarkerId}-progression`;
   const canvasWrapRef = useRef<HTMLDivElement>(null);
   // Re-centre when the view mode, layout or highlighted buttons change, not
   // during playback (those highlights move too fast to follow).
   const diagramFocusKey = [
     mobileDiagramView,
     side,
-    buttons.length,
-    [...finderButtonIds].join(),
-    [...progressionPreviewButtonIds].join(),
-    scaleFinderButtons.map((button) => button.id).join(),
-    sequenceSteps.length,
+    diagram.buttons.length,
+    [...layers.finderButtonIds].join(),
+    [...layers.progressionPreviewButtonIds].join(),
+    layers.scaleFinderButtons.map((button) => button.id).join(),
+    layers.sequenceSteps.length,
   ].join("|");
   useEffect(() => {
     scrollDiagramToFocus(canvasWrapRef.current);
   }, [diagramFocusKey]);
-  // Phones show one manual at a time in the ABC Player's Both hands view.
+  // Phones show one manual at a time in a two-hand view.
   const [phoneHand, setPhoneHand] = useState<Side | null>(null);
   const shownPhoneHand = phoneHand ?? side;
-  const combinedHandsView =
-    abcHandsView ??
-    (activeToolSection === "rhythmTrainer"
-      ? { trebleButtons: rhythmTrainer.trebleButtons, stradellaButtons: rhythmTrainer.bassButtons }
-      : null);
   const accessibleButtonLabel = (button: DiagramButton) => {
-    const name = musicLabelText(getMainLabel(button));
+    const name = musicLabelText(diagram.getMainLabel(button));
     if (button.kind === "treble-note") {
       return button.octave !== undefined && !/\d$/.test(name) ? `${name}${button.octave}` : name;
     }
     return `${name}, ${stradellaDiagramRowLabel(button.kind, stradellaRowLabel(button.kind), language)}`;
   };
+  // Changing side stops the ABC Player, whose mapping depends on the side,
+  // and with it open shows that hand.
+  function selectSide(next: Side) {
+    selectAccordionSide(next);
+    coordinator.stopTool("abcPlayer");
+    if (activeToolSection === "abcPlayer") setAbcHands(next);
+  }
   return (
     <section className="workspace" inert={phoneSheetOpen}>
       {panelHandles}
@@ -212,20 +162,12 @@ export function WorkspaceView({
         side={side}
         leftPanelMode={leftPanelMode}
         activeToolSection={activeToolSection}
-        onSelectStradella={() => {
-          selectAccordionSide("stradella");
-          stopAbcPlayback();
-          if (activeToolSection === "abcPlayer") setAbcHands("stradella");
-        }}
-        onSelectTreble={() => {
-          selectAccordionSide("treble");
-          stopAbcPlayback();
-          if (activeToolSection === "abcPlayer") setAbcHands("treble");
-        }}
+        onSelectStradella={() => selectSide("stradella")}
+        onSelectTreble={() => selectSide("treble")}
         onSelectHarmony={() => {
           navigateToTool("harmonyExplorer");
-          stopAbcPlayback();
-          stopBassPatternPlayback();
+          coordinator.stopTool("abcPlayer");
+          coordinator.stopTool("bassPatternPlayer");
           stopAllSound();
         }}
         onShowSettings={() => (isPhone ? onOpenPhonePanel?.("settings") : setPanel("settings"))}
@@ -233,23 +175,20 @@ export function WorkspaceView({
         onToggleFocus={toggleFocusPanel}
         soundEnabled={soundEnabled}
         onToggleSound={() => setSoundEnabled((current) => !current)}
-        onClearWork={() => {
-          if (workspaceMode === "harmony") clearHarmonyWork();
-          else resetDiagramWork();
-        }}
-        onRestoreToolDefaults={resetCurrentToolDefaults}
+        onClearWork={() => resetWork(workspaceMode === "harmony" ? "harmony" : "accordion")}
+        onRestoreToolDefaults={resetTool}
         downloadFormat={downloadFormat}
         setDownloadFormat={setDownloadFormat}
         onDownloadDiagram={downloadCurrentDiagram}
       />
 
-      <WorkspaceStatusBar model={model} />
+      <WorkspaceStatusBar />
 
       {workspaceMode === "harmony" ? (
-        <HarmonyWorkspace model={model} />
+        <HarmonyWorkspace />
       ) : (
         <>
-          {combinedHandsView && isPhone && (
+          {handsView && isPhone && (
             <div className="abc-hand-switch">
               <SegmentedChoice
                 label={t("ui.abcShowHand")}
@@ -262,15 +201,7 @@ export function WorkspaceView({
               />
             </div>
           )}
-          {activeToolSection === "rhythmTrainer" && (
-            <RhythmTrainerTimeline
-              exercise={rhythmTrainer.exercise}
-              positionUnit={rhythmTrainer.positionUnit}
-              playing={rhythmTrainer.playing}
-              activeRhythmKeys={rhythmTrainer.activeRhythmKeys}
-              t={t}
-            />
-          )}
+          {handsView?.above}
           <div className="diagram-mobile-frame">
             <div className="mobile-diagram-view-control">
               <button
@@ -292,54 +223,25 @@ export function WorkspaceView({
             </div>
             <div
               ref={canvasWrapRef}
-              className={`canvas-wrap ${activeToolSection === "rhythmTrainer" ? "rhythm-compact-diagrams" : ""} ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
+              className={`canvas-wrap ${handsView?.compact ? "rhythm-compact-diagrams" : ""} ${mobileDiagramView === "readable" ? "diagram-readable" : "diagram-fit"}`}
               style={
                 {
-                  "--mobile-diagram-readable-width": `${Math.max(960, viewWidth * 0.75)}px`,
+                  "--mobile-diagram-readable-width": `${Math.max(960, diagram.viewWidth * 0.75)}px`,
                 } as CSSProperties
               }
             >
-              {combinedHandsView ? (
+              {handsView ? (
                 <AbcHandsDiagram
                   ref={svgRef}
-                  hands={(activeToolSection === "rhythmTrainer"
-                    ? [
-                        {
-                          key: "stradella",
-                          caption: t("nav.stradella"),
-                          buttons: combinedHandsView.stradellaButtons,
-                        },
-                        {
-                          key: "treble",
-                          caption: t("nav.treble"),
-                          buttons: combinedHandsView.trebleButtons,
-                        },
-                      ]
-                    : [
-                        {
-                          key: "treble",
-                          caption: t("ui.abcHandCaption", { hand: t("nav.treble"), voice: 1 }),
-                          buttons: combinedHandsView.trebleButtons,
-                        },
-                        {
-                          key: "stradella",
-                          caption: t("ui.abcHandCaption", { hand: t("nav.stradella"), voice: 2 }),
-                          buttons: combinedHandsView.stradellaButtons,
-                        },
-                      ]
-                  ).filter((hand) => !isPhone || hand.key === shownPhoneHand)}
-                  abcActiveButtonIdSet={
-                    activeToolSection === "rhythmTrainer"
-                      ? rhythmTrainer.activeButtonIdSet
-                      : abcActiveButtonIdSet
-                  }
-                  getMainLabel={getMainLabel}
+                  hands={handsView.hands.filter((hand) => !isPhone || hand.key === shownPhoneHand)}
+                  abcActiveButtonIdSet={handsView.activeButtonIds}
+                  getMainLabel={diagram.getMainLabel}
                   getAccessibleLabel={accessibleButtonLabel}
-                  onButton={toggleButton}
+                  onButton={diagram.toggleButton}
                   style={
-                    activeToolSection === "rhythmTrainer"
-                      ? { ...svgStyle, maxWidth: "880px" }
-                      : svgStyle
+                    handsView.compact
+                      ? { ...diagram.svgStyle, maxWidth: "880px" }
+                      : diagram.svgStyle
                   }
                   colorTheme={colorTheme}
                   accidentalStyle={accidentalStyle}
@@ -354,90 +256,38 @@ export function WorkspaceView({
                   ref={svgRef}
                   colorTheme={colorTheme}
                   accidentalStyle={accidentalStyle}
-                  annotationActive={notesModeActive}
-                  viewWidth={viewWidth}
-                  viewHeight={viewHeight}
-                  onClick={handleSvgClick}
-                  style={svgStyle}
+                  annotationActive={diagram.annotationActive}
+                  viewWidth={diagram.viewWidth}
+                  viewHeight={diagram.viewHeight}
+                  onClick={diagram.handleSvgClick}
+                  style={diagram.svgStyle}
                 >
-                  <DiagramMarkers
-                    model={model}
-                    progressionMarkerId={progressionArrowheadMarkerId}
-                  />
-
-                  <DiagramTitle model={model} />
-
-                  <DiagramFooter model={model} />
-
-                  <BellowsGuide model={model} />
-
-                  <StradellaRowLabels model={model} />
-
+                  <DiagramMarkers />
+                  <DiagramTitle diagram={diagram} />
+                  <DiagramFooter diagram={diagram} />
+                  <BellowsGuide diagram={diagram} />
+                  <StradellaRowLabels diagram={diagram} />
                   <DiagramButtonLayer
-                    buttons={buttons}
-                    overlays={overlays}
-                    sequenceSteps={sequenceSteps}
-                    scaleFinderButtons={scaleFinderButtons}
-                    finderButtonIds={finderButtonIds}
-                    progressionPreviewButtonIds={progressionPreviewButtonIds}
-                    abcActiveButtonIdSet={abcActiveButtonIdSet}
-                    bassPatternActiveButtonIdSet={bassPatternActiveButtonIdSet}
-                    harmonyProgressionActiveButtonIdSet={harmonyProgressionActiveButtonIdSet}
-                    stradellaChordFinderActive={stradellaChordFinderActive}
-                    stradellaPrimaryFinderButtonIds={stradellaPrimaryFinderButtonIds}
-                    stradellaRootBassFinderButtonIds={stradellaRootBassFinderButtonIds}
-                    getMainLabel={getMainLabel}
+                    {...diagram.layers}
+                    buttons={diagram.buttons}
+                    getMainLabel={diagram.getMainLabel}
                     getAccessibleLabel={accessibleButtonLabel}
-                    toggleButton={toggleButton}
+                    toggleButton={diagram.toggleButton}
                     buttonSize={buttonSize}
                     chordLabelMode={chordLabelMode}
-                    showScaleFinderNumbers={showScaleFinderNumbers}
                     labelFontSize={labelFontSize}
                     showButtonLabels={showButtonLabels}
                     labelFont={labelFont}
-                    showSequenceNumbers={showSequenceNumbers}
-                    sequenceNumberPosition={sequenceNumberPosition}
-                    annotationActive={notesModeActive}
-                    annotationPointForButton={annotationPointForButton}
-                    annotationButtonAnchor={annotationButtonAnchor}
-                    fingeringPosition={fingeringPosition}
                   />
-
                   <DiagramConnections
-                    showScaleFinderArrows={showScaleFinderArrows}
-                    scaleFinderButtons={scaleFinderButtons}
-                    chordFinderActive={chordFinderActive}
-                    chordFinderButtons={chordFinderButtons}
-                    showSequenceArrows={showSequenceArrows}
-                    sequenceStepsWithButtons={sequenceStepsWithButtons}
+                    {...diagram.layers}
                     buttonSize={buttonSize}
-                    scaleFinderArrowStyle={scaleFinderArrowStyle}
-                    sequenceArrowStyle={sequenceArrowStyle}
-                    finderArrowheadMarkerId={finderArrowheadMarkerId}
-                    sequenceArrowheadMarkerId={sequenceArrowheadMarkerId}
+                    finderArrowheadMarkerId={FINDER_ARROWHEAD_ID}
+                    sequenceArrowheadMarkerId={SEQUENCE_ARROWHEAD_ID}
                   />
-
-                  {showProgressionPath && (
-                    <ProgressionPathLayer
-                      steps={harmonyProgressionPlan.steps.map(
-                        (step) => step.result.playbackButtons,
-                      )}
-                      buttonSize={buttonSize}
-                      arrowheadMarkerId={progressionArrowheadMarkerId}
-                    />
-                  )}
-
-                  <DiagramAnnotationsLayer
-                    textNotes={textNotes}
-                    inlineAnnotationEditor={inlineAnnotationEditor}
-                    setInlineAnnotationEditor={setInlineAnnotationEditor}
-                    annotationEditorRef={annotationEditorRef}
-                    commitInlineAnnotation={commitInlineAnnotation}
-                    cancelInlineAnnotation={cancelInlineAnnotation}
-                    viewWidth={viewWidth}
-                    viewHeight={viewHeight}
-                    annotationPlaceholder={t("ui.annotationPlaceholder")}
-                  />
+                  {diagram.overlays.map((overlay, index) => (
+                    <Fragment key={index}>{overlay(diagram)}</Fragment>
+                  ))}
                 </DiagramSvgSurface>
               )}
             </div>

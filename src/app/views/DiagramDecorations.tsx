@@ -10,23 +10,35 @@ import { harmonyStatusText } from "../../i18n/diagramLabels";
 import { stradellaDiagramRowLabel } from "../../i18n/musicTerms";
 import { fontClass } from "../../music";
 import { stradellaRowLabel } from "../../stradella";
-import type { AppControllerModel } from "../useAppController";
-
-type WorkspaceModel = AppControllerModel["workspace"];
+import { useAnnotateDiagram } from "../../features/annotateDiagram/annotateDiagramContext";
+import {
+  useHarmonyExplorer,
+  useHarmonyExplorerOutput,
+} from "../../features/harmonyExplorer/harmonyExplorerContext";
+import {
+  FINDER_ARROWHEAD_ID,
+  PROGRESSION_ARROWHEAD_ID,
+  SEQUENCE_ARROWHEAD_ID,
+} from "../diagram/diagramMarkers";
+import type { DiagramModel } from "../diagram/useDiagramModel";
+import {
+  usePlatformAppearance,
+  usePlatformInstrument,
+  usePlatformLanguage,
+  usePlatformNavigation,
+  usePlatformSound,
+} from "../platform/platformContexts";
+import { useAccordionStatusText } from "./useAccordionStatusText";
 
 /** The status line under the toolbar, when shown: the diagram's in the accordion workspace, the circle's in the Harmony workspace. */
-export function WorkspaceStatusBar({ model }: { model: WorkspaceModel }) {
-  const {
-    harmonyReferenceFamily,
-    harmonyRelatedFamilyId,
-    harmonyRelatedName,
-    harmonyScale,
-    language,
-    showStatusBar,
-    soundEnabled,
-    statusBarText,
-    workspaceMode,
-  } = model;
+export function WorkspaceStatusBar() {
+  const { language } = usePlatformLanguage();
+  const { showStatusBar } = usePlatformAppearance();
+  const { soundEnabled } = usePlatformSound();
+  const { workspaceMode } = usePlatformNavigation();
+  const { harmonyRelatedFamilyId } = useHarmonyExplorer();
+  const { harmonyReferenceFamily, harmonyRelatedName, harmonyScale } = useHarmonyExplorerOutput();
+  const statusBarText = useAccordionStatusText();
   return (
     <>
       {showStatusBar && workspaceMode === "accordion" && (
@@ -53,18 +65,12 @@ export function WorkspaceStatusBar({ model }: { model: WorkspaceModel }) {
 }
 
 /** Arrowheads for the sequence, the Finders and the progression path. */
-export function DiagramMarkers({
-  model,
-  progressionMarkerId,
-}: {
-  model: WorkspaceModel;
-  progressionMarkerId: string;
-}) {
-  const { finderArrowheadMarkerId, sequenceArrowheadMarkerId, sequenceArrowheadSize } = model;
+export function DiagramMarkers() {
+  const { sequenceArrowheadSize } = useAnnotateDiagram().sequence;
   return (
     <defs>
       <marker
-        id={sequenceArrowheadMarkerId}
+        id={SEQUENCE_ARROWHEAD_ID}
         markerWidth={sequenceArrowheadSize + 1}
         markerHeight={sequenceArrowheadSize + 1}
         refX={sequenceArrowheadSize}
@@ -79,7 +85,7 @@ export function DiagramMarkers({
       </marker>
 
       <marker
-        id={finderArrowheadMarkerId}
+        id={FINDER_ARROWHEAD_ID}
         markerWidth="5"
         markerHeight="5"
         refX="4"
@@ -90,7 +96,7 @@ export function DiagramMarkers({
         <path d="M 0 0 L 5 2.5 L 0 5 z" className="finder-arrowhead" />
       </marker>
       <marker
-        id={progressionMarkerId}
+        id={PROGRESSION_ARROWHEAD_ID}
         markerWidth="9"
         markerHeight="9"
         refX="8"
@@ -105,8 +111,9 @@ export function DiagramMarkers({
 }
 
 /** The diagram's title, unless titles are off. */
-export function DiagramTitle({ model }: { model: WorkspaceModel }) {
-  const { effectiveTitleSize, finalTitle, titleFont, titleMode, viewWidth } = model;
+export function DiagramTitle({ diagram }: { diagram: DiagramModel }) {
+  const { titleFont, titleMode } = usePlatformAppearance();
+  const { effectiveTitleSize, finalTitle, viewWidth } = diagram;
   return (
     titleMode !== "none" && (
       <text
@@ -122,27 +129,22 @@ export function DiagramTitle({ model }: { model: WorkspaceModel }) {
   );
 }
 
-/** The footer under the diagram: the Stradella Chord Finder's explanation, or the treble voicing note. */
-export function DiagramFooter({ model }: { model: WorkspaceModel }) {
+/** The footer under the diagram: the Stradella explanation (the Chord
+ * Finder's realization or the assistant's step), or the treble voicing note. */
+export function DiagramFooter({ diagram }: { diagram: DiagramModel }) {
   const {
-    annotationLevelForLine,
+    stradellaFooter,
+    trebleFooter,
     buttonTrebleFooter,
-    diagramNoteRoot,
-    diagramNotePattern,
-    finderAnnotationDisplayLines,
-    finderExplanationFontSize,
-    finderFooterEnabled,
     finderFooterHeight,
-    finderVoicingAnalysis,
-    finderVoicingChartVisible,
     stradellaFinderFooterY,
-    trebleFooterEnabled,
     trebleFooterFontSize,
     trebleFooterHeight,
     trebleFooterY,
-    trebleVoicingNote,
     viewWidth,
-  } = model;
+  } = diagram;
+  const finderFooterEnabled = stradellaFooter !== null;
+  const trebleFooterEnabled = trebleFooter !== null;
   return (
     (finderFooterEnabled || trebleFooterEnabled) && (
       <foreignObject
@@ -160,7 +162,7 @@ export function DiagramFooter({ model }: { model: WorkspaceModel }) {
         <div
           style={{
             fontFamily: "Arial, sans-serif",
-            fontSize: `${trebleFooterEnabled ? trebleFooterFontSize : finderExplanationFontSize}px`,
+            fontSize: `${trebleFooter ? trebleFooterFontSize : stradellaFooter?.fontSize}px`,
             fontWeight: trebleFooterEnabled ? 600 : 400,
             textAlign: finderFooterEnabled ? "left" : "center",
             lineHeight: finderFooterEnabled ? 1.3 : 1.15,
@@ -168,19 +170,18 @@ export function DiagramFooter({ model }: { model: WorkspaceModel }) {
             color: "#20252a",
           }}
         >
-          {finderFooterEnabled ? (
+          {stradellaFooter ? (
             <div className="finder-annotation-block">
-              {finderAnnotationDisplayLines.map((line, index) => {
-                const level = annotationLevelForLine(line);
+              {stradellaFooter.lines.map((line, index) => {
+                const level = stradellaFooter.levelForLine(line);
                 const colon = line.indexOf(":");
                 const label = colon > 0 ? line.slice(0, colon + 1) : "";
                 const value = colon > 0 ? line.slice(colon + 1).trim() : line;
-                const showVoicingChart =
-                  level === "voicing" && finderVoicingChartVisible && finderVoicingAnalysis;
+                const voicing = level === "voicing" ? stradellaFooter.voicing : null;
                 return (
                   <div
                     key={`${level ?? "line"}-${index}`}
-                    className={`finder-annotation-line${showVoicingChart ? " finder-annotation-line-voicing" : ""}`}
+                    className={`finder-annotation-line${voicing ? " finder-annotation-line-voicing" : ""}`}
                   >
                     {label && (
                       <div className="finder-annotation-label">
@@ -188,12 +189,12 @@ export function DiagramFooter({ model }: { model: WorkspaceModel }) {
                       </div>
                     )}
                     <div className="finder-annotation-value">
-                      {showVoicingChart ? (
+                      {voicing ? (
                         <StradellaVoicingIntervals
-                          notes={finderVoicingAnalysis.notes}
-                          root={diagramNoteRoot}
-                          pattern={diagramNotePattern}
-                          fontSize={finderExplanationFontSize}
+                          notes={voicing.notes}
+                          root={stradellaFooter.root}
+                          pattern={stradellaFooter.pattern}
+                          fontSize={stradellaFooter.fontSize}
                         />
                       ) : (
                         value
@@ -204,7 +205,7 @@ export function DiagramFooter({ model }: { model: WorkspaceModel }) {
               })}
             </div>
           ) : (
-            trebleVoicingNote
+            trebleFooter?.text
           )}
         </div>
       </foreignObject>
@@ -213,16 +214,10 @@ export function DiagramFooter({ model }: { model: WorkspaceModel }) {
 }
 
 /** The bellows direction guide above the buttons. */
-export function BellowsGuide({ model }: { model: WorkspaceModel }) {
-  const {
-    bellowsEndLabel,
-    bellowsLabelY,
-    bellowsStartLabel,
-    bellowsStripY,
-    showBellowsGuide,
-    t,
-    viewWidth,
-  } = model;
+export function BellowsGuide({ diagram }: { diagram: DiagramModel }) {
+  const { t } = usePlatformLanguage();
+  const { showBellowsGuide } = usePlatformAppearance();
+  const { bellowsEndLabel, bellowsLabelY, bellowsStartLabel, bellowsStripY, viewWidth } = diagram;
   return (
     <>
       {showBellowsGuide && (
@@ -261,8 +256,11 @@ export function BellowsGuide({ model }: { model: WorkspaceModel }) {
 }
 
 /** The Stradella row names left of the first column, shrunk to fit. */
-export function StradellaRowLabels({ model }: { model: WorkspaceModel }) {
-  const { buttonSize, buttons, language, showStradellaRowLabels, side, visibleRows } = model;
+export function StradellaRowLabels({ diagram }: { diagram: DiagramModel }) {
+  const { language } = usePlatformLanguage();
+  const { side } = usePlatformInstrument();
+  const { buttonSize, showStradellaRowLabels } = usePlatformAppearance();
+  const { buttons, visibleRows } = diagram;
   return (
     side === "stradella" &&
     showStradellaRowLabels &&

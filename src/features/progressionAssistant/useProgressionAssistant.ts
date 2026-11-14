@@ -47,7 +47,11 @@ export function useHarmonyProgressionState() {
   const [harmonyProgressionPulseSilent, setHarmonyProgressionPulseSilent] = useState(false);
   const [harmonyProgressionNotationVisible, setHarmonyProgressionNotationVisible] = useState(false);
   const harmonyProgressionNotationRef = useRef<HTMLDivElement | null>(null);
+  // Session-only: draw the plan's path (numbered steps) on the diagram. Off by default.
+  const [progressionPathVisible, setProgressionPathVisible] = useState(false);
   return {
+    progressionPathVisible,
+    setProgressionPathVisible,
     harmonyProgression,
     setHarmonyProgression,
     harmonyProgressionManualRoot,

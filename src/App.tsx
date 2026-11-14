@@ -5,7 +5,12 @@ import { useActiveResults } from "./app/inspector/resultsEntries";
 import { WorkspaceInspectorSlot } from "./app/inspector/WorkspaceInspectorSlot";
 import { LanguageProvider } from "./i18n/context";
 import { AppShell } from "./app/components/AppShell";
-import { useAppController } from "./app/useAppController";
+import {
+  usePlatformLanguage,
+  usePlatformNavigation,
+  usePlatformNotation,
+  usePlatformShell,
+} from "./app/platform/platformContexts";
 import { AppProviders } from "./app/AppProviders";
 import { usePhonePanel } from "./app/usePhonePanel";
 import { ToolsView } from "./app/views/ToolsView";
@@ -33,12 +38,14 @@ export default function App() {
   );
 }
 
-/** Layout composition only. Feature state and cross-tool orchestration are
- * supplied by the controller while independent views render the UI. */
+/** Layout composition only: the panels, the workspace and the inspector.
+ * Each view reads the platform and tool contexts it needs. */
 function AppLayout() {
-  const model = useAppController();
+  const { language, t } = usePlatformLanguage();
+  const { interfaceDensity } = usePlatformShell();
+  const { leftPanelMode, activeToolSection, workspaceMode, setPanel } = usePlatformNavigation();
+  const { musicNotationPlacement } = usePlatformNotation();
   const { visible: inspectorVisible, toggle: toggleInspector } = useInspectorVisibility();
-  const { language, interfaceDensity, leftPanelMode, t } = model;
   const { widths: panelWidths, setPanelWidth } = usePanelWidths();
   const {
     isPhone,
@@ -48,15 +55,15 @@ function AppLayout() {
     panelRef,
     closeRef,
     onPanelKeyDown,
-  } = usePhonePanel(model.tools.activeToolSection, model.tools.workspaceMode);
+  } = usePhonePanel(activeToolSection, workspaceMode);
   function openPhonePanel(mode: "tools" | "settings") {
-    if (leftPanelMode !== mode) model.workspace.setPanel(mode);
+    if (leftPanelMode !== mode) setPanel(mode);
     showSheet();
   }
   const score = useActiveScore();
   const showNotationRight =
     score !== null &&
-    notationLocation(model.tools.musicNotationPlacement, isPhone, inspectorVisible) === "right";
+    notationLocation(musicNotationPlacement, isPhone, inspectorVisible) === "right";
   const results = useActiveResults();
   const inspector = showNotationRight ? "notation" : inspectorVisible && results ? "results" : null;
   const appGridColumns = workspaceGridColumns(
@@ -150,7 +157,6 @@ function AppLayout() {
           </aside>
         )}
         <WorkspaceView
-          model={model.workspace}
           score={score}
           isPhone={isPhone}
           phoneSheetOpen={isPhone && sheetOpen}

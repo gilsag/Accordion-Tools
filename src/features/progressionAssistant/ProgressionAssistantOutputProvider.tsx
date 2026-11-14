@@ -5,6 +5,8 @@ import type { PlaybackTransport } from "../../app/playback/playbackTransports";
 import { usePlatformLanguage, usePlatformTools } from "../../app/platform/platformContexts";
 import { lazy, useMemo, type ReactNode } from "react";
 import { ResultsEntryProvider } from "../../app/inspector/ResultsEntryProvider";
+import { DiagramContributionProvider } from "../../app/diagram/DiagramContributionProvider";
+import { useProgressionDiagramContribution } from "./useProgressionDiagramContribution";
 import { enterProgressionAssistant } from "../../app/crossToolCommands";
 import { useDiagramButtons } from "../../app/diagram/diagramButtonsContext";
 import {
@@ -203,12 +205,15 @@ export function ProgressionAssistantOutputProvider({ children }: { children: Rea
         onPreviewStep={previewHarmonyProgressionStepOnStradella}
       />
     ) : null;
+  const diagram = useProgressionDiagramContribution(state, value);
   return (
     <ProgressionAssistantOutputContext.Provider value={value}>
       <PlaybackTransportEntry tool="progressionAssistant" transport={playbackEntry}>
         <ScoreEntryProvider tool="progressionAssistant" score={scoreEntry} toggle={scoreToggle}>
           <ResultsEntryProvider tool="progressionAssistant" panel={resultsPanel}>
-            {children}
+            <DiagramContributionProvider tool="progressionAssistant" contribution={diagram}>
+              {children}
+            </DiagramContributionProvider>
           </ResultsEntryProvider>
         </ScoreEntryProvider>
       </PlaybackTransportEntry>

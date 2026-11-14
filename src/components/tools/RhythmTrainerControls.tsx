@@ -6,7 +6,7 @@ import {
   TREBLE_PITCH_MODES,
   type TreblePitchMode,
 } from "../../features/rhythmTrainer/treblePitchPatterns";
-import { formatProgressionOptionLabel } from "../../app/controllerOptions";
+import { formatProgressionOptionLabel } from "../../app/optionLists";
 import { FINDER_ROOT_OPTIONS } from "../../tools/scaleFinderTools";
 
 const PITCH_MODE_KEYS: Record<TreblePitchMode, TranslationKey> = {

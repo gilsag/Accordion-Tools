@@ -12,7 +12,7 @@ import {
   useBassPatternPlayer,
   useBassPatternPlayerOutput,
 } from "../../features/bassPatternPlayer/bassPatternPlayerContext";
-import { formatProgressionOptionLabel } from "../controllerOptions";
+import { formatProgressionOptionLabel } from "../optionLists";
 import { usePlatformLanguage } from "../platform/platformContexts";
 
 const BEAT_LABEL_KEYS: Record<BassPatternBeatName, TranslationKey> = {

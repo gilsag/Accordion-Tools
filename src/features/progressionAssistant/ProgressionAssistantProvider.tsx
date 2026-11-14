@@ -6,8 +6,8 @@ import { ProgressionAssistantContext } from "./progressionAssistantContext";
 import { useHarmonyProgressionState } from "./useProgressionAssistant";
 
 /** Owns the Progression Assistant's progression, optimization preferences,
- * pinned realizations, preview and score state. Its optimized plan needs the
- * generated Stradella buttons and is still derived by the controller. */
+ * pinned realizations, preview, path and score state. Its optimized plan needs
+ * the generated Stradella buttons, so its output provider derives it. */
 export function ProgressionAssistantProvider({ children }: { children: ReactNode }) {
   const state = useHarmonyProgressionState();
   const { activeToolSection } = usePlatformNavigation();
