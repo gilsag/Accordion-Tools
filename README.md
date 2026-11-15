@@ -6,15 +6,18 @@
 
 ![Stradella Chord Finder showing an E minor seventh realization](docs/images/stradella-chord-finder.png)
 
-*Stradella Chord Finder — **Em7** realized using **E counterbass + G major chord**. The selected physical buttons are highlighted on the diagram. The finder compares exact and conservative approximate realizations, explains omitted tones and close voicings, and can show nominal note spacing in semitones. For extended chords, its ranking considers defining tones and register density as well as completeness and ergonomics.*
+*Stradella Chord Finder: **Em7** realized as **E counterbass + G major chord**. The buttons are highlighted on the diagram, and the footer states the harmonic identity, the pitches covered and the registral voicing. The Results panel ranks every realization, exact and conservative approximate, and explains omitted tones and close voicings. For extended chords, the ranking weighs defining tones and register density as well as completeness and ergonomics.*
 
 ## Explore, play, and create
 
 - **Find chords and scales.** Visualize scales on either manual and compare practical Stradella chord realizations using preset chord buttons, bass/counterbass notes, or mixed combinations. The Chord Finder ranks alternatives by musical completeness, nominal register, and physical practicality, with explanations of omitted tones and voicing choices.
 - **Understand harmony.** Use the Harmony Explorer's interactive circle of fifths to investigate chord families, common tones, diatonic relationships, and voice leading. Record a progression and send it to the Stradella Progression Assistant.
 - **Work with progressions.** Build a sequence of chords and use the Progression Assistant to find a coherent set of Stradella realizations, balancing harmonic voice movement and hand movement. Preview the selected buttons and hear rhythmic accompaniment.
-- **Practice patterns and melodies.** Use the Bass Pattern Player, Bass–Treble Rhythm Trainer, ABC Player, and Annotate Diagram's Sequence and Finger modes. The ABC Player plays two-voice tunes with both hands at once, treble and Stradella lighting up together, and includes ready-to-use examples, including cueca floreos and a Katyusha arrangement.
+- **Practice both hands.** The Bass–Treble Rhythm Trainer pairs a left-hand accompaniment (waltz, polka, march and more) with a right-hand rhythm in 2/4, 3/4, 4/4 or 6/8 over a chord progression, and shows both hands on a bar-by-bar timeline, on the Stradella and treble diagrams and in notation.
+- **Practice patterns and melodies.** Use the Bass Pattern Player, ABC Player, and Annotate Diagram's Sequence and Finger modes. The ABC Player plays two-voice tunes with both hands at once, treble and Stradella lighting up together, and includes ready-to-use examples, including cueca floreos and a Katyusha arrangement.
+- **Keep time.** The players that keep time offer a one-bar **count-in** and a **metronome** on the playback bar.
 - **Listen to the results.** Play individual buttons, chords, sequences, and patterns with the **La Melodiosa** accordion samples or the built-in synthesizer.
+- **Share what you see.** **Copy link** sends the instrument and the chord or scale you are looking at, so a teacher can send "Em7 on a 72-bass" and the student opens exactly that.
 - **Create diagrams and notation.** Highlight buttons, add annotations, display staff notation in the right panel or below the diagram, optionally with note names under the notes, and export diagrams as SVG or PNG. Selected tools also support music-data or notation exports.
 
 ## More tools in action
@@ -24,6 +27,12 @@
 ![Treble Scale Finder on a chromatic button accordion](docs/images/treble-scale-finder.png)
 
 *Visualize scales directly on C-system or B-system treble diagrams and explore alternative button positions and fingering paths. The same workspace also supports piano accordion layouts.*
+
+### Bass–Treble Rhythm Trainer
+
+![Bass–Treble Rhythm Trainer playing a waltz in 3/4](docs/images/rhythm-trainer.png)
+
+*Coordinate both hands: the timeline shows each bar's left- and right-hand attacks over the chord progression, and the current beat lights up on the timeline and on both diagrams while it plays. Choose the meter, the accompaniment, the treble rhythm and how the treble notes follow each chord.*
 
 ### Harmony Explorer
 
@@ -41,7 +50,7 @@
 
 ![Stradella Progression Assistant](docs/images/progression-assistant.png)
 
-*Optimize a series of Stradella chord realizations as a complete progression rather than selecting each chord independently. Compare harmonic voice movement with physical button movement, preview the chosen buttons, and explore playback, rhythmic accompaniment patterns, and staff notation.*
+*Optimize a series of Stradella chord realizations as a complete progression rather than selecting each chord independently. Compare harmonic voice movement with physical button movement, preview the chosen buttons, and explore playback, rhythmic accompaniment patterns, and staff notation, shown here below the diagram.*
 
 ## Getting started
 
@@ -51,7 +60,7 @@
 
 The interface is available in **English, Spanish, French, Brazilian Portuguese, Italian, and German**, with browser-language detection or manual selection under **Settings → Language**. The layout also adapts to phones and tablets, offering scrollable or fit-to-screen diagram viewing. See the [Settings Guide](docs/settings.md) for details.
 
-You can customize chord-symbol styles (for example, C/Cm or CM/Cm), instrument registers, diagram appearance, and playback settings. Settings can be saved to and loaded from JSON files.
+You can customize chord-symbol styles (for example, C/Cm or CM/Cm), instrument registers, diagram appearance, and playback settings. The interface follows your device's light or dark setting, or you can choose one under **Settings → Appearance**; diagrams and downloads always stay on white paper. Your settings are remembered between visits, and can also be saved to and loaded from JSON files.
 
 ## Documentation
 
@@ -76,11 +85,13 @@ To run the full regression checks and analyze the production build:
 npm run verify:release
 ```
 
-`npm test` runs the unit and component tests with Vitest. `npm run verify:release` runs lint (ESLint and the Prettier check; `npm run format` fixes formatting), those tests, a production build, and the bundle audit. Browser tests run separately with `npm run test:e2e` (run `npx playwright install chromium` once first). For faster diagnosis, use `npm run test:modules` or a specific `test:*` script. See the [Developer Guide](docs/internal/developer-guide.md) and [testing guide](docs/internal/testing.md) for the current test inventory and contributor policy. For a normal production build, run `npm run build`.
+`npm test` runs the unit and component tests with Vitest. `npm run verify:release` runs lint (ESLint and the Prettier check; `npm run format` fixes formatting), those tests with the coverage thresholds, a production build, and the bundle audit. Browser tests run separately with `npm run test:e2e` (run `npx playwright install chromium` once first); they include an accessibility scan of every panel and snapshots of exported diagrams. For faster diagnosis, use `npm run test:modules` or a specific `test:*` script. See the [Developer Guide](docs/internal/developer-guide.md) and [testing guide](docs/internal/testing.md) for the current test inventory and contributor policy. For a normal production build, run `npm run build`.
 
 ## Acknowledgements and license
 
 The **La Melodiosa** accordion samples were sampled, edited, and originally programmed by **Petri Pohjanmies (Finland, 2026)** and are included under the Creative Commons Attribution (CC-BY) license. Original attribution and instrument-definition files are retained in `public/samples/la-melodiosa/`.
+
+Accordion Tools is written by Esteban Gil with the help of AI coding assistants, Anthropic's Claude and OpenAI's ChatGPT.
 
 The Stradella Chord Finder was informed in part by the [Stradella Explorer](https://accordionchords.com/stradella-bass-chord-calculator-interactive-stacking-engine/) at AccordionChords.com.
 
