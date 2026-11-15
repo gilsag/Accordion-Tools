@@ -30,9 +30,9 @@
 
 ### Bass–Treble Rhythm Trainer
 
-![Bass–Treble Rhythm Trainer playing a waltz in 3/4](docs/images/rhythm-trainer.png)
+![Bass–Treble Rhythm Trainer playing a waltz in 3/4, with its score](docs/images/rhythm-trainer.png)
 
-*Coordinate both hands: the timeline shows each bar's left- and right-hand attacks over the chord progression, and the current beat lights up on the timeline and on both diagrams while it plays. Choose the meter, the accompaniment, the treble rhythm and how the treble notes follow each chord.*
+*Coordinate both hands: the timeline shows each bar's left- and right-hand attacks over the chord progression, and the current beat lights up on the timeline, on both diagrams and in the two-staff score while it plays. Choose the meter, the accompaniment, the treble rhythm and how the treble notes follow each chord. Shown here with the Tools panel hidden.*
 
 ### Harmony Explorer
 
