@@ -21,7 +21,7 @@ The compact Tools panel contains the choices that change the harmonic question i
 - quick presets for m7, maj7, dominant 7, and diminished 7 relationships;
 - **Show inner note ring**, synchronized with the option under Settings → Harmony.
 
-The **All families** mode is intentionally diatonic-only to keep aggregate diagrams readable.
+The **All families** mode is intentionally diatonic-only to keep aggregate diagrams readable. It is the starting choice, and **Reset** returns to it.
 
 ## Harmony settings
 
@@ -56,6 +56,8 @@ Voice-leading information is descriptive. The relationship engine works with pit
 Click a chord to hear it. Integrated Harmony Explorer playback uses the same sound engine and settings as Accordion Tools, including La Melodiosa when selected.
 
 For compatibility with the Stradella system, Harmony Explorer converts the chord to pitch classes and renders them inside the single **C3-B3 Stradella chord octave**. This keeps the harmonic layer separate from octave-specific piano voicing assumptions.
+
+Because every chord sounds in that one octave, starting from C, chords made of the same notes sound the same: **Am7** (A–C–E–G) and **C6** (C–E–G–A) both play C–E–G–A, just as they would on a Stradella chord button without a bass note. Chords on the ring nearest the inner ring share all but one note with the reference chord, so they differ by a single note: with a C major reference, **CM7** (C–E–G–B) and **Am7** differ only in B against A.
 
 ## Show on Stradella
 

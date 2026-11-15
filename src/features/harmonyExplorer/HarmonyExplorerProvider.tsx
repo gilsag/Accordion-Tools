@@ -4,7 +4,7 @@ import { useOwnedSettings } from "../../app/platform/useOwnedSettings";
 import { useToolHandle } from "../../app/platform/useToolHandle";
 import { DEFAULT_RING_VISIBILITY } from "./engine/music";
 import { HarmonyExplorerContext } from "./harmonyExplorerContext";
-import { useHarmonyExplorerState } from "./useHarmonyExplorer";
+import { DEFAULT_RELATED_FAMILY_ID, useHarmonyExplorerState } from "./useHarmonyExplorer";
 import { useHarmonyRecordingState } from "./useHarmonyRecording";
 
 /** Owns the Harmony circle (selection, filters, display preferences) and the
@@ -26,7 +26,7 @@ export function HarmonyExplorerProvider({ children }: { children: ReactNode }) {
    * the selection or the recording. */
   function resetHarmonyExplorer() {
     explorer.setHarmonyReferenceFamilyId("major");
-    explorer.setHarmonyRelatedFamilyId("minor7");
+    explorer.setHarmonyRelatedFamilyId(DEFAULT_RELATED_FAMILY_ID);
     explorer.setHarmonyScaleId("ionian");
     explorer.setHarmonyDiatonicOnly(false);
     explorer.setHarmonyHighlightDiatonic(true);

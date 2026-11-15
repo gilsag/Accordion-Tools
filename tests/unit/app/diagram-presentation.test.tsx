@@ -133,7 +133,7 @@ test("the title modes: automatic, custom and none", async () => {
 test("the Harmony workspace downloads the circle under its families' names", async () => {
   const app = await renderApp();
   await app.run((model) => model.workspace.navigateToTool("harmonyExplorer"));
-  expect(app.diagram.downloadName()).toBe("harmonic-circle-major-minor-seventh-ionian-major");
+  expect(app.diagram.downloadName()).toBe("harmonic-circle-major-all-chord-families-ionian-major");
 });
 
 test("the ABC Player's two-hand view names the file after the tune", async () => {

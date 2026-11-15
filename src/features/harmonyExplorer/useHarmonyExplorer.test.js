@@ -76,7 +76,7 @@ test("Harmony Explorer defaults, selectors and engine forwarding", () => {
   let state = explorerHook.result.current;
   for (const [field, expected] of Object.entries({
     harmonyReferenceFamilyId: "major",
-    harmonyRelatedFamilyId: "minor7",
+    harmonyRelatedFamilyId: "all",
     harmonyScaleId: "ionian",
     harmonyDiatonicOnly: false,
     harmonyHighlightDiatonic: true,
@@ -107,7 +107,8 @@ test("Harmony Explorer defaults, selectors and engine forwarding", () => {
   assert.strictEqual(setter, state.setHarmonyShowNoteRing, "Stable setter across renders");
   assert.equal(state.harmonyShowNoteRing, false);
   const t = (key) => key;
-  const options = { ...state, language: "en", t };
+  // One related family first; all families are checked below.
+  const options = { ...state, harmonyRelatedFamilyId: "minor7", language: "en", t };
   let calculated = render(() => useHarmonyExplorerResults(options));
   assert.equal(calculated.harmonyAllFamiliesMode, false);
   assert.equal(calculated.harmonyEffectiveDiatonicOnly, false);

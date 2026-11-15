@@ -15,6 +15,9 @@ import type { ChordFamilyId, RelatedFamilyId, ScaleId } from "./engine/music";
 import type { HarmonyPlaybackStyle, HarmonySelection, HarmonyVoicingStyle } from "./engine/types";
 import type { translate } from "../../i18n/catalog";
 
+/** The outer rings start with every chord family; the reset returns to it. */
+export const DEFAULT_RELATED_FAMILY_ID: RelatedFamilyId = "all";
+
 type Translator = (
   key: Parameters<typeof translate>[1],
   params?: Record<string, string | number>,
@@ -28,7 +31,8 @@ export function useHarmonyExplorerState() {
   /* Harmony Explorer state. Kept independent from accordion layout state so the
      harmonic relationship engine can remain reusable and later evolve separately. */
   const [harmonyReferenceFamilyId, setHarmonyReferenceFamilyId] = useState<ChordFamilyId>("major");
-  const [harmonyRelatedFamilyId, setHarmonyRelatedFamilyId] = useState<RelatedFamilyId>("minor7");
+  const [harmonyRelatedFamilyId, setHarmonyRelatedFamilyId] =
+    useState<RelatedFamilyId>(DEFAULT_RELATED_FAMILY_ID);
   const [harmonyScaleId, setHarmonyScaleId] = useState<ScaleId>("ionian");
   const [harmonyDiatonicOnly, setHarmonyDiatonicOnly] = useState(false);
   const [harmonyHighlightDiatonic, setHarmonyHighlightDiatonic] = useState(true);
